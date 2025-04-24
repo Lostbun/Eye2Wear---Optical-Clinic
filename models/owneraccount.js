@@ -4,15 +4,15 @@ import AutoIncrement from "mongoose-sequence";
 
 
 
-const AdminaccountSchema = mongoose.Schema(
+const OwneraccountSchema = mongoose.Schema(
   {
 
-    //Here are the model details required for admin registration
+    //Here are the model details required for owner registration
 
 
 
-    //AdminID properties Auto Increment
-    adminId: {
+    //ownerID properties Auto Increment
+    ownerId: {
       type: Number,
       unique:true
     },
@@ -24,7 +24,7 @@ const AdminaccountSchema = mongoose.Schema(
 
 
     //Email properties
-    adminemail:{
+    owneremail:{
       type: String,
       required: [true, "Please provide your email address"],
       unique: true,
@@ -37,7 +37,7 @@ const AdminaccountSchema = mongoose.Schema(
 
 
     //Password properties
-    adminpassword:{
+    ownerpassword:{
       type: String,
       required: [true, "Please provide your password"],
       minlength: 6,
@@ -46,7 +46,7 @@ const AdminaccountSchema = mongoose.Schema(
 
 
     //Lastname properties
-    adminlastname:{
+    ownerlastname:{
       type: String,
       required: [true, "Please provide your first name"],
       trim: true,
@@ -54,7 +54,7 @@ const AdminaccountSchema = mongoose.Schema(
 
 
     //Firstname properties
-    adminfirstname:{
+    ownerfirstname:{
       type: String,
       required: [true, "Please provide your first name"],
       trim: true,
@@ -62,7 +62,7 @@ const AdminaccountSchema = mongoose.Schema(
 
 
     //Middlename properties
-    adminmiddlename:{
+    ownermiddlename:{
       type: String,
       required: [true, "Please provide your first name"],
       trim: true,
@@ -70,20 +70,28 @@ const AdminaccountSchema = mongoose.Schema(
 
 
 
+
+
     //Profile picture properties
-    adminprofilepicture: {
+    ownerprofilepicture: {
       type: String,
       required: true,
       default:"default-profile-url"
     },
 
 
+    //Clinic name properties
+    ownerclinic:{
+       type: String,
+       required: [true, "Please provide your clinic"],
+       trim: true,
+     },
+     
 
     isVerified: {type: Boolean, default: false},
     verificationtoken: {type: String},
     verificationtokenexpires: {type: Date},
 
-  
 },
   {
     timestamps: true,
@@ -91,17 +99,17 @@ const AdminaccountSchema = mongoose.Schema(
 );
 
 
-AdminaccountSchema.plugin(AutoIncrement(mongoose),{
-  inc_field: "adminId",
-  id: "adminId_seq",
+OwneraccountSchema.plugin(AutoIncrement(mongoose),{
+  inc_field: "ownerId",
+  id: "ownerId_seq",
   start_seq: 0
 });
 
 //Hashes the password details before saving to the mongoDB Atlas
-AdminaccountSchema.pre('save', async function(next){
-  if (this.isModified('adminpassword')) {
+OwneraccountSchema.pre('save', async function(next){
+  if (this.isModified('ownerpassword')) {
     const salt = await bcrypt.genSalt(10);
-    this.adminpassword = await bcrypt.hash(this.adminpassword, salt);
+    this.ownerpassword = await bcrypt.hash(this.ownerpassword, salt);
   }
   next();
 
@@ -110,4 +118,4 @@ AdminaccountSchema.pre('save', async function(next){
 });
 
 
-export default mongoose.model("Adminaccount", AdminaccountSchema);
+export default mongoose.model("Owneraccount", OwneraccountSchema);
