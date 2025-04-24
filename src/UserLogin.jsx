@@ -248,7 +248,7 @@ function UserLogin(){
             <label className="font-albertsans font-bold italic text-[#595968] text-[21px]" htmlFor="loginpassword">Password : </label>
             <input className="bg-gray-200 text-[20px] text-gray-600 pl-3 rounded-2xl h-10" placeholder="Enter your password..."  type="password" name="loginpassword" id="loginpassword" value={logindetails.loginpassword} onChange={handleloginchange} required min="6"/></div>
           
-          <div className=" h-[30px] mt-2 flex justify-end items-center pr-2"><p  onClick={() => setshowforgotpasswordform(true)}  className="text-[14px] hover:cursor-pointer hover:scale-105 transition-all duration-300 ease-in-out font-albertsans font-medium text-[#1b5770]">Forgot Password?</p></div>
+          <div className=" h-[30px] mt-2 flex justify-end items-center pr-2"><p   className="text-[14px] hover:cursor-pointer hover:scale-105 transition-all duration-300 ease-in-out font-albertsans font-medium text-[#1b5770]">Forgot Password?</p></div>
 
 
 

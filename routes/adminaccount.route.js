@@ -16,7 +16,7 @@
 
       const adminrouter = express.Router();
 
-      //Retrieve Patient data
+      //Retrieve Admin data
       adminrouter.get("/", getadminaccounts);
       adminrouter.get("/id/:id", getadminaccountbyid);
       adminrouter.get("/adminlastname/:adminlastname", getadminaccountbylastname);
@@ -28,18 +28,18 @@
       adminrouter.get("/check-email/:adminemail", existingemail);
 
 
-      //Create Patient data
+      //Create Admin data
       adminrouter.post("/", createAdmin);
 
-      //Update Patient data
+      //Update Admin data
       adminrouter.put("/:id", updateAdmin);
 
-      //Delete Patient data
+      //Delete Admin data
       adminrouter.delete("/:id", deleteAdmin);
 
 
 
-      //Login Patient
+      //Login Admin
       adminrouter.post("/login", adminlogin);
 
 

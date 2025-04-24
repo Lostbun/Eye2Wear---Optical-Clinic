@@ -5,6 +5,8 @@ import cors from "cors";
 
 import patientrouter from "./routes/patientaccount.route.js";
 import adminrouter from "./routes/adminaccount.route.js";
+import staffrouter from "./routes/staffacount.route.js";
+import ownerrouter from "./routes/owneraccount.route.js";
 const {Connection} = mongoose;
 
 
@@ -42,7 +44,10 @@ app.use(express.urlencoded({limit: '50mb', extended: true}));
 app.use("/api/patientaccounts", patientrouter);
 //Routes
 app.use("/api/adminaccounts", adminrouter);
-
+//Routes
+app.use("/api/staffaccounts", staffrouter);
+//Routes
+app.use("/api/owneraccounts", ownerrouter);
 
 
 

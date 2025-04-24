@@ -8,10 +8,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 
-
-
-
-//Retrieve (All Patient) Controller
+//Retrieve (All Admin) Controller
 export const getadminaccounts = async (req, res) => {
   try {
     const adminacc = await Adminaccount.find({});
@@ -20,6 +17,9 @@ export const getadminaccounts = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+
+
 
 //Retrieve (Single ) Controller
 export const getadminaccountbyid = async (req, res) => {
@@ -138,7 +138,7 @@ export const existingemail = async (req, res) => {
 
 
 
-//Create (Admin) Controller
+//Create (admin) Controller
 export const createAdmin = async (req, res) => {
   try {
     const adminacc = await Adminaccount.create(req.body);
@@ -152,7 +152,7 @@ export const createAdmin = async (req, res) => {
 
 
 
-//Update (Admin) Controller
+//Update (admin) Controller
 export const updateAdmin = async (req, res) => {
   try {
     const { id } = req.params;
@@ -176,7 +176,11 @@ export const updateAdmin = async (req, res) => {
 export const deleteAdmin = async (req, res) => {
   try {
     const { id } = req.params;
-    const adminacc = await Adminaccount.findByIdAndDelete(id, req.body);
+    let adminacc = await Adminaccount.findOneAndDelete({adminId: id});
+    
+    if (!adminacc) {
+      adminacc = await Adminaccount.findByIdAndDelete(id);
+    }
 
     if (!adminacc) {
       return res.status(404).json({ message: "Admin not found" });
@@ -197,8 +201,7 @@ export const deleteAdmin = async (req, res) => {
 
 
 
-
-//Login Admin Controller
+//Login admin Controller
 export const adminlogin = async(req, res) => {
   try{
     const {adminemail,adminpassword} = req.body;
