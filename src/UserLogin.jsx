@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import landingbg2 from "../src/assets/images/landingbg2.png";
 import landinglogodark from  "../src/assets/images/landinglogodark.png";
 import {Link} from "react-router-dom";
-
+import axios from "axios";
 
 
 
@@ -18,7 +18,7 @@ function UserLogin(){
 
 
 
-
+  
 
           const [logindetails, setlogindetails] = useState({
             loginemail:'',
@@ -61,23 +61,63 @@ function UserLogin(){
               const  patientemailcheck = await fetch(`http://localhost:3000/api/patientaccounts/check-email/${logindetails.loginemail}`);
               const  patientemailexist = await  patientemailcheck.json();
 
+              const staffemailcheck = await fetch(`http://localhost:3000/api/staffaccounts/check-email/${logindetails.loginemail}`);
+              const staffemailexist = await staffemailcheck.json();
+
+              const owneremailcheck = await fetch(`http://localhost:3000/api/owneraccounts/check-email/${logindetails.loginemail}`);
+              const owneremailexist = await owneremailcheck.json();
+
               const adminemailcheck = await fetch(`http://localhost:3000/api/adminaccounts/check-email/${logindetails.loginemail}`);
               const adminemailexist = await adminemailcheck.json();
 
-              if(!patientemailexist.exists && !adminemailexist.exists){
+              if(!patientemailexist.exists && !adminemailexist.exists && !staffemailexist.exists && !owneremailexist.exists){
                 throw new Error("Email does not exist");
               }
 
 
-              const userisPatient =  patientemailexist.exists;
-              const loginUrl = userisPatient ? "/api/patientaccounts/login" : "/api/adminaccounts/login";
+              let user = '';
+              let loginUrl = '';
+              let body = {};
 
-              const body = userisPatient ? 
-                {patientemail: logindetails.loginemail,
-                 patientpassword: logindetails.loginpassword
-                }:{
-                 adminemail: logindetails.loginemail,
-                 adminpassword: logindetails.loginpassword};
+
+
+              if(patientemailexist.exists) {
+                user = 'Patient';
+                loginUrl = "/api/patientaccounts/login";
+                body = {
+                  patientemail: logindetails.loginemail,
+                  patientpassword: logindetails.loginpassword 
+                };
+              }
+
+
+              else if (staffemailexist.exists) {
+                user = 'Staff';
+                loginUrl = "/api/staffaccounts/login";
+                body = {
+                  staffemail: logindetails.loginemail,
+                  staffpassword: logindetails.loginpassword 
+                };
+              }
+
+
+              else if (owneremailexist.exists) {
+                user = 'Owner';
+                loginUrl = "/api/owneraccounts/login";
+                body = {
+                  owneremail: logindetails.loginemail,
+                  ownerpassword: logindetails.loginpassword 
+                };
+              }
+
+              else if (adminemailexist.exists) {
+                user = 'Admin';
+                loginUrl = "/api/adminaccounts/login";
+                body = {
+                  adminemail: logindetails.loginemail,
+                  adminpassword: logindetails.loginpassword 
+                };  
+              }
 
               
 
@@ -101,14 +141,14 @@ function UserLogin(){
               
 
               //If the user is patient it will assign token
-              if(userisPatient){
+              if(user  === 'Patient'){
                 localStorage.setItem("patienttoken", data.jsontoken);
                 localStorage.setItem("patientdetails", JSON.stringify(data.patient));
 
                 
                 setloginnotice({
                     text:"Patient Login Successful!",
-                    type:"sucess"
+                    type:"success"
                 });
   
 
@@ -118,22 +158,67 @@ function UserLogin(){
               }
 
 
-              //If the user is admin it will assign token
-              else{
-                localStorage.setItem("admintoken", data.jsontoken);
-                localStorage.setItem("admindetails", JSON.stringify(data.admin));
+              else if(user  === 'Staff'){
+                localStorage.setItem("stafftoken", data.jsontoken);
+                localStorage.setItem("currentuser", JSON.stringify({
+                  type: 'Staff',
+                  name: data.staff.stafffirstname,
+                  profilepicture: data.staff.staffprofilepicture
+                }));
 
+
+                
                 setloginnotice({
-                    text:"Admin Login Successful!",
-                    type:"sucess"
+                    text:"Staff Login Successful!",
+                    type:"success"
                 });
   
-  
-       
+
                 setTimeout(() => {
-                    navigate("/admindashboard");
-                }, 2000);
+                  navigate("/admindashboard");
+              }, 2000);
               }
+
+
+              else if(user  === 'Owner'){
+                localStorage.setItem("ownertoken", data.jsontoken);
+                localStorage.setItem("currentuser", JSON.stringify({
+                  type: 'Owner',
+                  name: data.owner.ownerfirstname,
+                  profilepicture: data.owner.ownerprofilepicture
+                }));
+                
+                setloginnotice({
+                    text:"Owner Login Successful!",
+                    type:"success"
+                });
+  
+
+                setTimeout(() => {
+                  navigate("/admindashboard");
+              }, 2000);
+              }
+
+
+              else if(user  === 'Admin'){
+                localStorage.setItem("admintoken", data.jsontoken);
+                localStorage.setItem("currentuser", JSON.stringify({
+                  type: 'Admin',
+                  name: data.admin.adminfirstname,
+                  profilepicture: data.admin.adminprofilepicture
+                }));
+                
+                setloginnotice({
+                    text:"Admin Login Successful!",
+                    type:"success"
+                });
+  
+
+                setTimeout(() => {
+                  navigate("/admindashboard");
+              }, 2000);
+              }
+
 
               
 
@@ -157,53 +242,63 @@ function UserLogin(){
 
 
       
-{/* 
+ 
 
         const[showforgotpasswordform, setshowforgotpasswordform] = useState(false);
         const[forgotpasswordmessage, setforgotpasswordmessage] = useState({text: '', type:''});
         const[forgotpasswordemail, setforgotpasswordemail] = useState('');
         const[issendingresetlink, setissendingresetlink] = useState(false);
-    
+
+        axios.defaults.withCredentials = true;
         const forgotpassword = async (e) => {
      
          e.preventDefault();
          setissendingresetlink(true);
-         setforgotpasswordmessage({text:'', type:''});
-     
+         setforgotpasswordmessage({text: '', type:''});
+
          try{
-           const response = await fetch('http://localhost:3000/api/patientaccounts/forgot-password',{
-             method: 'POST',
-             headers: {'Content-Type' : 'application/json'},
-             body: JSON.stringify({email: forgotpasswordemail})
-           });
-     
-     
-           const data = await response.json();
-     
-           if(!response.ok) throw new Error(data.message || "Failed to resend forgot-password link");
-     
-           setforgotpasswordmessage({
-             text: "Reset link will be sent to the email",
-             type: "success"
-           });
-     
-           setforgotpasswordemail('');
-     
-         }catch(error){
-           setforgotpasswordmessage({
-             text: error.message || "Failed forgot-password request",
-             type: "error"
-           });
+
+          const res = await axios.post('http://localhost:3000/api/patientaccounts/forgot-password', {patientemail: forgotpasswordemail});
+           
+ 
+  
+            if(res.data.Status === "Success") {
+              setissendingresetlink(true);
+              setforgotpasswordmessage({
+                text: `Reset password link is sent to your email ${forgotpasswordemail}`,
+                type: "success"
+              });
+
+             setTimeout(() => {
+              setshowforgotpasswordform(false);
+              setforgotpasswordemail('');
+              setforgotpasswordmessage({text:'', type: ''});
+             }, 2000); 
+           
+            }
+
+
+         }catch(err){
+
+            setforgotpasswordmessage({
+              text: err.response?.data?.message || "Failed to send reset password link",
+              type: "error"
+            });
+
          }finally{
-             setissendingresetlink(false);
+              setissendingresetlink(false);
          }
+         
+
+
         };
  
-  */}
+  
 
 
 
-
+  
+         
 
 
 
@@ -248,7 +343,7 @@ function UserLogin(){
             <label className="font-albertsans font-bold italic text-[#595968] text-[21px]" htmlFor="loginpassword">Password : </label>
             <input className="bg-gray-200 text-[20px] text-gray-600 pl-3 rounded-2xl h-10" placeholder="Enter your password..."  type="password" name="loginpassword" id="loginpassword" value={logindetails.loginpassword} onChange={handleloginchange} required min="6"/></div>
           
-          <div className=" h-[30px] mt-2 flex justify-end items-center pr-2"><p   className="text-[14px] hover:cursor-pointer hover:scale-105 transition-all duration-300 ease-in-out font-albertsans font-medium text-[#1b5770]">Forgot Password?</p></div>
+          <div className=" h-[30px] mt-2 flex justify-end items-center pr-2"><p  onClick={() => setshowforgotpasswordform(true)} className="text-[14px] hover:cursor-pointer hover:scale-105 transition-all duration-300 ease-in-out font-albertsans font-medium text-[#1b5770]">Forgot Password?</p></div>
 
 
 
@@ -269,7 +364,7 @@ function UserLogin(){
 
 
 
-      {/*    {showforgotpasswordform && (
+        {showforgotpasswordform && (
                          <div className="bg-opacity-0 flex justify-center items-center z-50 fixed inset-0 bg-[#000000af] bg-opacity-50">
 
                            <div className="flex flex-col items  bg-white rounded-2xl w-[600px] h-fit  animate-fadeInUp ">
@@ -278,16 +373,33 @@ function UserLogin(){
                               <div className="flex items-center rounded-tl-2xl rounded-tr-2xl h-[70px] bg-[#125c99]"><i className="ml-3 bx bx-shield-quarter text-[28px] font-albertsans font-bold text-[#f1f1f1] "/><h1 className="ml-2 text-[23px] font-albertsans font-bold text-[#e4e4e4]">Forgot Password</h1></div>
                               <div className="b flex flex-col  items-center  h-fit rounded-br-2xl rounded-bl-2xl">
                                   <div className="px-5 flex flex-col justify-center  h-[130px] w-full"><p className="font-albertsans font-medium text-[20px]">Please enter your registered email below...</p>
+      
+                                  {forgotpasswordmessage.text && (
+                                    <div className={`text-sm ${
+                                      forgotpasswordmessage.type === 'success' ? 'text-green-600' : 'text-red-600'}`}>
+                                    {forgotpasswordmessage.text}</div>
+                                  )}
+
                                   <div className="form-group  mt-5">
                                        <label className="font-albertsans font-bold italic text-[#595968] text-[21px]" htmlFor= "forgotemail">Email :</label>
                                       <input className="bg-gray-200 text-[20px]  text-gray-600 pl-3 rounded-2xl ml-11 h-10" placeholder="Enter your email..." type="email" name= "forgotemail" id="forgotemail" value={forgotpasswordemail} onChange={(e) => setforgotpasswordemail(e.target.value)} required/></div>
                                   </div>        
                                   <div className=" pr-5 flex justify-end  items-center  h-[80px] w-full">
-                                      <div onClick={() => setshowforgotpasswordform(false)}  className="hover:scale-105 hover:cursor-pointer transition-all duration-300 ease-in-out bg-[#363638] rounded-2xl px-6 py-3 mr-1"><span className="font-albertsans text-white font-medium">Cancel</span></div>
+                                      <div onClick={() => {setshowforgotpasswordform(false); setforgotpasswordemail(''); setforgotpasswordmessage({text:'', type: ''});}}  className="hover:scale-105 hover:cursor-pointer transition-all duration-300 ease-in-out bg-[#363638] rounded-2xl px-6 py-3 mr-1"><span className="font-albertsans text-white font-medium">Cancel</span></div>
                     
 
-                                      <button type="submit" disabled={issendingresetlink} className="hover:scale-105 hover:cursor-pointer transition-all duration-300 ease-in-out bg-[#1b5f83] rounded-2xl px-9 py-3 mr-1" style={{ backgroundColor: "#1b5f83",paddingBottom:"10px", paddingTop:"10px", paddingLeft: "30px" , paddingRight: "30px", borderRadius: "12px"}}> 
-                                       <span className="font-albertsans text-white font-medium">{issendingresetlink ? "Sending..." : "Send"}</span>
+                                      <button type="submit" disabled={issendingresetlink} className="hover:scale-105 hover:cursor-pointer transition-all duration-300 ease-in-out bg-[#1b5f83] rounded-2xl px-9 py-3 mr-1 flex items-center justify-center gap-2" style={{ backgroundColor: "#1b5f83",paddingBottom:"10px", paddingTop:"10px", paddingLeft: "30px" , paddingRight: "30px", borderRadius: "12px"}}> 
+                                       {issendingresetlink ? (
+                                        <>
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"  className="text-white animate-spin h-5 w-5 ">
+                                        <circle cx="12" cy="12" stroke="currentColor" className="opacity-25" r="10" strokeWidth="4" ></circle>
+                                        <path fill="currentColor" className="opacity-75" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                        </svg>
+                                        <span className="font-albertsans text-white font-medium">Sending..</span>
+                                        </>
+                                       ):(
+                                        <span className="font-albertsans text-white font-medium">Send</span>
+                                       )}
                                        </button>
 
                                   </div>
@@ -299,7 +411,13 @@ function UserLogin(){
                      )} 
 
 
-*/}
+
+
+
+                  
+      
+
+
 
     </div>
 

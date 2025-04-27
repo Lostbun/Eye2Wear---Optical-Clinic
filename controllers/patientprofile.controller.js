@@ -1,9 +1,11 @@
 /* eslint-disable no-undef */
-import Patientaccount from "../models/patientaccount.js";
+import Patientprofile from "../models/patientprofile.js";
 import bcrypt  from "bcryptjs";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
-import nodemailer from "nodemailer";
+import crypto from "crypto";
+import nodemailer from  'nodemailer';
+
 
 dotenv.config();
 
@@ -12,9 +14,9 @@ dotenv.config();
 
 
 //Retrieve (All Patient) Controller
-export const getpatientaccounts = async (req, res) => {
+export const getpatientprofiles = async (req, res) => {
   try {
-    const patientacc = await Patientaccount.find({});
+    const patientacc = await Patientprofile.find({});
     res.status(200).json(patientacc);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -22,10 +24,10 @@ export const getpatientaccounts = async (req, res) => {
 };
 
 //Retrieve (Single ) Controller
-export const getpatientaccountbyid = async (req, res) => {
+export const getpatientprofilebyid = async (req, res) => {
   try {
     const { id } = req.params;
-    const patientacc = await Patientaccount.findById(id);
+    const patientacc = await Patientprofile.findById(id);
     res.status(200).json(patientacc);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -34,10 +36,10 @@ export const getpatientaccountbyid = async (req, res) => {
 
 
 //Retrieve (Single by lastname ) Controller
-export const getpatientaccountbylastname = async (req, res) => {
+export const getpatientprofilebylastname = async (req, res) => {
   try {
     const { patientlastname } = req.params;
-    const patientacc = await Patientaccount.findOne({patientlastname: patientlastname});
+    const patientacc = await Patientprofile.findOne({patientlastname: patientlastname});
     res.status(200).json(patientacc);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -54,7 +56,7 @@ export const getpatientaccountbylastname = async (req, res) => {
 export const getloggedinpatientacc = async (req, res) => {
   try{
 
-    const patient = await Patientaccount.findById(req.patient.id)
+    const patient = await Patientprofile.findById(req.patient.id)
     .select('-password')
     .lean();
 
@@ -71,7 +73,7 @@ export const getloggedinpatientacc = async (req, res) => {
 
   }catch (error){
 
-    console.error("Failed to fetch patient account details: ", error);
+    console.error("Failed to fetch patient profile details: ", error);
     res.status(500).json({
       message: "Error retrieving patient data",
       error: error.message
@@ -127,7 +129,7 @@ export const existingemail = async (req, res) => {
 
     const patientemail = req.params.patientemail;
 
-    const existingemail = await Patientaccount.findOne({patientemail});
+    const existingemail = await Patientprofile.findOne({patientemail});
     res.json({exists: !!existingemail});
   }
   catch(error){
@@ -141,7 +143,7 @@ export const existingemail = async (req, res) => {
 //Create (Patient) Controller
 export const createPatient = async (req, res) => {
   try {
-    const patientacc = await Patientaccount.create(req.body);
+    const patientacc = await Patientprofile.create(req.body);
     res.status(200).json(patientacc);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -156,13 +158,13 @@ export const createPatient = async (req, res) => {
 export const updatePatient = async (req, res) => {
   try {
     const { id } = req.params;
-    const patientacc = await Patientaccount.findByIdAndUpdate(id, req.body);
+    const patientacc = await Patientprofile.findByIdAndUpdate(id, req.body);
 
     if (!patientacc) {
       return res.status(404).json({ message: "Patient not found" });
     }
 
-    const updatedpatientacc = await Patientaccount.findById(id);
+    const updatedpatientacc = await Patientprofile.findById(id);
     res.status(200).json(updatedpatientacc);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -176,10 +178,10 @@ export const updatePatient = async (req, res) => {
 export const deletePatient = async (req, res) => {
   try {
     const { id } = req.params;
-    let patientacc = await Patientaccount.findOneAndDelete({patientId: id});
+    let patientacc = await Patientprofile.findOneAndDelete({patientId: id});
     
     if (!patientacc) {
-      patientacc = await Patientaccount.findByIdAndDelete(id);
+      patientacc = await Patientprofile.findByIdAndDelete(id);
     }
 
     if (!patientacc) {
@@ -207,7 +209,7 @@ export const patientlogin = async(req, res) => {
   try{
     const {patientemail,patientpassword} = req.body;
 
-    const patient = await Patientaccount.findOne({patientemail}).select('+patientpassword');
+    const patient = await Patientprofile.findOne({patientemail});
     if(!patient) {
       return res.status(401).json({message:"Login Error, Invalid Credentials"});
     }
@@ -258,104 +260,69 @@ export const patientlogin = async(req, res) => {
 
 
 
-//FORGOT PASSWORD USED IN USERLOGIN.JSX
-
-export const forgotpassword = async(req, res) => {
-
-try{
-  const {patientemail} = req.body;
-  const patient = await Patientaccount.findOne({patientemail});
-
-
-  if(!patient){
-    return res.status(404).json({Status: "Error", message: "Account does not exist"});
-  }
 
 
 
+export const patientforgotpassword = async (req, res) => {
+  try {
+    const {email} = req.body;
 
+    const patient = await Patientprofile.findOne({patientemail: email});
 
-        const forgottoken = jwt.sign({id: patient._id}, process.env.JWT_KEY, {expiresIn: "1d"})
-     
-          const transporter = nodemailer.createTransport({
-            service: 'gmail',
-            auth:{
-              user: process.env.EMAIL_USER,
-              pass: process.env.EMAIL_PASS
-            }
-          });
-
-
-          const mailoptions = {
-            from: process.env.EMAIL_USER,
-            to: patientemail,
-            subject: "Eye2Wear - Password Reset",
-            html: `<p>Click the provided link to reset your password: 
-            <a href="http://localhost:5173/reset-password/${patient._id}/${forgottoken}">
-            Reset Password</a></p>`
-          };
-
-          
-          await transporter.sendMail(mailoptions);
-          res.status(200).json({Status: "Success"});
-          
-
-        }catch(error){
-          console.error(error);
-          res.status(500).json({Status: "Error", message: "Server error"});
-        }
-
-      };
-
-
-
-
-
-
-  //RESET PASSWORD
-
-  export const resetpassword = async (req,res) => {
-    const {id, token} = req.params;
-    const {newpassword} = req.body;
-
-    try{
-      const decoded = jwt.verify(token, process.env.JWT_KEY);
-      console.log('Extracted token: ', decoded);
-
-      if(decoded.id !== id){
-        console.error("ID not matched: ", decoded.id, 'and', id);
-        return res.status(401).json({Status: "Error", message:"Invalid user token"});
-      }
-
-      if(!newpassword || newpassword.length < 6) {
-        return res.status(400).json({Status: "Error", message:"Password must be at least 6 characters"});
-      }
-
-      const patientaccount = await Patientaccount.findById(id);
-      if(!patientaccount){
-        console.error("Patient does not exist: ", id);
-        return res.status(400).json({Status: "Error", message:"Patient account not found"});
-      }
-
-      patientaccount.patientpassword = newpassword;
-      await patientaccount.save();
-      console.log("Password has been successfully reset! ", id);
-      return res.status(200).json({Status: "Success", message:"Account password successfully updated!"});
-
-
-
-    }catch(error){
-      
-      console.error("Password Reset Failed: ", error);
-      if(error.name ==="JsonWebTokenError"){
-        return res.status(401).json({Status: "Error", message:"Invalid password reset link"});
-      }
-
-      if(error.name ==="TokenExpiredError"){
-        return res.status(401).json({Status: "Error", message:"Password reset link is already expired"});
-      }
-
-      return res.status(500).json({Status: "Error", message:"Internal Server Error!"});
+    if(!patient) {
+        return res.status(200).json({
+          success: true,
+          message: 'You will receive an email if the email is already registered in our system'
+        });
     }
 
-  };
+    const token = crypto.randomBytes(20).toString('hex');
+    patient.resetpasswordtoken = token;
+    patient.resetpasswordexpires = Date.now() + 3600000;
+    await patient.save();
+
+
+    const passwordreseturl = `${process.env.FRONTEND_URL}/reset-password?token=${token}`;
+
+    const processtransport = nodemailer.createTransport({
+      service: 'Gmail',
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS
+      }
+    });
+
+
+    await processtransport.sendMail({
+      to: patient.patientemail,
+      subject: "Password Reset",
+      html:`<p>You Have requested for password reset. Please Click the link provided.</p>
+            <a href="${passwordreseturl}">Reset Password</a>
+            <p>Link will expire in 1hr.</p>`
+            
+    });
+
+
+    res.status(200).json({
+      success: true,
+      message: "Reset link sent if email is registered"
+    });
+
+  }catch(error){
+    console.error("Password reset failed :", error);
+    res.status(500).json({
+      success:false,
+      message:"Failed Requests"
+    });
+  }
+}
+
+
+
+
+
+
+
+
+
+

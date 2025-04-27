@@ -13,19 +13,12 @@ export const useAuth = () => {
 
     
 
-    const handlelogout = () => {
-
-        if(localStorage.getItem("ownertoken")){
-            if (window.confirm("Are you sure you want to log out?")){
-        
-              localStorage.removeItem("ownertoken");
-              localStorage.removeItem("ownerdetails")
-              navigate("/userlogin");
-          
-            }}else{
-              navigate("/userlogin");
-            }
-        
+    const ownerlogout = () => {
+        if (window.confirm("Are you sure you want to logout?")) {
+            localStorage.removeItem("ownertoken");
+            localStorage.removeItem("ownerdetails");
+            navigate("/userlogin");
+        }
     };
 
 
@@ -108,7 +101,7 @@ export const useAuth = () => {
 
     },);
 
-    return {/*monitortokenexpiration,*/fetchownerdetails, handlelogout};
+    return {/*monitortokenexpiration,*/fetchownerdetails, ownerlogout};
 
 
 

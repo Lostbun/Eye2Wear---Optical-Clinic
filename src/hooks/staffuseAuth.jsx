@@ -13,21 +13,13 @@ export const useAuth = () => {
 
     
 
-    const handlelogout = () => {
-
-        if(localStorage.getItem("stafftoken")){
-            if (window.confirm("Are you sure you want to log out?")){
-        
-              localStorage.removeItem("stafftoken");
-              localStorage.removeItem("staffdetails")
-              navigate("/userlogin");
-          
-            }}else{
-              navigate("/userlogin");
-            }
-        
+    const stafflogout = () => {
+        if (window.confirm("Are you sure you want to logout?")) {
+            localStorage.removeItem("stafftoken");
+            localStorage.removeItem("staffdetails");
+            navigate("/userlogin");
+        }
     };
-
 
 
 
@@ -108,7 +100,7 @@ export const useAuth = () => {
 
     },);
 
-    return {/*monitortokenexpiration,*/fetchstaffdetails, handlelogout};
+    return {/*monitortokenexpiration,*/fetchstaffdetails, stafflogout};
 
 
 

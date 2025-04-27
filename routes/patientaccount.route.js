@@ -1,7 +1,8 @@
 import express from "express";
+
 import {
       patientlogin,
-
+      resetpassword,
       getpatientaccounts,
       getpatientaccountbyid,
       getloggedinpatientacc,
@@ -9,9 +10,10 @@ import {
       getpatientaccountbylastname,
       existingemail, 
       createPatient,
-      updatePatient, 
+      updatePatient,
+      forgotpassword,
       deletePatient,
-      patientforgotpassword } from "../controllers/patientaccount.controller.js";
+     } from "../controllers/patientaccount.controller.js";
       
 
 
@@ -19,6 +21,16 @@ import {verifyloggedinadminacc} from "../controllers/adminaccount.controller.js"
 
 
 const patientrouter = express.Router();
+
+
+
+
+    
+
+
+
+
+
 
 //Retrieve Patient data
 patientrouter.get("/", getpatientaccounts);
@@ -34,7 +46,6 @@ patientrouter.get("/check-email/:patientemail", existingemail);
 
 //Create Patient data
 patientrouter.post("/", createPatient);
-patientrouter.post("/forgot-password", patientforgotpassword);
 
 //Update Patient data
 patientrouter.put("/:id", updatePatient);
@@ -46,6 +57,8 @@ patientrouter.delete("/:id", verifyloggedinadminacc, deletePatient);
 
 //Login Patient
 patientrouter.post("/login", patientlogin);
+patientrouter.post('/forgot-password', forgotpassword );
+patientrouter.post('/reset-password/:id/:token', resetpassword );
 
 
 

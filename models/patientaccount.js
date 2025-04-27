@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 import AutoIncrement from "mongoose-sequence";
+import { Sankey } from "recharts";
 
 
 
@@ -49,7 +50,7 @@ const PatientaccountSchema = mongoose.Schema(
       type: String,
       required: [true, "Please provide your password"],
       minlength: 6,
-      maxlength: 30,
+  
     },
 
 
@@ -93,8 +94,8 @@ const PatientaccountSchema = mongoose.Schema(
     verificationtoken: {type: String},
     verificationtokenexpires: {type: Date},
  
-    resetpasswordtoken: {type: String},
-    resetpasswordexpires: {type: Date}
+    //resetpasswordtoken: {type: String},
+ //   resetpasswordexpires: {type: Date}
 
 
 },
@@ -130,17 +131,20 @@ PatientaccountSchema.post('save', function(error, doc, next){
 
 
 
-//Hashes the password details before saving to the mongoDB Atlas
 PatientaccountSchema.pre('save', async function(next){
-  if (this.isModified('patientpassword')) {
-    const salt = await bcrypt.genSalt(10);
-    this.patientpassword = await bcrypt.hash(this.patientpassword, salt);
+
+  if(this.isModified('patientpassword')){
+    if(!this.patientpassword.startsWith('$2b$')){
+      const salt = await bcrypt.genSalt(12);
+      this.patientpassword = await bcrypt.hash(this.patientpassword,salt);
+    }
   }
   next();
 
-
-
 });
+
+
+
 
 
 export default mongoose.model("Patientaccount", PatientaccountSchema);

@@ -171,11 +171,15 @@ export const updateOwner = async (req, res) => {
 
 
 
-//Delete (owner) Controller
-export const deleteOwner = async (req, res) => {
+//Delete (Owner) Controller
+export const deleteOwner= async (req, res) => {
   try {
     const { id } = req.params;
-    const owneracc = await Owneraccount.findByIdAndDelete(id, req.body);
+    let owneracc = await Owneraccount.findOneAndDelete({ownerId: id});
+    
+    if (!owneracc) {
+      owneracc = await Owneraccount.findByIdAndDelete(id);
+    }
 
     if (!owneracc) {
       return res.status(404).json({ message: "Owner not found" });
@@ -186,8 +190,6 @@ export const deleteOwner = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
-
-
 
 
 
