@@ -2,7 +2,9 @@ import React, { useState,useRef, useEffect, useCallback } from "react";
 import { Link} from "react-router-dom";
 
 import landinglogo from "../src/assets/images/landinglogo.png";
-import { useAuth } from "./hooks/adminuseAuth";
+import { useAuth as useAdminAuth} from "./hooks/adminuseAuth";
+import { useAuth as useStaffAuth} from "./hooks/staffuseAuth";
+import { useAuth as useOwnerAuth} from "./hooks/owneruseAuth";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import bautistalogo from"../src/assets/images/bautistalogo.png";
 import ambherlogo from"../src/assets/images/ambherlogo.png";
@@ -31,22 +33,70 @@ function AdminDashboard(){
 
   
   //Retrieveing Data from useAuth Hook
-  const {handlelogout, fetchadmindetails} = useAuth();
+  const {stafflogout, fetchstaffdetails} = useStaffAuth();
+  const {ownerlogout, fetchownerdetails} = useOwnerAuth();
+  const {adminlogout, fetchadmindetails} = useAdminAuth();
+
+
+  const currentusertoken = localStorage.getItem("stafftoken") ||
+                           localStorage.getItem("ownertoken") ||
+                           localStorage.getItem("admintoken");
+
+
+
+  
+  const currentuserloggedin = localStorage.getItem("stafftoken") ? "Staff" :
+                              localStorage.getItem("ownertoken") ? "Owner" :
+                              localStorage.getItem("admintoken") ? "Admin" : null;
+
+
+  const handlelogout = () => {
+    if(currentuserloggedin === "Admin") adminlogout();
+    else if(currentuserloggedin === "Staff") stafflogout();
+    else if (currentuserloggedin === "Owner") ownerlogout();
+  }                           
+  
+
+
+  
   useEffect(() => {
-    const loadadmin = async () => {
-      const data = await fetchadmindetails();
+    const loaduser = async () => {
+    let data;
 
-      if(data){
-
-        setadminfirstname(data.adminfirstname || '');
-        setadminprofilepicture(data.adminprofilepicture || '');
-
-
+      if(currentuserloggedin === "Admin"){
+        data = await fetchadmindetails();
+        
+        if(data) {
+          setadminfirstname(data.adminfirstname || '');
+          setadminprofilepicture(data.adminprofilepicture || '');
+        }
       }
+
+
+      else if(currentuserloggedin === "Staff"){
+        data = await fetchstaffdetails();
+        
+        if(data) {
+          setadminfirstname(data.stafffirstname || '');
+          setadminprofilepicture(data.staffprofilepicture || '');
+        }
+      }
+
+      else if(currentuserloggedin === "Owner"){
+        data = await fetchownerdetails();
+        
+        if(data) {
+          setadminfirstname(data.ownerfirstname || '');
+          setadminprofilepicture(data.ownerprofilepicture || '');
+        }
+      }
+
+
+
     };
 
-    loadadmin();
-  }, [fetchadmindetails]);
+    loaduser();
+  }, [fetchadmindetails, fetchownerdetails, fetchstaffdetails, currentuserloggedin]);
 
 
 
@@ -202,7 +252,7 @@ function AdminDashboard(){
 
           const fetchresponse = await fetch('/api/patientaccounts', {
             headers: {
-              'Authorization': `Bearer ${localStorage.getItem('admintoken')}`
+              'Authorization': `Bearer ${currentusertoken}`
             }
           });
           
@@ -547,7 +597,7 @@ function AdminDashboard(){
             method: "POST",
             headers: {
               "Content-Type":"application/json",
-              'Authorization': `Bearer ${localStorage.getItem('admintoken')}`
+              'Authorization': `Bearer ${currentusertoken}`
             },
             body: JSON.stringify(patientaccsubmission)
       });
@@ -602,7 +652,7 @@ function AdminDashboard(){
         const response = await fetch(`/api/patientaccounts/${selectedpatientaccount.id}`,{
           method: 'DELETE',
           headers:{
-            'Authorization': `Bearer ${localStorage.getItem('admintoken')}`
+            'Authorization': `Bearer ${currentusertoken}`
           }
         });
 
@@ -789,7 +839,7 @@ const [showaddstaffdialog, setshowaddstaffdialog] = useState(false);
 
           const fetchresponse = await fetch('/api/staffaccounts', {
             headers: {
-              'Authorization': `Bearer ${localStorage.getItem('admintoken')}`
+              'Authorization': `Bearer ${currentusertoken}`
             }
           });
           
@@ -1153,7 +1203,7 @@ const [showaddstaffdialog, setshowaddstaffdialog] = useState(false);
             method: "POST",
             headers: {
               "Content-Type":"application/json",
-              'Authorization': `Bearer ${localStorage.getItem('admintoken')}`
+              'Authorization': `Bearer ${currentusertoken}`
             },
             body: JSON.stringify(staffaccsubmission)
       });
@@ -1208,7 +1258,7 @@ const [showaddstaffdialog, setshowaddstaffdialog] = useState(false);
         const response = await fetch(`/api/staffaccounts/${selectedstaffaccount.id}`,{
           method: 'DELETE',
           headers:{
-            'Authorization': `Bearer ${localStorage.getItem('admintoken')}`
+            'Authorization': `Bearer ${currentusertoken}`
           }
         });
 
@@ -1384,7 +1434,7 @@ const [showaddstaffdialog, setshowaddstaffdialog] = useState(false);
   
             const fetchresponse = await fetch('/api/owneraccounts', {
               headers: {
-                'Authorization': `Bearer ${localStorage.getItem('admintoken')}`
+                'Authorization': `Bearer ${currentusertoken}`
               }
             });
             
@@ -1750,7 +1800,7 @@ const [showaddstaffdialog, setshowaddstaffdialog] = useState(false);
               method: "POST",
               headers: {
                 "Content-Type":"application/json",
-                'Authorization': `Bearer ${localStorage.getItem('admintoken')}`
+                'Authorization': `Bearer ${currentusertoken}`
               },
               body: JSON.stringify(owneraccsubmission)
         });
@@ -1805,7 +1855,7 @@ const [showaddstaffdialog, setshowaddstaffdialog] = useState(false);
           const response = await fetch(`/api/owneraccounts/${selectedowneraccount.id}`,{
             method: 'DELETE',
             headers:{
-              'Authorization': `Bearer ${localStorage.getItem('admintoken')}`
+              'Authorization': `Bearer ${currentusertoken}`
             }
           });
   
@@ -1987,7 +2037,7 @@ useEffect(() => {
 
         const fetchresponse = await fetch('/api/adminaccounts', {
           headers: {
-            'Authorization': `Bearer ${localStorage.getItem('admintoken')}`
+            'Authorization': `Bearer ${currentusertoken}`
           }
         });
         
@@ -2349,7 +2399,7 @@ const adminhandlechange = (e) => {
           method: "POST",
           headers: {
             "Content-Type":"application/json",
-            'Authorization': `Bearer ${localStorage.getItem('admintoken')}`
+            'Authorization': `Bearer ${currentusertoken}`
           },
           body: JSON.stringify(adminaccsubmission)
     });
@@ -2404,7 +2454,7 @@ const adminhandlechange = (e) => {
       const response = await fetch(`/api/adminaccounts/${selectedadminaccount.id}`,{
         method: 'DELETE',
         headers:{
-          'Authorization': `Bearer ${localStorage.getItem('admintoken')}`
+          'Authorization': `Bearer ${currentusertoken}`
         }
       });
 
@@ -2525,8 +2575,6 @@ const adminhandlechange = (e) => {
 
 
 
-
-
   return (
     <>
 
@@ -2552,14 +2600,10 @@ const adminhandlechange = (e) => {
 
 
 
-
-    {localStorage.getItem ("admintoken")? (
-
-      
+{currentusertoken ? (
     <div className="relative">
     <div id="profile" onClick={showlogout}  className="ml-3  flex justify-center items-center  bg-[#fbfbfb00] rounded-full p-1 hover:cursor-pointer hover:scale-105 transition-all">
      <img src={adminprofilepicture || 'default-profile.png'} alt="Profile" className="h-10 w-10 rounded-full"></img>
-
     </div>
 
     {showlogoutbtn && (
@@ -2570,18 +2614,21 @@ const adminhandlechange = (e) => {
       )}
     </div>
 
+
+) : (   <Link to="/userlogin">
+  <div className="ml-3  flex justify-center items-center p-3 bg-[#027bbf] rounded-2xl hover:cursor-pointer hover:scale-105 transition-all" onClick={handlelogout}>
+  <i className="bx bx-user-circle mt-1 pr-2 font-semibold text-white text-[17px]"/>
+  <p className="font-semibold text-white text-[17px]">Login</p>
+</div>
+</Link>)}
+
     
        
-    ):(
-      <Link to="/userlogin">
-         <div className="ml-3  flex justify-center items-center p-3 bg-[#027bbf] rounded-2xl hover:cursor-pointer hover:scale-105 transition-all" onClick={handlelogout}>
-         <i className="bx bx-user-circle mt-1 pr-2 font-semibold text-white text-[17px]"/>
-         <p className="font-semibold text-white text-[17px]">Login</p>
-       </div>
-      </Link>
-    )
+ 
+   
+
   
-  }
+
 
   
 
@@ -2626,6 +2673,7 @@ const adminhandlechange = (e) => {
           
               <div className="group relative mt-5" onClick={() => showdashboard('summaryoverview')}><div className={`hover:bg-[#454545] hover:rounded-2xl  hover:cursor-pointer rounded-3xl mr-2 transition-all duration-300 ease-in-out flex items-center justify-center w-fit overflow-hidden ${activedashboard ==='summaryoverview' ? 'bg-[#454545] rounded-2xl' :''}`}><i className={`bx bx-list-ul  p-3.5    text-[#cacacf] hover:text-white text-[27px]${activedashboard ==='summaryoverview' ? 'bg-[#454545] rounded-2xl text-white text-[27px]' :''}`}></i>   <span className={`text-[16px] text-white font-semibold font-albertsans transition-all duration-300 ease-in-out whitespace-nowrap overflow-hidden ${sidebarexpanded ? 'opacity-100 w-auto ml-2 mr-2 animate-slideIn' : 'opacity-0 w-0 animate-slideOut'}`}>Summary Overview</span>  {!sidebarexpanded && (<span className="pointer-events-none absolute  p-4 rounded-2xl ml-4 left-full text-white font-albertsans font-semibold text-[16px] top-1/2 transform -translate-y-1/2  bg-[#2b2a2a]   whitespace-nowrap  group-hover:opacity-100 group-hover:translate-x-0  transition-all duration-300 ease-in-out opacity-0 -translate-x-2 ">Summary Overview</span>)}  </div></div>
               <div className="group relative" onClick={() => showdashboard('accountmanagement')}><div className={`hover:bg-[#454545] hover:rounded-2xl  hover:cursor-pointer rounded-3xl transition-all duration-300 ease-in-out flex items-center justify-center w-fit overflow-hidden ${activedashboard ==='accountmanagement' ? 'bg-[#454545] rounded-2xl' :''}`}><i className={`bx bxs-user-account  p-3.5    text-[#cacacf] hover:text-white text-[27px]${activedashboard ==='accountmanagement' ? 'bg-[#454545] rounded-2xl text-white text-[27px]' :''}`}></i>  <span className={`text-[16px] text-white font-semibold font-albertsans transition-all duration-300 ease-in-out whitespace-nowrap overflow-hidden ${sidebarexpanded ? 'opacity-100 w-auto ml-2 mr-2 animate-slideIn' : 'opacity-0 w-0 animate-slideOut'}`}>Account Management</span>  {!sidebarexpanded && (<span className="pointer-events-none absolute p-4 rounded-2xl ml-4 left-full text-white font-albertsans font-semibold text-[16px] top-1/2 transform -translate-y-1/2  bg-[#2b2a2a]   whitespace-nowrap  group-hover:opacity-100 group-hover:translate-x-0  transition-all duration-300 ease-in-out opacity-0 -translate-x-2 ">Account Management</span>)}  </div></div>
+              <div className="group relative" onClick={() => showdashboard('profileinformation')}><div className={`hover:bg-[#454545] hover:rounded-2xl  hover:cursor-pointer rounded-3xl transition-all duration-300 ease-in-out flex items-center justify-center w-fit overflow-hidden  ${activedashboard ==='profileinformation' ? 'bg-[#454545] rounded-2xl' :''}`}><i className={`bx bxs-user-detail  p-3.5    text-[#cacacf] hover:text-white text-[27px]${activedashboard ==='profileinformation' ? 'bg-[#454545] rounded-2xl text-white text-[27px]' :''}`}></i>  <span className={`text-[16px] text-white font-semibold font-albertsans transition-all duration-300 ease-in-out whitespace-nowrap overflow-hidden ${sidebarexpanded ? 'opacity-100 w-auto ml-2 mr-2 animate-slideIn' : 'opacity-0 w-0 animate-slideOut'}`}>Profile Information</span>  {!sidebarexpanded && (<span className=" pointer-events-none absolute p-4 rounded-2xl ml-4 left-full text-white font-albertsans font-semibold text-[16px] top-1/2 transform -translate-y-1/2  bg-[#2b2a2a]   whitespace-nowrap  group-hover:opacity-100 group-hover:translate-x-0  transition-all duration-300 ease-in-out opacity-0 -translate-x-2 ">Profile Information</span>)}  </div></div>
               <div className="group relative" onClick={() => showdashboard('appointmentmanagement')}><div className={`hover:bg-[#454545] hover:rounded-2xl  hover:cursor-pointer rounded-3xl transition-all duration-300 ease-in-out flex items-center justify-center w-fit overflow-hidden  ${activedashboard ==='appointmentmanagement' ? 'bg-[#454545] rounded-2xl' :''}`}><i className={`bx bxs-calendar  p-3.5    text-[#cacacf] hover:text-white text-[27px]${activedashboard ==='appointmentmanagement' ? 'bg-[#454545] rounded-2xl text-white text-[27px]' :''}`}></i>  <span className={`text-[16px] text-white font-semibold font-albertsans transition-all duration-300 ease-in-out whitespace-nowrap overflow-hidden ${sidebarexpanded ? 'opacity-100 w-auto ml-2 mr-2 animate-slideIn' : 'opacity-0 w-0 animate-slideOut'}`}>Appointment Management</span>  {!sidebarexpanded && (<span className=" pointer-events-none absolute p-4 rounded-2xl ml-4 left-full text-white font-albertsans font-semibold text-[16px] top-1/2 transform -translate-y-1/2  bg-[#2b2a2a]   whitespace-nowrap  group-hover:opacity-100 group-hover:translate-x-0  transition-all duration-300 ease-in-out opacity-0 -translate-x-2 ">Appointment Management</span>)}  </div></div>
               <div className="group relative" onClick={() => showdashboard('medicalrecords')}><div className={`hover:bg-[#454545] hover:rounded-2xl  hover:cursor-pointer rounded-3xl transition-all duration-300 ease-in-out flex items-center justify-center w-fit overflow-hidden  ${activedashboard ==='medicalrecords' ? 'bg-[#454545] rounded-2xl' :''}`}><i className={`bx bxs-data  p-3.5    text-[#cacacf] hover:text-white text-[27px]${activedashboard ==='medicalrecords' ? 'bg-[#454545] rounded-2xl text-white text-[27px]' :''}`}></i>  <span className={`text-[16px] text-white font-semibold font-albertsans transition-all duration-300 ease-in-out whitespace-nowrap overflow-hidden ${sidebarexpanded ? 'opacity-100 w-auto ml-2 mr-2 animate-slideIn' : 'opacity-0 w-0 animate-slideOut'}`}>Medical Records</span>  {!sidebarexpanded && (<span className="pointer-events-none absolute p-4 rounded-2xl ml-4 left-full text-white font-albertsans font-semibold text-[16px] top-1/2 transform -translate-y-1/2  bg-[#2b2a2a]   whitespace-nowrap  group-hover:opacity-100 group-hover:translate-x-0  transition-all duration-300 ease-in-out opacity-0 -translate-x-2 ">Medical Records</span>)}  </div></div>
               <div className="group relative" onClick={() => showdashboard('inventorymanagement')}><div className={`hover:bg-[#454545] hover:rounded-2xl  hover:cursor-pointer rounded-3xl transition-all duration-300 ease-in-out flex items-center justify-center w-fit overflow-hidden  ${activedashboard ==='inventorymanagement' ? 'bg-[#454545] rounded-2xl' :''}`}><i className={`bx bxs-package   p-3.5    text-[#cacacf] hover:text-white text-[27px]${activedashboard ==='inventorymanagement' ? 'bg-[#454545] rounded-2xl text-white text-[27px]' :''}`}></i>  <span className={`text-[16px] text-white font-semibold font-albertsans transition-all duration-300 ease-in-out whitespace-nowrap overflow-hidden ${sidebarexpanded ? 'opacity-100 w-auto ml-2 mr-2 animate-slideIn' : 'opacity-0 w-0 animate-slideOut'}`}>Inventory Management</span>  {!sidebarexpanded && (<span className="pointer-events-none absolute p-4 rounded-2xl ml-4 left-full text-white font-albertsans font-semibold text-[16px] top-1/2 transform -translate-y-1/2  bg-[#2b2a2a]   whitespace-nowrap  group-hover:opacity-100 group-hover:translate-x-0  transition-all duration-300 ease-in-out opacity-0 -translate-x-2 ">Inventory Management</span>)}  </div></div>
@@ -2662,8 +2710,11 @@ const adminhandlechange = (e) => {
 
 
 
-
-            {/* Summary Overview */}{/* Summary Overview */}{/* Summary Overview */}{/* Summary Overview */}{/* Summary Overview */}
+{/* Summary Overview */}{/* Summary Overview */}{/* Summary Overview */}{/* Summary Overview */}{/* Summary Overview */}
+{/* Summary Overview */}{/* Summary Overview */}{/* Summary Overview */}{/* Summary Overview */}{/* Summary Overview */}
+{/* Summary Overview */}{/* Summary Overview */}{/* Summary Overview */}{/* Summary Overview */}{/* Summary Overview */}
+{/* Summary Overview */}{/* Summary Overview */}{/* Summary Overview */}{/* Summary Overview */}{/* Summary Overview */}
+{/* Summary Overview */}{/* Summary Overview */}{/* Summary Overview */}{/* Summary Overview */}{/* Summary Overview */}
               { activedashboard === 'summaryoverview' && ( <div id="summaryoverview" className="   flex justify-center items-center w-[100%] h-[100%] rounded-2xl" > 
                 
                   {/* Left */}
@@ -2770,20 +2821,15 @@ const adminhandlechange = (e) => {
 
                 
                  </div> )}
-            {/*End of Summary Overview */}{/*End of Summary Overview */}{/*End of Summary Overview */}{/*End of Summary Overview */}     
 
 
 
 
-
-
-
-
-
-
-
-
-              {/*Account Management*/}{/*Account Management*/}{/*Account Management*/}{/*Account Management*/}
+{/*Account Management*/}{/*Account Management*/}{/*Account Management*/}{/*Account Management*/}
+{/*Account Management*/}{/*Account Management*/}{/*Account Management*/}{/*Account Management*/}
+{/*Account Management*/}{/*Account Management*/}{/*Account Management*/}{/*Account Management*/}
+{/*Account Management*/}{/*Account Management*/}{/*Account Management*/}{/*Account Management*/}
+{/*Account Management*/}{/*Account Management*/}{/*Account Management*/}{/*Account Management*/}
               { activedashboard === 'accountmanagement' && ( <div id="accountmanagement" className="pl-5 pr-5 pb-4 pt-4 transition-all duration-300  ease-in-out border-1 bg-white border-gray-200 shadow-lg w-[100%] h-[100%] rounded-2xl" >   
 
                 <div className="flex items-center"><i className="bx bxs-user-account text-[#184d85] text-[25px] mr-2"/> <h1 className=" font-albertsans font-bold text-[#184d85] text-[25px]">Account Management</h1></div>
@@ -3768,40 +3814,19 @@ const adminhandlechange = (e) => {
 
                  </div> )}
 
-                  
-
-                 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-                 
-                  { activedashboard === 'appointmentmanagement' && ( <div id="appointmentmanagement" className="border-2 border-violet-500 w-[100%] h-[100%] rounded-2xl" >   </div> )}
-                  { activedashboard === 'medicalrecords' && ( <div id="medicalrecords" className="border-2 border-yellow-500 w-[100%] h-[100%] rounded-2xl" >   </div> )}
-                  { activedashboard === 'inventorymanagement' && ( <div id="inventorymanagement" className="border-2 border-orange-500 w-[100%] h-[100%] rounded-2xl" > sadasd8 </div> )}
-                  { activedashboard === 'billingsandorders' && ( <div id="billingsandorders" className="border-2 border-red-500 w-[100%] h-[100%] rounded-2xl" > asdas7  </div> )}
-                  { activedashboard === 'communicationcenter' && ( <div id="communicationcenter" className="border-2 border-red-500 w-[100%] h-[100%] rounded-2xl" > sadasd6  </div> )}
-                  { activedashboard === 'reportingandanalytics' && ( <div id="reportingandanalytics" className="border-2 border-red-500 w-[100%] h-[100%] rounded-2xl" >  asdasd5 </div> )}
-                  { activedashboard === 'clinicmanagement' && ( <div id="clinicmanagement" className="border-2 border-red-500 w-[100%] h-[100%] rounded-2xl" > asdsad4  </div> )}
-                
-
+              
               </div> )}
-              {/*End of Account Management*/}{/*End of Account Management*/}{/*End of Account Management*/}
 
+
+
+
+{/*Profile Information*/}{/*Profile Information*/}{/*Profile Information*/}{/*Profile Information*/}
+{/*Profile Information*/}{/*Profile Information*/}{/*Profile Information*/}{/*Profile Information*/}
+{/*Profile Information*/}{/*Profile Information*/}{/*Profile Information*/}{/*Profile Information*/}
+{/*Profile Information*/}{/*Profile Information*/}{/*Profile Information*/}{/*Profile Information*/}
+{/*Profile Information*/}{/*Profile Information*/}{/*Profile Information*/}{/*Profile Information*/}
+
+              { activedashboard === 'profileinformation' && ( <div id="profileinformation" className="border-2 border-violet-500 w-[100%] h-[100%] rounded-2xl" >   </div> )}
 
 
 
@@ -3824,22 +3849,7 @@ const adminhandlechange = (e) => {
               { activedashboard === 'communicationcenter' && ( <div id="communicationcenter" className="border-2 border-red-500 w-[100%] h-[100%] rounded-2xl" > sadasd6  </div> )}
               { activedashboard === 'reportingandanalytics' && ( <div id="reportingandanalytics" className="border-2 border-red-500 w-[100%] h-[100%] rounded-2xl" >  asdasd5 </div> )}
               { activedashboard === 'clinicmanagement' && ( <div id="clinicmanagement" className="border-2 border-red-500 w-[100%] h-[100%] rounded-2xl" > asdsad4  </div> )}
-
-              
-              
-              
-              
-              {/* System Administration */}{/* System Administration */}{/* System Administration */}{/* System Administration */}
-              { activedashboard === 'sytemadministration' && ( <div id="sytemadministration" className=" w-[100%] h-[100%] rounded-2xl p" >
-              </div> )}
-              {/*End System Administration */}{/*End System Administration */}{/*End System Administration */}{/*End System Administration */}  
-
-
-
-
-
-
-
+              { activedashboard === 'sytemadministration' && ( <div id="sytemadministration" className=" w-[100%] h-[100%] rounded-2xl p" ></div> )}
               { activedashboard === 'wishlistandproductfeatures' && ( <div id="wishlistandproductfeatures" className="border-2 border-red-500 w-[100%] h-[100%] rounded-2xl" >  sadasd2  </div> )}
               { activedashboard === 'mappingintegration' && ( <div id="mappingintegration" className="border-2 border-red-500 w-[100%] h-[100%] rounded-2xl" >  sadsad1  </div> )}
 

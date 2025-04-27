@@ -7,6 +7,12 @@ import patientrouter from "./routes/patientaccount.route.js";
 import adminrouter from "./routes/adminaccount.route.js";
 import staffrouter from "./routes/staffacount.route.js";
 import ownerrouter from "./routes/owneraccount.route.js";
+
+
+
+
+
+
 const {Connection} = mongoose;
 
 
@@ -32,8 +38,10 @@ app.use(cors({
   origin: 'http://localhost:5173', //The frontend URL
   credentials: true,
   methods:['GET','POST','PUT','DELETE'],
-  allowedHeaders:['Content-Type', 'Authorization']
+  allowedHeaders:['Content-Type', 'Authorization', 'X-Requested-With']
 }));
+
+
 //app.use(express.json());
 //app.use(bodyParser.json());
 app.use(express.json({limit: '50mb'}));
@@ -48,6 +56,7 @@ app.use("/api/adminaccounts", adminrouter);
 app.use("/api/staffaccounts", staffrouter);
 //Routes
 app.use("/api/owneraccounts", ownerrouter);
+
 
 
 

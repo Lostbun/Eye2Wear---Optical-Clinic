@@ -13,22 +13,14 @@ export const useAuth = () => {
 
     
 
-    const handlelogout = () => {
-
-        if(localStorage.getItem("admintoken")){
-            if (window.confirm("Are you sure you want to log out?")){
-        
-              localStorage.removeItem("admintoken");
-              localStorage.removeItem("admindetails")
-              navigate("/userlogin");
-          
-            }}else{
-              navigate("/userlogin");
-            }
-        
+    const adminlogout = () => {
+        if (window.confirm("Are you sure you want to logout?")) {
+            localStorage.removeItem("admintoken");
+            localStorage.removeItem("admindetails");
+            localStorage.removeItem("currentuser");
+            navigate("/userlogin");
+        }
     };
-
-
 
 
 
@@ -108,7 +100,7 @@ export const useAuth = () => {
 
     },);
 
-    return {/*monitortokenexpiration,*/fetchadmindetails, handlelogout};
+    return {/*monitortokenexpiration,*/fetchadmindetails, adminlogout};
 
 
 

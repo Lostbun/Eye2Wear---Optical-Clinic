@@ -1,5 +1,6 @@
 import React, {useEffect, useRef, useState} from "react";
 import {Link, Navigate} from "react-router-dom";
+
 import landingbg2 from "../src/assets/images/landingbg2.png";
 import navlogo from  "../src/assets/images/navlogo.png";
 import Typewriter from "typewriter-effect";
@@ -91,6 +92,69 @@ function PatientInformation(){
 
   const [showotherpasteyecondition, setshowotherpasteyecondition] = useState(false);
   const [otherpasteyeconditiondetails, setotherpasteyeconditiondetails] = useState("");
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -304,11 +368,13 @@ function PatientInformation(){
 {/* Patient Demographic Form */} {/* Patient Demographic Form */}  {/* Patient Demographic Form */}  {/* Patient Demographic Form */}  {/* Patient Demographic Form */} 
 
                     <div id="patientdemographicform" className=" h-[760px] mt-5 overflow-y-auto max-h-[750px]" style={{display: activeForm === "patientdemographic" ? "block" : "none"}}>
+                    <form>
+                    
                       <div className=" mt-5 flex ">
 
 
                       <div className=" w-60 h-60 ml-10">
-                        <img className=" object-cover h-60 w-full rounded-full" src={previewimage || defaultprofilepic}/>
+                        <img className=" object-cover h-60 w-full rounded-full" src={patientprofilepicture || defaultprofilepic}/>
 
                         <input  className="hidden" type="file" onChange={handleprofilechange} accept="image/jpeg, image/jpg, image/png" ref={imageinputref} />
                         <div onClick={handleuploadclick}  className="mt-5 flex justify-center items-center align-middle p-3 bg-[#0ea0cd] rounded-2xl hover:cursor-pointer hover:scale-105 transition-all" ><i className="bx bx-image pr-2 font-bold text-[22px] text-white"/><p className="font-semibold text-[20px] text-white">Upload</p></div>
@@ -377,10 +443,7 @@ function PatientInformation(){
                         <input className="w-84 border-b-2 border-gray-600 ml-3 text-[#2d2d44] text-[20px]  font-semibold" value={patientemergencycontactnumber} onChange={(e) => setpatientemergencycontactnumber(e.target.value)}  type="text" name="patientemergencycontactnumber" id="patientemergencyconctactnumber" placeholder="Emergency Contact Number.."/> </div>
 
 
-
-
-
-
+       
                         <div className=" mt-15">
                     
                         </div>
@@ -392,9 +455,19 @@ function PatientInformation(){
                         
 
                       </div>
-
-
+                    
+  
+                     </form>
                     </div>
+
+
+
+
+
+
+
+
+
 
 
 

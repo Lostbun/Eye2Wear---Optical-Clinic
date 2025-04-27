@@ -5,6 +5,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import PatientLandingpage from './PatientLandingpage'
 import PatientInformation from './PatientInformation'
 import AdminDashboard from './AdminDashboard'
+import ResetPassword from './ResetPassword'
 
 function App() {
 
@@ -19,6 +20,7 @@ function App() {
             <Route path='/patientlandingpage' element={<PatientLandingpage/>}></Route>
             <Route path='/patientinformation' element={<PatientInformation/>}></Route>
             <Route path='/admindashboard' element={<AdminDashboard/>}></Route>
+            <Route path="/reset-password/:id/:token" element={<ResetPassword/>}/>
           </Routes>
         </BrowserRouter>
 
