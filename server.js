@@ -7,7 +7,7 @@ import patientrouter from "./routes/patientaccount.route.js";
 import adminrouter from "./routes/adminaccount.route.js";
 import staffrouter from "./routes/staffacount.route.js";
 import ownerrouter from "./routes/owneraccount.route.js";
-
+import forgotpassrouter from "./routes/forgotpass.route.js";
 
 
 
@@ -48,6 +48,8 @@ app.use(express.json({limit: '50mb'}));
 app.use(express.urlencoded({limit: '50mb', extended: true}));
 
 
+//Routes
+app.use("/api/auth", forgotpassrouter);
 //Routes
 app.use("/api/patientaccounts", patientrouter);
 //Routes

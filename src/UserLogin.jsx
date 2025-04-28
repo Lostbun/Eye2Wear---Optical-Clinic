@@ -250,6 +250,10 @@ function UserLogin(){
         const[issendingresetlink, setissendingresetlink] = useState(false);
 
         axios.defaults.withCredentials = true;
+        
+
+
+
         const forgotpassword = async (e) => {
      
          e.preventDefault();
@@ -258,7 +262,7 @@ function UserLogin(){
 
          try{
 
-          const res = await axios.post('http://localhost:3000/api/patientaccounts/forgot-password', {patientemail: forgotpasswordemail});
+          const res = await axios.post('http://localhost:3000/api/auth/forgot-password', {email: forgotpasswordemail});
            
  
   

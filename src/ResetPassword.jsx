@@ -33,7 +33,7 @@ function ResetPassword(){
 
 
         try{
-          const response = await axios.post(`/api/patientaccounts/reset-password/${id}/${token}`,
+          const response = await axios.post(`http://localhost:3000/api/auth/reset-password/${id}/${token}`,
             {newpassword: resetpasswordnew},
             {timeout: 10000}
           );

@@ -2,7 +2,7 @@ import express from "express";
 
 import {
       patientlogin,
-      resetpassword,
+      //resetpassword,
       getpatientaccounts,
       getpatientaccountbyid,
       getloggedinpatientacc,
@@ -11,7 +11,7 @@ import {
       existingemail, 
       createPatient,
       updatePatient,
-      forgotpassword,
+      //forgotpassword,
       deletePatient,
      } from "../controllers/patientaccount.controller.js";
       
@@ -57,8 +57,8 @@ patientrouter.delete("/:id", verifyloggedinadminacc, deletePatient);
 
 //Login Patient
 patientrouter.post("/login", patientlogin);
-patientrouter.post('/forgot-password', forgotpassword );
-patientrouter.post('/reset-password/:id/:token', resetpassword );
+//patientrouter.post('/forgot-password', forgotpassword );
+//patientrouter.post('/reset-password/:id/:token', resetpassword );
 
 
 
