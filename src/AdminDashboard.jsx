@@ -11,8 +11,7 @@ import ambherlogo from"../src/assets/images/ambherlogo.png";
 import defaultprofilepic from '../src/assets/images/defaulticon.png'
 import imageCompression from "browser-image-compression";
 import darklogo from "../src/assets/images/darklogo.png";
-
-
+import axios from "axios";
 
 
 function AdminDashboard(){
@@ -323,7 +322,7 @@ function AdminDashboard(){
             <th className="pb-3 pt-3 pl-2 pr-2 text-center">Firstname</th>
             <th className="pb-3 pt-3 pl-2 pr-2 text-center">Middlename</th>
             <th className="pb-3 pt-3 pl-2 pr-2 text-center">Email</th>
-            <th className="pb-3 pt-3 pl-2 pr-2 text-center">Password</th>
+
             <th className="pb-3 pt-3 pl-2 pr-2 text-center">isVerified</th>
             <th className="pb-3 pt-3 pl-2 pr-2 text-center">Date Created</th>
             <th className="pb-3 pt-3 text-center pr-3"></th>
@@ -357,7 +356,6 @@ function AdminDashboard(){
                 </a>
 
               </td>
-              <td  className="py-3 px-6 text-[#454444] text-center font-albertsans font-medium "><span title="Password Hidden for Security">{patient.patientpassword.substring(0,6)}...</span></td>
               <td  className="py-3 px-6 text-[#454444] text-center font-albertsans font-medium">
                 <span className={`rounded-2xl text-xs px-5 py-4 ${patient.isVerified ? 'text-green-800 bg-green-100' : 'text-yellow-800 bg-yellow-100'}`}>
                   {patient.isVerified ? 'Active' : 'Pending'}
@@ -374,7 +372,6 @@ function AdminDashboard(){
                 setselectededitpatientaccount({
                    id: patient._id,
                    email: patient.patientemail,
-                   password: patient.patientpassword,
                    lastname: patient.patientlastname,
                    firstname: patient.patientfirstname,
                    middlename: patient.patientmiddlename,
@@ -399,6 +396,7 @@ function AdminDashboard(){
               <td><div onClick={() =>  {
                 setselectedpatientaccount({
                    id: patient.patientId,
+                   email: patient.patientemail,
                    name: `${patient.patientfirstname} ${patient.patientlastname}`});
                             
                 setshowdeletepatientdialog(true);}}
@@ -603,16 +601,17 @@ function AdminDashboard(){
       });
 
 
-      //If response is not ok
-      if(!response.ok) {
-        const errorresult = await response.json();
-        console.error("Account Creation Failed : ", errorresult);
-        throw new Error(errorresult.message || "Account Creation Failed");
-      }
-      //If response is success, it will send data to the api and to the database   
+
+
+        
+      await axios.post('http://localhost:3000/api/accountcreation/patient', {
+        email: formdata.patientemail, 
+        password: formdata.patientpassword});
+  
+
+
       await response.json();
       setmessage({text:"Registration Sucessful!",type:"success"});
-      
         
          
         //Resets the input forms except the profile picture
@@ -626,11 +625,8 @@ function AdminDashboard(){
           patientprofilepicture: ''
         });
 
-
-
         setselectedprofile(null);
         setpreviewimage(null);
-
 
 
    
@@ -656,9 +652,18 @@ function AdminDashboard(){
           }
         });
 
+
+
+        await axios.post('http://localhost:3000/api/accountdeletion/patient', {
+          email: selectedpatientaccount.email});
+
+
+
         if(!response.ok){
           throw new Error("Failed to delete patient account");
         }
+
+
 
         const fetchresponse = await fetch('/api/patientaccounts', {
             headers:{
@@ -910,7 +915,6 @@ const [showaddstaffdialog, setshowaddstaffdialog] = useState(false);
             <th className="pb-3 pt-3 pl-2 pr-2  text-center">Firstname</th>
             <th className="pb-3 pt-3 pl-2 pr-2 text-center">Middlename</th>
             <th className="pb-3 pt-3  pl-2 pr-2 text-center">Email</th>
-            <th className="pb-3 pt-3 pl-2 pr-2  text-center">Password</th>
             <th className="pb-3 pt-3 pl-2 pr-2 text-center">isVerified</th>
             <th className="pb-3 pt-3 pl-2 pr-2 text-center">Date Created</th>
             <th className="pb-3 pt-3 text-center pr-3"></th>
@@ -944,7 +948,6 @@ const [showaddstaffdialog, setshowaddstaffdialog] = useState(false);
                 </a>
 
               </td>
-              <td  className="py-3 px-6 text-[#454444] text-center font-albertsans font-medium "><span title="Password Hidden for Security">{staff.staffpassword.substring(0,6)}...</span></td>
               <td  className="py-3 px-6 text-[#454444] text-center font-albertsans font-medium">
                 <span className={`rounded-2xl text-xs px-5 py-4 ${staff.isVerified ? 'text-green-800 bg-green-100' : 'text-yellow-800 bg-yellow-100'}`}>
                   {staff.isVerified ? 'Active' : 'Pending'}
@@ -961,7 +964,6 @@ const [showaddstaffdialog, setshowaddstaffdialog] = useState(false);
                 setselectededitstaffaccount({
                    id: staff._id,
                    email: staff.staffemail,
-                   password: staff.staffpassword,
                    lastname: staff.stafflastname,
                    firstname: staff.stafffirstname,
                    middlename: staff.staffmiddlename,
@@ -986,6 +988,7 @@ const [showaddstaffdialog, setshowaddstaffdialog] = useState(false);
               <td><div onClick={() =>  {
                 setselectedstaffaccount({
                    id: staff.staffId,
+                   email: staff.staffemail,
                    name: `${staff.stafffirstname} ${staff.stafflastname}`});
                             
                 setshowdeletestaffdialog(true);}}
@@ -1209,12 +1212,11 @@ const [showaddstaffdialog, setshowaddstaffdialog] = useState(false);
       });
 
 
-      //If response is not ok
-      if(!response.ok) {
-        const errorresult = await response.json();
-        console.error("Account Creation Failed : ", errorresult);
-        throw new Error(errorresult.message || "Account Creation Failed");
-      }
+      await axios.post('http://localhost:3000/api/accountcreation/staff', {
+        email: staffformdata.staffemail, 
+        password: staffformdata.staffpassword});
+
+
       //If response is success, it will send data to the api and to the database   
       await response.json();
       setstaffmessage({text:"Registration Sucessful!",type:"success"});
@@ -1261,6 +1263,13 @@ const [showaddstaffdialog, setshowaddstaffdialog] = useState(false);
             'Authorization': `Bearer ${currentusertoken}`
           }
         });
+
+
+
+        await axios.post('http://localhost:3000/api/accountdeletion/staff', {
+          email: selectedstaffaccount.email});
+
+
 
         if(!response.ok){
           throw new Error("Failed to delete staff account");
@@ -1505,7 +1514,6 @@ const [showaddstaffdialog, setshowaddstaffdialog] = useState(false);
               <th className="pb-3 pt-3 pl-2 pr-2 text-center">Firstname</th>
               <th className="pb-3 pt-3 pl-2 pr-2 text-center">Middlename</th>
               <th className="pb-3 pt-3 pl-2 pr-2 text-center">Email</th>
-              <th className="pb-3 pt-3 pl-2 pr-2 text-center">Password</th>
               <th className="pb-3 pt-3 pl-2 pr-2  text-center">Clinic</th>
               <th className="pb-3 pt-3 pl-2 pr-2 text-center">isVerified</th>
               <th className="pb-3 pt-3 pl-2 pr-2 text-center">Date Created</th>
@@ -1540,7 +1548,6 @@ const [showaddstaffdialog, setshowaddstaffdialog] = useState(false);
                   </a>
   
                 </td>
-                <td  className="py-3 px-6 text-[#454444] text-center font-albertsans font-medium "><span title="Password Hidden for Security">{owner.ownerpassword.substring(0,6)}...</span></td>
                 <td  className="py-3 px-6 text-[#454444] text-center font-albertsans font-medium">{owner.ownerclinic}</td>
                 <td  className="py-3 px-6 text-[#454444] text-center font-albertsans font-medium">
                   <span className={`rounded-2xl text-xs px-5 py-4 ${owner.isVerified ? 'text-green-800 bg-green-100' : 'text-yellow-800 bg-yellow-100'}`}>
@@ -1558,7 +1565,6 @@ const [showaddstaffdialog, setshowaddstaffdialog] = useState(false);
                   setselectededitowneraccount({
                      id: owner._id,
                      email: owner.owneremail,
-                     password: owner.ownerpassword,
                      lastname: owner.ownerlastname,
                      firstname: owner.ownerfirstname,
                      middlename: owner.ownermiddlename,
@@ -1585,6 +1591,7 @@ const [showaddstaffdialog, setshowaddstaffdialog] = useState(false);
                 <td><div onClick={() =>  {
                   setselectedowneraccount({
                      id: owner.ownerId,
+                     email: owner.owneremail,
                      name: `${owner.ownerfirstname} ${owner.ownerlastname}`});
                               
                   setshowdeleteownerdialog(true);}}
@@ -1806,12 +1813,12 @@ const [showaddstaffdialog, setshowaddstaffdialog] = useState(false);
         });
   
   
-        //If response is not ok
-        if(!response.ok) {
-          const errorresult = await response.json();
-          console.error("Account Creation Failed : ", errorresult);
-          throw new Error(errorresult.message || "Account Creation Failed");
-        }
+        
+        await axios.post('http://localhost:3000/api/accountcreation/owner', {
+          email: ownerformdata.owneremail, 
+          password: ownerformdata.ownerpassword});
+
+
         //If response is success, it will send data to the api and to the database   
         await response.json();
         setownermessage({text:"Registration Sucessful!",type:"success"});
@@ -1858,6 +1865,11 @@ const [showaddstaffdialog, setshowaddstaffdialog] = useState(false);
               'Authorization': `Bearer ${currentusertoken}`
             }
           });
+
+
+          await axios.post('http://localhost:3000/api/accountdeletion/owner', {
+            email: selectedowneraccount.email});
+
   
           if(!response.ok){
             throw new Error("Failed to delete owner account");
@@ -2108,7 +2120,6 @@ return (
           <th className="pb-3 pt-3 pl-2 pr-2 text-center">Firstname</th>
           <th className="pb-3 pt-3 pl-2 pr-2 text-center">Middlename</th>
           <th className="pb-3 pt-3 pl-2 pr-2 text-center">Email</th>
-          <th className="pb-3 pt-3 pl-2 pr-2 text-center">Password</th>
           <th className="pb-3 pt-3 pl-2 pr-2 text-center">isVerified</th>
           <th className="pb-3 pt-3 pl-2 pr-2 text-center">Date Created</th>
           <th className="pb-3 pt-3 text-center pr-3"></th>
@@ -2142,7 +2153,6 @@ return (
               </a>
 
             </td>
-            <td  className="py-3 px-6 text-[#454444] text-center font-albertsans font-medium "><span title="Password Hidden for Security">{admin.adminpassword.substring(0,6)}...</span></td>
             <td  className="py-3 px-6 text-[#454444] text-center font-albertsans font-medium">
               <span className={`rounded-2xl text-xs px-5 py-4 ${admin.isVerified ? 'text-green-800 bg-green-100' : 'text-yellow-800 bg-yellow-100'}`}>
                 {admin.isVerified ? 'Active' : 'Pending'}
@@ -2159,7 +2169,6 @@ return (
               setselectededitadminaccount({
                  id: admin._id,
                  email: admin.adminemail,
-                 password: admin.adminpassword,
                  lastname: admin.adminlastname,
                  firstname: admin.adminfirstname,
                  middlename: admin.adminmiddlename,
@@ -2184,6 +2193,7 @@ return (
             <td><div onClick={() =>  {
               setselectedadminaccount({
                  id: admin.adminId,
+                 email: admin.adminemail,
                  name: `${admin.adminfirstname} ${admin.adminlastname}`});
                           
               setshowdeleteadmindialog(true);}}
@@ -2405,12 +2415,11 @@ const adminhandlechange = (e) => {
     });
 
 
-    //If response is not ok
-    if(!response.ok) {
-      const errorresult = await response.json();
-      console.error("Account Creation Failed : ", errorresult);
-      throw new Error(errorresult.message || "Account Creation Failed");
-    }
+    
+    await axios.post('http://localhost:3000/api/accountcreation/admin', {
+      email: adminformdata.adminemail, 
+      password: adminformdata.adminpassword});
+
     //If response is success, it will send data to the api and to the database   
     await response.json();
     setadminmessage({text:"Registration Sucessful!",type:"success"});
@@ -2457,6 +2466,12 @@ const adminhandlechange = (e) => {
           'Authorization': `Bearer ${currentusertoken}`
         }
       });
+
+
+      await axios.post('http://localhost:3000/api/accountdeletion/admin', {
+        email: selectedadminaccount.email});
+
+
 
       if(!response.ok){
         throw new Error("Failed to delete admin account");
@@ -2860,7 +2875,7 @@ const adminhandlechange = (e) => {
                            <div className="pl-5 pr-5 bg-white rounded-2xl w-[1300px] h-[700px]  animate-fadeInUp ">
                                 <div className=" mt-5 border-3 flex justify-between items-center border-[#2d2d4400] w-full h-[70px]">
                                   <div className="flex justify-center items-center"><img src={darklogo} alt="Eye2Wear: Optical Clinic" className="w-15 hover:scale-105 transition-all   p-1"></img><h1 className="text-[#184d85] font-albertsans font-bold ml-3 text-[30px]">Add Patient Account</h1></div>
-                                  <div onClick={() => setshowaddpatientdialog(false)} className="bg-[#333232] px-10 rounded-2xl hover:cursor-pointer hover:scale-105 transition-all duration-300 ease-in-out"><i className="bx bx-x text-white text-[40px] "/></div>
+                                  <div onClick={() => {setshowaddpatientdialog(false),   setmessage('') }} className="bg-[#333232] px-10 rounded-2xl hover:cursor-pointer hover:scale-105 transition-all duration-300 ease-in-out"><i className="bx bx-x text-white text-[40px] "/></div>
                                 </div>
 
                           <form className="flex flex-col  ml-15 mr-15 mt-5   w-fullx" onSubmit={handlesubmit}>
@@ -2985,7 +3000,7 @@ const adminhandlechange = (e) => {
                                                         setformdata({
                                                           role: 'Patient',
                                                           patientemail: '',
-                                                          patientpassword: '',
+
                                                           patientlastname: '',
                                                           patientfirstname: '',
                                                           patientmiddlename: '',
@@ -3039,11 +3054,7 @@ const adminhandlechange = (e) => {
                                           </div>
                                                      
                                                      
-                                    
-                                         <div className="form-group mt-5">
-                                          <label className="font-albertsans font-bold italic text-[#595968] text-[21px]" htmlFor="passwrd">Password : </label>
-                                         <input className="bg-gray-200 text-[20px]  text-gray-600 pl-3 rounded-2xl ml-11 h-10 w-70" placeholder="Enter your password..." type="password" name="patientpassword" id="patientpassword" value={formdata.patientpassword} onChange={handlechange} required min="6"/></div>
-                                                     
+               
                                          <div className="form-group mt-5">
                                          <label className="font-albertsans font-bold italic text-[#595968] text-[21px]" htmlFor="lastname">Last Name :</label>
                                          <input className="bg-gray-200 text-[20px]  text-gray-600 pl-3 rounded-2xl ml-10 h-10 w-70" placeholder="Enter your lastname..." type="text" name="patientlastname" id="patientlastname" value={formdata.patientlastname} onChange={handlechange} required/></div>
@@ -3227,7 +3238,6 @@ const adminhandlechange = (e) => {
                                       setstaffformdata({
                                         role: 'staff',
                                         staffemail: '',
-                                        staffpassword: '',
                                         stafflastname: '',
                                         stafffirstname: '',
                                         staffmiddlename: '',
@@ -3282,10 +3292,7 @@ const adminhandlechange = (e) => {
                                    
                                    
                   
-                       <div className="form-group mt-5">
-                        <label className="font-albertsans font-bold italic text-[#595968] text-[21px]" htmlFor="staffpassword">Password : </label>
-                       <input className="bg-gray-200 text-[20px]  text-gray-600 pl-3 rounded-2xl ml-11 h-10 w-70" placeholder="Enter your password..." type="password" name="staffpassword" id="staffpassword" value={staffformdata.staffpassword} onChange={staffhandlechange} required min="6"/></div>
-                                   
+            
                        <div className="form-group mt-5">
                        <label className="font-albertsans font-bold italic text-[#595968] text-[21px]" htmlFor="stafflastname">Last Name :</label>
                        <input className="bg-gray-200 text-[20px]  text-gray-600 pl-3 rounded-2xl ml-10 h-10 w-70" placeholder="Enter your lastname..." type="text" name="stafflastname" id="stafflastname" value={staffformdata.stafflastname} onChange={staffhandlechange} required/></div>
@@ -3472,7 +3479,6 @@ const adminhandlechange = (e) => {
                                       setownerformdata({
                                         role: 'Owner',
                                         owneremail: '',
-                                        ownerpassword: '',
                                         ownerlastname: '',
                                         ownerfirstname: '',
                                         ownermiddlename: '',
@@ -3527,11 +3533,7 @@ const adminhandlechange = (e) => {
                         </div>
                                    
                                    
-                  
-                       <div className="form-group mt-5">
-                        <label className="font-albertsans font-bold italic text-[#595968] text-[21px]" htmlFor="ownerpassword">Password : </label>
-                       <input className="bg-gray-200 text-[20px]  text-gray-600 pl-3 rounded-2xl ml-11 h-10 w-70" placeholder="Enter your password..." type="password" name="ownerpassword" id="ownerpassword" value={ownerformdata.ownerpassword} onChange={ownerhandlechange} required min="6"/></div>
-                                   
+              
                        <div className="form-group mt-5">
                        <label className="font-albertsans font-bold italic text-[#595968] text-[21px]" htmlFor="ownerlastname">Last Name :</label>
                        <input className="bg-gray-200 text-[20px]  text-gray-600 pl-3 rounded-2xl ml-10 h-10 w-70" placeholder="Enter your lastname..." type="text" name="ownerlastname" id="ownerlastname" value={ownerformdata.ownerlastname} onChange={ownerhandlechange} required/></div>
@@ -3719,7 +3721,6 @@ const adminhandlechange = (e) => {
                                       setadminformdata({
                                         role: 'Admin',
                                         adminemail: '',
-                                        adminpassword: '',
                                         adminlastname: '',
                                         adminfirstname: '',
                                         adminmiddlename: '',
@@ -3774,10 +3775,7 @@ const adminhandlechange = (e) => {
                                    
                                    
                   
-                       <div className="form-group mt-5">
-                        <label className="font-albertsans font-bold italic text-[#595968] text-[21px]" htmlFor="adminpassword">Password : </label>
-                       <input className="bg-gray-200 text-[20px]  text-gray-600 pl-3 rounded-2xl ml-11 h-10 w-70" placeholder="Enter your password..." type="password" name="adminpassword" id="adminpassword" value={adminformdata.adminpassword} onChange={adminhandlechange} required min="6"/></div>
-                                   
+
                        <div className="form-group mt-5">
                        <label className="font-albertsans font-bold italic text-[#595968] text-[21px]" htmlFor="adminlastname">Last Name :</label>
                        <input className="bg-gray-200 text-[20px]  text-gray-600 pl-3 rounded-2xl ml-10 h-10 w-70" placeholder="Enter your lastname..." type="text" name="adminlastname" id="adminlastname" value={adminformdata.adminlastname} onChange={adminhandlechange} required/></div>

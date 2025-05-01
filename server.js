@@ -9,7 +9,8 @@ import staffrouter from "./routes/staffacount.route.js";
 import ownerrouter from "./routes/owneraccount.route.js";
 import forgotpassrouter from "./routes/forgotpass.route.js";
 import patientdemographicrouter from "./routes/patientdemographic.route.js";
-
+import accountcreationemailrouter from "./routes/accountcreationemail.route.js";
+import accountdeletionemailrouter from "./routes/accountdeletionemail.route.js";
 
 
 
@@ -49,6 +50,13 @@ app.use(express.json({limit: '50mb'}));
 app.use(express.urlencoded({limit: '50mb', extended: true}));
 
 
+
+
+
+//Routes
+app.use("/api/accountdeletion", accountdeletionemailrouter);
+//Routes
+app.use("/api/accountcreation", accountcreationemailrouter);
 //Routes
 app.use("/api/auth", forgotpassrouter);
 //Routes
