@@ -24,6 +24,9 @@ export default defineConfig({
     },
 
     server:{
+      headers:{
+        'Acces-Control-Allow-Origin': '*',
+      },
       proxy:{
         '/api':{
           target:'http://localhost:3000',//The backend URL

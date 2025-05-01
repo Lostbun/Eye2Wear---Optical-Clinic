@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import React, {useEffect, useRef, useState} from "react";
 import {Link, Navigate} from "react-router-dom";
 
@@ -10,8 +11,9 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {faEye, faClock} from "@fortawesome/free-regular-svg-icons";
 import defaultprofilepic from '../src/assets/images/defaulticon.png'
 import { GenderBox } from "./components/GenderBox";
-
 import { useAuth } from "./hooks/patientuseAuth";
+
+
 
 
 
@@ -44,17 +46,10 @@ function PatientInformation(){
   //PATIENT DEMOGRAPHIC DATAS
   const [selectedprofile, setselectedprofile] = useState(null);
   const [previewimage, setpreviewimage] = useState (null);
-  const [patientlastname, setpatientlastname] = useState('');
+
   const [patientfirstname, setpatientfirstname] = useState('');
-  const [patientmiddlename, setpatientmiddlename] = useState('');
-   const [patientprofilepicture, setpatientprofilepicture] = useState('');
-  const [patientage  , setpatientage ] = useState('');
-  const [patientbirthdate  , setpatientbirthdate ] = useState('');
-  const [patientgender  , setpatientgender ] = useState('');
-  const [patientcontactnumber  , setpatientcontactnumber ] = useState('');
-  const [patienthomeaddress  , setpatienthomeaddress ] = useState('');
-  const [patientemergencycontactname  , setpatientemergencycontactname ] = useState('');
-  const [patientemergencycontactnumber  , setpatientemergencycontactnumber ] = useState('');
+
+
 
 
 
@@ -102,92 +97,8 @@ function PatientInformation(){
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
   const imageinputref = useRef(null);
 
-
-  //PROFILE IMAGE TYPE HANDLING
-  const handleprofilechange = (e) => {
-    const file = e.target.files[0];
-
-    if (file) {
-      if(!file.type.match('image.*')){
-        alert("Please select an image file (JPG or PNG)");
-        return;
-      }
-
-      setselectedprofile(file);
-
-
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setpreviewimage(reader.result);
-      };
-
-      reader.readAsDataURL(file);
-    }
-  };
 
 
 
@@ -200,6 +111,10 @@ function PatientInformation(){
   const handleremoveprofile = () => {
     setselectedprofile(null);
     setpreviewimage(null);
+    setdemographicformdata(prev => ({
+      ...prev,
+      patientprofilepicture: 'default-profile-url'
+    }))
     if(imageinputref.current){
       imageinputref.current.value = "";
     }
@@ -207,6 +122,24 @@ function PatientInformation(){
   
 
 
+
+
+  const handleprofilechange = (e) => {
+    const file = e.target.files[0];
+    if(file){
+      const reader = new FileReader();
+      reader.onloadend = () =>{
+        setdemographicformdata(prev => ({
+          ...prev,
+          patientprofilepicture: reader.result
+        }));
+
+        setpreviewimage(reader.result);
+      };
+
+      reader.readAsDataURL(file);
+    }
+  }
 
 
 
@@ -231,29 +164,247 @@ function PatientInformation(){
 
 
 
+
+  const [patientemail, setpatientemail] = useState('');
+  const [patientlastname, setpatientlastname] = useState('');
+  const [patientid, setpatientid] = useState('');
+  const [patientprofilepicture, setpatientprofilepicture] = useState('');
+
   const [showlogoutbtn, setshowlogoutbtn] = useState(false);
   const showlogout = () => {
     setshowlogoutbtn(!showlogoutbtn);
   }
 
+  const {handlelogout, fetchpatientdetails, fetchpatientdemographicbyemail} = useAuth();
+  
+
+
+
+
+
+
+  const [demographicformdata, setdemographicformdata] = useState({
+
+    role:'Patient',
+    patientlastname: '',
+    patientfirstname:'',
+    patientmiddlename:'',
+    patientprofilepicture:'',
+    patientage:'',
+    patientbirthdate:'',
+    patientgender:'',
+    patientcontactnumber:'',
+    patienthomeaddress:'',
+    patientemergencycontactname:'',
+    patientemergencycontactnumber:''
+  });
+
+
+
+
+  const [isexistingdemographic, setisexistingdemographic] = useState(false);
+  const [demographicid, setdemographicid] = useState(null);
+
+
 
   
-  //Retrieveing Data from useAuth Hook
-  const {handlelogout, fetchpatientdetails} = useAuth();
+//LOADING PATIENT DEMOGRAPHIC DATA OR IF NOT IT WILL BE A CREATION OF DEMOGRAPHIC DATA
   useEffect(() => {
-    const loadpatient = async () => {
-      const data = await fetchpatientdetails();
+    const loadpatientaccount = async () => {
+      const patientdata = await fetchpatientdetails();
 
-      if(data){
-        setpatientlastname(data.patientlastname || '');
-        setpatientfirstname(data.patientfirstname || '');
-        setpatientmiddlename(data.patientmiddlename || '');
-        setpatientprofilepicture(data.patientprofilepicture || '');
+      if(patientdata){
+        setpatientfirstname(patientdata.patientfirstname || '');
+        setpatientprofilepicture(patientdata.patientprofilepicture || '');
+        setpatientemail(patientdata.patientemail || '');
+        setpatientid(patientdata.patientId || '');
+
+        const demographicdata = await fetchpatientdemographicbyemail(patientdata.patientemail);
+        if(demographicdata){
+          setdemographicid(demographicdata._id);
+          setisexistingdemographic(true);
+          setdemographicformdata(prev => ({
+            ...prev,
+            ...demographicdata,
+            patientemail: patientdata.patientemail,
+            patientid: patientdata.patientId
+          }));
+
+
+          if(demographicdata.patientprofilepicture) {
+            setpreviewimage(demographicdata.patientprofilepicture);
+          }
+          
+        }else{
+          setisexistingdemographic(false);
+          setdemographicformdata(prev => ({
+            ...prev,
+            patientemail: patientdata.patientemail,
+            patientid: patientdata.patientid,
+            patientfirstname: patientdata.patientfirstname || '',
+            patientlastname: patientdata.patientlastname || '',
+            patientmiddlename: patientdata.patientmiddlname || '',
+            patientprofilepicture: patientdata.patientprofilepicture || ''
+          }));
+        }
       }
     };
+      loadpatientaccount();
+  }, [fetchpatientdetails, fetchpatientdemographicbyemail]);
 
-    loadpatient();
-  }, [fetchpatientdetails]);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    const [message, setmessage] = useState('');
+    const [issubmitting, setissubmitting] = useState(false);
+   
+
+
+        
+
+
+
+
+  const handleinputchange = (e) => {
+    const {name, value} = e.target;
+    setdemographicformdata(prev => ({
+      ...prev,
+      [name] : value  
+    }));
+  };
+
+
+
+
+
+
+
+
+const submitpatientdemographic = async (e) => {
+  e.preventDefault();
+  setissubmitting(true);
+  setmessage(null);
+
+  try {
+    console.log("Submitting: ", demographicformdata);
+    
+    // Remove the default profile picture if it's the placeholder
+    const patientdemographictosend = {
+      ...demographicformdata,
+      patientprofilepicture: demographicformdata.patientprofilepicture === defaultprofilepic 
+        ? null 
+        : demographicformdata.patientprofilepicture
+    };
+
+    let endpoint = "http://localhost:3000/api/patientdemographics";
+    let method = "POST";
+    
+    if(isexistingdemographic) {
+      endpoint = `http://localhost:3000/api/patientdemographics/${demographicid}`;
+      method = "PUT";
+    }
+
+    const response = await fetch(endpoint, {
+      method,
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${localStorage.getItem("patienttoken")}`
+      },
+      body: JSON.stringify(patientdemographictosend)
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || "Failed to save demographic data");
+    }
+
+    const responsedata = await response.json();
+    console.log("Success: ", responsedata);
+    
+    setmessage({
+      text: isexistingdemographic 
+        ? "Updated Patient Demographic Successfully" 
+        : "Created Patient Demographic Successfully",
+      type: "success"
+    });
+
+    if(!isexistingdemographic && responsedata._id) {
+      setisexistingdemographic(true);
+      setdemographicid(responsedata._id);
+    }
+
+  } catch(error) {
+    console.error("Error: ", error);
+    setmessage({
+      text: error.message || "Failed, Please try again",
+      type: "error"
+    });
+  } finally {
+    setissubmitting(false);
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -273,11 +424,11 @@ function PatientInformation(){
      {/* NavBar */}
     <div className=" bg-white" >
       <header id="header" className="flex justify-between items-center text-black py-4 px-8 md:px-32 bg-white rounded-4xl drop-shadow-md">
-        <a id:logocontain href="#">
+        <a id="logocontain" href="#">
           <img src={navlogo} alt="" className="w-52 hover:scale-105 transition-all"></img>
         </a>
 
-        <ul id:listcontain  className="hidden xl:flex items-center gap-12 font-semibold text-base">
+        <ul id="listcontain"  className="hidden xl:flex items-center gap-12 font-semibold text-base">
         <Link to="/patientlandingpage" className="text-[#000000] hover:text-white no-underline"><li className="p-3 hover:bg-sky-400 text-black hover:text-white rounded-md transition-all cursor-pointer">Home</li></Link>
           <li className="p-3 hover:bg-sky-400 hover:text-white rounded-md transition-all cursor-pointer">Products</li>
           <li className="p-3 hover:bg-sky-400 hover:text-white rounded-md transition-all cursor-pointer">Explore</li>
@@ -286,8 +437,8 @@ function PatientInformation(){
 
         <div className="relative">
     <div id="profile" onClick={showlogout}  className="ml-3  flex justify-center items-center p-2 bg-[#fbfbfb00] border-2 border-gray-200  shadow-lg  rounded-full hover:cursor-pointer hover:scale-105 transition-all">
-     <img src={patientprofilepicture || 'default-profile.png'} alt="Profile" className="h-10 w-10 rounded-full"></img>
-     <p className="font-albertsans font-bold ml-3 text-gray-500 text-[17px]">Hi, {patientfirstname} </p>
+     <img src={patientprofilepicture || defaultprofilepic} alt="Profile" className="h-10 w-10 rounded-full"></img>
+     <p className="font-albertsans font-bold ml-3 text-gray-500 text-[17px]">Hi, {patientfirstname}</p>
     </div>
 
     {showlogoutbtn && (
@@ -338,12 +489,13 @@ function PatientInformation(){
                     <Link to="/patientlandingpage" className="group relative h-15 \ flex justify-center items-center p-3  shadow-lg bg-gray-800 rounded-3xl hover:cursor-pointer hover:scale-105 transition-all duration-300 "><i className="bx bx-arrow-back  pr-2 font-bold text-[22px] text-white"/><span className="font-semibold text-white text-[20px]">Back</span></Link>
           
                     <div className="flex flex-col p-5 h-max mt-10 rounded-4xl bg-[#2d2d44] shadow-lg">
-
-                          <div className={`pl-5 w-full h-12  flex items-center  hover:cursor-pointer hover:scale-105 transition-all  ${activeForm === `patientdemographic` ? `bg-sky-700 rounded-4xl` : ``}`}  onClick={() => setactiveForm(`patientdemographic`)} ><i className="bx bxs-user  pr-2 font-bold text-[22px] text-white"/><span className="font-semibold text-white text-[20px]">Patient Demographic</span></div>
+                          <p className=" font-semibold text-white text-[16px]">Your Profile :</p>
+                          <div className={`pl-5 w-full h-12 mt-5 flex items-center  hover:cursor-pointer hover:scale-105 transition-all  ${activeForm === `patientdemographic` ? `bg-sky-700 rounded-4xl` : ``}`}  onClick={() => setactiveForm(`patientdemographic`)} ><i className="bx bxs-user  pr-2 font-bold text-[22px] text-white"/><span className="font-semibold text-white text-[20px]">Patient Demographic</span></div>
+                          <p className="mt-8 font-semibold text-white text-[16px]">For viewing only :</p>
                           <div className={`pl-5 w-full h-12 mt-5 flex items-center hover:cursor-pointer hover:scale-105 transition-all ${activeForm === `medicalhistory` ? `bg-sky-700 rounded-4xl` : ``}`}  onClick={() => setactiveForm(`medicalhistory`)}><FontAwesomeIcon icon={faClock}  className="pr-2 font-bold text-[22px] text-white"/><span className="font-semibold text-white text-[20px]">Medical History</span></div>
                           <div className={`pl-5 w-full h-12 mt-5 flex items-center xhover:cursor-pointer hover:scale-105 transition-all ${activeForm === `ocularhistory` ? `bg-sky-700 rounded-4xl` : ``}`}  onClick={() => setactiveForm(`ocularhistory`)}><FontAwesomeIcon icon={faEye}  className="pr-2 font-bold text-[22px] text-white"/><span className="font-semibold text-white text-[20px]">Ocular History</span></div>
                           <div className={`pl-5 w-full h-12 mt-5 flex items-center hover:cursor-pointer hover:scale-105 transition-all ${activeForm === `lifestylevisual` ? `bg-sky-700 rounded-4xl` : ``}`}  onClick={() => setactiveForm(`lifestylevisual`)}><i className="bx bx-run  pr-2 font-bold text-[22px] text-white"/><span className="font-semibold text-white text-[20px]">Lifestyle & Visual</span></div>
-                          <div className="mt-5 flex justify-center align-middle p-3 bg-[#1cad11] rounded-2xl hover:cursor-pointer hover:scale-105 transition-all" ><p className="font-semibold text-[20px] text-white">Save</p></div>
+                         {/* <div className="mt-5 flex justify-center align-middle p-3 bg-[#1cad11] rounded-2xl hover:cursor-pointer hover:scale-105 transition-all" ><p className="font-semibold text-[20px] text-white">Save</p></div> */}
                        
 
 
@@ -351,7 +503,7 @@ function PatientInformation(){
                 </div>
                 <div className="bg-white border-3 h-max pb-10 border-gray-100 shadow-lg w-[1000px] rounded-4xl flex flex-col  ml-10">
                     <div className="bg-[#2d2d44] h-[100px] flex items-center justify-center rounded-tl-4xl rounded-tr-4xl ">
-                    <i class="bx bx-clipboard 0 text-[50px] font-albertsans font-extrabold italic text-white"/>
+                    <i className="bx bx-clipboard 0 text-[50px] font-albertsans font-extrabold italic text-white"/>
                     <h1 className="text-[40px]  pl-5 font-bold  text-white ">Patient Information Form</h1>
           
                     </div>
@@ -368,13 +520,13 @@ function PatientInformation(){
 {/* Patient Demographic Form */} {/* Patient Demographic Form */}  {/* Patient Demographic Form */}  {/* Patient Demographic Form */}  {/* Patient Demographic Form */} 
 
                     <div id="patientdemographicform" className=" h-[760px] mt-5 overflow-y-auto max-h-[750px]" style={{display: activeForm === "patientdemographic" ? "block" : "none"}}>
-                    <form>
+                    <form onSubmit={submitpatientdemographic}>
                     
                       <div className=" mt-5 flex ">
 
 
                       <div className=" w-60 h-60 ml-10">
-                        <img className=" object-cover h-60 w-full rounded-full" src={patientprofilepicture || defaultprofilepic}/>
+                        <img className=" object-cover h-60 w-full rounded-full" src={previewimage || defaultprofilepic}/>
 
                         <input  className="hidden" type="file" onChange={handleprofilechange} accept="image/jpeg, image/jpg, image/png" ref={imageinputref} />
                         <div onClick={handleuploadclick}  className="mt-5 flex justify-center items-center align-middle p-3 bg-[#0ea0cd] rounded-2xl hover:cursor-pointer hover:scale-105 transition-all" ><i className="bx bx-image pr-2 font-bold text-[22px] text-white"/><p className="font-semibold text-[20px] text-white">Upload</p></div>
@@ -385,15 +537,15 @@ function PatientInformation(){
                       <div className=" ml-15">
                        <div className=" h-fit form-group  ">
                         <label className="text-[23px]  font-bold  text-[#2d2d44] "htmlFor="patientlastname">Last Name :</label>     
-                        <input className="w-120 border-b-2 border-gray-600 ml-3 text-[#2d2d44] text-[20px]  font-semibold" value={patientlastname} onChange={(e) => setpatientlastname(e.target.value)} type="text" name="patientlastname" id="patientlastname" placeholder="Patient Last Name..."/></div>
+                        <input className="w-120 border-b-2 border-gray-600 ml-3 text-[#2d2d44] text-[20px]  font-semibold" value={demographicformdata.patientlastname} onChange={handleinputchange} type="text" name="patientlastname" id="patientlastname" placeholder="Patient Last Name..."/></div>
 
                         <div className=" h-fit form-group  mt-5">
                         <label className="text-[23px]  font-bold  text-[#2d2d44] "htmlFor="patientfirstname">First Name :</label>     
-                        <input className="w-120 border-b-2 border-gray-600 ml-3 text-[#2d2d44] text-[20px]  font-semibold" value={patientfirstname} onChange={(e) => setpatientfirstname(e.target.value)}  type="text" name="patientfirstname" id="patientfirstname" placeholder="Patient First Name..."/></div>
+                        <input className="w-120 border-b-2 border-gray-600 ml-3 text-[#2d2d44] text-[20px]  font-semibold" value={demographicformdata.patientfirstname} onChange={handleinputchange}  type="text" name="patientfirstname" id="patientfirstname" placeholder="Patient First Name..."/></div>
 
                         <div className=" h-fit form-group  mt-5 flex">
                         <label className="text-[23px]  font-bold  text-[#2d2d44] "htmlFor="patientmiddlename">Middle Name :</label>     
-                        <input className="w-112 border-b-2 border-gray-600 ml-3 text-[#2d2d44] text-[20px]  font-semibold" value={patientmiddlename} onChange={(e) => setpatientmiddlename(e.target.value)}  type="text" name="patientmiddlename" id="patientmiddlename" placeholder="Patient Middle Name.."/></div>
+                        <input className="w-112 border-b-2 border-gray-600 ml-3 text-[#2d2d44] text-[20px]  font-semibold" value={demographicformdata.patientmiddlename} onChange={handleinputchange}  type="text" name="patientmiddlename" id="patientmiddlename" placeholder="Patient Middle Name.."/></div>
 
 
 
@@ -402,7 +554,7 @@ function PatientInformation(){
 
                         <div className=" h-fit form-group">
                         <label className="text-[23px]  font-bold  text-[#2d2d44] "htmlFor="patientage">Age :</label>     
-                        <input className="w-32 border-b-2 border-gray-600 ml-3 text-[#2d2d44] text-[20px]  font-semibold" value={patientage} onChange={(e) => setpatientage(e.target.value)}  type="number" name="patientage" id="patientage" placeholder="Age..."/></div>
+                        <input className="w-32 border-b-2 border-gray-600 ml-3 text-[#2d2d44] text-[20px]  font-semibold" value={demographicformdata.patientage} onChange={handleinputchange}  type="number" name="patientage" id="patientage" placeholder="Age..."/></div>
 
                             </div>
 
@@ -410,7 +562,7 @@ function PatientInformation(){
                               
                             <div className=" h-fit form-group ml-15">
                            <label className="text-[23px]  font-bold  text-[#2d2d44] "htmlFor="patientbirthdate">Birthdate :</label>     
-                           <input className="w-32 border-b-2 border-gray-600 ml-3 text-[#2d2d44] text-[20px]  font-semibold" value={patientbirthdate} onChange={(e) => setpatientbirthdate(e.target.value)}  type="text" name="patientbirthdate" id="patientbirthdate" placeholder="mm/dd/yyyy"/> </div>
+                           <input className="w-38 justify-center border-b-2 border-gray-600 ml-3 text-[#2d2d44] text-[20px]  font-semibold" value={demographicformdata.patientbirthdate} onChange={handleinputchange}  type="date" name="patientbirthdate" id="patientbirthdate" placeholder=""/> </div>
 
                             </div>
 
@@ -422,30 +574,44 @@ function PatientInformation(){
 
                         <div className=" h-fit form-group  mt-5 flex">
                         <label className="text-[23px]  font-bold  text-[#2d2d44] "htmlFor="patientgender">Gender :</label>     
-                        <div className="ml-3"><GenderBox value={patientgender} onChange={(e) => setpatientgender(e.target.value)} /></div>  </div>
+                        <div className="ml-3"><GenderBox value={demographicformdata.patientgender} onChange={handleinputchange} /></div>  </div>
 
 
                         <div className=" h-fit form-group  mt-5 flex">
                         <label className="text-[23px]  font-bold  text-[#2d2d44] "htmlFor="patientcontactnumber">Contact Number :</label>     
-                        <input className="w-104 border-b-2 border-gray-600 ml-3 text-[#2d2d44] text-[20px]  font-semibold" value={patientcontactnumber} onChange={(e) => setpatientcontactnumber(e.target.value)}  type="text" name="patientcontactnumber" id="patientcontactnumber" placeholder="Patient Contact Number.."/> </div>
+                        <input className="w-104 border-b-2 border-gray-600 ml-3 text-[#2d2d44] text-[20px]  font-semibold" value={demographicformdata.patientcontactnumber} onChange={handleinputchange}  type="text" name="patientcontactnumber" id="patientcontactnumber" placeholder="Ex: 09xxxxxxxxx"/> </div>
 
                         <div className=" h-fit form-group  mt-5 flex">
                         <label className="text-[23px]  font-bold  text-[#2d2d44] "htmlFor="patienthomeaddress">Home Address :</label>     
-                        <input className="w-104 border-b-2 border-gray-600 ml-3 text-[#2d2d44] text-[20px]  font-semibold" value={patienthomeaddress} onChange={(e) => setpatienthomeaddress(e.target.value)}  type="text" name="patienthomeaddress" id="patienthomeaddress" placeholder="Patient Home Address.."/> </div>
+                        <input className="w-104 border-b-2 border-gray-600 ml-3 text-[#2d2d44] text-[20px]  font-semibold" value={demographicformdata.patienthomeaddress} onChange={handleinputchange}  type="text" name="patienthomeaddress" id="patienthomeaddress" placeholder="Ex: #001 Sison St., Townsite, Limay, Bataan"/> </div>
 
 
                         <div className=" h-fit form-group  mt-20 flex">
                         <label className="text-[20px]  font-bold  text-[#2d2d44] "htmlFor="patientemergencycontactname">Emergency Contact Name :</label>     
-                        <input className="w-90 border-b-2 border-gray-600 ml-3 text-[#2d2d44] text-[20px]  font-semibold" value={patientemergencycontactname} onChange={(e) => setpatientemergencycontactname(e.target.value)}  type="text" name="patientemergencycontactname" id="patientemergencycontactname" placeholder="Emergency Contact Name.."/> </div>
+                        <input className="w-90 border-b-2 border-gray-600 ml-3 text-[#2d2d44] text-[20px]  font-semibold" value={demographicformdata.patientemergencycontactname} onChange={handleinputchange}  type="text" name="patientemergencycontactname" id="patientemergencycontactname" placeholder="Ex: Juan Dela Cruz"/> </div>
 
                         <div className=" h-fit form-group  mt-5 flex">
                         <label className="text-[20px]  font-bold  text-[#2d2d44] "htmlFor="patientemergencycontactnumber">Emergency Contact Number :</label>     
-                        <input className="w-84 border-b-2 border-gray-600 ml-3 text-[#2d2d44] text-[20px]  font-semibold" value={patientemergencycontactnumber} onChange={(e) => setpatientemergencycontactnumber(e.target.value)}  type="text" name="patientemergencycontactnumber" id="patientemergencyconctactnumber" placeholder="Emergency Contact Number.."/> </div>
+                        <input className="w-84 border-b-2 border-gray-600 ml-3 text-[#2d2d44] text-[20px]  font-semibold" value={demographicformdata.patientemergencycontactnumber} onChange={handleinputchange}  type="text" name="patientemergencycontactnumber" id="patientemergencyconctactnumber" placeholder="Ex: 09xxxxxxxxx"/> </div>
 
 
        
-                        <div className=" mt-15">
-                    
+                      <div className=" mt-15">
+                     {/*       <button type="submit" disabled={issubmitting} className="submit-btn mt-12 w-full" style={{ backgroundColor: "#2b2b44", fontSize: "20px", padding: "10px 20px", color: "white", borderRadius: "20px",   }}>
+                         {issubmitting ? "Saving..." : "Save"}
+                        </button>
+                */}
+
+                      <button type="submit" disabled={issubmitting} className={`submit-btn mt-12 w-full flex justify-center items-center ${issubmitting? "opacity-75 cursor-not-allowed" : "" }`} style={{ backgroundColor: "#2b2b44", fontSize: "20px", padding: "10px 20px", color: "white", borderRadius: "20px",   }}>
+                        {issubmitting ? (                                        <>
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"  className="text-white animate-spin h-5 w-5 ">
+                                        <circle cx="12" cy="12" stroke="currentColor" className="opacity-25" r="10" strokeWidth="4" ></circle>
+                                        <path fill="currentColor" className="opacity-75" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                        </svg>
+                                        <span className="font-albertsans text-white font-medium">{isexistingdemographic ? "Updating..." : "Saving..."}</span>
+                                        </>):(isexistingdemographic? "Update" : "Save")}
+                      </button>
+
                         </div>
 
 

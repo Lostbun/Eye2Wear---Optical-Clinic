@@ -11,6 +11,21 @@ dotenv.config();
 
 
 
+
+
+const generateAuthToken = (patient) => {
+  return jwt.sign({
+    id: patient._id,
+    email: patient.patientemail,
+    role: 'patient'
+  },
+process.env.JWT_SECRET, {expiresIn: "1h"});
+}
+
+
+
+
+
 //Retrieve (All Patient) Controller
 export const getpatientaccounts = async (req, res) => {
   try {
@@ -66,6 +81,8 @@ export const getloggedinpatientacc = async (req, res) => {
       patientlastname: patient.patientlastname,
       patientfirstname: patient.patientfirstname,
       patientmiddlename: patient.patientmiddlename,
+      patientemail: patient.patientemail,
+      patientId: patient.patientId,
       patientprofilepicture: patient.patientprofilepicture
     });
 
@@ -81,26 +98,30 @@ export const getloggedinpatientacc = async (req, res) => {
 };
 
 
-export const verifyloggedinpatientacc = async (req, res, next) => {
+
+
+
+export const verifyloggedinpatientacc = async(req,res,next) => {
   try{
-    const patienttoken = req.header('Authorization')?.replace('Bearer ','');
+    const patienttoken = req.header('Authorization')?.replace('Bearer ', '');
 
     if(!patienttoken){
-      return res.status(401).json({message: 'Authorization required'});
+      console.error("No token provided");
+      return res.status(401).json({message: "Authorization Required" });
     }
 
-    const tokendecoded = jwt.verify(patienttoken, process.env.JWT_KEY);
-    req.patient = {id: tokendecoded.id};
+
+    const tokendecoded = jwt.verify(patienttoken, process.env.JWT_SECRET);
+    console.log("Decoded token: ", tokendecoded);
+
+    req.patient = {id: tokendecoded.id, email: tokendecoded.email};
     next();
-  
+
   }catch(error){
-    console.error("Token not verified:", error);
-    res.status(401).json({
-      message:"Invalid Token",
-      error: error.message
-    });
+    console.error("Token verification failed: ", error.message);
+    res.status(401).json({message: "Invalid token", error});
   }
-}
+};
 
 
 
@@ -218,14 +239,7 @@ export const patientlogin = async(req, res) => {
       return res.status(401).json({message:"Login Error, Invalid Credentials"});
     }
 
-    const jsontoken = jwt.sign(
-      {
-        id: patient._id, email: patient.patientemail},
-     
-        process.env.JWT_KEY,
-        {expiresIn: "1h"}
-
-       );
+    const jsontoken = generateAuthToken(patient);
 
 
 

@@ -1,7 +1,12 @@
+/* eslint-disable no-undef */
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 import AutoIncrement from "mongoose-sequence";
 import { Sankey } from "recharts";
+import dotenv from "dotenv";
+
+
+dotenv.config();
 
 
 
@@ -57,7 +62,7 @@ const PatientaccountSchema = mongoose.Schema(
     //Lastname properties
     patientlastname:{
       type: String,
-      required: [true, "Please provide your first name"],
+      required: [true, "Please provide your last name"],
       trim: true,
     },
 
@@ -65,7 +70,7 @@ const PatientaccountSchema = mongoose.Schema(
     //Firstname properties
     patientfirstname:{
       type: String,
-      required: [true, "Please provide your first name"],
+      required: [true, "Please provide you first name"],
       trim: true,
      },
 
@@ -73,7 +78,7 @@ const PatientaccountSchema = mongoose.Schema(
     //Middlename properties
     patientmiddlename:{
       type: String,
-      required: [true, "Please provide your first name"],
+      required: [true, "Please provide your middle name"],
       trim: true,
     },
 
@@ -143,6 +148,15 @@ PatientaccountSchema.pre('save', async function(next){
 
 });
 
+/*
+PatientaccountSchema.methods.generateAuthToken = function(){
+  return jwt.sign(
+    {id: this._id},
+    process.env.JWT_KEY,
+    {expiresIn: '1h'}
+  );
+};
+*/
 
 
 

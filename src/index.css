@@ -9,16 +9,18 @@
 @font-face {
   font-family: 'Leoscar';
   src: url('./assets/fonts/Leoscar.ttf') format('truetype');
+  font-display: swap; 
 }
 
 @font-face {
   font-family: 'League';
   src: url('./assets/fonts/LEAGUE-SPARTAN.BOLD.TTF') format('truetype');
+  font-display: swap; 
 }
 
 @font-face {
   font-family: 'Albertsans';
-
+  font-display: swap; 
   src: url('./assets/fonts/albertsans.TTF') format('truetype');
 }
 
@@ -26,11 +28,13 @@
   font-family: 'Poppins';
   font-weight: 800;
   src: url('./assets/fonts/Poppins/POPPINS-BOLD.TTF') format('truetype');
+  font-display: swap; 
 }
 
 @font-face {
   font-family: 'Matimo';
   src: url('./assets/fonts/MATIMO-SEMIBOLDITALIC.OTF') format('opentype');
+  font-display: swap; 
 }
 
 
@@ -38,6 +42,7 @@
 @font-face {
   font-family: 'Matimo';
   src: url('./assets/fonts/MATIMO-SEMIBOLDITALIC.OTF') format('opentype');
+  font-display: swap; 
 }
 
 
@@ -46,25 +51,30 @@
 @font-face {
   font-family: 'Geistbold';
   src: url('./assets/fonts//Geist/Geist-Bold-BF6569491da5a14.otf') format('opentype');
+  font-display: swap; 
 }
 
 
 @font-face {
   font-family: 'Geistregular';
   src: url('./assets/fonts//Geist/Geist-Regular-BF6569491e3eff1.otf') format('opentype');
+  font-display: swap; 
 }
 
 @font-face {
   font-family: 'Geistsemibold';
   src: url('./assets/fonts//Geist/Geist-SemiBold-BF6569491e8c368.otf') format('opentype');
+  font-display: swap; 
 }
 @font-face {
   font-family: 'Geistmedium';
   src: url('./assets/fonts//Geist/Geist-Medium-BF6569491e1c281.otf') format('opentype');
+  font-display: swap; 
 }
 @font-face {
   font-family: 'Geistlight';
   src: url('./assets/fonts//Geist/Geist-Light-BF6569491dc9c01.otf') format('opentype');
+  font-display: swap; 
 }
 
 

@@ -1,7 +1,11 @@
-import { useEffect } from "react";
+import { useEffect, useCallback  } from "react";
 import { useNavigate } from "react-router-dom";
-import { jwtDecode } from "jwt-decode";
 import axios from "axios";
+
+
+
+
+
 
 
 
@@ -31,12 +35,7 @@ export const useAuth = () => {
 
 
 
-
-
-
-
-
-
+/*
     const monitortokenexpiration = () => {
         const patienttoken = localStorage.getItem("patienttoken");
 
@@ -59,7 +58,7 @@ export const useAuth = () => {
     };
 
 
-
+*/
 
 
 
@@ -68,13 +67,13 @@ export const useAuth = () => {
 
 
 
-    const fetchpatientdetails = async () => {
+    const fetchpatientdetails = useCallback( async () => {
 
-        if(!monitortokenexpiration()) return null;
+       /* if(!monitortokenexpiration()) return null;*/
 
         try{
   
-          const response = await axios.get("http://localhost:3000/api/patientaccounts/me", {
+          const response = await axios.get(`http://localhost:3000/api/patientaccounts/me`, {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("patienttoken")}`},
           });
@@ -85,11 +84,43 @@ export const useAuth = () => {
             console.error("Failed to fetch: ",error);
             return null;
         }
-    };
+    }, []);
 
 
 
 
+
+
+
+
+    const fetchpatientdemographicbyemail = useCallback(async (email) => {
+        try{
+            const response = await axios.get(
+                `http://localhost:3000/api/patientdemographics/patientemail/${email}`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem("patienttoken")}`
+                    }
+                }
+            );
+
+            return response.data;
+        
+        }catch(error){
+            if(error.response?.status === 404) {
+                return null;
+            }
+            console.error("Failed to fetch demographic data: ", error);
+            return null;
+        }
+    }, []);
+
+
+ 
+
+
+
+    
 
 
     
@@ -99,17 +130,18 @@ export const useAuth = () => {
 
 
 
+
     useEffect(() => {
-        monitortokenexpiration();
+       /* monitortokenexpiration();
         const interval = setInterval(monitortokenexpiration, 60000);
         return () => clearInterval(interval);
-      
+      */
 
 
 
     },);
 
-    return {monitortokenexpiration,fetchpatientdetails, handlelogout};
+    return {/*monitortokenexpiration*/fetchpatientdetails, fetchpatientdemographicbyemail, handlelogout};
 
 
 

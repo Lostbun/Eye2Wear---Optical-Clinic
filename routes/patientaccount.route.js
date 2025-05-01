@@ -19,7 +19,6 @@ import {
 
 import {verifyloggedinadminacc} from "../controllers/adminaccount.controller.js";
 
-
 const patientrouter = express.Router();
 
 

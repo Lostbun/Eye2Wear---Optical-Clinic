@@ -1,20 +1,33 @@
 import mongoose from "mongoose";
+import Patientaccount from "../models/patientaccount.js";
 import AutoIncrement from "mongoose-sequence";
+import { Sankey } from "recharts";
 
 
 
 
-const PatientprofileSchema = mongoose.Schema(
+const PatientdemographicSchema = mongoose.Schema(
   {
 
-    //Here are the model details required for patient profile
+    //Here are the model details required for patient demographic
+
+
+
+    userId:{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Patientaccount'
+    },
+
+
+
 
 
 
     //PatientID properties Auto Increment
-    patientId: {
+    patientid: {
       type: Number,
-      unique:true
+      unique:true,
+      index: true
     },
 
 
@@ -43,12 +56,10 @@ const PatientprofileSchema = mongoose.Schema(
     },
 
 
-
-
     //Lastname properties
     patientlastname:{
       type: String,
-      required: [true, "Please provide your first name"],
+      required: [true, "Please provide your last name"],
       trim: true,
     },
 
@@ -64,68 +75,63 @@ const PatientprofileSchema = mongoose.Schema(
     //Middlename properties
     patientmiddlename:{
       type: String,
-      required: [true, "Please provide your first name"],
+      required: [true, "Please provide your middle name"],
       trim: true,
     },
 
 
 
+    
     //Age properties
-    patientage: {
-      type: Number,
+    patientage:{
+      type: String,
       required: [true, "Please provide your age"],
       trim: true,
     },
 
-
     //Birthdate properties
-    patientbirthdate: {
+    patientbirthdate:{
       type: String,
       required: [true, "Please provide your birthdate"],
       trim: true,
     },
 
-
     //Gender properties
-    patientgender: {
+    patientgender:{
       type: String,
       required: [true, "Please provide your gender"],
-      trim: true,
+      enum: ['Male', 'Female', 'Other']
     },
 
+
     //Contactnumber properties
-    patientcontactnumber: {
+    patientcontactnumber:{
       type: String,
       required: [true, "Please provide your contact number"],
       trim: true,
     },
-
-
+    
+    
     //Homeaddress properties
-    patienthomeaddress: {
+    patienthomeaddress:{
       type: String,
       required: [true, "Please provide your home address"],
       trim: true,
-    },
-
+    },    
 
     //Emergencycontactname properties
-    patientemergencycontactname: {
+    patientemergencycontactname:{
       type: String,
-      required: [true, "Please provide your emergency contact name"],
+      required: [true, "Please provide contact name"],
       trim: true,
-    },   
-    
-    
+    }, 
+
     //Emergencycontactnumber properties
-    patientemergencycontactnumber: {
+    patientemergencycontactnumber:{
       type: String,
-      required: [true, "Please provide your emergency contact number"],
+      required: [true, "Please provide your contact number"],
       trim: true,
-    },    
-    
-
-
+    }, 
 
 
     //Profile picture properties
@@ -137,7 +143,12 @@ const PatientprofileSchema = mongoose.Schema(
 
 
 
-
+    isVerified: {type: Boolean, default: false},
+    verificationtoken: {type: String},
+    verificationtokenexpires: {type: Date},
+ 
+    //resetpasswordtoken: {type: String},
+ //   resetpasswordexpires: {type: Date}
 
 
 },
@@ -148,8 +159,13 @@ const PatientprofileSchema = mongoose.Schema(
 
 
 
+PatientdemographicSchema.plugin(AutoIncrement(mongoose),{
+  inc_field: 'patientid',
+  id: 'patient_demographic_id',
+  start_seq: true,
+  disable_hooks: false
+});
 
 
 
-
-export default mongoose.model("Patientprofile", PatientprofileSchema);
+export default mongoose.model("Patientdemographic", PatientdemographicSchema);

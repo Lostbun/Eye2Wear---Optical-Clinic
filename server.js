@@ -8,6 +8,7 @@ import adminrouter from "./routes/adminaccount.route.js";
 import staffrouter from "./routes/staffacount.route.js";
 import ownerrouter from "./routes/owneraccount.route.js";
 import forgotpassrouter from "./routes/forgotpass.route.js";
+import patientdemographicrouter from "./routes/patientdemographic.route.js";
 
 
 
@@ -58,6 +59,8 @@ app.use("/api/adminaccounts", adminrouter);
 app.use("/api/staffaccounts", staffrouter);
 //Routes
 app.use("/api/owneraccounts", ownerrouter);
+//Routes
+app.use("/api/patientdemographics", patientdemographicrouter);
 
 
 
