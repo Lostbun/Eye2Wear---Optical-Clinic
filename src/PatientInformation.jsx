@@ -227,7 +227,7 @@ function PatientInformation(){
             ...prev,
             ...demographicdata,
             patientemail: patientdata.patientemail,
-            patientid: patientdata.patientId
+            patientId: patientdata.patientId
           }));
 
 
@@ -240,7 +240,7 @@ function PatientInformation(){
           setdemographicformdata(prev => ({
             ...prev,
             patientemail: patientdata.patientemail,
-            patientid: patientdata.patientid,
+            patientId: patientdata.patientid,
             patientfirstname: patientdata.patientfirstname || '',
             patientlastname: patientdata.patientlastname || '',
             patientmiddlename: patientdata.patientmiddlname || '',

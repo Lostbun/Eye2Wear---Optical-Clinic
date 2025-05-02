@@ -24,7 +24,7 @@ const PatientdemographicSchema = mongoose.Schema(
 
 
     //PatientID properties Auto Increment
-    patientid: {
+    patientId: {
       type: Number,
       unique:true,
       index: true
@@ -160,8 +160,8 @@ const PatientdemographicSchema = mongoose.Schema(
 
 
 PatientdemographicSchema.plugin(AutoIncrement(mongoose),{
-  inc_field: 'patientid',
-  id: 'patient_demographic_id',
+  inc_field: 'patientId',
+  id: 'patient_demographic_Id',
   start_seq: true,
   disable_hooks: false
 });

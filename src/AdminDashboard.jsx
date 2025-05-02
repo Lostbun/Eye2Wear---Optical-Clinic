@@ -12,6 +12,7 @@ import defaultprofilepic from '../src/assets/images/defaulticon.png'
 import imageCompression from "browser-image-compression";
 import darklogo from "../src/assets/images/darklogo.png";
 import axios from "axios";
+import { GenderBoxAdminDash } from "./components/GenderBoxAdminDash";
 
 
 function AdminDashboard(){
@@ -2576,6 +2577,260 @@ const adminhandlechange = (e) => {
 
 
 
+//PATIENT PROFILE //PATIENT PROFILE //PATIENT PROFILE //PATIENT PROFILE //PATIENT PROFILE //PATIENT PROFILE //PATIENT PROFILE //PATIENT PROFILE //PATIENT PROFILE //PATIENT PROFILE
+//PATIENT PROFILE //PATIENT PROFILE //PATIENT PROFILE //PATIENT PROFILE //PATIENT PROFILE //PATIENT PROFILE //PATIENT PROFILE //PATIENT PROFILE //PATIENT PROFILE //PATIENT PROFILE
+//PATIENT PROFILE //PATIENT PROFILE //PATIENT PROFILE //PATIENT PROFILE //PATIENT PROFILE //PATIENT PROFILE //PATIENT PROFILE //PATIENT PROFILE //PATIENT PROFILE //PATIENT PROFILE
+//PATIENT PROFILE //PATIENT PROFILE //PATIENT PROFILE //PATIENT PROFILE //PATIENT PROFILE //PATIENT PROFILE //PATIENT PROFILE //PATIENT PROFILE //PATIENT PROFILE //PATIENT PROFILE
+//PATIENT PROFILE //PATIENT PROFILE //PATIENT PROFILE //PATIENT PROFILE //PATIENT PROFILE //PATIENT PROFILE //PATIENT PROFILE //PATIENT PROFILE //PATIENT PROFILE //PATIENT PROFILE
+//PATIENT PROFILE //PATIENT PROFILE //PATIENT PROFILE //PATIENT PROFILE //PATIENT PROFILE //PATIENT PROFILE //PATIENT PROFILE //PATIENT PROFILE //PATIENT PROFILE //PATIENT PROFILE
+//PATIENT PROFILE //PATIENT PROFILE //PATIENT PROFILE //PATIENT PROFILE //PATIENT PROFILE //PATIENT PROFILE //PATIENT PROFILE //PATIENT PROFILE //PATIENT PROFILE //PATIENT PROFILE
+//PATIENT PROFILE //PATIENT PROFILE //PATIENT PROFILE //PATIENT PROFILE //PATIENT PROFILE //PATIENT PROFILE //PATIENT PROFILE //PATIENT PROFILE //PATIENT PROFILE //PATIENT PROFILE
+//PATIENT PROFILE //PATIENT PROFILE //PATIENT PROFILE //PATIENT PROFILE //PATIENT PROFILE //PATIENT PROFILE //PATIENT PROFILE //PATIENT PROFILE //PATIENT PROFILE //PATIENT PROFILE
+//PATIENT PROFILE //PATIENT PROFILE //PATIENT PROFILE //PATIENT PROFILE //PATIENT PROFILE //PATIENT PROFILE //PATIENT PROFILE //PATIENT PROFILE //PATIENT PROFILE //PATIENT PROFILE
+const [showpatientpofile, setshowpatientpofile] = useState(false);
+const [activeprofiletable, setactiveprofiletable] = useState('patientprofiletable');
+const [loadingpatientdemographics, setloadingpatientdemographics] = useState(true);
+const [patientdemographics, setpatientdemographics] = useState([]);
+const [patientdemoerror, setpatientdemoerror] = useState(null);
+const [showdeletepatientprofiledialog, setshowdeletepatientprofiledialog] = useState(false);
+const [selectedpatientprofile,setselectedpatientprofile] = useState(null)
+
+
+const showprofiletable = (profiletableid) => {
+      setactiveprofiletable(profiletableid);
+};
+
+
+const [selectedpatientdemo, setselectedpatientdemo] = useState(null);
+const [demoformdata, setdemoformdata] = useState({
+  patientlastname: '',
+  patientfirstname: '',
+  patientmiddlename: '',
+  patientage: '',
+  patientbirthdate: '',
+  patientgender: '',
+  patientcontactnumber: '',
+  patienthomeaddress: '',
+  patientemergencycontactname: '',
+  patientemergencycontactnumber: '',
+  patientprofilepicture: ''
+});
+
+
+
+//RETRIEVING THE PATIENT DEMOGRAPHICS
+useEffect(() => {
+  if(activeprofiletable === "patientprofiletable") {
+    const fetchpatientdemographics = async () => {
+      try{
+        const response = await fetch('/api/patientdemographics', {
+          headers: {
+            'Authorization' : `Bearer ${currentusertoken}`
+          }
+        });
+
+        if(!response.ok) throw new Error("Failed to retrieve patient demographics");
+        const data = await response.json();
+
+        setpatientdemographics(data);
+
+
+      }catch(error){
+        setpatientdemoerror(error.message);
+      }finally{
+        setloadingpatientdemographics(false);
+      }
+  
+    };
+    fetchpatientdemographics();
+  }
+}, [activeprofiletable, currentusertoken]);
+
+
+
+
+const renderpatientprofiles = () => {
+
+  if(loadingpatientdemographics) {
+    return(
+      <div className="flex justiy-center p-8 items-center">
+        <div className="animate-spin rounded-full border-t-2 border-b-2 border-blue-500 h-12 w-12"></div>
+      </div>
+    );
+  }
+
+
+  if(patientdemoerror){
+    return(
+      <div className="rounded-lg p-4 bg-red-50 text-red-600">
+        Error: {patientdemoerror}
+      </div>
+    );
+  }
+
+
+  if(patientdemographics.length === 0){
+    return(
+      <div className="text-yellow-600 bg-yellow-50 rounded-2xl px-4 py-6">No patient profiles found.</div>
+    );
+  }
+
+
+
+
+  return (
+    <div className="overflow-y-auto w-full h-[480px] flex flex-wrap content-start gap-3 pl-2 pt-2">
+    
+    {patientdemographics.map((patient) => (
+      <div id="patientcard" key={patient._id} onClick={() => {
+      setshowpatientpofile(true);
+      setselectedpatientdemo(patient);
+      setdemoformdata({
+        patientlastname: patient.patientlastname,
+        patientfirstname: patient.patientfirstname,
+        patientmiddlename: patient.patientmiddlename,
+        patientage: patient.patientage,
+        patientbirthdate: patient.patientbirthdate,
+        patientgender: patient.patientgender,
+        patientcontactnumber: patient.patientcontactnumber,
+        patienthomeaddress: patient.patienthomeaddress,
+        patientemergencycontactname: patient.patientemergencycontactname,
+        patientemergencycontactnumber: patient.patientemergencycontactnumber,
+        patientprofilepicture: patient.patientprofilepicture
+
+      });
+
+      setpreviewimage(patient.patientprofilepicture);
+      setselectedpatientprofile({
+        id: patient.patientId,
+        email: patient.patientemail,
+        name: `${patient.patientfirstname} ${patient.patientlastname}`});
+    }}
+    
+    className="flex justify-center items-center mb-1 bg-white shadow-lg w-[316px] h-[120px] rounded-3xl hover:cursor-pointer hover:scale-105 transition-all ease-in-out duration-300 " >
+      <div className="w-[125px] h-full  rounded-2xl flex justify-center items-center">
+      <img src={patient.patientprofilepicture || defaultprofilepic} alt="Profile" className="h-18 w-18 rounded-full object-cover"></img>
+      </div>
+      <div className="bg-white min-w-0 flex flex-col justify-center items-start pl-2 pr-2 w-full h-full  rounded-3xl">
+        <h1 className="font-albertsans font-semibold text-[17px] truncate w-full text-[#2d3744]">{patient.patientfirstname} {patient.patientlastname}</h1>
+        <p className="text-[14px] truncate w-full">{patient.patientemail}</p>
+      </div>
+    </div>
+    ))}
+    </div>
+  
+  );
+  };
+
+
+
+
+
+
+  const handledemosubmit = async (e) => {
+    e.preventDefault();
+
+    try{
+
+
+      const response = await fetch(`/api/patientdemographics/${selectedpatientdemo._id}`,{
+        method: 'PUT',
+        headers:{
+          'Content-Type' : 'application/json',
+          'Authorization' : `Bearer ${currentusertoken}`
+        },
+        body: JSON.stringify({
+          ...demoformdata,
+          patientprofilepicture: previewimage || demoformdata.patientprofilepicture
+        })
+      });
+
+
+      if(!response.ok) throw new Error("Failed to update patient demographics");
+
+      const fetchresponse = await fetch('/api/patientdemographics',{
+        headers: {'Authorization' : `Bearer ${currentusertoken}`}
+      });
+
+      const updateddata = await fetchresponse.json();
+      setpatientdemographics(updateddata);
+      setshowpatientpofile(false);
+
+    }catch(error){
+      console.error("Error updating patient demographic: ", error);
+    }
+  }
+
+
+
+
+
+
+
+
+
+  //DELETE PATIENT PROFILE  //DELETE PATIENT PROFILE  //DELETE PATIENT PROFILE  //DELETE PATIENT PROFILE  //DELETE PATIENT PROFILE  //DELETE PATIENT PROFILE
+  const deletepatientprofile = async () => {
+      try{
+        if(!selectedpatientprofile) return;
+
+        const response = await fetch(`/api/patientdemographics/${selectedpatientprofile.id}`,{
+          method: 'DELETE',
+          headers:{
+            'Authorization': `Bearer ${currentusertoken}`
+          }
+        });
+
+
+
+        if(!response.ok){
+          throw new Error("Failed to delete patient account");
+        }
+
+
+
+        const fetchresponse = await fetch('/api/patientdemographics', {
+            headers:{
+              'Authorization':`Bearer ${localStorage.getItem('admintoken')}`
+            }
+        });
+
+        if(!fetchresponse.ok) {
+          throw new Error("Failed to retrieve updated patient profile");
+        }
+        const data = await fetchresponse.json();
+        setpatientdemographics(data);
+
+        setshowpatientpofile(false)
+        setshowdeletepatientprofiledialog(false);
+        setselectedpatientprofile(null);
+
+        
+      }catch (error){
+        console.error("Failed deleting patient: ", error);
+      }
+    };
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
 
 
 
@@ -2963,13 +3218,17 @@ const adminhandlechange = (e) => {
                       )}
 
 
+
+
+
+
                       {showdeletepatientdialog && (
                          <div className="bg-opacity-0 flex justify-center items-center z-50 fixed inset-0 bg-[#000000af] bg-opacity-50">
 
                            <div className="flex flex-col items  bg-white rounded-2xl w-[600px] h-fit  animate-fadeInUp ">
                            <form className="flex flex-col  w-full h-fit " onSubmit={handlesubmit}>
 
-                              <div className="flex items-center rounded-tl-2xl rounded-tr-2xl h-[70px] bg-[#3b1616]"><i className="ml-3 bx bxs-error text-[28px] font-albertsans font-bold text-[#f1f1f1] "/><h1 className="ml-2 text-[23px] font-albertsans font-bold text-[#cfcfcf]">Delete Patient Account</h1></div>
+                              <div className="flex items-center rounded-tl-2xl rounded-tr-2xl h-[70px] bg-[#3b1616]"><i className="ml-3 bx bxs-error text-[28px] font-albertsans font-bold text-[#f1f1f1] "/><h1 className="ml-2 text-[23px] font-albertsans font-bold text-[#f0f0f0]">Delete Patient Account</h1></div>
                               <div className="flex flex-col  items-center  h-fit rounded-br-2xl rounded-bl-2xl">
                                   <div className="px-5 flex flex-col justify-center  h-[130px] w-full"><p className="font-albertsans font-medium text-[20px]">Are you sure you want to delete this patient account?</p>
                                   {selectedpatientaccount && ( <>
@@ -3824,7 +4083,201 @@ const adminhandlechange = (e) => {
 {/*Profile Information*/}{/*Profile Information*/}{/*Profile Information*/}{/*Profile Information*/}
 {/*Profile Information*/}{/*Profile Information*/}{/*Profile Information*/}{/*Profile Information*/}
 
-              { activedashboard === 'profileinformation' && ( <div id="profileinformation" className="border-2 border-violet-500 w-[100%] h-[100%] rounded-2xl" >   </div> )}
+{ activedashboard === 'profileinformation' && ( <div id="profileinformation" className="pl-5 pr-5 pb-4 pt-4 transition-all duration-300  ease-in-out border-1 bg-white border-gray-200 shadow-lg w-[100%] h-[100%] rounded-2xl" >   
+
+
+           <div className="flex items-center"><i className="bx bxs-user-detail text-[#184d85] text-[25px] mr-2"/> <h1 className=" font-albertsans font-bold text-[#184d85] text-[25px]">Profile Information</h1></div>
+           <div className="flex justify-between items-center mt-3 h-[60px]">
+            <div onClick={() => showprofiletable('patientprofiletable')}  className={`hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 pb-3 pt-3 text-center flex justify-center items-center ${activeprofiletable ==='patientprofiletable' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d] ${activeprofiletable ==='patientprofiletable' ? 'text-white' : ''}`}>Patients</h1></div>
+            <div onClick={() => showprofiletable('staffprofiletable')}  className={`hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 pb-3 pt-3 text-center flex justify-center items-center ${activeprofiletable ==='staffprofiletable' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d] ${activeprofiletable ==='staffprofiletable' ? 'text-white' : ''}`}>Staff</h1></div>
+            <div onClick={() => showprofiletable('ownerprofiletable')}  className={`hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 pb-3 pt-3 text-center flex justify-center items-center ${activeprofiletable ==='ownerprofiletable' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d] ${activeprofiletable ==='ownerprofiletable' ? 'text-white' : ''}`}>Owner</h1></div>
+            <div onClick={() => showprofiletable('administratorprofiletable')}  className={`hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 pb-3 pt-3 text-center flex justify-center items-center ${activeprofiletable ==='administratorprofiletable' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d] ${activeprofiletable ==='administratorprofiletable' ? 'text-white' : ''}`}>Administrator</h1></div>
+           </div>
+
+
+{/*Patient profile Table*/} {/*Patient profile Table*/} {/*Patient profile Table*/} {/*Patient profile Table*/} {/*Patient profile Table*/} {/*Patient profile Table*/} {/*Patient profile Table*/} {/*Patient profile Table*/} {/*Patient profile Table*/} 
+ { activeprofiletable === 'patientprofiletable' && ( <div id="patientprofiletable" className="animate-fadeInUp flex flex-col items-center border-t-2  border-[#909090] w-[100%] h-[83%] rounded-2xl mt-5" >
+
+  <div className=" mt-5  w-full h-[60px] flex justify-between rounded-3xl pl-5 pr-5">              
+     <div className="flex justify-center items-center"><h2 className="font-albertsans font-bold text-[20px] text-[#434343] mr-3 ">Search: </h2><div className="relative flex items-center justify-center gap-3"><i className="bx bx-search absolute left-3 text-2xl text-gray-500"></i><input type="text" placeholder="Enter here..." value={searchpatients} onChange={(e) => {setsearchpatients(e.target.value); filterpatientaccount(e.target.value);}} className="transition-all duration-300 ease-in-out py-2 pl-10 rounded-3xl border-2 border-[#6c6c6c] focus:bg-slate-100 focus:outline-sky-500"></input></div></div>
+      <div onClick={() => setshowaddpatientdialog(true)}  className=" mt-1 mb-1 hover:cursor-pointer hover:scale-103 bg-[#4ca22b] rounded-3xl flex justify-center items-center pl-3 pr-3 transition-all duration-300 ease-in-out"><i className="bx bx-user-plus text-white font-bold text-[30px]"/><p className="font-bold font-albertsans text-white text-[18px] ml-2">Add Patient</p></div>
+       </div>
+
+       <div className=" rounded-3xl h-full w-full mt-2 bg-[#f7f7f7]">
+       {renderpatientprofiles()}
+       </div>
+
+
+
+
+
+       {showpatientpofile && (
+       <div id="patientdemographicprofileform" className="bg-opacity-0 flex justify-center items-center z-50 fixed inset-0 bg-[#000000af] bg-opacity-50">
+         <div className="pl-5 pr-5 bg-white rounded-2xl w-[1300px] h-[780px]  animate-fadeInUp ">
+              <div className=" mt-5 border-3 flex justify-between items-center border-[#2d2d4400] w-full h-[70px]">
+                <div className="flex justify-center items-center"><img src={darklogo} alt="Eye2Wear: Optical Clinic" className="w-15 hover:scale-105 transition-all   p-1"></img><h1 className="text-[#184d85] font-albertsans font-bold ml-3 text-[30px]">Patient Profile</h1></div>
+                <div onClick={() => setshowpatientpofile(false)} className="bg-[#333232] px-10 rounded-2xl hover:cursor-pointer hover:scale-105 transition-all duration-300 ease-in-out"><i className="bx bx-x text-white text-[40px] "/></div>
+              </div>
+
+              <form onSubmit={handledemosubmit}>
+                         
+                         <div className="ml-25 mt-5 flex ">
+   
+   
+                         <div className=" w-60 h-60 ml-10">
+                           <img className=" object-cover h-60 w-full rounded-full" src={previewimage || defaultprofilepic}/>
+   
+                           <input  className="hidden" type="file" onChange={handleprofilechange} accept="image/jpeg, image/jpg, image/png" ref={imageinputref} />
+                           <div onClick={handleuploadclick}  className="mt-5 flex justify-center items-center align-middle p-3 bg-[#0ea0cd] rounded-2xl hover:cursor-pointer hover:scale-105 transition-all" ><i className="bx bx-image pr-2 font-bold text-[22px] text-white"/><p className="font-semibold text-[20px] text-white">Upload</p></div>
+                           
+                           {selectedprofile && (<div onClick={handleremoveprofile} className="mt-5 flex justify-center items-center align-middle p-3 bg-[#bf4c3b] rounded-2xl hover:cursor-pointer hover:scale-105 transition-all" ><i className="bx bx-x font-bold text-[30px] text-white"/><p className="font-semibold text-[20px] text-white">Remove</p></div>)}
+                         </div>
+   
+                         <div className=" ml-15">
+                          <div className=" h-fit form-group  ">
+                           <label className="text-[23px]  font-bold  text-[#2d2d44] "htmlFor="patientlastname">Last Name :</label>     
+                           <input className="w-120 border-b-2 border-gray-600 ml-3 text-[#2d2d44] text-[20px]  font-semibold"  value={demoformdata.patientlastname} onChange={(e) => setdemoformdata({...demoformdata, patientlastname: e.target.value})} type="text" name="patientlastname" id="patientlastname" placeholder="Patient Last Name..."/></div>
+   
+                           <div className=" h-fit form-group  mt-5">
+                           <label className="text-[23px]  font-bold  text-[#2d2d44] "htmlFor="patientfirstname">First Name :</label>     
+                           <input className="w-120 border-b-2 border-gray-600 ml-3 text-[#2d2d44] text-[20px]  font-semibold"  value={demoformdata.patientfirstname} onChange={(e) => setdemoformdata({...demoformdata, patientfirstname: e.target.value})}  type="text" name="patientfirstname" id="patientfirstname" placeholder="Patient First Name..."/></div>
+   
+                           <div className=" h-fit form-group  mt-5 flex">
+                           <label className="text-[23px]  font-bold  text-[#2d2d44] "htmlFor="patientmiddlename">Middle Name :</label>     
+                           <input className="w-112 border-b-2 border-gray-600 ml-3 text-[#2d2d44] text-[20px]  font-semibold"  value={demoformdata.patientmiddlename} onChange={(e) => setdemoformdata({...demoformdata, patientmiddlename: e.target.value})}  type="text" name="patientmiddlename" id="patientmiddlename" placeholder="Patient Middle Name.."/></div>
+   
+   
+   
+                           <div className=" mt-5 flex items-center">
+                           <div className="">
+   
+                           <div className=" h-fit form-group">
+                           <label className="text-[23px]  font-bold  text-[#2d2d44] "htmlFor="patientage">Age :</label>     
+                           <input className="w-32 border-b-2 border-gray-600 ml-3 text-[#2d2d44] text-[20px]  font-semibold"  value={demoformdata.patientage} onChange={(e) => setdemoformdata({...demoformdata, patientage: e.target.value})} type="number" name="patientage" id="patientage" placeholder="Age..."/></div>
+   
+                               </div>
+   
+                               <div className="">
+                                 
+                               <div className=" h-fit form-group ml-15">
+                              <label className="text-[23px]  font-bold  text-[#2d2d44] "htmlFor="patientbirthdate">Birthdate :</label>     
+                              <input className="w-38 justify-center border-b-2 border-gray-600 ml-3 text-[#2d2d44] text-[20px]  font-semibold"  value={demoformdata.patientbirthdate} onChange={(e) => setdemoformdata({...demoformdata, patientbirthdate: e.target.value})}  type="date" name="patientbirthdate" id="patientbirthdate" placeholder=""/> </div>
+   
+                               </div>
+   
+   
+                           </div>
+   
+   
+   
+   
+                           <div className=" h-fit form-group  mt-5 flex">
+                           <label className="text-[23px]  font-bold  text-[#2d2d44] "htmlFor="patientgender">Gender :</label>     
+                           <div className="ml-3"><GenderBoxAdminDash value={demoformdata.patientgender} onChange={(e) => setdemoformdata({...demoformdata, patientgender: e.target.value})} /></div>  </div>
+   
+   
+                           <div className=" h-fit form-group  mt-5 flex">
+                           <label className="text-[23px]  font-bold  text-[#2d2d44] "htmlFor="patientcontactnumber">Contact Number :</label>     
+                           <input className="w-104 border-b-2 border-gray-600 ml-3 text-[#2d2d44] text-[20px]  font-semibold"  value={demoformdata.patientcontactnumber} onChange={(e) => setdemoformdata({...demoformdata, patientcontactnumber: e.target.value})} type="text" name="patientcontactnumber" id="patientcontactnumber" placeholder="Ex: 09xxxxxxxxx"/> </div>
+   
+                           <div className=" h-fit form-group  mt-5 flex">
+                           <label className="text-[23px]  font-bold  text-[#2d2d44] "htmlFor="patienthomeaddress">Home Address :</label>     
+                           <input className="w-104 border-b-2 border-gray-600 ml-3 text-[#2d2d44] text-[20px]  font-semibold"   value={demoformdata.patienthomeaddress} onChange={(e) => setdemoformdata({...demoformdata, patienthomeaddress: e.target.value})}  type="text" name="patienthomeaddress" id="patienthomeaddress" placeholder="Ex: #001 Sison St., Townsite, Limay, Bataan"/> </div>
+   
+   
+                           <div className=" h-fit form-group  mt-5 flex">
+                           <label className="text-[20px]  font-bold  text-[#2d2d44] "htmlFor="patientemergencycontactname">Emergency Contact Name :</label>     
+                           <input className="w-90 border-b-2 border-gray-600 ml-3 text-[#2d2d44] text-[20px]  font-semibold"  value={demoformdata.patientemergencycontactname} onChange={(e) => setdemoformdata({...demoformdata,patientemergencycontactname: e.target.value})}  type="text" name="patientemergencycontactname" id="patientemergencycontactname" placeholder="Ex: Juan Dela Cruz"/> </div>
+   
+                           <div className=" h-fit form-group  mt-5 flex">
+                           <label className="text-[20px]  font-bold  text-[#2d2d44] "htmlFor="patientemergencycontactnumber">Emergency Contact Number :</label>     
+                           <input className="w-84 border-b-2 border-gray-600 ml-3 text-[#2d2d44] text-[20px]  font-semibold" value={demoformdata.patientemergencycontactnumber} onChange={(e) => setdemoformdata({...demoformdata, patientemergencycontactnumber: e.target.value})}  type="text" name="patientemergencycontactnumber" id="patientemergencyconctactnumber" placeholder="Ex: 09xxxxxxxxx"/> </div>
+   
+   
+          
+                         <div className=" mt-10">
+   
+                         <button type="submit" disabled={issubmitting} className={`submit-btn mt-12 w-full flex justify-center items-center ${issubmitting? "opacity-75 cursor-not-allowed" : "" }`} style={{ backgroundColor: "#2b2b44", fontSize: "20px", padding: "10px 20px", color: "white", borderRadius: "20px",   }}>
+                            Save Changes
+                         </button>
+   
+                           </div>
+
+
+   
+                           <div onClick={() =>  {
+                setshowdeletepatientprofiledialog(true);
+                }}
+
+               className="bg-[#8c3226] hover:bg-[#ab4f43]  transition-all duration-300 ease-in-out flex justify-center items-center py-2 px-5 rounded-2xl hover:cursor-pointer"><i className="bx bxs-trash text-white mr-1"/><h1 className="text-white">Delete</h1></div>
+
+
+
+
+              {showdeletepatientprofiledialog && (
+                         <div className="bg-opacity-0 flex justify-center items-center z-50 fixed inset-0 bg-[#000000af] bg-opacity-50">
+
+                           <div className="flex flex-col items  bg-white rounded-2xl w-[600px] h-fit  animate-fadeInUp ">
+    
+
+                              <div className="flex items-center rounded-tl-2xl rounded-tr-2xl h-[70px] bg-[#3b1616]"><i className="ml-3 bx bxs-error text-[28px] font-albertsans font-bold text-[#f1f1f1] "/><h1 className="ml-2 text-[23px] font-albertsans font-bold text-[#f0f0f0]">Delete Patient Profile</h1></div>
+                              <div className="flex flex-col  items-center  h-fit rounded-br-2xl rounded-bl-2xl">
+                                  <div className="px-5 flex flex-col justify-center  h-[130px] w-full"><p className="font-albertsans font-medium text-[20px]">Are you sure you want to delete this patient profile?</p>
+                                  {selectedpatientprofile && ( <>
+                                           <p className="text-[16px]">Patient Name: {selectedpatientprofile.name}</p>
+                                            <p className="text-[16px] mt-3">Patient Email: {selectedpatientprofile.email}</p>
+                                             </>)}  
+                                  </div>        
+                                  <div className="pr-5 flex justify-end  items-center  h-[80px] w-full">
+                                    <div className="hover:cursor-pointer mr-2 bg-[#292929] hover:bg-[#414141]   rounded-2xl h-fit w-fit px-7 py-3 hover:scale-105 transition-all duration-300 ease-in-out" onClick={() => {setshowdeletepatientprofiledialog(false); setselectedpatientprofile(null);}}><p className=" text-[#ffffff]">Cancel</p></div>
+                                    <div className="hover:cursor-pointer bg-[#4e0f0f] hover:bg-[#7f1a1a] ml-2 rounded-2xl h-fit w-fit px-7 py-3 hover:scale-105 transition-all duration-300 ease-in-out" onClick={deletepatientprofile}><p className=" text-[#ffffff]">Delete</p></div>
+                                  </div>
+                              </div>
+
+                           </div>
+                         </div>
+                      )}
+                     
+   
+                        </div>
+                           
+   
+                         </div>
+                       
+     
+                        </form>
+       </div>
+     </div>)}
+
+
+
+ </div>)}
+
+
+
+{/*Staff profile Table*/} {/*Staff profile Table*/} {/*Staff profile Table*/} {/*Staff profile Table*/} {/*Staff profile Table*/} {/*Staff profile Table*/} {/*Staff profile Table*/} {/*Staff profile Table*/}              
+{ activeprofiletable === 'staffprofiletable' && ( <div id="staffprofiletable" className="animate-fadeInUp flex flex-col items-center border-t-2  border-[#909090] w-[100%] h-[83%] rounded-2xl mt-5" >
+    </div>)}
+
+
+
+{/*Owner profile Table*/} {/*Owner profile Table*/} {/*Owner profile Table*/} {/*Owner profile Table*/} {/*Owner profile Table*/} {/*Owner profile Table*/} {/*Owner profile Table*/}
+{ activeprofiletable === 'ownerprofiletable' && ( <div id="ownerprofiletable" className="animate-fadeInUp flex flex-col items-center border-t-2  border-[#909090] w-[100%] h-[83%] rounded-2xl mt-5" >
+    </div>)}
+
+
+
+
+{/*Admin profile Table*/} {/*Admin profile Table*/} {/*Admin profile Table*/} {/*Admin profile Table*/} {/*Admin profile Table*/} {/*Admin profile Table*/} {/*Admin profile Table*/} {/*Admin profile Table*/}
+{ activeprofiletable === 'administratorprofiletable' && ( <div id="administratorprofiletable" className="animate-fadeInUp flex flex-col items-center border-t-2  border-[#909090] w-[100%] h-[83%] rounded-2xl mt-5" >
+  </div>)}
+
+
+
+
+
+
+</div> )}
 
 
 

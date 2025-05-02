@@ -6,13 +6,14 @@
         getpatientdemographicbylastname,
         createpatientdemographic,
         updatepatientdemographic,
-        getpatientdemographicbyemail
+        getpatientdemographicbyemail,
+        deletepatientdemographic
         } from "../controllers/patientdemographic.controller.js";
 
 
 
 
-    import {verifyloggedinadminacc} from "../controllers/adminaccount.controller.js";
+   // import {verifyloggedinadminacc} from "../controllers/adminaccount.controller.js";
 
     const patientdemographicrouter = express.Router();
 
@@ -41,7 +42,7 @@
     patientdemographicrouter.put("/:id", updatepatientdemographic);
 
     //Delete Patient Demographic Data Route
-    patientdemographicrouter.delete("/:id", verifyloggedinadminacc);
+    patientdemographicrouter.delete("/:id", deletepatientdemographic);
 
 
 
