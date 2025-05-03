@@ -13,7 +13,7 @@
 
 
 
-   // import {verifyloggedinadminacc} from "../controllers/adminaccount.controller.js";
+   //import {verifyloggedinadminacc} from "../controllers/adminaccount.controller.js";
 
     const patientdemographicrouter = express.Router();
 
