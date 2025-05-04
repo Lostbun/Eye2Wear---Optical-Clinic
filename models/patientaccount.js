@@ -112,7 +112,8 @@ const PatientaccountSchema = mongoose.Schema(
 
 PatientaccountSchema.plugin(AutoIncrement(mongoose),{
   inc_field: "patientId",
-  id: "patientId_seq",
+  //id: "patientId_seq",
+  id: "patient_account_seq",
   start_seq: true,
   disable_hooks: false
 });

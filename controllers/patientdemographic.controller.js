@@ -143,33 +143,55 @@
 
 
   //CREATE PATIENT DEMOGRAPHIC
-  export const  createpatientdemographic = async (req,res) => {
-    
-    try{
+//AICODE
 
-      const existingpatientdemographic = await Patientdemographic.findOne({
-        patientemail: req.body.patientemail
-      });
+ export const createpatientdemographic = async (req, res) => {
+  try{
 
-      if(existingpatientdemographic) {
-        return res.status(400).json({
-          message:"Patient already have an existing demographic profile. Use Update function."
-        });
+    const requiredfields = [
+      'patientemail',
+      'patientlastname',
+      'patientfirstname',
+      'patientmiddlename',
+      'patientage',
+      'patientbirthdate',
+      'patientgender',
+      'patientcontactnumber',
+      'patienthomeaddress',
+      'patientemergencycontactname',
+      'patientemergencycontactnumber',
+    ];
+
+    for (const field of requiredfields) {
+      if(!req.body[field]) {
+        return res.status(400).json({message: `${field} is required`});
       }
-
-
-      const newpatientdemographic = await Patientdemographic.create(req.body);
-      res.status(201).json(newpatientdemographic);
-      
-    }catch (error){
-        res.status(500).json({
-          message: error.message.includes("validation")
-          ? "Invalid Format"
-          : "Server error",
-          details: error.message
-        });
     }
+
+    const existing = await Patientdemographic.findOne({
+      patientemail: req.body.patientemail
+    });
+
+    if(existing) {
+      return res.status(400).json({
+        message: "Patient demographic profile is existing in this email"
+      });
+    }
+
+    const newdemographic = await Patientdemographic.create(req.body);
+    res.status(201).json(newdemographic);
+
+
+  }catch(error){
+     res.status(500).json({
+      message: error.message.includes("validation")
+      ? "Invalid format"
+      :"Server error",
+      details: error.message
+     });
   }
+ }
+
 
 
 

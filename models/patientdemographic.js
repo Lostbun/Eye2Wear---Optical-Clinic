@@ -1,7 +1,8 @@
 import mongoose from "mongoose";
 import Patientaccount from "../models/patientaccount.js";
 import AutoIncrement from "mongoose-sequence";
-import { Sankey } from "recharts";
+
+
 
 
 
@@ -24,7 +25,7 @@ const PatientdemographicSchema = mongoose.Schema(
 
 
     //PatientID properties Auto Increment
-    patientId: {
+    patientdemographicId: {
       type: Number,
       unique:true,
       index: true
@@ -159,12 +160,26 @@ const PatientdemographicSchema = mongoose.Schema(
 
 
 
-PatientdemographicSchema.plugin(AutoIncrement(mongoose),{
-  inc_field: 'patientId',
-  id: 'patient_demographic_Id',
-  start_seq: true,
-  disable_hooks: false
+//AICODE
+
+PatientdemographicSchema.post('remove', async function(){
+  const doc = await this.constructor.findOne().sort('-patientdemographicId');
+  const newSeq = doc ? doc.patientdemographicId: 0;
+
+  await mongoose.connection.db.collection('counters').updateOne(
+    {_id: "patient_demographic_Id"},
+    {$set: {seq: newSeq}}
+  );
 });
+
+PatientdemographicSchema.plugin(AutoIncrement(mongoose),{
+  inc_field:'patientdemographicId',
+  id: 'patient_demographic_Id',
+  start_seq: 1,
+  disable_hooks: false 
+});
+
+
 
 
 

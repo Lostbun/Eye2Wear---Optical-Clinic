@@ -2601,9 +2601,16 @@ const [demopatientemailerror, setdemopatientemailerror] = useState(false);
 const [emailisnotpatient,setemailisnotpatient] = useState(false);
 const [emailisnotpatienterror,setemailisnotpatienterror] = useState(false);
 const demopatientemailcharacters = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const [addpatientprofilemessage, setaddpatientprofilemessage] = useState ({text: "", type: ""});
+const [addpatientprofileissubmitting, setaddpatientprofileissubmitting] = useState(false);
+const [addpatientprofilepreviewimage, setaddpatientprofilepreviewimage] = useState(null);
+const addpatientprofileimageinputref= useRef(null);
+
+
+
 
 const resetpatientprofileformdata = () => {
-  setdemoformdata ({
+  setdemoformdata({
     patientemail: '',
     patientlastname: '',
     patientfirstname: '',
@@ -2617,11 +2624,12 @@ const resetpatientprofileformdata = () => {
     patientemergencycontactnumber: '',
     patientprofilepicture: ''
   });
-  setpreviewimage(null);
-  setselectedprofile(null);
+  setaddpatientprofilepreviewimage(null);
+  setselectedpatientprofile(null);
+  if (addpatientprofileimageinputref.current) {
+    addpatientprofileimageinputref.current.value = "";
+  }
 };
-
-
 
 
 const showprofiletable = (profiletableid) => {
@@ -2731,7 +2739,7 @@ const renderpatientprofiles = () => {
 
       setpreviewimage(patient.patientprofilepicture);
       setselectedpatientprofile({
-        id: patient.patientId,
+        id: patient._id,
         email: patient.patientemail,
         name: `${patient.patientfirstname} ${patient.patientlastname}`});
     }}
@@ -2752,173 +2760,162 @@ const renderpatientprofiles = () => {
   };
  
 
+  //Debounce Email Check
+  useEffect(() =>{
+    const demoformdebounceemailcheck = async () => {
 
-  //Chceks if email is already existing
- useEffect(() => {
-      const demoformdebounceemailcheck = async () => {
-        
-        //Don't check if email input is empty
-        if(!demoformdata.patientemail) {
+      if(!demoformdata.patientemail) {
+        setdemopatientemailerror(false);
+        setdemopatientemailexist(false);
+        setemailisnotpatient(false);
+        setemailisnotpatienterror(false);
+        return;
+      }
+
+
+
+      if(!demopatientemailcharacters.test(demoformdata.patientemail)){
+        setdemopatientemailerror(false);
+        setdemopatientemailexist(false);
+        setemailisnotpatient(false);
+        setemailisnotpatienterror(false); 
+        return;
+      }
+
+
+      setdemopatientcheckemail(true);
+
+
+
+
+
+      try{
+        const [patientresponse, staffresponse, ownerresponse, adminresponse] = await Promise.all([
+          fetch(`http://localhost:3000/api/patientaccounts/check-email/${encodeURIComponent(demoformdata.patientemail)}`),
+          fetch(`http://localhost:3000/api/staffaccounts/check-email/${encodeURIComponent(demoformdata.patientemail)}`),
+          fetch(`http://localhost:3000/api/owneraccounts/check-email/${encodeURIComponent(demoformdata.patientemail)}`),
+          fetch(`http://localhost:3000/api/adminaccounts/check-email/${encodeURIComponent(demoformdata.patientemail)}`),
+        ]);
+
+
+        const [patientdata, staffdata, ownerdata, admindata] = await Promise.all([
+          patientresponse.json(),
+          staffresponse.json(),
+          ownerresponse.json(),
+          adminresponse.json()
+        ]);
+
+        const accountexists = patientdata.exists || staffdata.exists || ownerdata.exists || admindata.exists;
+
+        if(accountexists){
+            const demoresponse = await fetch(
+              `http://localhost:3000/api/patientdemographics/patientemail/${encodeURIComponent(demoformdata.patientemail)}`
+            );
+
+            const demodata = await demoresponse.json();
+
+            if(demodata.exists) {
+              setdemopatientemailerror(true);
+              setdemopatientemailexist(true);
+              setemailisnotpatient(false);
+              setemailisnotpatienterror(false); 
+            }else{
+              
+              const isnonpatient = staffdata.exists || ownerdata.exists || admindata.exits;
+              setdemopatientemailerror(false);
+              setdemopatientemailexist(false);
+              setemailisnotpatient(isnonpatient);
+              setemailisnotpatienterror(isnonpatient);
+            }
+        }else{
           setdemopatientemailerror(false);
           setdemopatientemailexist(false);
-          setemailisnotpatient(false); 
-          setemailisnotpatienterror(false);
-          return;
-        }
-
-
-
-        if(!demopatientemailcharacters.test(demoformdata.patientemail)) {
-          setdemopatientemailerror(true);
-          return;
-        }
-
-        setdemopatientcheckemail (true);
-
-        try{
-          //Request to server if the email exists in patientaccounts collection
-          const patientresponse = await fetch(
-            `http://localhost:3000/api/patientaccounts/check-email/${encodeURIComponent(demoformdata.patientemail)}`
-     
-          );
-
-          //Request to server if the email exists in adminaccounts collection
-          const staffresponse = await fetch(
-            `http://localhost:3000/api/staffaccounts/check-email/${encodeURIComponent(demoformdata.patientemail)}`
-     
-          );
-          
-
-          //Request to server if the email exists in owneraccounts collection
-          const ownerresponse = await fetch(
-             `http://localhost:3000/api/owneraccounts/check-email/${encodeURIComponent(demoformdata.patientemail)}`
-                 
-          );
-
-
-          //Request to server if the email exists in adminaccounts collection
-          const adminresponse = await fetch(
-             `http://localhost:3000/api/adminaccounts/check-email/${encodeURIComponent(demoformdata.patientemail)}`
-                 
-          );
-          
-        const patientdata = await patientresponse.json();
-        const staffdata = await staffresponse.json();
-        const ownerdata = await ownerresponse.json();
-        const admindata = await adminresponse.json();
-
-
-        if(patientdata.exists  ||  staffdata.exists || ownerdata.exists  ||  admindata.exists){
-
-          if(patientdata.exists){
-
-            const patientdemographicsrespone = await fetch(
-              `http://localhost:3000/api/patientdemographics/patientemail/${encodeURIComponent(demoformdata.patientemail)}`
-              );
-              const patientdemoemail = await patientdemographicsrespone.json();
-              setdemopatientemailexist(patientdemoemail); 
-              setdemopatientemailerror(patientdemoemail);
-          }
-          else if(staffdata.exists || ownerdata.exists  ||  admindata.exists){
-            setemailisnotpatient(true); 
-            setemailisnotpatienterror(true);
-          }
-
-
-
-
+          setemailisnotpatient(false);
+          setemailisnotpatienterror(false); 
 
         }
-
-
-
-
 
 
       }catch(error){
-        console.error("Failed email validation:", error);
+        console.error("Failed Email Validation: ", error);
+        setdemopatientemailerror(false);
+        setdemopatientemailexist(false);
+        setemailisnotpatient(false);
+        setemailisnotpatienterror(false); 
+      
       }finally{
-        //Check email done
         setdemopatientcheckemail(false);
       }
 
-      }
+    };
 
-      const timer = setTimeout(demoformdebounceemailcheck, 500);
-      return () => clearTimeout(timer); //Cleanup
-}, [demoformdata.patientemail]);
-
-
+    const timer = setTimeout(demoformdebounceemailcheck, 500);
+    return () => clearTimeout(timer);
+  }, [demoformdata.patientemail]);
+ 
 
 
   //INSERT PATIENT PROFILE  //INSERT PATIENT PROFILE  //INSERT PATIENT PROFILE  //INSERT PATIENT PROFILE  //INSERT PATIENT PROFILE  //INSERT PATIENT PROFILE
   const addpatientprofile = async (e) => {
-  e.preventDefault()
-  setadminissubmitting(true)
-  setadminmessage({
-    text:'', type:''
-  })
+    e.preventDefault();
+    setaddpatientprofileissubmitting(true);
+    setaddpatientprofilemessage({text: "", type: ""});
 
-try{
-
-  
-  const adminaccsubmission = {
-    ...adminformdata,
-    adminprofilepicture: adminpreviewimage || adminformdata.adminprofilepicture
-  };
+    try{
+      if(demopatientemailerror || demopatientemailexist || emailisnotpatienterror) {
+        throw new Error("Fix email validation before submitting");
+      }
 
 
+      const demoformdatatosend = {
+        ...demoformdata,
+        patientprofilepicture: addpatientprofilepreviewimage || demoformdata.patientprofilepicture
+      };
 
-//Sends all admin data to the server
-  const response = await fetch("http://localhost:3000/api/adminaccounts",{
+      const response = await fetch("http://localhost:3000/api/patientdemographics", {
         method: "POST",
         headers: {
-          "Content-Type":"application/json",
-          'Authorization': `Bearer ${currentusertoken}`
+          "Content-Type" : "application/json",
+          "Authorization" : `Bearer ${currentusertoken}`
         },
-        body: JSON.stringify(adminaccsubmission)
-  });
+        body: JSON.stringify(demoformdatatosend)
+      });
 
 
-  
-  await axios.post('http://localhost:3000/api/accountcreation/admin', {
-    email: adminformdata.adminemail, 
-    password: adminformdata.adminpassword});
+      if(!response.ok) {
+            const errordata = await response.json();
+            throw new Error(errordata.message || "Failed to create patient profile");
+      }
 
-  //If response is success, it will send data to the api and to the database   
-  await response.json();
-  setadminmessage({text:"Registration Sucessful!",type:"success"});
-  
-    
-     
-    //Resets the input forms except the profile picture
-    setadminformdata({
-      role: 'Admin',
-      adminemail:'',
-      adminpassword:'',
-      adminlastname:'',
-      adminfirstname:'',
-      adminmiddlename:'',
-      adminprofilepicture: ''
-    });
+      const fetchresponse = await fetch('/api/patientdemographics', {
+        headers: {
+          'Authorization' : `Bearer ${currentusertoken}`
+        }
+      });
 
+      const updateddata = await fetchresponse.json();
+      setpatientdemographics(updateddata);
 
+      resetpatientprofileformdata();
+      setaddpatientprofilemessage({
+        text: "Patient Profile successfully created",
+        type: "success"
+      });
 
-    setadminselectedprofile(null);
-    setadminpreviewimage(null);
-
-
-
-
-//Error encounter  
-  } catch(error) {
-    console.error("Error:", error)
-    setadminmessage({text:"Registration Failed. Try again",type:"error"});
-         
-  } finally {
-    setadminissubmitting(false)
+    }catch (error) {
+      console.error("Error creating patient profile: ", error);
+      setaddpatientprofilemessage({
+        text: error.message || "Failed to create patient profile",
+        type: "success"
+      });
+    }finally{
+      setaddpatientprofileissubmitting(false);
+    }
   }
-}
+
+  
+
+
 
   //DISPLAY AND UPDATE PATIENT PROFILE
   const retrieveandupdatepatientprofile = async (e) => {
@@ -3006,9 +3003,101 @@ try{
 
 
 
+//PROFILE IMAGE TYPE HANDLING
+const addpatientprofilehandlechange = async (e) => {
+  const file = e.target.files[0];
+
+  if (!file) return;
+
+
+  const imagefiletype = ['image/png', 'image/jpeg', 'image/webp'];
+  if(!imagefiletype.includes(file.type)) {
+    alert("Please select an image file (JPG or PNG)");
+    return;
+  }
+
+
+  const maximagefile = 1;
+  if(file.size > maximagefile * 1024 * 1024){
+    alert("Image is too large. Please select image under 1MB");
+    return;
+  }
+
+  setselectedpatientprofile(null);
+  setaddpatientprofilepreviewimage(null);
+
+  if(addpatientprofileimageinputref.current){
+    addpatientprofileimageinputref.current.value = "";
+  }
+
+
+
+
+
+
+  try{
+
+    const imageconfiguration = {
+      maximagemb: 1,
+      maxworh: 800,
+      useWebWorker: true,
+      initialQuality: 0.8
+    };
+
+
+    const compressedimageprofile = await imageCompression(file, imageconfiguration);
+    const reader = new FileReader();
+    reader.onloadend = () => {
+
+      if(reader.error){
+        console.error("Error processing image file : ", reader.error);
+        alert("Error processing image file. Try again");
+        return;
+      }
+      setaddpatientprofilepreviewimage(reader.result);
+    };
+
+
+    reader.onerror = () => {
+      console.error("File Reader Error : ", reader.error);
+      alert("Error reading file. Try again");
+      return;
+    };
+
+    reader.readAsDataURL(compressedimageprofile);
+    setselectedpatientprofile(compressedimageprofile);
+  
+
+  } catch (error) {
+
+    console.error("Image file compression failed : ", error.message);
+    alert("Image file compression failed. Try again");
+    return;
+
+  }
+    
+
+};
+
+//Handles the click event of upload button
+const addpatientprofilehandleuploadclick = () => {
+  addpatientprofileimageinputref.current.click();
+};
+
+const addpatientprofilehandleremoveprofile = () => {
+  setselectedpatientprofile(null);
+  setaddpatientprofilepreviewimage(null);
+  if(addpatientprofileimageinputref.current){
+    addpatientprofileimageinputref.current.value = "";
+  }
+}
 
 
   
+
+
+
+
 
 
 
@@ -4523,27 +4612,55 @@ try{
    
    
                          <div className=" w-60 h-60 ml-10">
-                           <img className=" object-cover h-60 w-full rounded-full" src={previewimage || defaultprofilepic}/>
+                           <img className=" object-cover h-60 w-full rounded-full" src={addpatientprofilepreviewimage || defaultprofilepic}/>
    
-                           <input  className="hidden" type="file" onChange={handleprofilechange} accept="image/jpeg, image/jpg, image/png" ref={imageinputref} />
-                           <div onClick={handleuploadclick}  className="mt-5 flex justify-center items-center align-middle p-3 bg-[#0ea0cd] rounded-2xl hover:cursor-pointer hover:scale-105 transition-all" ><i className="bx bx-image pr-2 font-bold text-[22px] text-white"/><p className="font-semibold text-[20px] text-white">Upload</p></div>
+                           <input  className="hidden" type="file" onChange={addpatientprofilehandlechange} accept="image/jpeg, image/jpg, image/png" ref={addpatientprofileimageinputref} />
+                           <div onClick={addpatientprofilehandleuploadclick}  className="mt-5 flex justify-center items-center align-middle p-3 bg-[#0ea0cd] rounded-2xl hover:cursor-pointer hover:scale-105 transition-all" ><i className="bx bx-image pr-2 font-bold text-[22px] text-white"/><p className="font-semibold text-[20px] text-white">Upload</p></div>
                            
-                           {selectedprofile && (<div onClick={handleremoveprofile} className="mt-5 flex justify-center items-center align-middle p-3 bg-[#bf4c3b] rounded-2xl hover:cursor-pointer hover:scale-105 transition-all" ><i className="bx bx-x font-bold text-[30px] text-white"/><p className="font-semibold text-[20px] text-white">Remove</p></div>)}
+                           {selectedpatientprofile && (<div onClick={addpatientprofilehandleremoveprofile} className="mt-5 flex justify-center items-center align-middle p-3 bg-[#bf4c3b] rounded-2xl hover:cursor-pointer hover:scale-105 transition-all" ><i className="bx bx-x font-bold text-[30px] text-white"/><p className="font-semibold text-[20px] text-white">Remove</p></div>)}
                          </div>
    
                          <div className=" ml-15">
 
+  
+                         <div className="form-group flex mb-3">
+                             <label className="text-[23px] font-bold text-[#2d2d44]"  htmlFor="patientemail">Patient Email :</label>
+                             <div className="flex flex-col">
+                             <input className="bg-gray-200 text-[20px] text-gray-600 pl-3 rounded-2xl ml-3 h-10 w-114" onChange={(e) => setdemoformdata({...demoformdata, patientemail: e.target.value.trim()})} value={demoformdata.patientemail} id="patientemail" name="patientemail" required type="email" placeholder="Patient Email"/>
+                             <div>
+                                     {demopatientcheckemail && (
+                                      <p className="text-gray-500 text-sm">Checking Email...</p>
+                                     )}
 
-                         <div className="form-group   flex mb-3">
-                       <label className="text-[23px]  font-bold  text-[#2d2d44]" htmlFor="patientemail">Patient email :</label>
-                        <div className="flex flex-col">
-                        <input className=" bg-gray-200 text-[20px]  text-gray-600 pl-3 rounded-2xl ml-3 h-10 w-114" placeholder="Patient Email" type="text" name="patientemail" id="patientemail" value={demoformdata.patientemail} onChange={(e) => setdemoformdata({...demoformdata, patientemail: e.target.value})}required/>
-                       {demopatientcheckemail && <p className="text-gray-500 text-sm ml-22">Checking Email</p>}
-                       {demopatientemailerror && !demopatientemailexist && !demopatientemailcharacters.test(demoformdata.patientemail) && (<p className="text-red-500 text-sm ml-22">Enter a valid email address</p>)}
-                       {demopatientemailerror && demopatientemailexist && (<p className= "text-red-500 text-sm ml-22">Patient profile already exist in this email</p>)}
-                       {emailisnotpatienterror && emailisnotpatient&& (<p className= "text-red-500 text-sm ml-22">Unfortunately we cannot make patient profile for this email</p>)}     
-                       </div>
-                        </div>
+                                     {!demopatientcheckemail && (
+                                      <>
+          
+                                      {demopatientemailerror && !demopatientemailexist && (
+                                           <p className="text-red-500 text-sm">
+                                            Please enter a valid email address
+                                           </p>
+                                         )}
+                            
+
+                                      {demopatientemailexist && (
+                                           <p className="text-red-500 text-sm">
+                                              A patient profile already exists with this email
+                                           </p>
+                                          )}
+
+                            
+                                      {emailisnotpatienterror && (
+                                            <p className="text-red-500 text-sm">
+                                               This email belongs to a staff/admin account and cannot be used for patient profiles
+                                            </p>
+                                           )}
+                                      </>
+                                     )}
+
+                             </div>
+                              </div>
+                            
+                              </div>
 
 
                           <div className=" h-fit form-group  ">

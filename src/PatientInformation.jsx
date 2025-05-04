@@ -186,6 +186,7 @@ function PatientInformation(){
   const [demographicformdata, setdemographicformdata] = useState({
 
     role:'Patient',
+    patientdemographicId:'',
     patientlastname: '',
     patientfirstname:'',
     patientmiddlename:'',
@@ -217,7 +218,6 @@ function PatientInformation(){
         setpatientfirstname(patientdata.patientfirstname || '');
         setpatientprofilepicture(patientdata.patientprofilepicture || '');
         setpatientemail(patientdata.patientemail || '');
-        setpatientid(patientdata.patientId || '');
 
         const demographicdata = await fetchpatientdemographicbyemail(patientdata.patientemail);
         if(demographicdata){
@@ -227,7 +227,6 @@ function PatientInformation(){
             ...prev,
             ...demographicdata,
             patientemail: patientdata.patientemail,
-            patientId: patientdata.patientId
           }));
 
 
@@ -240,7 +239,6 @@ function PatientInformation(){
           setdemographicformdata(prev => ({
             ...prev,
             patientemail: patientdata.patientemail,
-            patientId: patientdata.patientid,
             patientfirstname: patientdata.patientfirstname || '',
             patientlastname: patientdata.patientlastname || '',
             patientmiddlename: patientdata.patientmiddlname || '',
@@ -287,7 +285,6 @@ function PatientInformation(){
       [name] : value  
     }));
   };
-
 
 
 
