@@ -14,9 +14,7 @@ for step in range(15):
         forward(10)
         pendown()        
         pendown()
-        forward(10)        
-        pendown()
-        forward(10)
+ 
         
         forward(10)
     penup()
