@@ -21,6 +21,21 @@ patientappointmentid:{
 },
 
 
+patientappointmentstatus:{type:String, enum:['Cancelled', 'Pending', 'Accepted','Completed'], default: 'Pending'},
+patientappointmentstatushistory: [{
+    status:{
+        type:String,
+        enum:['Cancelled', 'Pending', 'Accepted', 'Completed']
+    },
+    changedAt:{
+        type: Date,
+        default: Date.now
+    },
+    changedBy: String,
+
+}],
+
+
 
 
 //PATIENT INFORMATION
@@ -32,7 +47,12 @@ patientappointmentemail: {type: String, required: true},
 
 
 
+patientappointmentstaffname: String,
+
+
 //AMBHER OPTICAL CLINIC
+patientambherappointmenteyespecialist: String,
+patientambherappointmentstaffname: String,
 patientambherappointmentdate: String,
 patientambherappointmenttime: String,
 patientambherappointmentcataractscreening: {type: Boolean, default: false},
@@ -46,6 +66,8 @@ patientambherappointmentcontactlensefitting: {type: Boolean, default: false},
 
 
 //BAUTISTA EYE CLINIC
+patientbautistaappointmenteyespecialist: String,
+patientbautistaappointmentstaffname: String,
 patientbautistaappointmentdate: String,
 patientbautistaappointmenttime: String,
 patientbautistaappointmentcomprehensiveeyeexam: {type: Boolean, default: false},
@@ -58,11 +80,17 @@ patientbautistaappointmentpterygiumsurgery: {type: Boolean, default: false},
 
 
 patientadditionalappointmentnotes: String,
-
+patientappointmentpaymentotal: Number,
 
 //TIMESTAMPS
 createdAt: {type: Date, default: Date.now},
 updatedAt: {type: Date, default: Date.now}
+
+
+
+
+
+
 
 });
 

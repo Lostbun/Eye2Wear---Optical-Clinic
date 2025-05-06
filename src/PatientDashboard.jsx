@@ -135,18 +135,29 @@ function PatientDashboard(){
 
 
 
-const addAppointment = async (formData) => {
+
+const patientsubmitappointment = async (formData) => {
   setissubmitting(true);
-  try {
-    // Get patient data from state/demographics
-    const appointmentData = {
+
+  try{
+
+
+    const patientappointmentdata = {
+
+      patientappointmentstatus: "Pending",
+
       patientappointmentprofilepicture: patientdemographics?.patientprofilepicture || '',
       patientappointmentlastname: patientdemographics?.patientlastname || '',
       patientappointmentfirstname: patientdemographics?.patientfirstname || '',
       patientappointmentmiddlename: patientdemographics?.patientmiddlename || '',
       patientappointmentemail: patientdemographics?.patientemail || '',
+
+
+      patientappointmentstaffname:"Staff Name",
       
       // Ambher Optical Clinic Data
+      patientambherappointmenteyespecialist: "Optometrist Name",
+      patientambherappointmentstaffname: "Ambher Staff Name",
       patientambherappointmentdate: formData.get('patientambherappointmentdate'),
       patientambherappointmenttime: formData.get('patientambherappointmenttime'),
       patientambherappointmentcataractscreening: formData.has('patientambherappointmentcataractscreening'),
@@ -157,6 +168,8 @@ const addAppointment = async (formData) => {
       patientambherappointmentcontactlensefitting: formData.has('patientambherappointmentcontactlensefitting'),
 
       // Bautista Eye Clinic Data
+      patientbautistaappointmenteyespecialist: "Ophthalmologist Name",
+      patientbautistaappointmentstaffname: "Bautista Staff Name",
       patientbautistaappointmentdate: formData.get('patientbautistaappointmentdate'),
       patientbautistaappointmenttime: formData.get('patientbautistaappointmenttime'),
       patientbautistaappointmentcomprehensiveeyeexam: formData.has('patientbautistaappointmentcomprehensiveeyeexam'),
@@ -167,42 +180,47 @@ const addAppointment = async (formData) => {
       patientbautistaappointmentcataractsurgery: formData.has('patientbautistaappointmentcataractsurgery'),
       patientbautistaappointmentpterygiumsurgery: formData.has('patientbautistaappointmentpterygiumsurgery'),
 
-      patientadditionalappointmentnotes: additionaldetails
-    };
+      patientadditionalappointmentnotes: additionaldetails,
+      patientappointmentpaymentotal: 1000,
 
-    const response = await fetch('http://localhost:3000/api/patientappointments/appointments', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('patienttoken')}`
-      },
-      body: JSON.stringify(appointmentData)
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
     }
 
-    const result = await response.json();
-    console.log('Appointment created:', result);
-    // Handle success (e.g., show confirmation, reset form)
-    setadditionaldetails('');
-    setactiveappointmenttable('appointmentlist'); // Switch to appointment list view
 
-  } catch (error) {
-    console.error('Error submitting appointment:', error);
-    // Handle error (e.g., show error message)
-  } finally {
+    const response = await fetch('http://localhost:3000/api/patientappointments/appointments',{
+      method: 'POST',
+      headers: {
+        'Content-Type' : 'application/json',
+        'Authorization' : `Bearer ${localStorage.getItem('patienttoken')}`
+      },
+      body: JSON.stringify(patientappointmentdata)
+    });
+
+
+    if(!response.ok){
+      throw new Error(`HTTP error! Error: ${response.status}`);
+    }
+
+
+    const result = await response.json();
+    console.log('Patient Appointment Successfull Submitted for Review', result);
+
+    setadditionaldetails('');
+    setactiveappointmenttable('appointmentlist');
+
+  }catch(error) {
+    console.error('Error Submitting Patient Appointment: ', error);
+  }finally{
     setissubmitting(false);
   }
 };
 
-// Update your form onSubmit handler
-const handleSubmit = (e) => {
+
+
+const handlesubmitpatientappointment = (e) => {
   e.preventDefault();
-  const formData = new FormData(e.target);
-  addAppointment(formData);
-};
+  const appointmentformdata = new FormData(e.target);
+  patientsubmitappointment(appointmentformdata);
+}
 
 
 
@@ -247,7 +265,6 @@ const handleSubmit = (e) => {
 
   return (
     <>
-
      {/* NavBar */}
     <div className=" bg-white">
       <header id="header" className="flex justify-between items-center text-black py-4 px-8 md:px-32 bg-white rounded-4xl drop-shadow-md">
@@ -370,7 +387,7 @@ const handleSubmit = (e) => {
 
       
            { activedashboard === 'appointment' && ( <div id="appointment" className="border-1 bg-white border-gray-200 shadow-lg w-[100%] h-[100%] p-4 rounded-2xl" >  
-            <form onSubmit={handleSubmit}>        
+          
                 <div className="flex items-center"><i className="bx bxs-calendar text-[#184d85] text-[25px] mr-2"/> <h1 className=" font-albertsans font-bold text-[#184d85] text-[25px]">Appointments</h1></div>
                 <div className="flex justify-between  items-center mt-8 h-[60px]">
                 <Link to="/patientinformation"><div id="patientcard"  className=" flex justify-center items-start border-1 hover:scale-105 hover:cursor-pointer bg-white transition-all duration-300 ease-in-out  rounded-2xl shadow-md w-[290px] h-[80px]">
@@ -384,16 +401,23 @@ const handleSubmit = (e) => {
                     </div>
                     </Link> 
                    <div className="flex justify-center items-center">
-                  <div onClick={() => showappointmenttable('bookappointment')}  className={`hover:rounded-2xl mr-5 transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 pb-3 pt-3 text-center flex justify-center items-center ${activeappointmenttable==='bookappointment' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d] ${activeappointmenttable ==='bookappointment' ? 'text-white' : ''}`}>Book Appointment</h1></div>
-                  <div onClick={() => showappointmenttable('appointmentlist')}  className={`hover:rounded-2xl ml-5 transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 pb-3 pt-3 text-center flex justify-center items-center ${activeappointmenttable ==='appointmentlist' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d] ${activeappointmenttable ==='appointmentlist' ? 'text-white' : ''}`}>Appointment List</h1></div>
+                  <div onClick={() => showappointmenttable('bookappointment')}  className={`hover:cursor-pointer hover:rounded-2xl mr-5 transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 pb-3 pt-3 text-center flex justify-center items-center ${activeappointmenttable==='bookappointment' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d] ${activeappointmenttable ==='bookappointment' ? 'text-white' : ''}`}>Book Appointment</h1></div>
+                  <div onClick={() => showappointmenttable('appointmentlist')}  className={`hover:cursor-pointer hover:rounded-2xl ml-5 transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 pb-3 pt-3 text-center flex justify-center items-center ${activeappointmenttable ==='appointmentlist' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d] ${activeappointmenttable ==='appointmentlist' ? 'text-white' : ''}`}>Appointment List</h1></div>
                  </div> 
                  </div> 
                  
                                  
                 
                 <div id="overview">
+
+
+  {/*Patient Appointment Booking*/} {/*Patient Appointment Booking*/} {/*Patient Appointment Booking*/} {/*Patient Appointment Booking*/} {/*Patient Appointment Booking*/} {/*Patient Appointment Booking*/}
+  {/*Patient Appointment Booking*/} {/*Patient Appointment Booking*/} {/*Patient Appointment Booking*/} {/*Patient Appointment Booking*/} {/*Patient Appointment Booking*/} {/*Patient Appointment Booking*/}
+  {/*Patient Appointment Booking*/} {/*Patient Appointment Booking*/} {/*Patient Appointment Booking*/} {/*Patient Appointment Booking*/} {/*Patient Appointment Booking*/} {/*Patient Appointment Booking*/}
+  {/*Patient Appointment Booking*/} {/*Patient Appointment Booking*/} {/*Patient Appointment Booking*/} {/*Patient Appointment Booking*/} {/*Patient Appointment Booking*/} {/*Patient Appointment Booking*/}
+  {/*Patient Appointment Booking*/} {/*Patient Appointment Booking*/} {/*Patient Appointment Booking*/} {/*Patient Appointment Booking*/} {/*Patient Appointment Booking*/} {/*Patient Appointment Booking*/}
                  { activeappointmenttable === 'bookappointment' && ( <div id="bookappointment" className="animate-fadeInUp flex flex-col items-start border-t-2  border-[#909090] w-[100%] h-[83%] rounded-2xl mt-6" >
-                
+                  <form onSubmit={handlesubmitpatientappointment}>      
 
 
                   <div className="mt-3 flex justify-center items-center  w-full rounded-3xl ">
@@ -546,10 +570,30 @@ const handleSubmit = (e) => {
                          {issubmitting ? "Submitting Appointment..." : "Submit Appointment"}
                         </button>
                 </div>
- 
-               </div> )}
+                </form>
+               </div>   
+                )}
+
+  {/*Patient Appointment List*/} {/*Patient Appointment List*/} {/*Patient Appointment List*/} {/*Patient Appointment List*/} {/*Patient Appointment List*/} {/*Patient Appointment List*/} {/*Patient Appointment List*/}
+  {/*Patient Appointment List*/} {/*Patient Appointment List*/} {/*Patient Appointment List*/} {/*Patient Appointment List*/} {/*Patient Appointment List*/} {/*Patient Appointment List*/} {/*Patient Appointment List*/}
+  {/*Patient Appointment List*/} {/*Patient Appointment List*/} {/*Patient Appointment List*/} {/*Patient Appointment List*/} {/*Patient Appointment List*/} {/*Patient Appointment List*/} {/*Patient Appointment List*/}
+  {/*Patient Appointment List*/} {/*Patient Appointment List*/} {/*Patient Appointment List*/} {/*Patient Appointment List*/} {/*Patient Appointment List*/} {/*Patient Appointment List*/} {/*Patient Appointment List*/}
+  {/*Patient Appointment List*/} {/*Patient Appointment List*/} {/*Patient Appointment List*/} {/*Patient Appointment List*/} {/*Patient Appointment List*/} {/*Patient Appointment List*/} {/*Patient Appointment List*/}
+               { activeappointmenttable === 'appointmentlist' && ( <div id="appointmentlist" className="animate-fadeInUp flex flex-col items-start border-t-2  border-[#909090] w-[100%] h-[83%] rounded-2xl mt-6" >
+                
+                <div className="mt-3 flex justify-center items-center h-[500px] w-full rounded-3xl ">
+
+
+
                 </div>
-                </form>  
+
+
+
+
+
+             </div> )}
+                </div>
+           
                  </div>
 
 
@@ -606,10 +650,6 @@ const handleSubmit = (e) => {
 
       
         </section>
-
-
-
-
 
 
 
