@@ -107,8 +107,7 @@ export const updateappointmentbyid = async (req, res) => {
 //Delete AppointmentId Details
 export const deleteappointmentbyid = async (req, res) => {
     try{
-        const deleteappointment = await PatientAppointment.findOneAndDelete({
-            patientappointmentid: req.params.id});
+        const deleteappointment = await PatientAppointment.findOneAndDelete(req.params.id);
 
         if(!deleteappointment) return res.status(404).json({message: "Appointment not found"});
         res.json({message: "Appointment deleted successfully"});    
