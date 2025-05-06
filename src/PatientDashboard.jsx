@@ -135,6 +135,102 @@ function PatientDashboard(){
 
 
 
+const addAppointment = async (formData) => {
+  setissubmitting(true);
+  try {
+    // Get patient data from state/demographics
+    const appointmentData = {
+      patientappointmentprofilepicture: patientdemographics?.patientprofilepicture || '',
+      patientappointmentlastname: patientdemographics?.patientlastname || '',
+      patientappointmentfirstname: patientdemographics?.patientfirstname || '',
+      patientappointmentmiddlename: patientdemographics?.patientmiddlename || '',
+      patientappointmentemail: patientdemographics?.patientemail || '',
+      
+      // Ambher Optical Clinic Data
+      patientambherappointmentdate: formData.get('patientambherappointmentdate'),
+      patientambherappointmenttime: formData.get('patientambherappointmenttime'),
+      patientambherappointmentcataractscreening: formData.has('patientambherappointmentcataractscreening'),
+      patientambherappointmentpediatricassessment: formData.has('patientambherappointmentpediatricassessment'),
+      patientambherappointmentcolorvisiontesting: formData.has('patientambherappointmentcolorvisiontesting'),
+      patientambherappointmentlowvisionaid: formData.has('patientambherappointmentlowvisionaid'),
+      patientambherappointmentrefraction: formData.has('patientambherappointmentrefraction'),
+      patientambherappointmentcontactlensefitting: formData.has('patientambherappointmentcontactlensefitting'),
+
+      // Bautista Eye Clinic Data
+      patientbautistaappointmentdate: formData.get('patientbautistaappointmentdate'),
+      patientbautistaappointmenttime: formData.get('patientbautistaappointmenttime'),
+      patientbautistaappointmentcomprehensiveeyeexam: formData.has('patientbautistaappointmentcomprehensiveeyeexam'),
+      patientbautistaappointmentdiabeticretinopathy: formData.has('patientbautistaappointmentdiabeticretinopathy'),
+      patientbautistaappointmentglaucoma: formData.has('patientbautistaappointmentglaucoma'),
+      patientbautistaappointmenthypertensiveretinopathy: formData.has('patientbautistaappointmenthypertensiveretinopathy'),
+      patientbautistaappointmentretinolproblem: formData.has('patientbautistaappointmentretinolproblem'),
+      patientbautistaappointmentcataractsurgery: formData.has('patientbautistaappointmentcataractsurgery'),
+      patientbautistaappointmentpterygiumsurgery: formData.has('patientbautistaappointmentpterygiumsurgery'),
+
+      patientadditionalappointmentnotes: additionaldetails
+    };
+
+    const response = await fetch('http://localhost:3000/api/patientappointments/appointments', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('patienttoken')}`
+      },
+      body: JSON.stringify(appointmentData)
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const result = await response.json();
+    console.log('Appointment created:', result);
+    // Handle success (e.g., show confirmation, reset form)
+    setadditionaldetails('');
+    setactiveappointmenttable('appointmentlist'); // Switch to appointment list view
+
+  } catch (error) {
+    console.error('Error submitting appointment:', error);
+    // Handle error (e.g., show error message)
+  } finally {
+    setissubmitting(false);
+  }
+};
+
+// Update your form onSubmit handler
+const handleSubmit = (e) => {
+  e.preventDefault();
+  const formData = new FormData(e.target);
+  addAppointment(formData);
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -274,7 +370,7 @@ function PatientDashboard(){
 
       
            { activedashboard === 'appointment' && ( <div id="appointment" className="border-1 bg-white border-gray-200 shadow-lg w-[100%] h-[100%] p-4 rounded-2xl" >  
-                      
+            <form onSubmit={handleSubmit}>        
                 <div className="flex items-center"><i className="bx bxs-calendar text-[#184d85] text-[25px] mr-2"/> <h1 className=" font-albertsans font-bold text-[#184d85] text-[25px]">Appointments</h1></div>
                 <div className="flex justify-between  items-center mt-8 h-[60px]">
                 <Link to="/patientinformation"><div id="patientcard"  className=" flex justify-center items-start border-1 hover:scale-105 hover:cursor-pointer bg-white transition-all duration-300 ease-in-out  rounded-2xl shadow-md w-[290px] h-[80px]">
@@ -310,48 +406,48 @@ function PatientDashboard(){
 
                      <div className="flex justify-center items-center">           
                       <div className="mr-10 flex flex-col h-fit form-group ml-3 mt-4 ">
-                             <label className="text-[18px]  font-bold  text-[#434343] "htmlFor="ambherappointmentdate">Preferred Appointment Date: </label>     
-                             <input className="h-10 w-60 p-3 mt-2 justify-center border-b-2 border-gray-600 bg-gray-200 rounded-2xl text-[#2d2d44] text-[18px]  font-semibold"   type="date" name="ambherappointmentdate" id="ambherappointmentdate" placeholder=""/> </div>
+                             <label className="text-[18px]  font-bold  text-[#434343] "htmlFor="patientambherappointmentdate">Preferred Appointment Date: </label>     
+                             <input className="h-10 w-60 p-3 mt-2 justify-center border-b-2 border-gray-600 bg-gray-200 rounded-2xl text-[#2d2d44] text-[18px]  font-semibold"   type="date" name="patientambherappointmentdate" id="patientambherappointmentdate" placeholder=""/> </div>
                      
                       <div className="ml-10 flex flex-col h-fit form-group mt-4 ">
-                             <label className="text-[18px]  font-bold  text-[#434343] "htmlFor="ambherappointmenttime">Preferred Appointment Time: </label>     
-                             <input className="h-10 w-60 p-3 mt-2 justify-center border-b-2 border-gray-600 bg-gray-200 rounded-2xl text-[#2d2d44] text-[18px]  font-semibold"    type="time" name="ambherappointmenttime" id="ambherappointmenttime" placeholder=""/> </div>
+                             <label className="text-[18px]  font-bold  text-[#434343] "htmlFor="patientambherappointmenttime">Preferred Appointment Time: </label>     
+                             <input className="h-10 w-60 p-3 mt-2 justify-center border-b-2 border-gray-600 bg-gray-200 rounded-2xl text-[#2d2d44] text-[18px]  font-semibold"    type="time" name="patientambherappointmenttime" id="patientambherappointmenttime" placeholder=""/> </div>
                      </div>
 
                      <div className="p-4">
                      <div className="flex items-center mt-5 ml-7">
-                        <input className="w-7 h-7 mr-3 appearance-none border-2 border-[#2d2d44] rounded-md checked:bg-[#2d2d44] checked:border-[#2d2d44] after:text-white after:text-lg after:absolute after:left-1/2 after:top-1/2 after:content-['✓'] after:opacity-0 after:-translate-x-1/2 after:-translate-y-1/2 checked:after:opacity-100 relative cursor:pointer transition-all"  type="checkbox" name="ambhercataractscreening" id="ambhercataractscreening" />
-                        <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="ambhercataractscreening">Visual/Cataract Screening</label>   
+                        <input className="w-7 h-7 mr-3 appearance-none border-2 border-[#2d2d44] rounded-md checked:bg-[#2d2d44] checked:border-[#2d2d44] after:text-white after:text-lg after:absolute after:left-1/2 after:top-1/2 after:content-['✓'] after:opacity-0 after:-translate-x-1/2 after:-translate-y-1/2 checked:after:opacity-100 relative cursor:pointer transition-all"  type="checkbox" name="patientambherappointmentcataractscreening" id="patientambherappointmentcataractscreening" />
+                        <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="patientambherappointmentcataractscreening">Visual/Cataract Screening</label>   
                         </div>
 
                      <div className="flex items-center mt-5 ml-7">
-                        <input className="w-7 h-7 mr-3 appearance-none border-2 border-[#2d2d44] rounded-md checked:bg-[#2d2d44] checked:border-[#2d2d44] after:text-white after:text-lg after:absolute after:left-1/2 after:top-1/2 after:content-['✓'] after:opacity-0 after:-translate-x-1/2 after:-translate-y-1/2 checked:after:opacity-100 relative cursor:pointer transition-all"  type="checkbox" name="ambherpediatricassessment" id="ambherpediatricassessment" />
-                        <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="ambherpediatricassessment">Pediatric Assessment</label>   
+                        <input className="w-7 h-7 mr-3 appearance-none border-2 border-[#2d2d44] rounded-md checked:bg-[#2d2d44] checked:border-[#2d2d44] after:text-white after:text-lg after:absolute after:left-1/2 after:top-1/2 after:content-['✓'] after:opacity-0 after:-translate-x-1/2 after:-translate-y-1/2 checked:after:opacity-100 relative cursor:pointer transition-all"  type="checkbox" name="patientambherappointmentpediatricassessment" id="patientambherappointmentpediatricassessment" />
+                        <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="patientambherappointmentpediatricassessment">Pediatric Assessment</label>   
                         </div>   
 
                       <div className="flex items-center mt-5 ml-7">
-                        <input className="w-7 h-7 mr-3 appearance-none border-2 border-[#2d2d44] rounded-md checked:bg-[#2d2d44] checked:border-[#2d2d44] after:text-white after:text-lg after:absolute after:left-1/2 after:top-1/2 after:content-['✓'] after:opacity-0 after:-translate-x-1/2 after:-translate-y-1/2 checked:after:opacity-100 relative cursor:pointer transition-all"  type="checkbox" name="ambherpediatricoptometrist" id="ambherpediatricoptometrist" />
-                        <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="ambherpediatricoptometrist">Pediatric Optometrist</label>   
+                        <input className="w-7 h-7 mr-3 appearance-none border-2 border-[#2d2d44] rounded-md checked:bg-[#2d2d44] checked:border-[#2d2d44] after:text-white after:text-lg after:absolute after:left-1/2 after:top-1/2 after:content-['✓'] after:opacity-0 after:-translate-x-1/2 after:-translate-y-1/2 checked:after:opacity-100 relative cursor:pointer transition-all"  type="checkbox" name="patientambherappointmentpediatricoptometrist" id="patientambherappointmentpediatricoptometrist" />
+                        <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="patientambherappointmentpediatricoptometrist">Pediatric Optometrist</label>   
                         </div>    
 
                       <div className="flex items-center mt-5 ml-7">
-                        <input className="w-7 h-7 mr-3 appearance-none border-2 border-[#2d2d44] rounded-md checked:bg-[#2d2d44] checked:border-[#2d2d44] after:text-white after:text-lg after:absolute after:left-1/2 after:top-1/2 after:content-['✓'] after:opacity-0 after:-translate-x-1/2 after:-translate-y-1/2 checked:after:opacity-100 relative cursor:pointer transition-all"  type="checkbox" name="ambhercolorvisiontesting" id="ambhercolorvisiontesting" />
-                        <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="ambhercolorvisiontesting">Pediatric Optometrist</label>   
+                        <input className="w-7 h-7 mr-3 appearance-none border-2 border-[#2d2d44] rounded-md checked:bg-[#2d2d44] checked:border-[#2d2d44] after:text-white after:text-lg after:absolute after:left-1/2 after:top-1/2 after:content-['✓'] after:opacity-0 after:-translate-x-1/2 after:-translate-y-1/2 checked:after:opacity-100 relative cursor:pointer transition-all"  type="checkbox" name="patientambherappointmentcolorvisiontesting" id="patientambherappointmentcolorvisiontesting" />
+                        <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="patientambherappointmentcolorvisiontesting">Color Vision Testing</label>   
                         </div>    
 
                       <div className="flex items-center mt-5 ml-7">
-                        <input className="w-7 h-7 mr-3 appearance-none border-2 border-[#2d2d44] rounded-md checked:bg-[#2d2d44] checked:border-[#2d2d44] after:text-white after:text-lg after:absolute after:left-1/2 after:top-1/2 after:content-['✓'] after:opacity-0 after:-translate-x-1/2 after:-translate-y-1/2 checked:after:opacity-100 relative cursor:pointer transition-all"  type="checkbox" name="ambherlowvisionaid" id="ambherlowvisionaid" />
-                        <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="ambherlowvisionaid">Low Vision Aid</label>   
+                        <input className="w-7 h-7 mr-3 appearance-none border-2 border-[#2d2d44] rounded-md checked:bg-[#2d2d44] checked:border-[#2d2d44] after:text-white after:text-lg after:absolute after:left-1/2 after:top-1/2 after:content-['✓'] after:opacity-0 after:-translate-x-1/2 after:-translate-y-1/2 checked:after:opacity-100 relative cursor:pointer transition-all"  type="checkbox" name="patientambherappointmentlowvisionaid" id="patientambherappointmentlowvisionaid" />
+                        <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="patientambherappointmentlowvisionaid">Low Vision Aid</label>   
                         </div>    
 
                       <div className="flex items-center mt-5 ml-7">
-                        <input className="w-7 h-7 mr-3 appearance-none border-2 border-[#2d2d44] rounded-md checked:bg-[#2d2d44] checked:border-[#2d2d44] after:text-white after:text-lg after:absolute after:left-1/2 after:top-1/2 after:content-['✓'] after:opacity-0 after:-translate-x-1/2 after:-translate-y-1/2 checked:after:opacity-100 relative cursor:pointer transition-all"  type="checkbox" name="ambherrefraction" id="ambherrefraction" />
-                        <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="ambherrefraction">Refraction</label>   
+                        <input className="w-7 h-7 mr-3 appearance-none border-2 border-[#2d2d44] rounded-md checked:bg-[#2d2d44] checked:border-[#2d2d44] after:text-white after:text-lg after:absolute after:left-1/2 after:top-1/2 after:content-['✓'] after:opacity-0 after:-translate-x-1/2 after:-translate-y-1/2 checked:after:opacity-100 relative cursor:pointer transition-all"  type="checkbox" name="patientambherappointmentrefraction" id="patientambherappointmentrefraction" />
+                        <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="patientambherappointmentrefraction">Refraction</label>   
                         </div>      
 
                       <div className="flex items-center mt-5 ml-7">
-                        <input className="w-7 h-7 mr-3 appearance-none border-2 border-[#2d2d44] rounded-md checked:bg-[#2d2d44] checked:border-[#2d2d44] after:text-white after:text-lg after:absolute after:left-1/2 after:top-1/2 after:content-['✓'] after:opacity-0 after:-translate-x-1/2 after:-translate-y-1/2 checked:after:opacity-100 relative cursor:pointer transition-all"  type="checkbox" name="ambhercontactlensefitting" id="ambhercontactlensefitting" />
-                        <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="ambhercontactlensefitting">Contact Lense Fitting</label>   
+                        <input className="w-7 h-7 mr-3 appearance-none border-2 border-[#2d2d44] rounded-md checked:bg-[#2d2d44] checked:border-[#2d2d44] after:text-white after:text-lg after:absolute after:left-1/2 after:top-1/2 after:content-['✓'] after:opacity-0 after:-translate-x-1/2 after:-translate-y-1/2 checked:after:opacity-100 relative cursor:pointer transition-all"  type="checkbox" name="patientambherappointmentcontactlensefitting" id="patientambherappointmentcontactlensefitting" />
+                        <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="patientambherappointmentcontactlensefitting">Contact Lense Fitting</label>   
                         </div>  
 
               
@@ -377,48 +473,48 @@ function PatientDashboard(){
 
                      <div className="flex justify-center items-center">           
                       <div className="mr-10 flex flex-col h-fit form-group ml-3 mt-4 ">
-                             <label className="text-[18px]  font-bold  text-[#434343] "htmlFor="bautistaappointmentdate">Preferred Appointment Date: </label>     
-                             <input className="h-10 w-60 p-3 mt-2 justify-center border-b-2 border-gray-600 bg-gray-200 rounded-2xl text-[#2d2d44] text-[18px]  font-semibold"   type="date" name="bautistaappointmentdate" id="bautistaappointmentdate" placeholder=""/> </div>
+                             <label className="text-[18px]  font-bold  text-[#434343] "htmlFor="patientbautistaappointmentdate">Preferred Appointment Date: </label>     
+                             <input className="h-10 w-60 p-3 mt-2 justify-center border-b-2 border-gray-600 bg-gray-200 rounded-2xl text-[#2d2d44] text-[18px]  font-semibold"   type="date" name="patientbautistaappointmentdate" id="patientbautistaappointmentdate" placeholder=""/> </div>
                      
                       <div className="ml-10 flex flex-col h-fit form-group mt-4 ">
-                             <label className="text-[18px]  font-bold  text-[#434343] "htmlFor="bautistaappointmenttime">Preferred Appointment Time: </label>     
-                             <input className="h-10 w-60 p-3 mt-2 justify-center border-b-2 border-gray-600 bg-gray-200 rounded-2xl text-[#2d2d44] text-[18px]  font-semibold"    type="time" name="bautistaappointmenttime" id="bautistaappointmenttime" placeholder=""/> </div>
+                             <label className="text-[18px]  font-bold  text-[#434343] "htmlFor="patientbautistaappointmenttime">Preferred Appointment Time: </label>     
+                             <input className="h-10 w-60 p-3 mt-2 justify-center border-b-2 border-gray-600 bg-gray-200 rounded-2xl text-[#2d2d44] text-[18px]  font-semibold"    type="time" name="patientbautistaappointmenttime" id="patientbautistaappointmenttime" placeholder=""/> </div>
                      </div>
 
                      <div className="p-4">
                      <div className="flex items-center mt-5 ml-7">
-                        <input className="w-7 h-7 mr-3 appearance-none border-2 border-[#2d2d44] rounded-md checked:bg-[#2d2d44] checked:border-[#2d2d44] after:text-white after:text-lg after:absolute after:left-1/2 after:top-1/2 after:content-['✓'] after:opacity-0 after:-translate-x-1/2 after:-translate-y-1/2 checked:after:opacity-100 relative cursor:pointer transition-all"  type="checkbox" name="bautistacomprehensiveeyeexam" id="bautistacomprehensiveeyeexam" />
-                        <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="bautistacomprehensiveeyeexam">Comprehensive Eye Exam</label>   
+                        <input className="w-7 h-7 mr-3 appearance-none border-2 border-[#2d2d44] rounded-md checked:bg-[#2d2d44] checked:border-[#2d2d44] after:text-white after:text-lg after:absolute after:left-1/2 after:top-1/2 after:content-['✓'] after:opacity-0 after:-translate-x-1/2 after:-translate-y-1/2 checked:after:opacity-100 relative cursor:pointer transition-all"  type="checkbox" name="patientbautistaappointmentcomprehensiveeyeexam" id="patientbautistaappointmentcomprehensiveeyeexam" />
+                        <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="patientbautistaappointmentcomprehensiveeyeexam">Comprehensive Eye Exam</label>   
                         </div>
 
                      <div className="flex items-center mt-5 ml-7">
-                        <input className="w-7 h-7 mr-3 appearance-none border-2 border-[#2d2d44] rounded-md checked:bg-[#2d2d44] checked:border-[#2d2d44] after:text-white after:text-lg after:absolute after:left-1/2 after:top-1/2 after:content-['✓'] after:opacity-0 after:-translate-x-1/2 after:-translate-y-1/2 checked:after:opacity-100 relative cursor:pointer transition-all"  type="checkbox" name="bautistadiabeticretinopathy" id="bautistadiabeticretinopathy" />
-                        <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="bautistadiabeticretinopathy">Diabetic Retinopathy</label>   
+                        <input className="w-7 h-7 mr-3 appearance-none border-2 border-[#2d2d44] rounded-md checked:bg-[#2d2d44] checked:border-[#2d2d44] after:text-white after:text-lg after:absolute after:left-1/2 after:top-1/2 after:content-['✓'] after:opacity-0 after:-translate-x-1/2 after:-translate-y-1/2 checked:after:opacity-100 relative cursor:pointer transition-all"  type="checkbox" name="patientbautistaappointmentdiabeticretinopathy" id="patientbautistaappointmentdiabeticretinopathy" />
+                        <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="patientbautistaappointmentdiabeticretinopathy">Diabetic Retinopathy</label>   
                         </div>   
 
                       <div className="flex items-center mt-5 ml-7">
-                        <input className="w-7 h-7 mr-3 appearance-none border-2 border-[#2d2d44] rounded-md checked:bg-[#2d2d44] checked:border-[#2d2d44] after:text-white after:text-lg after:absolute after:left-1/2 after:top-1/2 after:content-['✓'] after:opacity-0 after:-translate-x-1/2 after:-translate-y-1/2 checked:after:opacity-100 relative cursor:pointer transition-all"  type="checkbox" name="bautistaglaucoma" id="bautistaglaucoma" />
-                        <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="bautistaglaucoma">Glaucoma</label>   
+                        <input className="w-7 h-7 mr-3 appearance-none border-2 border-[#2d2d44] rounded-md checked:bg-[#2d2d44] checked:border-[#2d2d44] after:text-white after:text-lg after:absolute after:left-1/2 after:top-1/2 after:content-['✓'] after:opacity-0 after:-translate-x-1/2 after:-translate-y-1/2 checked:after:opacity-100 relative cursor:pointer transition-all"  type="checkbox" name="patientbautistaappointmentglaucoma" id="patientbautistaappointmentglaucoma" />
+                        <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="patientbautistaappointmentglaucoma">Glaucoma</label>   
                         </div>    
 
                       <div className="flex items-center mt-5 ml-7">
-                        <input className="w-7 h-7 mr-3 appearance-none border-2 border-[#2d2d44] rounded-md checked:bg-[#2d2d44] checked:border-[#2d2d44] after:text-white after:text-lg after:absolute after:left-1/2 after:top-1/2 after:content-['✓'] after:opacity-0 after:-translate-x-1/2 after:-translate-y-1/2 checked:after:opacity-100 relative cursor:pointer transition-all"  type="checkbox" name="bautistahypertensiveretinopathy" id="bautistahypertensiveretinopathy" />
-                        <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="bautistahypertensiveretinopathy">Hypertensive Retinopathy</label>   
+                        <input className="w-7 h-7 mr-3 appearance-none border-2 border-[#2d2d44] rounded-md checked:bg-[#2d2d44] checked:border-[#2d2d44] after:text-white after:text-lg after:absolute after:left-1/2 after:top-1/2 after:content-['✓'] after:opacity-0 after:-translate-x-1/2 after:-translate-y-1/2 checked:after:opacity-100 relative cursor:pointer transition-all"  type="checkbox" name="patientbautistaappointmenthypertensiveretinopathy" id="patientbautistaappointmenthypertensiveretinopathy" />
+                        <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="patientbautistaappointmenthypertensiveretinopathy">Hypertensive Retinopathy</label>   
                         </div>    
 
                       <div className="flex items-center mt-5 ml-7">
-                        <input className="w-7 h-7 mr-3 appearance-none border-2 border-[#2d2d44] rounded-md checked:bg-[#2d2d44] checked:border-[#2d2d44] after:text-white after:text-lg after:absolute after:left-1/2 after:top-1/2 after:content-['✓'] after:opacity-0 after:-translate-x-1/2 after:-translate-y-1/2 checked:after:opacity-100 relative cursor:pointer transition-all"  type="checkbox" name="bautistaretinolproblem" id="bautistaretinolproblem" />
-                        <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="bautistaretinolproblem">Retinol Problem</label>   
+                        <input className="w-7 h-7 mr-3 appearance-none border-2 border-[#2d2d44] rounded-md checked:bg-[#2d2d44] checked:border-[#2d2d44] after:text-white after:text-lg after:absolute after:left-1/2 after:top-1/2 after:content-['✓'] after:opacity-0 after:-translate-x-1/2 after:-translate-y-1/2 checked:after:opacity-100 relative cursor:pointer transition-all"  type="checkbox" name="patientbautistaappointmentretinolproblem" id="patientbautistaappointmentretinolproblem" />
+                        <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="patientbautistaappointmentretinolproblem">Retinol Problem</label>   
                         </div>    
 
                       <div className="flex items-center mt-5 ml-7">
-                        <input className="w-7 h-7 mr-3 appearance-none border-2 border-[#2d2d44] rounded-md checked:bg-[#2d2d44] checked:border-[#2d2d44] after:text-white after:text-lg after:absolute after:left-1/2 after:top-1/2 after:content-['✓'] after:opacity-0 after:-translate-x-1/2 after:-translate-y-1/2 checked:after:opacity-100 relative cursor:pointer transition-all"  type="checkbox" name="bautistacataractsurgery" id="bautistacataractsurgery" />
-                        <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="bautistacataractsurgery">Cataract Surgery</label>   
+                        <input className="w-7 h-7 mr-3 appearance-none border-2 border-[#2d2d44] rounded-md checked:bg-[#2d2d44] checked:border-[#2d2d44] after:text-white after:text-lg after:absolute after:left-1/2 after:top-1/2 after:content-['✓'] after:opacity-0 after:-translate-x-1/2 after:-translate-y-1/2 checked:after:opacity-100 relative cursor:pointer transition-all"  type="checkbox" name="patientbautistaappointmentcataractsurgery" id="patientbautistaappointmentcataractsurgery" />
+                        <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="patientbautistaappointmentcataractsurgery">Cataract Surgery</label>   
                         </div>      
 
                       <div className="flex items-center mt-5 ml-7">
-                        <input className="w-7 h-7 mr-3 appearance-none border-2 border-[#2d2d44] rounded-md checked:bg-[#2d2d44] checked:border-[#2d2d44] after:text-white after:text-lg after:absolute after:left-1/2 after:top-1/2 after:content-['✓'] after:opacity-0 after:-translate-x-1/2 after:-translate-y-1/2 checked:after:opacity-100 relative cursor:pointer transition-all"  type="checkbox" name="bautistapterygiumsurgery" id="bautistapterygiumsurgery" />
-                        <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="bautistapterygiumsurgery">Pterygium Surgery</label>   
+                        <input className="w-7 h-7 mr-3 appearance-none border-2 border-[#2d2d44] rounded-md checked:bg-[#2d2d44] checked:border-[#2d2d44] after:text-white after:text-lg after:absolute after:left-1/2 after:top-1/2 after:content-['✓'] after:opacity-0 after:-translate-x-1/2 after:-translate-y-1/2 checked:after:opacity-100 relative cursor:pointer transition-all"  type="checkbox" name="patientbautistaappointmentpterygiumsurgery" id="patientbautistaappointmentpterygiumsurgery" />
+                        <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="patientbautistaappointmentpterygiumsurgery">Pterygium Surgery</label>   
                         </div>  
 
               
@@ -453,7 +549,7 @@ function PatientDashboard(){
  
                </div> )}
                 </div>
-                 
+                </form>  
                  </div>
 
 

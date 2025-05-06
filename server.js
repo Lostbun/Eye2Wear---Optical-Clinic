@@ -11,6 +11,7 @@ import forgotpassrouter from "./routes/forgotpass.route.js";
 import patientdemographicrouter from "./routes/patientdemographic.route.js";
 import accountcreationemailrouter from "./routes/accountcreationemail.route.js";
 import accountdeletionemailrouter from "./routes/accountdeletionemail.route.js";
+import patientappointmentrouter from "./routes/patientappointment.routes.js";
 
 
 
@@ -69,6 +70,8 @@ app.use("/api/staffaccounts", staffrouter);
 app.use("/api/owneraccounts", ownerrouter);
 //Routes
 app.use("/api/patientdemographics", patientdemographicrouter);
+//Routes
+app.use("/api/patientappointments", patientappointmentrouter);
 
 
 
