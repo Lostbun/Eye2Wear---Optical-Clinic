@@ -3187,6 +3187,7 @@ const addpatientprofilehandleremoveprofile = () => {
 
 
 
+
   return (
     <>
 

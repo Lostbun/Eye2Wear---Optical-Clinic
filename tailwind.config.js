@@ -10,6 +10,9 @@ export default {
 
    theme: {
     extend: {
+      filter:{
+        'blue-calendar': 'invert(0.5) sepia(1) saturate(5) hue-rotate(175deg)',
+      },
 
       animation: {
         slideIn: 'slideIn 0.3s ease-out forwards',

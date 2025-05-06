@@ -6,6 +6,9 @@ import PatientLandingpage from './PatientLandingpage'
 import PatientInformation from './PatientInformation'
 import AdminDashboard from './AdminDashboard'
 import ResetPassword from './ResetPassword'
+import PatientDashboard from './PatientDashboard'
+
+
 
 function App() {
 
@@ -21,6 +24,7 @@ function App() {
             <Route path='/patientinformation' element={<PatientInformation/>}></Route>
             <Route path='/admindashboard' element={<AdminDashboard/>}></Route>
             <Route path="/reset-password/:id/:token" element={<ResetPassword/>}/>
+            <Route path='/patientdashboard' element={<PatientDashboard/>}></Route>
           </Routes>
         </BrowserRouter>
 

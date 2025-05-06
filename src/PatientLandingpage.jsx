@@ -17,7 +17,6 @@ import Rating from '@mui/material/Rating';
 import Stack from '@mui/material/Stack';
 import usersicon from "../src/assets/images/multiuserss.png";
 
-
 import { useAuth } from "./hooks/patientuseAuth";
 
 
@@ -30,17 +29,14 @@ function PatientLandingpage(){
   
   const [patientfirstname, setpatientfirstname] = useState('');
   const [patientprofilepicture, setpatientprofilepicture] = useState('');
-
-
   const [showlogoutbtn, setshowlogoutbtn] = useState(false);
   const showlogout = () => {
     setshowlogoutbtn(!showlogoutbtn);
   }
+ const {handlelogout, fetchpatientdetails} = useAuth();
 
 
-  
   //Retrieveing Data from useAuth Hook
-  const {handlelogout, fetchpatientdetails} = useAuth();
   useEffect(() => {
     const loadpatient = async () => {
       const data = await fetchpatientdetails();
@@ -53,6 +49,19 @@ function PatientLandingpage(){
 
     loadpatient();
   }, [fetchpatientdetails]);
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -94,21 +103,22 @@ function PatientLandingpage(){
 
 
 
-
+ 
     {localStorage.getItem ("patienttoken")? (
 
       
-    <div className="relative">
+    <div id="profilecard" className="relative">
     <div id="profile" onClick={showlogout}  className="ml-3  flex justify-center items-center p-2 bg-[#fbfbfb00] border-2 border-gray-200  shadow-lg  rounded-full hover:cursor-pointer hover:scale-105 transition-all">
      <img src={patientprofilepicture || 'default-profile.png'} alt="Profile" className="h-10 w-10 rounded-full"></img>
      <p className="font-albertsans font-bold ml-3 text-gray-500 text-[17px]">Hi, {patientfirstname} </p>
     </div>
 
     {showlogoutbtn && (
-         <div id="logoutdiv" className=" absolute left-1/2 transform -translate-x-1/2 ml-3 mt-3  flex justify-center items-center p-3 bg-[#ad4e43] rounded-2xl hover:cursor-pointer hover:scale-105 transition-all" onClick={handlelogout}>
+         <div id="logoutdiv" className=" absolute left-1/2 transform -translate-x-1/2 ml-3 mt-3 w-full flex justify-center items-center p-3 bg-[#ad4e43] rounded-2xl hover:cursor-pointer hover:scale-105 transition-all" onClick={handlelogout}>
          <i className="bx bx-exit mt-1 pr-2 font-semibold text-white text-[17px]"/>
          <p className="font-semibold text-white text-[17px]">Logout</p>
        </div>    
+       
       )}
     </div>
 
@@ -124,10 +134,7 @@ function PatientLandingpage(){
     )
   
   }
-
-
-
-
+     
 
      {/* Dropdown menu 
              <div className="bx bx-menu block  sm:opacity-100 text-5xl cursor-pointer" onClick={() => setismenuopen(!ismenuopen)}></div>
@@ -179,7 +186,7 @@ function PatientLandingpage(){
               <div className="flex mt-10">
               <div className="mt-5 flex justify-center align-middle p-3  bg-gray-800 rounded-2xl hover:cursor-pointer hover:scale-105 transition-all"><i className="bx bx-expand-alt mt-1 pr-2 font-bold text-white"/><p className="font-semibold text-white">Explore</p></div>
               {localStorage.getItem("patienttoken") && (
-              <div className="ml-3 mt-5 flex justify-center align-middle p-3 bg-[#027bbf] rounded-2xl hover:cursor-pointer hover:scale-105 transition-all" ><i className="bx bx-bookmark mt-1 pr-2 text-white"/><p className="font-semibold text-white">Book Appointment</p></div>
+              <Link to="/patientdashboard"><div  className="ml-3 mt-5 flex justify-center align-middle p-3 bg-[#027bbf] rounded-2xl hover:cursor-pointer hover:scale-105 transition-all" ><i className="bx bx-bookmark mt-1 pr-2 text-white"/><p className="font-semibold text-white">Book Appointment</p></div></Link>
           )}
             
               </div>
@@ -210,15 +217,6 @@ function PatientLandingpage(){
 
           </div>
         </section>
-
-
-
-
-
-
-
-
-
 
 
 
@@ -278,14 +276,6 @@ function PatientLandingpage(){
 
 
 
-
-
-
-
-
-
- 
-
       
      {/* Third Section */} {/* Third Section */} {/* Third Section */} {/* Third Section */} {/* Third Section */}
      <section className="bg-white h-[270vh] w-[98vw]  " >
@@ -302,22 +292,6 @@ function PatientLandingpage(){
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
      {/* Fourth Section */} {/* Fourth Section */} {/* Fourth Section */} {/* Fourth Section */} {/* Fourth Section */}
       <section className="bg-white h-screen w-[98vw]" >
 
@@ -330,8 +304,6 @@ function PatientLandingpage(){
     </section>
 
 
-
-
     {/* Fifth Section */} {/* Fifth Section */} {/* Fifth Section */} {/* Fifth Section */} {/* Fifth Section */}   
     <section className="bg-white h-screen w-[98vw]" >
 
@@ -342,6 +314,8 @@ function PatientLandingpage(){
 
 
     </section>
+
+
 
 
         

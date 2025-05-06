@@ -439,10 +439,16 @@ const submitpatientdemographic = async (e) => {
     </div>
 
     {showlogoutbtn && (
-         <div id="logoutdiv" className=" absolute left-1/2 transform -translate-x-1/2 ml-3 mt-3  flex justify-center items-center p-3 bg-[#ad4e43] rounded-2xl hover:cursor-pointer hover:scale-105 transition-all" onClick={handlelogout}>
+
+
+
+         <div id="logoutdiv" className=" absolute left-1/2 transform -translate-x-1/2 ml-3 mt-3 w-full flex justify-center items-center p-3 bg-[#ad4e43] rounded-2xl hover:cursor-pointer hover:scale-105 transition-all" onClick={handlelogout}>
          <i className="bx bx-exit mt-1 pr-2 font-semibold text-white text-[17px]"/>
          <p className="font-semibold text-white text-[17px]">Logout</p>
        </div>    
+
+
+
       )}
     </div>
 
