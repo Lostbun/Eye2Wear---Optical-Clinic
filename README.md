@@ -3,7 +3,7 @@
 Online Clinic Web-App for Ambher Optical and Bautista Eye Center with SMS Technology
 =======
 # React + Vite
-
+[App Screenshot](src/assets/images/DevOpscover.png)
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
 Currently, two official plugins are available:
