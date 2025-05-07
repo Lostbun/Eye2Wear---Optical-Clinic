@@ -84,6 +84,7 @@ const OwneraccountSchema = mongoose.Schema(
     ownerclinic:{
        type: String,
        required: [true, "Please provide your clinic"],
+       enum: ['Ambher', 'Baustista'],
        trim: true,
      },
      

@@ -87,7 +87,11 @@ const StaffaccountSchema = mongoose.Schema(
       default:"default-profile-url"
     },
 
-
+    staffclinic:{
+      type: String,
+      required: [true, "Please provide your clinic"],
+      trim: true,
+    },
 
     isVerified: {type: Boolean, default: false},
     verificationtoken: {type: String},

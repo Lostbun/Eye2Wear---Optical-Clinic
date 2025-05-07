@@ -186,7 +186,8 @@ function UserLogin(){
                 localStorage.setItem("currentuser", JSON.stringify({
                   type: 'Owner',
                   name: data.owner.ownerfirstname,
-                  profilepicture: data.owner.ownerprofilepicture
+                  profilepicture: data.owner.ownerprofilepicture,
+                  clinic: data.owner.ownerclinic,
                 }));
                 
                 setloginnotice({

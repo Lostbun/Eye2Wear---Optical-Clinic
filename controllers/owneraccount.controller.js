@@ -65,7 +65,8 @@ export const getloggedinowneracc = async (req, res) => {
         ownerlastname: owner.ownerlastname,
         ownerfirstname: owner.ownerfirstname,
         ownermiddlename: owner.ownermiddlename,
-        ownerprofilepicture: owner.ownerprofilepicture
+        ownerprofilepicture: owner.ownerprofilepicture,
+        ownerclinic: owner.ownerclinic
     });
 
   }catch (error){

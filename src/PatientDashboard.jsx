@@ -311,27 +311,6 @@ const handleviewappointment = (appointment) => {
 
 
 
-const handledeleteappointment = async (appointmentId) => {
-  try{
-    const response = await fetch(`http://localhost:3000/api/patientappointments/appointments/${appointmentId}`,{
-      method: 'DELETE',
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('patienttoken')}`
-      }
-    });
-
-      if(!response.ok) throw new Error('Failed to Delete Appointment');
- 
-    setpatientappointments(prev =>
-      prev.filter(appt => appt._id !== appointmentId)
-    );
-
-    }catch(error){
-      console.error("Appointment deletion failed: ", error);
-      seterrorloadingappointments(error.message);
-    }
-}
-
 
 
 
@@ -416,6 +395,41 @@ const formatappointmenttime = (timestring) => {
     hour12: true,
   });
 };
+
+
+
+
+
+const handledeleteappointment = async (appointmentId) => {
+  try{
+    const response = await fetch(`http://localhost:3000/api/patientappointments/appointments/${appointmentId}`,{
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('patienttoken')}`
+      }
+    });
+
+      if(!response.ok) throw new Error('Failed to Delete Appointment');
+ 
+    setpatientappointments(prev =>
+      prev.filter(appt => appt._id !== appointmentId)
+    );
+
+    }catch(error){
+      console.error("Appointment deletion failed: ", error);
+      seterrorloadingappointments(error.message);
+    }
+}
+
+
+
+
+
+
+
+
+
+
 
 
 
