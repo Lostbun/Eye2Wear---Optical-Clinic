@@ -13,7 +13,9 @@ import imageCompression from "browser-image-compression";
 import darklogo from "../src/assets/images/darklogo.png";
 import axios from "axios";
 import { GenderBoxAdminDash } from "./components/GenderBoxAdminDash";
-
+import { OwnerClinicBox } from "./components/OwnerClinicBox";
+import {OwnereyespecialistYesorNoBox} from "./components/OwnereyespecialistYesorNoBox";
+import { StaffeyespecialistYesorNoBox } from "./components/StaffeyespecialistYesorNoBox";
 
 function AdminDashboard(){
 
@@ -810,6 +812,7 @@ const [showaddstaffdialog, setshowaddstaffdialog] = useState(false);
       stafffirstname:'',
       staffmiddlename:'',
       staffclinic:'',
+      staffiseyespecialist: '',
       staffprofilepicture:'' // Holds the profile picture 
   });
 
@@ -921,6 +924,7 @@ const [showaddstaffdialog, setshowaddstaffdialog] = useState(false);
             <th className="pb-3 pt-3 pl-2 pr-2 text-center">Middlename</th>
             <th className="pb-3 pt-3  pl-2 pr-2 text-center">Email</th>
             <th className="pb-3 pt-3  pl-2 pr-2 text-center">Clinic</th>
+            <th className="pb-3 pt-3  pl-2 pr-2 text-center">Eye Specialist</th>
             <th className="pb-3 pt-3 pl-2 pr-2 text-center">isVerified</th>
             <th className="pb-3 pt-3 pl-2 pr-2 text-center">Date Created</th>
             <th className="pb-3 pt-3 text-center pr-3"></th>
@@ -956,6 +960,7 @@ const [showaddstaffdialog, setshowaddstaffdialog] = useState(false);
 
               </td>
               <td  className="py-3 px-6 text-[#454444] text-center font-albertsans font-medium">{staff.staffclinic}</td>
+              <td  className="py-3 px-6 text-[#454444] text-center font-albertsans font-medium">{staff.staffiseyespecialist}</td>
               <td  className="py-3 px-6 text-[#454444] text-center font-albertsans font-medium">
                 <span className={`rounded-2xl text-xs px-5 py-4 ${staff.isVerified ? 'text-green-800 bg-green-100' : 'text-yellow-800 bg-yellow-100'}`}>
                   {staff.isVerified ? 'Active' : 'Pending'}
@@ -975,6 +980,7 @@ const [showaddstaffdialog, setshowaddstaffdialog] = useState(false);
                    lastname: staff.stafflastname,
                    firstname: staff.stafffirstname,
                    middlename: staff.staffmiddlename,
+                   eyespecialist: staff.staffiseyespecialist,
                    profilepicture: staff.staffprofilepicture
                    });
 
@@ -985,6 +991,7 @@ const [showaddstaffdialog, setshowaddstaffdialog] = useState(false);
                   stafflastname: staff.stafflastname,
                   stafffirstname: staff.stafffirstname,
                   staffmiddlename: staff.staffmiddlename,
+                  staffiseyespecialist: staff.staffiseyespecialist,
                   staffprofilepicture: staff.staffprofilepicture
                 });
 
@@ -1205,6 +1212,7 @@ const [showaddstaffdialog, setshowaddstaffdialog] = useState(false);
       const staffaccsubmission = {
         ...staffformdata,
         staffclinic: ownerownedclinic,
+        staffiseyespecialist: staffformdata.staffiseyespecialist,
         staffprofilepicture: staffpreviewimage || staffformdata.staffprofilepicture
       };
 
@@ -1241,6 +1249,7 @@ const [showaddstaffdialog, setshowaddstaffdialog] = useState(false);
           stafffirstname:'',
           staffmiddlename:'',
           staffclinic: '',
+          staffiseyespecialist:'',
           staffprofilepicture: ''
         });
 
@@ -1319,6 +1328,7 @@ const [showaddstaffdialog, setshowaddstaffdialog] = useState(false);
 
         const updatestaffaccountdetails = {
           ...staffformdata,
+          staffiseyespecialist:staffformdata.staffiseyespecialist,
           staffprofilepicture: staffpreviewimage || staffformdata.staffprofilepicture
         };
 
@@ -1414,6 +1424,8 @@ const [showaddstaffdialog, setshowaddstaffdialog] = useState(false);
         ownerlastname:'',
         ownerfirstname:'',
         ownermiddlename:'',
+        ownerclinic: '',
+        owneriseyespecialist: '',
         ownerprofilepicture:'' // Holds the profile picture 
     });
   
@@ -1438,6 +1450,7 @@ const [showaddstaffdialog, setshowaddstaffdialog] = useState(false);
         owner.ownerfirstname.toLowerCase().includes(term.toLowerCase()) ||
         owner.ownermiddlename.toLowerCase().includes(term.toLowerCase()) ||
         owner.owneremail.toLowerCase().includes(term.toLowerCase()) ||
+        owner.ownerclinic.toLowerCase().includes(term.toLowerCase()) ||
         owner.ownerId.toString().includes(term)
       );
   
@@ -1525,6 +1538,7 @@ const [showaddstaffdialog, setshowaddstaffdialog] = useState(false);
               <th className="pb-3 pt-3 pl-2 pr-2 text-center">Middlename</th>
               <th className="pb-3 pt-3 pl-2 pr-2 text-center">Email</th>
               <th className="pb-3 pt-3 pl-2 pr-2  text-center">Clinic</th>
+              <th className="pb-3 pt-3 pl-2 pr-2  text-center">Eye Specialist</th>
               <th className="pb-3 pt-3 pl-2 pr-2 text-center">isVerified</th>
               <th className="pb-3 pt-3 pl-2 pr-2 text-center">Date Created</th>
               <th className="pb-3 pt-3 text-center pr-3"></th>
@@ -1559,6 +1573,7 @@ const [showaddstaffdialog, setshowaddstaffdialog] = useState(false);
   
                 </td>
                 <td  className="py-3 px-6 text-[#454444] text-center font-albertsans font-medium">{owner.ownerclinic}</td>
+                <td  className="py-3 px-6 text-[#454444] text-center font-albertsans font-medium">{owner.owneriseyespecialist}</td>
                 <td  className="py-3 px-6 text-[#454444] text-center font-albertsans font-medium">
                   <span className={`rounded-2xl text-xs px-5 py-4 ${owner.isVerified ? 'text-green-800 bg-green-100' : 'text-yellow-800 bg-yellow-100'}`}>
                     {owner.isVerified ? 'Active' : 'Pending'}
@@ -1579,6 +1594,7 @@ const [showaddstaffdialog, setshowaddstaffdialog] = useState(false);
                      firstname: owner.ownerfirstname,
                      middlename: owner.ownermiddlename,
                      clinic: owner.ownerclinic,
+                     eyespecialist: owner.owneriseyespecialist,
                      profilepicture: owner.ownerprofilepicture
                      });
   
@@ -1590,6 +1606,7 @@ const [showaddstaffdialog, setshowaddstaffdialog] = useState(false);
                     ownerfirstname: owner.ownerfirstname,
                     ownermiddlename: owner.ownermiddlename,
                     ownerclinic: owner.ownerclinic,
+                    owneriseyespecialist: owner.owneriseyespecialist,
                     ownerprofilepicture: owner.ownerprofilepicture
                   });
   
@@ -1807,9 +1824,12 @@ const [showaddstaffdialog, setshowaddstaffdialog] = useState(false);
         
         const owneraccsubmission = {
           ...ownerformdata,
+          ownerclinic: ownerformdata.ownerclinic,
+          owneriseyespecialist: ownerformdata.owneriseyespecialist,
           ownerprofilepicture: ownerpreviewimage || ownerformdata.ownerprofilepicture
         };
   
+        console.log("Submitting", owneraccsubmission);
   
   
     //Sends all owner data to the server
@@ -1821,16 +1841,16 @@ const [showaddstaffdialog, setshowaddstaffdialog] = useState(false);
               },
               body: JSON.stringify(owneraccsubmission)
         });
-  
-  
-        
-        await axios.post('http://localhost:3000/api/accountcreation/owner', {
-          email: ownerformdata.owneremail, 
-          password: ownerformdata.ownerpassword});
 
+
+
+
+        const data = await response.json();
+        if(!response.ok) {
+          throw new Error(data.message || "Registration Failed");
+        }
 
         //If response is success, it will send data to the api and to the database   
-        await response.json();
         setownermessage({text:"Registration Sucessful!",type:"success"});
         
           
@@ -1843,6 +1863,8 @@ const [showaddstaffdialog, setshowaddstaffdialog] = useState(false);
             ownerlastname:'',
             ownerfirstname:'',
             ownermiddlename:'',
+            ownerclinic: '',
+            owneriseyespecialist: '',
             ownerprofilepicture: ''
           });
   
@@ -1857,7 +1879,7 @@ const [showaddstaffdialog, setshowaddstaffdialog] = useState(false);
       //Error encounter  
         } catch(error) {
           console.error("Error:", error)
-          setownermessage({text:"Registration Failed. Try again",type:"error"});
+          setownermessage({text: error.message || "Registration Failed",type:"error"});
                
         } finally {
           setownerissubmitting(false)
@@ -2922,8 +2944,6 @@ const renderpatientprofiles = () => {
     }
   }
 
-  
-
 
 
   //DISPLAY AND UPDATE PATIENT PROFILE
@@ -3003,12 +3023,6 @@ const renderpatientprofiles = () => {
         console.error("Failed deleting patient: ", error);
       }
     };
-
-
-
-
-
-
 
 
 
@@ -3894,7 +3908,10 @@ const handleviewappointment = (appointment) => {
                       <label className="font-albertsans font-bold italic text-[#595968] text-[21px]" htmlFor="staffmiddlename">Middle Name :</label>
                       <input className="bg-gray-200 text-[20px]  text-gray-600 pl-3 rounded-2xl ml-3 h-10 w-70" placeholder="Enter your middlename..." type="text" name="staffmiddlename" id="staffmiddlename" value={staffformdata.staffmiddlename} onChange={staffhandlechange} required/></div>
                       
-                
+                      <div className="form-group mt-5 flex">
+                      <label className="font-albertsans font-bold italic text-[#595968] text-[21px]" htmlFor="staffclinic">Eye Specialist:</label>
+                      <div className="ml-4"><StaffeyespecialistYesorNoBox value={staffformdata.staffiseyespecialist} onChange={staffhandlechange} /></div>
+                      </div>
                      
                    
                       <button type="submit" disabled={staffissubmitting} className="submit-btn mt-12 w-full" style={{ backgroundColor: "#2b2b44", fontSize: "20px", padding: "10px 20px", color: "white", borderRadius: "20px",   }}>
@@ -3949,7 +3966,7 @@ const handleviewappointment = (appointment) => {
         <div className="bg-opacity-0 flex justify-center items-center z-50 fixed inset-0 bg-[#000000af] bg-opacity-50">
           <div className="pl-5 pr-5 bg-white rounded-2xl w-[1300px] h-[700px]  animate-fadeInUp ">
                <div className=" mt-5 border-3 flex justify-between items-center border-[#2d2d4400] w-full h-[70px]">
-                 <div className="flex justify-center items-center"><img src={darklogo} alt="Eye2Wear: Optical Clinic" className="w-15 hover:scale-105 transition-all   p-1"></img><h1 className="text-[#184d85] font-albertsans font-bold ml-3 text-[30px]">Edit staff Account</h1></div>
+                 <div className="flex justify-center items-center"><img src={darklogo} alt="Eye2Wear: Optical Clinic" className="w-15 hover:scale-105 transition-all   p-1"></img><h1 className="text-[#184d85] font-albertsans font-bold ml-3 text-[30px]">Edit Staff Account</h1></div>
                  <div onClick={() => {setshowviewstaffdialog(false);
                                       setselectededitstaffaccount(null);
                                       setstaffformdata({
@@ -3958,6 +3975,7 @@ const handleviewappointment = (appointment) => {
                                         stafflastname: '',
                                         stafffirstname: '',
                                         staffmiddlename: '',
+                                        staffiseyespecialist:'',
                                         staffprofilepicture: ''
                                       });
                                       setstaffpreviewimage(null);
@@ -4023,7 +4041,10 @@ const handleviewappointment = (appointment) => {
                        <input className="bg-gray-200 text-[20px]  text-gray-600 pl-3 rounded-2xl ml-3 h-10 w-70" placeholder="Enter your middlename..." type="text" name="staffmiddlename" id="staffmiddlename" value={staffformdata.staffmiddlename} onChange={staffhandlechange} required/></div>
                                          
                                    
-                                        
+                       <div className="form-group mt-5 flex">
+                      <label className="font-albertsans font-bold italic text-[#595968] text-[21px]" htmlFor="staffclinic">Eye Specialist:</label>
+                      <div className="ml-4"><StaffeyespecialistYesorNoBox value={staffformdata.staffiseyespecialist} onChange={staffhandlechange} /></div>
+                      </div>
                                       
                        <button type="submit" disabled={staffissubmitting} className="submit-btn mt-12 w-full" style={{ backgroundColor: "#2b2b44", fontSize: "20px", padding: "10px 20px", color: "white", borderRadius: "20px",   }}>
                          {staffissubmitting ? "Saving..." : "Save"}
@@ -4132,13 +4153,21 @@ const handleviewappointment = (appointment) => {
                       <label className="font-albertsans font-bold italic text-[#595968] text-[21px]" htmlFor="ownermiddlename">Middle Name :</label>
                       <input className="bg-gray-200 text-[20px]  text-gray-600 pl-3 rounded-2xl ml-3 h-10 w-70" placeholder="Enter your middlename..." type="text" name="ownermiddlename" id="ownermiddlename" value={ownerformdata.ownermiddlename} onChange={ownerhandlechange} required/></div>
                       
-                      <div className="form-group mt-5">
+                       <div className="form-group mt-5 flex">
                       <label className="font-albertsans font-bold italic text-[#595968] text-[21px]" htmlFor="ownerclinic">Clinic :</label>
-                      <input className="bg-gray-200 text-[20px]  text-gray-600 pl-3 rounded-2xl ml-21 h-10 w-70" placeholder="Enter your clinic ..." type="text" name="ownerclinic" id="ownerclinic" value={ownerformdata.ownerclinic} onChange={ownerhandlechange} required/></div>
+                      <div className="ml-22"><OwnerClinicBox value={ownerformdata.ownerclinic} onChange={ownerhandlechange} /></div>   
+                      </div>
+                   
+
+                      <div className="form-group mt-5 flex">
+                      <label className="font-albertsans font-bold italic text-[#595968] text-[21px]" htmlFor="ownerclinic">Eye Specialist:</label>
+                      <div className="ml-4"><OwnereyespecialistYesorNoBox value={ownerformdata.owneriseyespecialist} onChange={ownerhandlechange} /></div>
+                      </div>
+                      
         
                      
                    
-                      <button type="submit" disabled={ownerissubmitting} className="submit-btn mt-12 w-full" style={{ backgroundColor: "#2b2b44", fontSize: "20px", padding: "10px 20px", color: "white", borderRadius: "20px",   }}>
+                      <button type="submit" disabled={ownerissubmitting} className="submit-btn mt-6 w-full" style={{ backgroundColor: "#2b2b44", fontSize: "20px", padding: "10px 20px", color: "white", borderRadius: "20px",   }}>
                         {ownerissubmitting ? "Creating Account..." : "Create Account"}
                       </button>
                    
@@ -4263,10 +4292,16 @@ const handleviewappointment = (appointment) => {
                        <label className="font-albertsans font-bold italic text-[#595968] text-[21px]" htmlFor="ownermiddlename">Middle Name :</label>
                        <input className="bg-gray-200 text-[20px]  text-gray-600 pl-3 rounded-2xl ml-3 h-10 w-70" placeholder="Enter your middlename..." type="text" name="ownermiddlename" id="ownermiddlename" value={ownerformdata.ownermiddlename} onChange={ownerhandlechange} required/></div>
                                          
-                       <div className="form-group mt-5">
-                       <label className="font-albertsans font-bold italic text-[#595968] text-[21px]" htmlFor="ownerclinic">Clinic :</label>
-                       <input className="bg-gray-200 text-[20px]  text-gray-600 pl-3 rounded-2xl ml-21   h-10 w-70" placeholder="Enter your clinic..." type="text" name="ownerclinic" id="ownerclinic" value={ownerformdata.ownerclinic} onChange={ownerhandlechange} required/></div>
-                                
+                       <div className="form-group mt-5 flex">
+                      <label className="font-albertsans font-bold italic text-[#595968] text-[21px]" htmlFor="ownerclinic">Clinic :</label>
+                      <div className="ml-22"><OwnerClinicBox value={ownerformdata.ownerclinic} onChange={ownerhandlechange} /></div>   
+                      </div>
+                   
+
+                      <div className="form-group mt-5 flex">
+                      <label className="font-albertsans font-bold italic text-[#595968] text-[21px]" htmlFor="ownerclinic">Eye Specialist:</label>
+                      <div className="ml-4"><OwnereyespecialistYesorNoBox value={ownerformdata.owneriseyespecialist} onChange={ownerhandlechange} /></div>
+                      </div>        
                                         
                                   
                        <button type="submit" disabled={ownerissubmitting} className="submit-btn mt-12 w-full" style={{ backgroundColor: "#2b2b44", fontSize: "20px", padding: "10px 20px", color: "white", borderRadius: "20px",   }}>
@@ -4989,9 +5024,11 @@ const handleviewappointment = (appointment) => {
       <table className="min-w-full divide-y divide-gray-200">
         <thead className="bg-">
           <tr className="text-[#ffffff] font-albertsans font-bold bg-[#2781af] rounded-tl-2xl rounded-tr-2xl">
-            <th className="rounded-tl-2xl pb-3 pt-3 pl-2 pr-2 text-center">Appointment ID</th> 
+            <th className="rounded-tl-2xl pb-3 pt-3 pl-2 pr-2 text-center">ID</th> 
+            <th className=" pb-3 pt-3 pl-2 pr-2 text-center">Patient</th> 
+            <th className=" pb-3 pt-3 pl-2 pr-2 text-center">Date Created</th> 
             <th className="pb-3 pt-3 pl-2 pr-2  text-center">Ambher Appoinment</th>
-            <th className="pb-3 pt-3 pl-2 pr-2  text-center"></th>
+ 
             <th className="pb-3 pt-3 pl-2 pr-2  text-center">Bautista Appoinment</th>
             <th className="rounded-tr-2xl pb-3 pt-3 pl-2 pr-2  text-center">Actions</th>
           </tr>
@@ -5008,6 +5045,30 @@ const handleviewappointment = (appointment) => {
                 #{appointment.patientappointmentid}
               </td>
               <td className="py-3 px-6 text-[#454444] text-center font-albertsans font-medium ">
+                     <div className="flex  items-center">
+                  <img 
+                    src={appointment.patientappointmentprofilepicture} 
+                    alt="Profile" 
+                    className=" rounded-full h-12 mr-3 w-12 object-cover"
+                    onError={(e) => {
+                      e.target.src = 'default-profile-url';
+                    }}
+                  />
+                  <h1 className="font-semibold text-[#171717] text-[15px]">{appointment.patientappointmentfirstname} {appointment.patientappointmentlastname}</h1>
+                  </div>
+              </td>
+
+              <td className="py-3 px-6 text-[#454444] text-center font-albertsans font-medium ">
+                  <span className="font-semibold text-[15px] text-[#171717]">
+                    {new Date(appointment.createdAt).toLocaleDateString('en-US',{
+                      month: 'short',
+                      day: 'numeric',
+                      year: 'numeric',
+                    })}  
+                  </span>          
+              </td>
+
+              <td className="py-3 px-6 text-[#454444] text-center font-albertsans font-medium ">
                 {appointment.patientambherappointmentdate && (
                   <div className="text-sm font-albertsans text-gray-900 flex  justify-center items-center">
                     <span className="font-semibold items-start">{formatappointmatedates(appointment.patientambherappointmentdate)} </span> 
@@ -5022,9 +5083,6 @@ const handleviewappointment = (appointment) => {
                 )}
               </td>
 
-              <td className="py-3 px-6 text-[#454444] text-center font-albertsans font-medium ">
-
-              </td>
               <td className="py-3 px-6 text-[#454444] text-center font-albertsans font-medium ">
                 {appointment.patientbautistaappointmentdate && (
                   <div className="text-sm font-albertsans text-gray-900 flex justify-center items-center">
@@ -5092,13 +5150,25 @@ const handleviewappointment = (appointment) => {
                          <div id="viewpatientappointment" className="overflow-y-auto h-auto bg-opacity-0 flex justify-center items-start z-50 fixed inset-0 bg-[#000000af] bg-opacity-50">
                            <div className="pl-5 pr-5 bg-white rounded-2xl w-[1300px] mt-10  animate-fadeInUp ">
                                  <div className=" mt-5 border-3 flex justify-between items-center border-[#2d2d4400] w-full h-[70px]">
-                                   <div className="flex justify-center items-center"><img src={darklogo} alt="Eye2Wear: Optical Clinic" className="w-15 hover:scale-105 transition-all   p-1"></img><h1 className="text-[#184d85] font-albertsans font-bold ml-3 text-[30px]">View Appointment</h1></div>
+                                 <Link to=""><div id="patientcard"  className=" flex justify-center items-start mt-5 ml-3 hover:scale-105 hover:cursor-pointer bg-white transition-all duration-300 ease-in-out  rounded-2xl w-[500px] h-[80px]">
+                        <div className="w-max mr-3 h-full  rounded-2xl flex justify-center items-center">
+                        <img  src={selectedpatientappointment?.patientappointmentprofilepicture || defaultprofilepic}  alt="Profile" className="h-20 w-20 rounded-full object-cover"></img>
+                        </div>
+                        <div className="bg-white  flex flex-col justify-center items-start pl-2 pr-2 w-[500px] h-full  rounded-3xl">
+                          <h1 className="font-albertsans font-bold text-[20px] w-full text-[#2d3744]"> {selectedpatientappointment?.patientappointmentfirstname || ''} {selectedpatientappointment?.patientappointmentlastname || ''}</h1>
+                          <p className="text-[15px]  w-full text-[#535354]">{selectedpatientappointment?.patientappointmentemail || ''}</p>
+                        </div>
+                    </div>
+                    </Link> 
                                    <div onClick={() => setviewpatientappointment(false)} className="bg-[#333232] px-10 rounded-2xl hover:cursor-pointer hover:scale-105 transition-all duration-300 ease-in-out"><i className="bx bx-x text-white text-[40px] "/></div>
                                  </div>
 
-                                 
-                  <div className="mt-3 flex justify-start items-start  w-full rounded-3xl ">
 
+
+
+
+
+                  <div className="mt-10 flex justify-start items-start  w-full rounded-3xl ">
 {selectedpatientappointment.patientambherappointmentdate && (
 
 
@@ -5288,7 +5358,13 @@ const handleviewappointment = (appointment) => {
     </div>  
 
 
+    {selectedpatientappointment.patientambherappointmentstatus === "Pending" && (
+  <div id="patientambherappointmentpaymentotal" className="mt-7 ml-6" >
+    <h1 className="font-bold text-[17px] text-[#343436] mb-3">Eye Specialist : </h1>
+    <div className="ml-3"><OwnerClinicBox value={demoformdata.patientgender} onChange={(e) => setdemoformdata({...demoformdata, patientgender: e.target.value})} /></div>   </div>
+  
 
+)}
 
 
 

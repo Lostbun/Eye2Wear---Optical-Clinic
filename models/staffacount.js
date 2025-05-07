@@ -93,6 +93,17 @@ const StaffaccountSchema = mongoose.Schema(
       trim: true,
     },
 
+
+
+    staffiseyespecialist:{
+      type: String,
+      required: [true, "Please tell if eye specialist"],
+      enum: ['Optometrist','Ophthalmologist', 'No'],
+      trim: true,
+     },
+
+
+
     isVerified: {type: Boolean, default: false},
     verificationtoken: {type: String},
     verificationtokenexpires: {type: Date},

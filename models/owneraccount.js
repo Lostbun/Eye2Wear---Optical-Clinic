@@ -84,8 +84,15 @@ const OwneraccountSchema = mongoose.Schema(
     ownerclinic:{
        type: String,
        required: [true, "Please provide your clinic"],
-       enum: ['Ambher', 'Baustista'],
+       enum: ['Ambher Optical', 'Bautista Eye Center'],
        trim: true,
+     },
+
+     owneriseyespecialist:{
+      type: String,
+      required: [true, "Please tell if eye specialist"],
+      enum: ['Optometrist','Ophthalmologist', 'No'],
+      trim: true,
      },
      
 
