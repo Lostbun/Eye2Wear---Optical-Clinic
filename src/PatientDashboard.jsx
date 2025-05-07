@@ -160,6 +160,8 @@ const patientsubmitappointment = async (formData) => {
 
       patientappointmentstaffname:"Staff Name",
       
+
+
       // Ambher Optical Clinic Data
       patientambherappointmenteyespecialist: "Optometrist Name",
       patientambherappointmentstaffname: "Ambher Staff Name",
@@ -173,7 +175,12 @@ const patientsubmitappointment = async (formData) => {
       patientambherappointmentcontactlensefitting: formData.has('patientambherappointmentcontactlensefitting'),
       patientambherappointmentstatus: "Pending",
       patientambherappointmentpaymentotal: 1000,
+
+
       
+
+
+
       // Bautista Eye Clinic Data
       patientbautistaappointmenteyespecialist: "Ophthalmologist Name",
       patientbautistaappointmentstaffname: "Bautista Staff Name",
@@ -188,6 +195,7 @@ const patientsubmitappointment = async (formData) => {
       patientbautistaappointmentpterygiumsurgery: formData.has('patientbautistaappointmentpterygiumsurgery'),
       patientbautistaappointmentstatus: "Pending",
       patientbautistaappointmentpaymentotal: 1000,
+
 
 
       patientadditionalappointmentnotes: additionaldetails,

@@ -8,6 +8,12 @@ import AutoIncrement from "mongoose-sequence";
 
 
 
+const CounterSchema = new mongoose.Schema({
+    _id: {type: String, required: true},
+    seq: {type: Number, default: 0}
+})
+const Counter = mongoose.model('Counter', CounterSchema);
+
 
 
 const PatientAppointmentSchema = new mongoose.Schema({
@@ -49,8 +55,13 @@ patientappointmentemail: {type: String, required: true},
 
 patientappointmentstaffname: String,
 
-
 //AMBHER OPTICAL CLINIC
+//AMBHER OPTICAL CLINIC
+//AMBHER OPTICAL CLINIC
+//AMBHER OPTICAL CLINIC
+//AMBHER OPTICAL CLINIC
+//AMBHER OPTICAL CLINIC
+patientambherappointmentid:{type: Number, unique: true},
 patientambherappointmenteyespecialist: String,
 patientambherappointmentstaffname: String,
 patientambherappointmentdate: String,
@@ -82,6 +93,12 @@ patientambherappointmentpaymentotal: Number,
 
 
 //BAUTISTA EYE CLINIC
+//BAUTISTA EYE CLINIC
+//BAUTISTA EYE CLINIC
+//BAUTISTA EYE CLINIC
+//BAUTISTA EYE CLINIC
+//BAUTISTA EYE CLINIC
+patientbautistaappointmentid:{type: Number, unique: true},
 patientbautistaappointmenteyespecialist: String,
 patientbautistaappointmentstaffname: String,
 patientbautistaappointmentdate: String,
@@ -139,9 +156,28 @@ PatientAppointmentSchema.plugin(AutoIncrement(mongoose),{
 
 
 
+//AUTO INCREMENT AMBHER APPOINTMENT ID
+PatientAppointmentSchema.plugin(AutoIncrement(mongoose),{
+    inc_field: "patientambherappointmentid",
+    id: "amber_appointment_seq",
+    start_seq: true,
+    disable_hooks: false
+});
 
-//DUPLICATE KEY ERROR HANDLING
-PatientAppointmentSchema.post('save', function(error, doc, next){
+
+
+//AUTO INCREMENT BAUTISTA APPOINTMENT ID
+PatientAppointmentSchema.plugin(AutoIncrement(mongoose),{
+    inc_field: "patientbautistaappointmentid",
+    id: "bautista_appointment_seq",
+    start_seq: true,
+    disable_hooks: false
+});
+
+
+
+
+/*PatientAppointmentSchema.post('save', function(error, doc, next){
     if(error?.name === 'MongoServerError' && error?.code === 11000) {
        this.constructor.counterReset('patientappointmentid', (err) =>{
         if(err){
@@ -154,8 +190,36 @@ PatientAppointmentSchema.post('save', function(error, doc, next){
     }else{
         next(error);
     }
+});*/
+
+
+
+
+//DUPLICATE KEY ERROR HANDLING
+PatientAppointmentSchema.post('save', function(error, doc, next){
+    if(error?.name === 'MongoServerError' && error?.code === 11000) {
+        
+        const duplicatematch = error.message.match(/index: (\w+)_1/);
+        const duplicatefield = duplicatematch ? duplicatematch[1] : null;
+
+  
+
+    if(duplicatefield && ['patientappointmentid', 'patientappointmentid', 'patientbautistaappointmentid']
+        .includes(duplicatefield)){
+            this.constructor.counterReset(duplicatefield, (err) =>{
+                if(err){
+                    console.error(`${duplicatefield} Failed to reset id sequence : `, err);
+                    return next(err);
+                }
+
+                console.log(`Reset ${duplicatefield} sequence due to id duplication`);
+                next(error);
+            });
+        }else{
+            next(error);
+        } }else{
+            next(error);
+        }
 });
-
-
 
 export default mongoose.model("PatientAppointment", PatientAppointmentSchema);
