@@ -6,6 +6,19 @@ _Online Clinic Web-App for Ambher Optical and Bautista Eye Center with SMS Techn
 ![App Screenshot](src/assets/images/DevOpscover.png)
 DevOps is currently working on a projecct for the web-application "Eye2Wear: Optical Clinic"
 
+
+For Inquiries:
+Emal: tristandivider8@gmail.com
+Discord: mizu.dev
+
+
+
+
+
+
+
+
+
 Currently, two official plugins are available:
 
 - [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
