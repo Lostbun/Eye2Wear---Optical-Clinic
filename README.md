@@ -7,11 +7,6 @@ _Online Clinic Web-App for Ambher Optical and Bautista Eye Center with SMS Techn
 DevOps is currently working on a projecct for the web-application "Eye2Wear: Optical Clinic"
 
 
-For Inquiries:
-Emal: tristandivider8@gmail.com
-Discord: mizu.dev
-
-
 
 
 
