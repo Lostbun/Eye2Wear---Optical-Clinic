@@ -2,9 +2,9 @@
 # Eye2Wear---Optical-Clinic
 Online Clinic Web-App for Ambher Optical and Bautista Eye Center with SMS Technology
 =======
-# React + Vite
+# Technologies: Vite, MERN Stack, TailwindCSS, PostCSS, ESLint
 ![App Screenshot](src/assets/images/DevOpscover.png)
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+DevOps is currently working on a projecct for the web-application "Eye2Wear: Optical Clinic"
 
 Currently, two official plugins are available:
 
