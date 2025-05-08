@@ -6,10 +6,11 @@ import defaultprofilepic from '../src/assets/images/defaulticon.png';
 import ambherlogo from '../src/assets/images/ambherlogo.png';
 import bautistalogo from '../src/assets/images/bautistalogo.png';
 import darklogo from "../src/assets/images/darklogo.png";
-
+import defaultimageplaceholder from "../src/assets/images/defaultimageplaceholder.png";
 import { useAuth } from "./hooks/patientuseAuth";
-
-
+import imageCompression from "browser-image-compression";
+import Rating from '@mui/material/Rating';
+import Stack from '@mui/material/Stack';
 
 function PatientDashboard(){
 
@@ -175,7 +176,9 @@ const patientsubmitappointment = async (formData) => {
       patientambherappointmentcontactlensefitting: formData.has('patientambherappointmentcontactlensefitting'),
       patientambherappointmentstatus: "Pending",
       patientambherappointmentpaymentotal: 1000,
-
+      patientambherappointmentremarksnote:"",
+      patientambherappointmentrating: 0,
+      patientambherappointmentfeedback: "",
 
       
 
@@ -195,10 +198,14 @@ const patientsubmitappointment = async (formData) => {
       patientbautistaappointmentpterygiumsurgery: formData.has('patientbautistaappointmentpterygiumsurgery'),
       patientbautistaappointmentstatus: "Pending",
       patientbautistaappointmentpaymentotal: 1000,
+      patientbautistaappointmentremarksnote: "",
+      patientbautistaappointmentrating: 0,
+      patientbautistaappointmentfeedback: "",
 
 
 
       patientadditionalappointmentnotes: additionaldetails,
+      patientadditionalappointmentnotesimage: appointmentpreviewimage || defaultimageplaceholder,
       patientappointmentpaymentotal: 1000,
 
     }
@@ -224,7 +231,7 @@ const patientsubmitappointment = async (formData) => {
 
     setadditionaldetails('');
     setactiveappointmenttable('appointmentlist');
-
+    setappointmentpreviewimage(defaultimageplaceholder);
   }catch(error) {
     console.error('Error Submitting Patient Appointment: ', error);
   }finally{
@@ -400,6 +407,11 @@ const formatappointmenttime = (timestring) => {
 
 
 
+//DELETE PATIENT APPOINTMENT //DELETE PATIENT APPOINTMENT //DELETE PATIENT APPOINTMENT //DELETE PATIENT APPOINTMENT //DELETE PATIENT APPOINTMENT //DELETE PATIENT APPOINTMENT
+//DELETE PATIENT APPOINTMENT //DELETE PATIENT APPOINTMENT //DELETE PATIENT APPOINTMENT //DELETE PATIENT APPOINTMENT //DELETE PATIENT APPOINTMENT //DELETE PATIENT APPOINTMENT
+//DELETE PATIENT APPOINTMENT //DELETE PATIENT APPOINTMENT //DELETE PATIENT APPOINTMENT //DELETE PATIENT APPOINTMENT //DELETE PATIENT APPOINTMENT //DELETE PATIENT APPOINTMENT
+//DELETE PATIENT APPOINTMENT //DELETE PATIENT APPOINTMENT //DELETE PATIENT APPOINTMENT //DELETE PATIENT APPOINTMENT //DELETE PATIENT APPOINTMENT //DELETE PATIENT APPOINTMENT
+//DELETE PATIENT APPOINTMENT //DELETE PATIENT APPOINTMENT //DELETE PATIENT APPOINTMENT //DELETE PATIENT APPOINTMENT //DELETE PATIENT APPOINTMENT //DELETE PATIENT APPOINTMENT
 const handledeleteappointment = async (appointmentId) => {
   try{
     const response = await fetch(`http://localhost:3000/api/patientappointments/appointments/${appointmentId}`,{
@@ -412,7 +424,7 @@ const handledeleteappointment = async (appointmentId) => {
       if(!response.ok) throw new Error('Failed to Delete Appointment');
  
     setpatientappointments(prev =>
-      prev.filter(appt => appt._id !== appointmentId)
+      prev.filter(appt => appt.patientappointmentid !== appointmentId)
     );
 
     }catch(error){
@@ -427,13 +439,165 @@ const handledeleteappointment = async (appointmentId) => {
 
 
 
+  const [appointmentselectedimage, setappointmentselectedimage] = useState(null);
+  const [appointmentpreviewimage, setappointmentpreviewimage] = useState (null);
+  const appointmentimageinputref = useRef(null);
+
+
+  //PROFILE IMAGE TYPE HANDLING
+  const appointmenthandleprofilechange = async (e) => {
+    const file = e.target.files[0];
+
+    if (!file) return;
+
+
+    const imagefiletype = ['image/png', 'image/jpeg', 'image/webp'];
+    if(!imagefiletype.includes(file.type)) {
+      alert("Please select an image file (JPG or PNG)");
+      return;
+    }
+
+
+    const maximagefile = 2;
+    if(file.size > maximagefile * 1024 * 1024){
+      alert("Image is too large. Please select image under 2MB");
+      return;
+    }
+
+    setappointmentselectedimage(null);
+    setappointmentpreviewimage(null);
+
+    if(appointmentimageinputref.current){
+      appointmentimageinputref.current.value = "";
+    }
 
 
 
 
 
 
+    try{
 
+      const imageconfiguration = {
+        maximagemb: 1,
+        maxworh: 800,
+        useWebWorker: true,
+        initialQuality: 0.8
+      };
+
+
+      const compressedimageprofile = await imageCompression(file, imageconfiguration);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+
+        if(reader.error){
+          console.error("Error processing image file : ", reader.error);
+          alert("Error processing image file. Try again");
+          return;
+        }
+        setappointmentpreviewimage(reader.result);
+      };
+
+
+      reader.onerror = () => {
+        console.error("File Reader Error : ", reader.error);
+        alert("Error reading file. Try again");
+        return;
+      };
+
+      reader.readAsDataURL(compressedimageprofile);
+      setappointmentselectedimage(compressedimageprofile);
+    
+
+    } catch (error) {
+
+      console.error("Image file compression failed : ", error.message);
+      alert("Image file compression failed. Try again");
+      return;
+
+    }
+      
+
+  };
+
+  //Handles the click event of upload button
+  const appointmenthandleuploadclick = () => {
+    appointmentimageinputref.current.click();
+  };
+
+  const appointmenthandleremoveprofile = () => {
+    setappointmentselectedimage(null);
+    setappointmentpreviewimage(null);
+    if(appointmentimageinputref.current){
+      appointmentimageinputref.current.value = "";
+    }
+  }
+
+
+
+
+
+
+ const [showbautistafeedbackdialog, setshowbautistafeedbackdialog] = useState(false);
+ const [showambherfeedbackdialog, setshowambherfeedbackdialog] = useState(false);
+ const [bautistaappointmentrating, setbautistaappointmentrating] = useState(null);
+ const [bautistaappointmentfeedback, setbautistaappointmentfeedback] = useState("");
+ const [ambherappointmentrating, setambherappointmentrating] = useState(null);
+ const [ambherappointmentfeedback, setambherappointmentfeedback] = useState("");
+
+
+
+
+ //UPDATING THE FIELDS OF PATIENT APPOINTMENT FEEDBACKS
+ const handlesubmitfeedback = async(clinicType) => {
+  try{
+    const appointmentid = selectedpatientappointment.patientappointmentid;
+    const feedbackrating = clinicType === 'ambher' ? ambherappointmentrating : bautistaappointmentrating;
+    const feedbackmessage = clinicType === 'ambher' ? ambherappointmentfeedback : bautistaappointmentfeedback;
+
+    const response = await fetch(`http://localhost:3000/api/patientappointments/appointments/${appointmentid}`,{
+      method: "PUT",
+      headers: {
+        "Content-Type" : "application/json",
+        "Authorization" : `Bearer ${localStorage.getItem('patienttoken')}`
+      },
+      body: JSON.stringify({
+        [`patient${clinicType}appointmentrating`] : feedbackrating,
+        [`patient${clinicType}appointmentfeedback`] : feedbackmessage
+      })
+    });
+
+
+    if(!response.ok) {
+      throw new Error("Failed to submit patient feedback");
+    }
+
+    const updatedappointment = await response.json();
+    setselectedpatientappointment(updatedappointment);
+    setpatientappointments(prevappointments =>
+      prevappointments.map(appt =>
+        appt.patientappointmentid === updatedappointment.patientappointmentid ? updatedappointment : appt
+      )
+    );
+
+
+    if(clinicType === 'ambher') {
+      setshowambherfeedbackdialog(false);
+      setambherappointmentrating(null);
+      setambherappointmentfeedback("");
+    }else{
+      setshowbautistafeedbackdialog(false);
+      setbautistaappointmentrating(null);
+      setbautistaappointmentfeedback("");
+    }
+
+
+    console.log(`${clinicType} Feedback Submitted Successfully`);
+  
+  }catch (error){
+    console.error(`Patient feedback submission failed: ${clinicType} `, error);
+  }
+ };
 
 
 
@@ -560,13 +724,13 @@ const handledeleteappointment = async (appointmentId) => {
 
 
 
-<div className={`transition-all duration-300 ease-in-out flex flex-col justify-between items-start pl-3 bg-[#272828]  rounded-2xl   mt-4 ml-3 mb-3 pt-3 pb-3 ${sidebarexpanded ? 'w-[365px]' : 'w-[85px]'}`} id="patientsidebar">
+<div className={`transition-all duration-100 ease-in-out flex flex-col justify-between items-start pl-3 bg-[#272828]  rounded-2xl   mt-4 ml-3 mb-3 pt-3 pb-3 ${sidebarexpanded ? 'w-[365px]' : 'w-[85px]'}`} id="patientsidebar">
 
-<div className="group relative " id="expandbtn" onClick={togglepatientsidebar} ><div className="hover:bg-[#454545] hover:rounded-2xl  hover:cursor-pointer rounded-3xl  transition-all duration-300 ease-in-out flex items-center justify-center w-fit overflow-hidden">{sidebarexpanded &&(<i className='bx bx-collapse-horizontal  p-2 hover:text-white text-white text-[40px] ' ></i>)}   {!sidebarexpanded &&(<i className='bx bx-expand-horizontal  p-2 hover:text-white text-white text-[40px] ' ></i>)}<span className={`text-[16px] text-white font-semibold font-albertsans transition-all duration-300 ease-in-out whitespace-nowrap overflow-hidden ${sidebarexpanded ? 'opacity-100 w-auto ml-2 mr-2 animate-slideIn' : 'opacity-0 w-0 animate-slideOut'}`}>{sidebarexpanded ? 'Collapse Sidebar' : ''}</span></div></div>
+<div className="group relative " id="expandbtn" onClick={togglepatientsidebar} ><div className="hover:bg-[#454545] hover:rounded-2xl  hover:cursor-pointer rounded-3xl  transition-all duration-100 ease-in-out flex items-center justify-center w-fit overflow-hidden">{sidebarexpanded &&(<i className='bx bx-collapse-horizontal  p-2 hover:text-white text-white text-[40px] ' ></i>)}   {!sidebarexpanded &&(<i className='bx bx-expand-horizontal  p-2 hover:text-white text-white text-[40px] ' ></i>)}<span className={`text-[16px] text-white font-semibold font-albertsans transition-all duration-100 ease-in-out whitespace-nowrap overflow-hidden ${sidebarexpanded ? 'opacity-100 w-auto ml-2 mr-2 animate-slideIn' : 'opacity-0 w-0 animate-slideOut'}`}>{sidebarexpanded ? 'Collapse Sidebar' : ''}</span></div></div>
 
-<div className="group relative mt-5" onClick={() => showdashboard('appointment')}><div className={`hover:bg-[#454545] hover:rounded-2xl  hover:cursor-pointer rounded-3xl mr-2 transition-all duration-300 ease-in-out flex items-center justify-center w-fit overflow-hidden ${activedashboard ==='appointment' ? 'bg-[#454545] rounded-2xl' :''}`}><i className={`bx bxs-calendar   p-3.5    text-[#cacacf] hover:text-white text-[27px]${activedashboard ==='appointment' ? 'bg-[#454545] rounded-2xl text-white text-[27px]' :''}`}></i>   <span className={`text-[16px] text-white font-semibold font-albertsans transition-all duration-300 ease-in-out whitespace-nowrap overflow-hidden ${sidebarexpanded ? 'opacity-100 w-auto ml-2 mr-2 animate-slideIn' : 'opacity-0 w-0 animate-slideOut'}`}>Appointment</span>  {!sidebarexpanded && (<span className="pointer-events-none absolute  p-4 rounded-2xl ml-4 left-full text-white font-albertsans font-semibold text-[16px] top-1/2 transform -translate-y-1/2  bg-[#2b2a2a]   whitespace-nowrap  group-hover:opacity-100 group-hover:translate-x-0  transition-all duration-300 ease-in-out opacity-0 -translate-x-2 ">Appointment</span>)}  </div></div>
-<div className="group relative" onClick={() => showdashboard('accountmanagement')}><div className={`hover:bg-[#454545] hover:rounded-2xl  hover:cursor-pointer rounded-3xl transition-all duration-300 ease-in-out flex items-center justify-center w-fit overflow-hidden ${activedashboard ==='accountmanagement' ? 'bg-[#454545] rounded-2xl' :''}`}><i className={`bx bxs-user-account  p-3.5    text-[#cacacf] hover:text-white text-[27px]${activedashboard ==='accountmanagement' ? 'bg-[#454545] rounded-2xl text-white text-[27px]' :''}`}></i>  <span className={`text-[16px] text-white font-semibold font-albertsans transition-all duration-300 ease-in-out whitespace-nowrap overflow-hidden ${sidebarexpanded ? 'opacity-100 w-auto ml-2 mr-2 animate-slideIn' : 'opacity-0 w-0 animate-slideOut'}`}>Account Management</span>  {!sidebarexpanded && (<span className="pointer-events-none absolute p-4 rounded-2xl ml-4 left-full text-white font-albertsans font-semibold text-[16px] top-1/2 transform -translate-y-1/2  bg-[#2b2a2a]   whitespace-nowrap  group-hover:opacity-100 group-hover:translate-x-0  transition-all duration-300 ease-in-out opacity-0 -translate-x-2 ">Account Management</span>)}  </div></div>
-<div className="group relative" onClick={() => showdashboard('profileinformation')}><div className={`hover:bg-[#454545] hover:rounded-2xl  hover:cursor-pointer rounded-3xl transition-all duration-300 ease-in-out flex items-center justify-center w-fit overflow-hidden  ${activedashboard ==='profileinformation' ? 'bg-[#454545] rounded-2xl' :''}`}><i className={`bx bxs-user-detail  p-3.5    text-[#cacacf] hover:text-white text-[27px]${activedashboard ==='profileinformation' ? 'bg-[#454545] rounded-2xl text-white text-[27px]' :''}`}></i>  <span className={`text-[16px] text-white font-semibold font-albertsans transition-all duration-300 ease-in-out whitespace-nowrap overflow-hidden ${sidebarexpanded ? 'opacity-100 w-auto ml-2 mr-2 animate-slideIn' : 'opacity-0 w-0 animate-slideOut'}`}>Profile Information</span>  {!sidebarexpanded && (<span className=" pointer-events-none absolute p-4 rounded-2xl ml-4 left-full text-white font-albertsans font-semibold text-[16px] top-1/2 transform -translate-y-1/2  bg-[#2b2a2a]   whitespace-nowrap  group-hover:opacity-100 group-hover:translate-x-0  transition-all duration-300 ease-in-out opacity-0 -translate-x-2 ">Profile Information</span>)}  </div></div>
+<div className="group relative mt-5" onClick={() => showdashboard('appointment')}><div className={`hover:bg-[#454545] hover:rounded-2xl  hover:cursor-pointer rounded-3xl mr-2 transition-all duration-100 ease-in-out flex items-center justify-center w-fit overflow-hidden ${activedashboard ==='appointment' ? 'bg-[#454545] rounded-2xl' :''}`}><i className={`bx bxs-calendar   p-3.5    text-[#cacacf] hover:text-white text-[27px]${activedashboard ==='appointment' ? 'bg-[#454545] rounded-2xl text-white text-[27px]' :''}`}></i>   <span className={`text-[16px] text-white font-semibold font-albertsans transition-all duration-100 ease-in-out whitespace-nowrap overflow-hidden ${sidebarexpanded ? 'opacity-100 w-auto ml-2 mr-2 animate-slideIn' : 'opacity-0 w-0 animate-slideOut'}`}>Appointment</span>  {!sidebarexpanded && (<span className="pointer-events-none absolute  p-4 rounded-2xl ml-4 left-full text-white font-albertsans font-semibold text-[16px] top-1/2 transform -translate-y-1/2  bg-[#2b2a2a]   whitespace-nowrap  group-hover:opacity-100 group-hover:translate-x-0  transition-all duration-100 ease-in-out opacity-0 -translate-x-2 ">Appointment</span>)}  </div></div>
+<div className="group relative" onClick={() => showdashboard('accountmanagement')}><div className={`hover:bg-[#454545] hover:rounded-2xl  hover:cursor-pointer rounded-3xl transition-all duration-100 ease-in-out flex items-center justify-center w-fit overflow-hidden ${activedashboard ==='accountmanagement' ? 'bg-[#454545] rounded-2xl' :''}`}><i className={`bx bxs-user-account  p-3.5    text-[#cacacf] hover:text-white text-[27px]${activedashboard ==='accountmanagement' ? 'bg-[#454545] rounded-2xl text-white text-[27px]' :''}`}></i>  <span className={`text-[16px] text-white font-semibold font-albertsans transition-all duration-100 ease-in-out whitespace-nowrap overflow-hidden ${sidebarexpanded ? 'opacity-100 w-auto ml-2 mr-2 animate-slideIn' : 'opacity-0 w-0 animate-slideOut'}`}>Account Management</span>  {!sidebarexpanded && (<span className="pointer-events-none absolute p-4 rounded-2xl ml-4 left-full text-white font-albertsans font-semibold text-[16px] top-1/2 transform -translate-y-1/2  bg-[#2b2a2a]   whitespace-nowrap  group-hover:opacity-100 group-hover:translate-x-0  transition-all duration-100 ease-in-out opacity-0 -translate-x-2 ">Account Management</span>)}  </div></div>
+<div className="group relative" onClick={() => showdashboard('profileinformation')}><div className={`hover:bg-[#454545] hover:rounded-2xl  hover:cursor-pointer rounded-3xl transition-all duration-100 ease-in-out flex items-center justify-center w-fit overflow-hidden  ${activedashboard ==='profileinformation' ? 'bg-[#454545] rounded-2xl' :''}`}><i className={`bx bxs-user-detail  p-3.5    text-[#cacacf] hover:text-white text-[27px]${activedashboard ==='profileinformation' ? 'bg-[#454545] rounded-2xl text-white text-[27px]' :''}`}></i>  <span className={`text-[16px] text-white font-semibold font-albertsans transition-all duration-100 ease-in-out whitespace-nowrap overflow-hidden ${sidebarexpanded ? 'opacity-100 w-auto ml-2 mr-2 animate-slideIn' : 'opacity-0 w-0 animate-slideOut'}`}>Profile Information</span>  {!sidebarexpanded && (<span className=" pointer-events-none absolute p-4 rounded-2xl ml-4 left-full text-white font-albertsans font-semibold text-[16px] top-1/2 transform -translate-y-1/2  bg-[#2b2a2a]   whitespace-nowrap  group-hover:opacity-100 group-hover:translate-x-0  transition-all duration-100 ease-in-out opacity-0 -translate-x-2 ">Profile Information</span>)}  </div></div>
 
 
 </div>                            
@@ -577,7 +741,7 @@ const handledeleteappointment = async (appointmentId) => {
                 
                 <div className="flex flex-col items-start w-full h-[12%] rounded-2xl mb-3" id="greet">
       
-                  <h1 className="ml-5 mt-1 font-albertsans font-bold text-[40px] text-[#212134]">Good Day, {patientfirstname}</h1>
+                  <h1 className="ml-5 mt-1 font-albertsans font-bold text-[40px] text-[#212134]">Good Day, {patientfirstname}!</h1>
                   <p className="ml-5 font-geistsemibold text-[15px] text-[#23232a]">Stay on top of your tasks, monitor progress, and track status.</p>
     
                 </div>
@@ -587,7 +751,7 @@ const handledeleteappointment = async (appointmentId) => {
           
                 <div className="flex items-center"><i className="bx bxs-calendar text-[#184d85] text-[25px] mr-2"/> <h1 className=" font-albertsans font-bold text-[#184d85] text-[25px]">Appointments</h1></div>
                 <div className="flex justify-between  items-center mt-8 h-[60px]">
-                <Link to="/patientinformation"><div id="patientcard"  className=" flex justify-center items-start border-1 hover:scale-105 hover:cursor-pointer bg-white transition-all duration-300 ease-in-out  rounded-2xl shadow-md w-[290px] h-[80px]">
+                <Link to="/patientinformation"><div id="patientcard"  className=" flex justify-center items-start border-1 hover:scale-105 hover:cursor-pointer bg-white transition-all duration-100 ease-in-out  rounded-2xl shadow-md w-[290px] h-[80px]">
                         <div className="w-[125px] h-full  rounded-2xl flex justify-center items-center">
                         <img  src={patientdemographics?.patientprofilepicture || defaultprofilepic}  alt="Profile" className="h-18 w-18 rounded-full object-cover"></img>
                         </div>
@@ -598,8 +762,8 @@ const handledeleteappointment = async (appointmentId) => {
                     </div>
                     </Link> 
                    <div className="flex justify-center items-center">
-                  <div onClick={() => showappointmenttable('bookappointment')}  className={`hover:cursor-pointer hover:rounded-2xl mr-5 transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 pb-3 pt-3 text-center flex justify-center items-center ${activeappointmenttable==='bookappointment' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d] ${activeappointmenttable ==='bookappointment' ? 'text-white' : ''}`}>Book Appointment</h1></div>
-                  <div onClick={() => showappointmenttable('appointmentlist')}  className={`hover:cursor-pointer hover:rounded-2xl ml-5 transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 pb-3 pt-3 text-center flex justify-center items-center ${activeappointmenttable ==='appointmentlist' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d] ${activeappointmenttable ==='appointmentlist' ? 'text-white' : ''}`}>Appointment List</h1></div>
+                  <div onClick={() => showappointmenttable('bookappointment')}  className={`hover:cursor-pointer hover:rounded-2xl mr-5 transition-all duration-100 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 pb-3 pt-3 text-center flex justify-center items-center ${activeappointmenttable==='bookappointment' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d] ${activeappointmenttable ==='bookappointment' ? 'text-white' : ''}`}>Book Appointment</h1></div>
+                  <div onClick={() => showappointmenttable('appointmentlist')}  className={`hover:cursor-pointer hover:rounded-2xl ml-5 transition-all duration-100 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 pb-3 pt-3 text-center flex justify-center items-center ${activeappointmenttable ==='appointmentlist' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d] ${activeappointmenttable ==='appointmentlist' ? 'text-white' : ''}`}>Appointment List</h1></div>
                  </div> 
                  </div> 
                  
@@ -766,9 +930,23 @@ const handledeleteappointment = async (appointmentId) => {
                           <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="patientadditionalappointmentnotes">Additional Appointment Notes</label>  
 
                               <textarea className="w-[1280px] text-[20px] rounded-md p-2 border-2 border-[#2d2d44]   text-[#2d2d44]  " ref={textarearef} rows={1} style={{minHeight:'44px'}} type="text" value={additionaldetails} onChange={(e) => {setadditionaldetails(e.target.value); adjusttextareaheight();}} placeholder="Please specify additional appointment notes..."/>
-                          </div>
+                          
+                       <div className=" w-fit h-fit mt-5">
+                      <img className=" object-cover max-w-320 rounded-2xl" src={appointmentpreviewimage || defaultimageplaceholder}/>
+                    
+                      <input  className="hidden" type="file" onChange={appointmenthandleprofilechange} accept="image/jpeg, image/jpg, image/png" ref={appointmentimageinputref} />
+                      <div onClick={appointmenthandleuploadclick}  className="mt-5 flex justify-center items-center align-middle p-3 bg-[#0ea0cd] rounded-2xl hover:cursor-pointer hover:scale-105 transition-all" ><i className="bx bx-image pr-2 font-bold text-[22px] text-white"/><p className="font-semibold text-[20px] text-white">Upload</p></div>
+                                            
+                      {appointmentselectedimage && (<div onClick={appointmenthandleremoveprofile} className="mt-5 flex justify-center items-center align-middle p-3 bg-[#bf4c3b] rounded-2xl hover:cursor-pointer hover:scale-105 transition-all" ><i className="bx bx-x font-bold text-[30px] text-white"/><p className="font-semibold text-[20px] text-white">Remove</p></div>)}
+                      </div>
+                  
+                          
+                </div>
 
-                <div className="w-full flex justify-end  pl-7  mb-5">
+
+                          
+
+                <div className="w-full flex justify-end  pl-7 mt-5 mb-5">
 
               <button type="submit" disabled={issubmitting} className="submit-btn mt-12 w-full" style={{ backgroundColor: "#5e9e3b", fontSize: "20px", padding: "16px 20px", color: "white", borderRadius: "20px",   }}>
                          {issubmitting ? "Submitting Appointment..." : "Submit Appointment"}
@@ -783,20 +961,21 @@ const handledeleteappointment = async (appointmentId) => {
   {/*Patient Appointment List*/} {/*Patient Appointment List*/} {/*Patient Appointment List*/} {/*Patient Appointment List*/} {/*Patient Appointment List*/} {/*Patient Appointment List*/} {/*Patient Appointment List*/}
   {/*Patient Appointment List*/} {/*Patient Appointment List*/} {/*Patient Appointment List*/} {/*Patient Appointment List*/} {/*Patient Appointment List*/} {/*Patient Appointment List*/} {/*Patient Appointment List*/}
   {/*Patient Appointment List*/} {/*Patient Appointment List*/} {/*Patient Appointment List*/} {/*Patient Appointment List*/} {/*Patient Appointment List*/} {/*Patient Appointment List*/} {/*Patient Appointment List*/}
-               { activeappointmenttable === 'appointmentlist' && ( <div id="appointmentlist" className="animate-fadeInUp flex flex-col items-start border-t-2  border-[#909090] w-[100%] h-[83%] rounded-2xl mt-6" >
+      { activeappointmenttable === 'appointmentlist' && ( <div id="appointmentlist" className="animate-fadeInUp flex flex-col items-start border-t-2  border-[#909090] w-[100%] h-[83%] rounded-2xl mt-6" >
                 
-                <div className=" flex justify-center items-center h-[500px] w-full rounded-3xl ">
+                <div className=" flex justify-center items-start h-[500px] w-full rounded-3xl ">
 
       {loadingappointmens ? (
       <div className="flex justiy-center p-8 items-center">
       <div className="animate-spin rounded-full border-t-2 border-b-2 border-blue-500 h-12 w-12"></div>
     </div>
   ) : errorloadingappointments ? (
-    <div className="rounded-lg p-4 bg-red-50 text-red-600">
+    <div className="w-full h-[40px] rounded-tl-2xl rounded-tr-2xl flex justify-center items-center bg-red-50 text-red-600 font-semibold font-albertsans">
     Error: {errorloadingappointments}
   </div>
   ) : patientappointments.length === 0 ? (
-    <div className="text-yellow-600 bg-yellow-50 rounded-2xl px-4 py-6">No patient appointments found.</div>
+    <div className="w-full h-[40px] rounded-tl-2xl rounded-tr-2xl flex justify-center items-center text-yellow-600 bg-yellow-50 font-semibold font-albertsans">No patient appointments found.</div>
+    
 
   ) : (
     <div className="overflow-x-auto rounded-2xl shadow-lg  w-full h-full mt-">
@@ -816,7 +995,7 @@ const handledeleteappointment = async (appointmentId) => {
           {patientappointments.map((appointment) => (
             <tr 
               key={appointment._id}
-              className="hover:bg-gray-50 transition-all ease-in-out duration-300 border-b-2"
+              className="hover:bg-gray-50 transition-all ease-in-out duration-100 border-b-2"
             >
               <td className="py-3 px-6 text-[#454444] text-center font-albertsans font-medium ">
                 #{appointment.patientappointmentid}
@@ -860,12 +1039,12 @@ const handledeleteappointment = async (appointmentId) => {
               <td className="px-6 py-4 whitespace-nowrap text-sm font-medium flex justify-center items-center">
                
               <div onClick={() => {handleviewappointment(appointment); setviewpatientappointment(true);}}
-                  className="bg-[#383838]  hover:bg-[#595959]  mr-2 transition-all duration-300 ease-in-out flex justify-center items-center py-2 px-5 rounded-2xl hover:cursor-pointer"><h1 className="text-white">View</h1></div>
+                  className="bg-[#383838]  hover:bg-[#595959]  mr-2 transition-all duration-100 ease-in-out flex justify-center items-center py-2 px-5 rounded-2xl hover:cursor-pointer"><h1 className="text-white">View</h1></div>
 
               <div onClick={() =>  {setdeletepatientappointment(true);
                                 setselectedpatientappointment(appointment);
               }}
-                className="bg-[#8c3226] hover:bg-[#ab4f43]  transition-all duration-300 ease-in-out flex justify-center items-center py-2 px-5 rounded-2xl hover:cursor-pointer"><i className="bx bxs-trash text-white mr-1"/><h1 className="text-white">Delete</h1></div>
+                className="bg-[#8c3226] hover:bg-[#ab4f43]  transition-all duration-100 ease-in-out flex justify-center items-center py-2 px-5 rounded-2xl hover:cursor-pointer"><i className="bx bxs-trash text-white mr-1"/><h1 className="text-white">Delete</h1></div>
 
                       {deletepatientappointment && (
                          <div className="bg-opacity-0 flex justify-center items-center z-50 fixed inset-0 bg-[#0000004a] bg-opacity-50">
@@ -880,8 +1059,8 @@ const handledeleteappointment = async (appointmentId) => {
                                             <p className="text-[18px] mt-3">Appointment Id: {selectedpatientappointment.patientappointmentid}</p> </>)}  
                                   </div>        
                                   <div className="pr-5 flex justify-end  items-center  h-[80px] w-full">
-                                    <div className="hover:cursor-pointer mr-2 bg-[#292929] hover:bg-[#414141]   rounded-2xl h-fit w-fit px-7 py-3 hover:scale-105 transition-all duration-300 ease-in-out" onClick={() => setdeletepatientappointment(false)}><p className=" text-[#ffffff]">Cancel</p></div>
-                                    <div className="hover:cursor-pointer bg-[#4e0f0f] hover:bg-[#7f1a1a] ml-2 rounded-2xl h-fit w-fit px-7 py-3 hover:scale-105 transition-all duration-300 ease-in-out" onClick={() => {handledeleteappointment(selectedpatientappointment._id);setdeletepatientappointment(false); }}><p className=" text-[#ffffff]">Delete</p></div>
+                                    <div className="hover:cursor-pointer mr-2 bg-[#292929] hover:bg-[#414141]   rounded-2xl h-fit w-fit px-7 py-3 hover:scale-105 transition-all duration-100 ease-in-out" onClick={() => setdeletepatientappointment(false)}><p className=" text-[#ffffff]">Cancel</p></div>
+                                    <div className="hover:cursor-pointer bg-[#4e0f0f] hover:bg-[#7f1a1a] ml-2 rounded-2xl h-fit w-fit px-7 py-3 hover:scale-105 transition-all duration-100 ease-in-out" onClick={() => {handledeleteappointment(selectedpatientappointment.patientappointmentid);setdeletepatientappointment(false); }}><p className=" text-[#ffffff]">Delete</p></div>
                                   </div>
                               </div>
 
@@ -914,10 +1093,10 @@ const handledeleteappointment = async (appointmentId) => {
  {/*Viewing Appointment Details*/} {/*Viewing Appointment Details*/} {/*Viewing Appointment Details*/} {/*Viewing Appointment Details*/} {/*Viewing Appointment Details*/} {/*Viewing Appointment Details*/}
                          {viewpatientappointment && selectedpatientappointment && (
                          <div id="viewpatientappointment" className="overflow-y-auto h-auto bg-opacity-0 flex justify-center items-start z-50 fixed inset-0 bg-[#000000af] bg-opacity-50">
-                           <div className="pl-5 pr-5 bg-white rounded-2xl w-[1300px] mt-10  animate-fadeInUp ">
+                           <div className="pl-5 pr-5 bg-white rounded-2xl w-[1300px] mt-10 mb-10 animate-fadeInUp ">
                                  <div className=" mt-5 border-3 flex justify-between items-center border-[#2d2d4400] w-full h-[70px]">
                                    <div className="flex justify-center items-center"><img src={darklogo} alt="Eye2Wear: Optical Clinic" className="w-15 hover:scale-105 transition-all   p-1"></img><h1 className="text-[#184d85] font-albertsans font-bold ml-3 text-[30px]">View Appointment</h1></div>
-                                   <div onClick={() => setviewpatientappointment(false)} className="bg-[#333232] px-10 rounded-2xl hover:cursor-pointer hover:scale-105 transition-all duration-300 ease-in-out"><i className="bx bx-x text-white text-[40px] "/></div>
+                                   <div onClick={() => setviewpatientappointment(false)} className="bg-[#333232] px-10 rounded-2xl hover:cursor-pointer hover:scale-105 transition-all duration-100 ease-in-out"><i className="bx bx-x text-white text-[40px] "/></div>
                                  </div>
 
                                  
@@ -1012,7 +1191,67 @@ const handledeleteappointment = async (appointmentId) => {
     </div>  
 
 
+    {selectedpatientappointment.patientambherappointmentstatus === "Completed" && (
+  <div id="patientambherappointmentpaymentotal" className="mt-15" >
+    <div className="mt-3 w-full flex flex-col">
+      <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="patientambherappointmentremarksnote">Appointment Remarks :</label>  
+      <p>{selectedpatientappointment.patientambherappointmentremarksnote}</p>
+    </div>
 
+
+
+      
+
+
+    {selectedpatientappointment.patientambherappointmentrating === 0 && selectedpatientappointment.patientambherappointmentfeedback === "" && (
+      <div  onClick={() => setshowambherfeedbackdialog(true)}  className="bg-[#2d91cf]  hover:bg-[#1b6796] mt-4 h-[50px]  transition-all duration-100 ease-in-out flex justify-center items-center py-2 px-5 hover:cursor-pointer rounded-[20px]"><h1 className="text-white font-albertsans font-semibold text-[20px]">Submit a Feedback</h1></div>
+
+
+   )}  
+
+    {selectedpatientappointment.patientambherappointmentrating != 0 && selectedpatientappointment.patientambherappointmentfeedback != "" && (
+      <div className="mt-10"> 
+
+      <h1 className="text-[18px]  font-semibold font-albertsans  text-[#343436] ">Patient Feedback :</h1>           
+      <Stack spacing={1}>
+       <Rating size="large" value={selectedpatientappointment.patientambherappointmentrating} readOnly /> 
+      </Stack>  
+      <p>{selectedpatientappointment.patientambherappointmentfeedback}</p>
+     </div>
+     )} 
+
+
+{showambherfeedbackdialog &&(
+  <div className="overflow-y-auto h-auto bg-opacity-0 flex justify-center items-start z-50 fixed inset-0 bg-[#000000af] bg-opacity-50">
+     <div className="flex flex-col items mt-60 mb-60 bg-white rounded-2xl w-[600px] h-fit  animate-fadeInUp ">
+     <div className="flex items-center rounded-tl-2xl rounded-tr-2xl h-[70px] bg-[#08404d]"><i className="ml-3 bx bxs-message-square-dots text-[28px] font-albertsans font-bold text-[#f1f1f1] "/><h1 className="ml-2 text-[20px] font-albertsans font-bold text-[#f0f0f0]">Ambher Optical Appointment FeedBack</h1></div>
+   <div className="flex flex-col  items-center  h-fit rounded-br-2xl rounded-bl-2xl">
+       <div className="px-5 flex flex-col justify-center  h-full mt-4 w-full"><p className="font-albertsans font-semibold text-[20px] text-[#424242] ">Rate our service</p>
+       <Stack spacing={1}>
+                <Rating size="large" value={ambherappointmentrating}  onChange={(e) => setambherappointmentrating(Number(e.target.value))}  sx={{fontSize: '2rem'}} name="half-rating-read" defaultValue={0} precision={1} />
+        </Stack>  
+       </div>
+
+
+       <div className=" mt-4 px-5 w-full  flex flex-col">
+          <textarea className="w-full text-[20px] rounded-md p-2  bg-[#ededed]   text-[#2d2d44]  " ref={textarearef} rows={1} style={{minHeight:'44px'}} type="text" value={ambherappointmentfeedback} onChange={(e) => {setambherappointmentfeedback(e.target.value); adjusttextareaheight();}} placeholder="How's your experience?"/>                   
+       </div>
+
+       <div className="pr-5 flex justify-end  items-center  h-[80px] w-full">
+         <div className="hover:cursor-pointer mr-2 bg-[#292929] hover:bg-[#414141]   rounded-2xl h-fit w-fit px-7 py-3 hover:scale-105 transition-all duration-100 ease-in-out" onClick={() => {setshowambherfeedbackdialog(false); setambherappointmentfeedback(""); setambherappointmentrating(null);}}><p className=" text-[#ffffff]">Cancel</p></div>
+         <div className="hover:cursor-pointer bg-[#08404d]  ml-2 rounded-2xl h-fit w-fit px-7 py-3 hover:scale-105 transition-all duration-100 ease-in-out" onClick={() => {handlesubmitfeedback('ambher'); setshowambherfeedbackdialog(false);}}><p className=" text-[#ffffff]">Submit</p></div>
+       </div>
+       </div>
+     </div>
+    </div>
+)}
+
+
+
+
+
+  </div>
+)}
 
 
 
@@ -1112,7 +1351,61 @@ const handledeleteappointment = async (appointmentId) => {
     </div>  
 
 
+    {selectedpatientappointment.patientbautistaappointmentstatus === "Completed" && (
+  <div id="patientbautistaappointmentpaymentotal" className="mt-15" >
+    <div className="mt-3 w-full flex flex-col">
+      <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="patientbautistaappointmentremarksnote">Appointment Remarks :</label>  
+      <p>{selectedpatientappointment.patientbautistaappointmentremarksnote}</p>
+    </div>
 
+    {selectedpatientappointment.patientbautistaappointmentrating === 0 && selectedpatientappointment.patientbautistaappointmentfeedback === "" && (
+    <div  onClick={() => setshowbautistafeedbackdialog(true)}  className="bg-[#2d91cf]  hover:bg-[#1b6796] mt-4 h-[50px]  transition-all duration-100 ease-in-out flex justify-center items-center py-2 px-5 hover:cursor-pointer rounded-[20px]"><h1 className="text-white font-albertsans font-semibold text-[20px]">Submit a Feedback</h1></div>
+
+
+ )}  
+
+  {selectedpatientappointment.patientbautistaappointmentrating != 0 && selectedpatientappointment.patientbautistaappointmentfeedback != "" && (
+    <div className="mt-10"> 
+
+    <h1 className="text-[18px]  font-semibold font-albertsans  text-[#343436] ">Patient Feedback :</h1>           
+    <Stack spacing={1}>
+     <Rating size="large" value={selectedpatientappointment.patientbautistaappointmentrating} readOnly /> 
+    </Stack>  
+    <p>{selectedpatientappointment.patientbautistaappointmentfeedback}</p>
+   </div>
+   )} 
+
+
+
+  
+
+
+{showbautistafeedbackdialog &&(
+  <div className="overflow-y-auto h-auto bg-opacity-0 flex justify-center items-start z-50 fixed inset-0 bg-[#000000af] bg-opacity-50">
+     <div className="flex flex-col items mt-60 mb-60 bg-white rounded-2xl w-[600px] h-fit  animate-fadeInUp ">
+     <div className="flex items-center rounded-tl-2xl rounded-tr-2xl h-[70px] bg-[#08404d]"><i className="ml-3 bx bxs-message-square-dots text-[28px] font-albertsans font-bold text-[#f1f1f1] "/><h1 className="ml-2 text-[20px] font-albertsans font-bold text-[#f0f0f0]">Bautista Eye Center Appointment FeedBack</h1></div>
+   <div className="flex flex-col  items-center  h-fit rounded-br-2xl rounded-bl-2xl">
+       <div className="px-5 flex flex-col justify-center  h-full mt-4 w-full"><p className="font-albertsans font-semibold text-[20px] text-[#424242] ">Rate our service</p>
+       <Stack spacing={1}>
+                <Rating size="large" value={bautistaappointmentrating}  onChange={(e) => setbautistaappointmentrating(Number(e.target.value))}  sx={{fontSize: '2rem'}} name="half-rating-read" defaultValue={0} precision={1} />
+        </Stack>  
+       </div>
+
+
+       <div className=" mt-4 px-5 w-full  flex flex-col">
+          <textarea className="w-full text-[20px] rounded-md p-2  bg-[#ededed]   text-[#2d2d44]  " ref={textarearef} rows={1} style={{minHeight:'44px'}} type="text" value={bautistaappointmentfeedback} onChange={(e) => {setbautistaappointmentfeedback(e.target.value); adjusttextareaheight();}} placeholder="How's your experience?"/>                   
+       </div>
+
+       <div className="pr-5 flex justify-end  items-center  h-[80px] w-full">
+         <div className="hover:cursor-pointer mr-2 bg-[#292929] hover:bg-[#414141]   rounded-2xl h-fit w-fit px-7 py-3 hover:scale-105 transition-all duration-100 ease-in-out" onClick={() => {setshowbautistafeedbackdialog(false); setbautistaappointmentfeedback(""); setbautistaappointmentrating(null);}}><p className=" text-[#ffffff]">Cancel</p></div>
+         <div className="hover:cursor-pointer bg-[#08404d]  ml-2 rounded-2xl h-fit w-fit px-7 py-3 hover:scale-105 transition-all duration-100 ease-in-out" onClick={() => {handlesubmitfeedback('bautista'); setshowbautistafeedbackdialog(false);}}><p className=" text-[#ffffff]">Submit</p></div>
+       </div>
+       </div>
+     </div>
+    </div>
+)}
+  </div>
+)}
 
 
 
@@ -1142,11 +1435,20 @@ const handledeleteappointment = async (appointmentId) => {
 
 
 
-<div className="w-full mt-5 p-3 flex flex-col mb-7 bg-[#ededed] rounded-2xl  ">
-                          <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="patientadditionalappointmentnotes">Appointment Notes :</label>  
+<div className="w-full mt-5 p-3 flex flex-col mb-5 bg-[#ededed] rounded-2xl  ">
+                          <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="patientadditionalappointmentnotes">Patient Appointment Notes :</label>  
 
-                           <div>{selectedpatientappointment.patientadditionalappointmentnotes ||"No additional notes"}</div>
+                           <div>{selectedpatientappointment.patientadditionalappointmentnotes ||"No additional notes"}
+                           <div className=" w-fit h-fit mt-5">
+                          <img className=" object-cover  rounded-2xl" src={selectedpatientappointment.patientadditionalappointmentnotesimage || defaultimageplaceholder}/>                 
                           </div>
+                           </div>
+                          </div>
+
+
+
+
+
                            </div>
 
                          </div>

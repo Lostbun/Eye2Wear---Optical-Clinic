@@ -6,17 +6,13 @@ import { Button } from "@/components/ui/button"
 import { Command, CommandGroup, CommandItem } from "@/components/ui/command"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 
-
-
-
-
-export function BautistaeyespecialistBox({ value, onChange }) {
+export function AmbhereyespecialistBox({ value, onChange }) {
   const [open, setOpen] = React.useState(false)
-  const [ophthalmologists, setOphthalmologists] = React.useState([])
+  const [optometrists, setOptometrists] = React.useState([])
   const [loading, setLoading] = React.useState(true)
 
   React.useEffect(() => {
-    const fetchOphthalmologists = async () => {
+    const fetchOptometrists = async () => {
       try {
         // Fetch from both endpoints simultaneously
         const [staffResponse, ownerResponse] = await Promise.all([
@@ -25,7 +21,7 @@ export function BautistaeyespecialistBox({ value, onChange }) {
         ]);
 
         if (!staffResponse.ok || !ownerResponse.ok) {
-          throw new Error('Failed to fetch ophthalmologists')
+          throw new Error('Failed to fetch optometrists')
         }
 
         const [staffData, ownerData] = await Promise.all([
@@ -34,9 +30,9 @@ export function BautistaeyespecialistBox({ value, onChange }) {
         ]);
 
         // Filter and format the data
-        const formattedOphthalmologists = [
+        const formattedOptometrists = [
           ...staffData
-            .filter(staff => staff.staffiseyespecialist === 'Ophthalmologist')
+            .filter(staff => staff.staffiseyespecialist === 'Optometrist')
             .map(staff => ({
               lastname: staff.stafflastname,
               firstname: staff.stafffirstname,
@@ -45,7 +41,7 @@ export function BautistaeyespecialistBox({ value, onChange }) {
               type: 'Staff'
             })),
           ...ownerData
-            .filter(owner => owner.owneriseyespecialist === 'Ophthalmologist')
+            .filter(owner => owner.owneriseyespecialist === 'Optometrist')
             .map(owner => ({
               lastname: owner.ownerlastname,
               firstname: owner.ownerfirstname,
@@ -53,17 +49,17 @@ export function BautistaeyespecialistBox({ value, onChange }) {
               eyespecialist: owner.owneriseyespecialist,
               type: 'Owner'
             }))
-        ].filter(oph => oph.lastname && oph.firstname); // Filter out any entries with missing names
+        ].filter(opt => opt.lastname && opt.firstname); // Filter out any entries with missing names
 
-        setOphthalmologists(formattedOphthalmologists);
+        setOptometrists(formattedOptometrists);
       } catch (error) {
-        console.error('Error fetching ophthalmologists:', error)
+        console.error('Error fetching optometrists:', error)
       } finally {
         setLoading(false)
       }
     }
 
-    fetchOphthalmologists()
+    fetchOptometrists()
   }, [])
 
   const handleSelect = (currentValue) => {
@@ -77,8 +73,8 @@ export function BautistaeyespecialistBox({ value, onChange }) {
     setOpen(false)
   }
 
-  const formatName = (ophthalmologist) => {
-    return `(${ophthalmologist.eyespecialist}) ${ophthalmologist.firstname} ${ophthalmologist.lastname}`
+  const formatName = (optometrist) => {
+    return `(${optometrist.eyespecialist}) ${optometrist.firstname} ${optometrist.lastname}`
   }
 
   return (
@@ -89,7 +85,7 @@ export function BautistaeyespecialistBox({ value, onChange }) {
           role="combobox"
           aria-expanded={open}
         >
-          {value || "Select Ophthalmologist"}
+          {value || "Select Optometrist"}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
@@ -98,27 +94,27 @@ export function BautistaeyespecialistBox({ value, onChange }) {
           <CommandGroup>
             {loading ? (
               <CommandItem disabled>
-                Loading ophthalmologists...
+                Loading optometrists...
               </CommandItem>
-            ) : ophthalmologists.length === 0 ? (
+            ) : optometrists.length === 0 ? (
               <CommandItem disabled>
-                No ophthalmologists found
+                No optometrists found
               </CommandItem>
             ) : (
-              ophthalmologists.map((ophthalmologist) => (
+              optometrists.map((optometrist) => (
                 <CommandItem
-                  key={`(${ophthalmologist.eyespecialist}) - ${ophthalmologist.lastname}-${ophthalmologist.firstname}`}
-                  value={formatName(ophthalmologist)}
+                  key={`(${optometrist.eyespecialist}) - ${optometrist.firstname}-${optometrist.lastname}`}
+                  value={formatName(optometrist)}
                   onSelect={handleSelect}
                   className="font-semibold text-1xl"
                 >
                   <Check
                     className={cn(
                       "mr-2 h-4 w-4",
-                      value === formatName(ophthalmologist) ? "opacity-100" : "opacity-0"
+                      value === formatName(optometrist) ? "opacity-100" : "opacity-0"
                     )}
                   />
-                  {formatName(ophthalmologist)}
+                  {formatName(optometrist)}
                 </CommandItem>
               ))
             )}

@@ -16,12 +16,21 @@ import { GenderBoxAdminDash } from "./components/GenderBoxAdminDash";
 import { OwnerClinicBox } from "./components/OwnerClinicBox";
 import {OwnereyespecialistYesorNoBox} from "./components/OwnereyespecialistYesorNoBox";
 import { StaffeyespecialistYesorNoBox } from "./components/StaffeyespecialistYesorNoBox";
+import { BautistaeyespecialistBox } from "./components/BautistaeyespecialistBox";
+import { AmbhereyespecialistBox } from "./components/AmbhereyespecialistBox";
+import Rating from '@mui/material/Rating';
+import Stack from '@mui/material/Stack';
+import defaultimageplaceholder from "../src/assets/images/defaultimageplaceholder.png";
+
 
 function AdminDashboard(){
 
 
+  const loggedinusertype = JSON.parse(localStorage.getItem('currentuser'));
   
-  
+
+
+
   const [adminfirstname, setadminfirstname] = useState('');
   const [adminprofilepicture, setadminprofilepicture] = useState('');
 
@@ -938,7 +947,7 @@ const [showaddstaffdialog, setshowaddstaffdialog] = useState(false);
             <tr key={staff._id}  className="hover:bg-gray-100  transition-all duration-300 ease-in-out hover:cursor-pointer ">
               <td  className="py-3 px-6 text-[#3a3a3a] font-albertsans font-medium ">#{staff.staffId}</td>
               <td  className="px-6 py-3 text-center">
-                <div className="flex justify-center">
+              <div className="flex justify-center">
                 <img 
                   src={staff.staffprofilepicture} 
                   alt="Profile" 
@@ -3151,6 +3160,28 @@ const showappointmentstable = (appointmentstableid) => {
  const [selectedpatientappointment, setselectedpatientappointment] = useState(null);
  const [viewpatientappointment, setviewpatientappointment] = useState(false);
  const [deletepatientappointment, setdeletepatientappointment] = useState(false);
+ const [bautistaeyespecialist, setbautistaeyespecialist] = useState('');
+ const [ambhereyespecialist, setambhereyespecialist] = useState('');
+ const [ambherappointmentpaymentotal, setambherappointmentpaymentotal] = useState(null);
+ const [bautistaappointmentpaymentotal, setbautistaappointmentpaymentotal] = useState(null);
+ const [bautistaappointmentremarksnote, setbautistaappointmentremarksnote] = useState("");
+ const [ambherappointmentremarksnote, setambherappointmentremarksnote] = useState("");
+
+  const textarearef = useRef(null);
+  const adjusttextareaheight = () => {
+    if(textarearef.current){
+      textarearef.current.style.height = 'auto';
+      textarearef.current.style.height = `${textarearef.current.scrollHeight}px`;
+    }
+  }
+
+
+
+
+  useEffect(() => {
+    adjusttextareaheight();
+  });
+
 
  
  
@@ -3223,27 +3254,181 @@ const formatappointmenttime = (timestring) => {
 
 
 
-    
+//WHOLE APPOINTMENT DELETE //WHOLE APPOINTMENT DELETE //WHOLE APPOINTMENT DELETE //WHOLE APPOINTMENT DELETE   
 const handledeleteappointment = async (appointmentId) => {
-  try{
-    const response = await fetch(`http://localhost:3000/api/patientappointments/appointments/${appointmentId}`,{
+  try {
+    const response = await fetch(`http://localhost:3000/api/patientappointments/appointments/${appointmentId}`, {
       method: 'DELETE',
       headers: {
+        'Content-Type': 'application/json',
         'Authorization': `Bearer ${localStorage.getItem('patienttoken')}`
       }
     });
 
-      if(!response.ok) throw new Error('Failed to Delete Appointment');
+    if (!response.ok) throw new Error('Failed to Delete Appointment');
  
     setpatientappointments(prev =>
-      prev.filter(appt => appt._id !== appointmentId)
+      prev.filter(appt => appt.patientappointmentid !== appointmentId)
     );
 
-    }catch(error){
-      console.error("Appointment deletion failed: ", error);
-      seterrorloadingappointments(error.message);
-    }
+  } catch (error) {
+    console.error("Appointment deletion failed: ", error);
+    seterrorloadingappointments(error.message);
+  }
 }
+
+
+//AICODE
+//CLINIC APPOINTMENT DELETE (NULLIFY FIELDS)
+const handledeleteappointmentbyclinic = async (appointmentId, clinicType) => {
+  try {
+    // First check if there's an appointment in the other clinic
+    const appointment = patientappointments.find(appt => 
+      clinicType === 'bautista' ? 
+        appt.patientbautistaappointmentid === appointmentId :
+        appt.patientambherappointmentid === appointmentId
+    );
+
+    if (!appointment) {
+      throw new Error('Appointment not found');
+    }
+
+    // Check if there's a scheduled appointment in the other clinic
+    const hasOtherClinicAppointment = clinicType === 'bautista' ? 
+      appointment.patientambherappointmentdate && appointment.patientambherappointmenttime :
+      appointment.patientbautistaappointmentdate && appointment.patientbautistaappointmenttime;
+
+    if (hasOtherClinicAppointment) {
+      // If there's an appointment in the other clinic, nullify only the current clinic's fields
+      const fieldsToNullify = clinicType === 'ambher' ? {
+        patientambherappointmentid: null,
+        patientambherappointmenteyespecialist: null,
+        patientambherappointmentstaffname: null,
+        patientambherappointmentdate: null,
+        patientambherappointmenttime: null,
+        patientambherappointmentcomprehensiveeyeexam: null,
+        patientambherappointmentdiabeticretinopathy: null,
+        patientambherappointmentglaucoma: null,
+        patientambherappointmenthypertensiveretinopathy: null,
+        patientambherappointmentretinolproblem: null,
+        patientambherappointmentcataractsurgery: null,
+        patientambherappointmentpterygiumsurgery: null,
+        patientambherappointmentstatus: null,
+        patientambherappointmentstatushistory: null,
+        patientambherappointmentpaymentotal: null,
+        patientambherappointmentremarksnote: null,
+        patientambherappointmentrating: null,
+        patientambherappointmentfeedback: null
+      } : {
+        patientbautistaappointmentid: null,
+        patientbautistaappointmenteyespecialist: null,
+        patientbautistaappointmentstaffname: null,
+        patientbautistaappointmentdate: null,
+        patientbautistaappointmenttime: null,
+        patientbautistaappointmentcomprehensiveeyeexam: null,
+        patientbautistaappointmentdiabeticretinopathy: null,
+        patientbautistaappointmentglaucoma: null,
+        patientbautistaappointmenthypertensiveretinopathy: null,
+        patientbautistaappointmentretinolproblem: null,
+        patientbautistaappointmentcataractsurgery: null,
+        patientbautistaappointmentpterygiumsurgery: null,
+        patientbautistaappointmentstatus: null,
+        patientbautistaappointmentstatushistory: null,
+        patientbautistaappointmentpaymentotal: null,
+        patientbautistaappointmentremarksnote: null,
+        patientbautistaappointmentrating: null,
+        patientbautistaappointmentfeedback: null
+      };
+
+      // Make API call to update appointment with nullified fields
+      const response = await fetch(
+        `http://localhost:3000/api/patientappointments/appointments/${appointmentId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${currentusertoken}`
+          },
+          body: JSON.stringify(fieldsToNullify)
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to nullify appointment fields');
+      }
+
+      // Update the UI with the new appointment data
+      const updatedAppointment = await response.json();
+      setselectedpatientappointment(updatedAppointment);
+      
+      // Update the appointments list to reflect the change
+      setpatientappointments(prevAppointments => 
+        prevAppointments.map(appt => 
+          appt._id === updatedAppointment._id ? updatedAppointment : appt
+        ).filter(appt => {
+          if (clinicType === 'ambher') {
+            return appt.patientambherappointmentdate !== null && 
+                   appt.patientambherappointmenttime !== null && 
+                   appt.patientambherappointmentid !== null;
+          } else {
+            return appt.patientbautistaappointmentdate !== null && 
+                   appt.patientbautistaappointmenttime !== null && 
+                   appt.patientbautistaappointmentid !== null;
+          }
+        })
+      );
+
+
+      
+    } else {
+      // If no appointment in other clinic, delete the entire appointment
+      const response = await fetch(
+        `http://localhost:3000/api/patientappointments/appointments/${appointmentId}`,
+        {
+          method: "DELETE",
+          headers: {
+            "Authorization": `Bearer ${currentusertoken}`
+          }
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to delete appointment');
+      }
+
+      // Remove the appointment from the list
+      setpatientappointments(prevAppointments =>
+        prevAppointments.filter(appt => 
+          clinicType === 'bautista' ? 
+            appt.patientbautistaappointmentid !== appointmentId :
+            appt.patientambherappointmentid !== appointmentId
+        )
+      );
+
+      // Clear selected appointment if it was the deleted one
+      if (selectedpatientappointment) {
+        if (clinicType === 'bautista' && selectedpatientappointment.patientbautistaappointmentid === appointmentId) {
+          setselectedpatientappointment(null);
+        } else if (clinicType === 'ambher' && selectedpatientappointment.patientambherappointmentid === appointmentId) {
+          setselectedpatientappointment(null);
+        }
+      }
+    }
+    
+    console.log(`${clinicType} appointment handled successfully`);
+  } catch (error) {
+    console.error(`Error handling ${clinicType} appointment:`, error);
+    // TODO: Add error handling UI feedback
+  }
+};
+
+// ... existing code ...
+
+
+
+
 
 
 
@@ -3255,6 +3440,99 @@ const handleviewappointment = (appointment) => {
 
 
 
+//UPDATING APPOINTMENT STATUS
+const handleacceptappointment = async (appointmentId, clinicType) => {
+  try{
+    const response = await fetch(`http://localhost:3000/api/patientappointments/appointments/${appointmentId}`,{
+      method: "PUT",
+      headers: {
+        "Content-Type" : "application/json",
+      },
+      body:JSON.stringify({
+        [`patient${clinicType}appointmentstatus`]: 'Accepted',
+        [`patient${clinicType}appointmentstatushistory`]:{
+          status:'Accepted',
+          changedAt: new Date(),
+          changedBy: adminfirstname
+        },
+        [`patient${clinicType}appointmenteyespecialist`]:clinicType === 'ambher' ? ambhereyespecialist : bautistaeyespecialist
+      })
+    })
+
+
+    if(!response.ok){
+      throw new Error("Failed to update appointment status");
+    }
+
+    const updatedappointment = await response.json();
+    setselectedpatientappointment(updatedappointment);
+    setpatientappointments(prevappointments =>
+      prevappointments.map(appt =>
+        appt.id === updatedappointment._id ? updatedappointment : appt
+      )
+    );
+
+
+    console.log(`${clinicType} Appointment has been accepted successfully`);
+
+    }catch(error){
+      console.error(`Failed to accept ${clinicType} patient appointment:`, error);
+    }
+
+  };
+
+
+
+
+
+//AICODE
+  const handleCompleteAppointment = async (appointmentId, clinicType) => {
+    try {
+      // Make API call to update appointment status with correct URL
+      const response = await fetch(
+        `http://localhost:3000/api/patientappointments/appointments/${appointmentId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${currentusertoken}`
+          },
+          body: JSON.stringify({
+            [`patient${clinicType}appointmentstatus`]: 'Completed',
+            [`patient${clinicType}appointmentstatushistory`]: {
+              status: 'Completed',
+              changedAt: new Date(),
+              changedBy: adminfirstname
+            },
+            [`patient${clinicType}appointmentpaymentotal`]: clinicType === 'ambher' ? ambherappointmentpaymentotal : bautistaappointmentpaymentotal,
+            [`patient${clinicType}appointmentremarksnote`]: clinicType === 'ambher' ? ambherappointmentremarksnote : bautistaappointmentremarksnote
+          })
+        }
+      );
+  
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to update appointment status');
+      }
+  
+      // Update the UI with the new appointment data
+      const updatedAppointment = await response.json();
+      setselectedpatientappointment(updatedAppointment);
+      
+      // Update the appointments list to reflect the change
+      setpatientappointments(prevAppointments => 
+        prevAppointments.map(appt => 
+          appt._id === updatedAppointment._id ? updatedAppointment : appt
+        )
+      );
+      
+      console.log(`${clinicType} appointment completed successfully`);
+    } catch (error) {
+      console.error(`Error completing ${clinicType} appointment:`, error);
+      // TODO: Add error handling UI feedback
+    }
+  };
+  
 
 
 
@@ -3310,12 +3588,7 @@ const handleviewappointment = (appointment) => {
 
 
 
-
-
-
-
-
-
+  
   return (
     <>
 
@@ -3440,7 +3713,7 @@ const handleviewappointment = (appointment) => {
           
           <div className="flex flex-col items-start w-full h-[12%] rounded-2xl" id="greet">
 
-            <h1 className="ml-5 mt-1 font-albertsans font-bold text-[40px] text-[#212134]">Good Day, {adminfirstname}</h1>
+            <h1 className="ml-5 mt-1 font-albertsans font-bold text-[40px] text-[#212134]">Good Day, {adminfirstname}!</h1>
             <p className="ml-5 font-geistsemibold text-[15px] text-[#23232a]">Stay on top of your tasks, monitor progress, and track status.  </p>
 
           </div>
@@ -4994,11 +5267,42 @@ const handleviewappointment = (appointment) => {
 { activedashboard === 'appointmentmanagement' && (<div id="appointmentmanagement" className="pl-5 pr-5 pb-4 pt-4 transition-all duration-300  ease-in-out border-1 bg-white border-gray-200 shadow-lg w-[100%] h-[100%] rounded-2xl" >   
 
 <div className="flex items-center"><i className="bx bxs-calendar text-[#184d85] text-[25px] mr-2"/> <h1 className=" font-albertsans font-bold text-[#184d85] text-[25px]">Appointment Management</h1></div>
-<div className="flex justify-between items-center mt-3 h-[60px]">
+
+
+
+{loggedinusertype?.type === "Admin"&& (
+
+  <div className="flex justify-between items-center mt-3 h-[60px]">
   <div onClick={() => showappointmentstable('allappointmentstable')}  className={`hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 pb-3 pt-3 text-center flex justify-center items-center ${activeappointmentstable ==='allappointmentstable' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d] ${activeappointmentstable ==='allappointmentstable' ? 'text-white' : ''}`}>All</h1></div>
   <div onClick={() => showappointmentstable('ambherappointmentstable')}  className={`hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 pb-3 pt-3 text-center flex justify-center items-center ${activeappointmentstable ==='ambherappointmentstable' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d] ${activeappointmentstable ==='ambherappointmentstable' ? 'text-white' : ''}`}>Ambher Optical</h1></div>
   <div onClick={() => showappointmentstable('bautistaappointmentstable')}  className={`hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 pb-3 pt-3 text-center flex justify-center items-center ${activeappointmentstable ==='bautistaappointmentstable' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d] ${activeappointmentstable ==='bautistaappointmentstable' ? 'text-white' : ''}`}>Bautista Eye Center</h1></div>
-</div>
+  </div>
+ )} 
+ 
+
+
+
+{(loggedinusertype?.type === "Owner" || loggedinusertype?.type === "Staff") && loggedinusertype?.clinic === "Bautista Eye Center" && (
+  <div className="flex justify-between items-center mt-3 h-[60px]">
+  <div onClick={() => showappointmentstable('bautistaappointmentstable')}  className={`hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 pb-3 pt-3 text-center flex justify-center items-center ${activeappointmentstable ==='bautistaappointmentstable' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d] ${activeappointmentstable ==='bautistaappointmentstable' ? 'text-white' : ''}`}>Bautista Eye Center</h1></div>
+  </div>
+ )}
+
+
+
+{(loggedinusertype?.type === "Owner" || loggedinusertype?.type === "Staff") && loggedinusertype?.clinic === "Ambher Optical" && (
+  <div className="flex justify-between items-center mt-3 h-[60px]">
+  <div onClick={() => showappointmentstable('ambherappointmentstable')}  className={`hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 pb-3 pt-3 text-center flex justify-center items-center ${activeappointmentstable ==='ambherappointmentstable' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d] ${activeappointmentstable ==='ambherappointmentstable' ? 'text-white' : ''}`}>Ambher Optical</h1></div>
+  </div>
+ )} 
+
+
+
+
+
+
+
+
 
 
 
@@ -5028,7 +5332,6 @@ const handleviewappointment = (appointment) => {
             <th className=" pb-3 pt-3 pl-2 pr-2 text-center">Patient</th> 
             <th className=" pb-3 pt-3 pl-2 pr-2 text-center">Date Created</th> 
             <th className="pb-3 pt-3 pl-2 pr-2  text-center">Ambher Appoinment</th>
- 
             <th className="pb-3 pt-3 pl-2 pr-2  text-center">Bautista Appoinment</th>
             <th className="rounded-tr-2xl pb-3 pt-3 pl-2 pr-2  text-center">Actions</th>
           </tr>
@@ -5125,7 +5428,7 @@ const handleviewappointment = (appointment) => {
                                   </div>        
                                   <div className="pr-5 flex justify-end  items-center  h-[80px] w-full">
                                     <div className="hover:cursor-pointer mr-2 bg-[#292929] hover:bg-[#414141]   rounded-2xl h-fit w-fit px-7 py-3 hover:scale-105 transition-all duration-300 ease-in-out" onClick={() => setdeletepatientappointment(false)}><p className=" text-[#ffffff]">Cancel</p></div>
-                                    <div className="hover:cursor-pointer bg-[#4e0f0f] hover:bg-[#7f1a1a] ml-2 rounded-2xl h-fit w-fit px-7 py-3 hover:scale-105 transition-all duration-300 ease-in-out" onClick={() => {handledeleteappointment(selectedpatientappointment._id);setdeletepatientappointment(false); }}><p className=" text-[#ffffff]">Delete</p></div>
+                                    <div className="hover:cursor-pointer bg-[#4e0f0f] hover:bg-[#7f1a1a] ml-2 rounded-2xl h-fit w-fit px-7 py-3 hover:scale-105 transition-all duration-300 ease-in-out" onClick={() => {handledeleteappointment(selectedpatientappointment.patientappointmentid);setdeletepatientappointment(false); }}><p className=" text-[#ffffff]">Delete</p></div>
                                   </div>
                               </div>
 
@@ -5160,7 +5463,7 @@ const handleviewappointment = (appointment) => {
                         </div>
                     </div>
                     </Link> 
-                                   <div onClick={() => setviewpatientappointment(false)} className="bg-[#333232] px-10 rounded-2xl hover:cursor-pointer hover:scale-105 transition-all duration-300 ease-in-out"><i className="bx bx-x text-white text-[40px] "/></div>
+                                   <div onClick={() => {setviewpatientappointment(false); setbautistaeyespecialist(''); setambhereyespecialist('');}} className="bg-[#333232] px-10 rounded-2xl hover:cursor-pointer hover:scale-105 transition-all duration-300 ease-in-out"><i className="bx bx-x text-white text-[40px] "/></div>
                                  </div>
 
 
@@ -5206,6 +5509,7 @@ const handleviewappointment = (appointment) => {
     <p className="text-[#2d2d44] text-[18px]">
       ₱{selectedpatientappointment.patientambherappointmentpaymentotal}
     </p>
+
   </div>
 )}
     </div>
@@ -5254,8 +5558,71 @@ const handleviewappointment = (appointment) => {
 
   <div className="flex items-center mt-5 ml-7">
     <input className="w-7 h-7 mr-3 appearance-none border-2 border-[#2d2d44] rounded-md checked:bg-[#2d2d44] checked:border-[#2d2d44] after:text-white after:text-lg after:absolute after:left-1/2 after:top-1/2 after:content-['✓'] after:opacity-0 after:-translate-x-1/2 after:-translate-y-1/2 checked:after:opacity-100 relative cursor:pointer transition-all" checked={selectedpatientappointment.patientambherappointmentcontactlensefitting} type="checkbox" name="patientambherappointmentcontactlensefitting" id="patientambherappointmentcontactlensefitting" />
-    <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="patientambherappointmentcontactlensefitting">Contact Lense Fitting</label>   
+    <label className="text-[18px]   font-semibold font-albertsans  text-[#343436] "htmlFor="patientambherappointmentcontactlensefitting">Contact Lense Fitting</label>   
     </div>  
+
+
+    {selectedpatientappointment.patientambherappointmentstatus === "Pending" && (
+  <div id="patientambherappointmentpaymentotal" className="mt-7 ml-6 mr-4" >
+    <h1 className="font-bold text-[17px] text-[#343436] mb-3">Eye Specialist : </h1>
+    <div className=""><AmbhereyespecialistBox value={ambhereyespecialist} onChange={(e) => setambhereyespecialist(e.target.value)} /></div>  
+
+    {ambhereyespecialist && (
+    <div onClick={() => handleacceptappointment(selectedpatientappointment.patientambherappointmentid, 'ambher')} className=" bg-[#5f9e1b]  hover:bg-[#55871f] mt-4 h-[50px]  transition-all duration-300 ease-in-out flex justify-center items-center py-2 px-5 hover:cursor-pointer rounded-[20px]"><h1 className="text-white font-albertsans font-semibold text-[20px]">Accept Ambher Appointment</h1></div>
+    )} 
+    </div>
+  
+
+)}
+
+
+
+{selectedpatientappointment.patientambherappointmentstatus === "Accepted" && (
+  <div id="patientambherappointmentpaymentotal" className="mt-7 ml-6" >
+    <h1 className="text-[18px]  font-semibold font-albertsans  text-[#343436]mb-3">Total Payment for Ambher Optical  : </h1>
+    <input className="w-full border-b-2 border-gray-600  text-[18px]  font-semibold font-albertsans  text-[#343436]"  value={ambherappointmentpaymentotal} onChange={(e) => setambherappointmentpaymentotal(Number(e.target.value))}  type="number" name="patientambherappointmentpaymentotal" id="patientambherappointmentpaymentotal" placeholder="Total Payment"/>
+
+
+    <div className="mt-3 w-full flex flex-col">
+      <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="patientambherappointmentremarksnote">Appointment Remarks :</label>  
+      <textarea className="w-full text-[18px]  font-semibold font-albertsans  text-[#343436] rounded-md border-2 border-[#2d2d44]  " ref={textarearef} rows={1} style={{minHeight:'44px'}} type="text" value={ambherappointmentremarksnote} onChange={(e) => {setambherappointmentremarksnote(e.target.value); adjusttextareaheight();}} placeholder="Specify findings or remarks..."/>
+    </div>
+
+
+  {ambherappointmentpaymentotal && ambherappointmentremarksnote && (
+    <div onClick={() => handleCompleteAppointment(selectedpatientappointment.patientambherappointmentid, 'ambher')}  className=" bg-[#2d91cf]  hover:bg-[#1b6796] mt-4 h-[50px]  transition-all duration-300 ease-in-out flex justify-center items-center py-2 px-5 hover:cursor-pointer rounded-[20px]"><h1 className="text-white font-albertsans font-semibold text-[20px]">Complete Ambher Appointment</h1></div>
+  )}
+
+
+       </div>
+)}
+
+
+
+{selectedpatientappointment.patientambherappointmentstatus === "Completed" && (
+  <div id="patientambherappointmentpaymentotal" className="mt-15" >
+    <div className="mt-3 w-full flex flex-col">
+      <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="patientambherappointmentremarksnote">Appointment Remarks :</label>  
+      <p>{selectedpatientappointment.patientambherappointmentremarksnote}</p>
+    </div>
+
+
+    {selectedpatientappointment.patientambherappointmentrating != 0 && selectedpatientappointment.patientambherappointmentfeedback != "" && (
+  <div className="mt-10"> 
+
+  <h1 className="text-[18px]  font-semibold font-albertsans  text-[#343436] ">Patient Feedback :</h1>           
+  <Stack spacing={1}>
+   <Rating size="large" value={selectedpatientappointment.patientambherappointmentrating} readOnly /> 
+  </Stack>  
+  <p>{selectedpatientappointment.patientambherappointmentfeedback}</p>
+ </div>
+)} 
+
+  </div>
+)}
+
+
+
 
 
 
@@ -5358,13 +5725,62 @@ const handleviewappointment = (appointment) => {
     </div>  
 
 
-    {selectedpatientappointment.patientambherappointmentstatus === "Pending" && (
-  <div id="patientambherappointmentpaymentotal" className="mt-7 ml-6" >
+    {selectedpatientappointment.patientbautistaappointmentstatus === "Pending" && (
+  <div id="patientbautistaappointmentpaymentotal" className="mt-7 ml-6" >
     <h1 className="font-bold text-[17px] text-[#343436] mb-3">Eye Specialist : </h1>
-    <div className="ml-3"><OwnerClinicBox value={demoformdata.patientgender} onChange={(e) => setdemoformdata({...demoformdata, patientgender: e.target.value})} /></div>   </div>
-  
-
+    <div className=""><BautistaeyespecialistBox value={bautistaeyespecialist} onChange={(e) => setbautistaeyespecialist(e.target.value)}/></div>
+   {bautistaeyespecialist && (
+    <div onClick={() => handleacceptappointment(selectedpatientappointment.patientbautistaappointmentid, 'bautista')} className=" bg-[#5f9e1b]  hover:bg-[#55871f] mt-4 h-[50px]  transition-all duration-300 ease-in-out flex justify-center items-center py-2 px-5 hover:cursor-pointer rounded-[20px]"><h1 className="text-white font-albertsans font-semibold text-[20px]">Accept Bautista Appointment</h1></div>
+   )}
+       </div>
 )}
+
+
+
+{selectedpatientappointment.patientbautistaappointmentstatus === "Accepted" && (
+  <div id="patientbautistaappointmentpaymentotal" className="mt-7 ml-6" >
+    <h1 className="text-[18px]  font-semibold font-albertsans  text-[#343436]mb-3">Total Payment for Bautista Eye Center  : </h1>
+    <input className="w-full border-b-2 border-gray-600  text-[18px]  font-semibold font-albertsans  text-[#343436]"  value={bautistaappointmentpaymentotal} onChange={(e) => setbautistaappointmentpaymentotal(Number(e.target.value))}  type="number" name="patientbautistaappointmentpaymentotal" id="patientbautistaappointmentpaymentotal" placeholder="Total Payment"/>
+
+    <div className="mt-3 w-full flex flex-col">
+      <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="patientbautistaappointmentremarksnote">Appointment Remarks :</label>  
+      <textarea className="w-full text-[18px]  font-semibold font-albertsans  text-[#343436] rounded-md border-2 border-[#2d2d44]  " ref={textarearef} rows={1} style={{minHeight:'44px'}} type="text" value={bautistaappointmentremarksnote} onChange={(e) => {setbautistaappointmentremarksnote(e.target.value); adjusttextareaheight();}} placeholder="Specify findings or remarks..."/>
+    </div>
+
+
+  {bautistaappointmentpaymentotal && bautistaappointmentremarksnote && (
+    <div onClick={() => handleCompleteAppointment(selectedpatientappointment.patientbautistaappointmentid, 'bautista')}  className=" bg-[#2d91cf]  hover:bg-[#1b6796] mt-4 h-[50px]  transition-all duration-300 ease-in-out flex justify-center items-center py-2 px-5 hover:cursor-pointer rounded-[20px]"><h1 className="text-white font-albertsans font-semibold text-[20px]">Complete Bautista Appointment</h1></div>
+  )}
+
+       </div>
+)}
+
+
+{selectedpatientappointment.patientbautistaappointmentstatus === "Completed" && (
+  <div id="patientbautistaappointmentpaymentotal" className="mt-15" >
+    <div className="mt-3 w-full flex flex-col">
+      <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="patientbautistaappointmentremarksnote">Appointment Remarks :</label>  
+      <p>{selectedpatientappointment.patientbautistaappointmentremarksnote}</p>
+    </div>
+
+    {selectedpatientappointment.patientbautistaappointmentrating != 0 && selectedpatientappointment.patientbautistaappointmentfeedback != "" && (
+    <div className="mt-10"> 
+  
+    <h1 className="text-[18px]  font-semibold font-albertsans  text-[#343436] ">Patient Feedback :</h1>           
+    <Stack spacing={1}>
+     <Rating size="large" value={selectedpatientappointment.patientbautistaappointmentrating} readOnly /> 
+    </Stack>  
+    <p>{selectedpatientappointment.patientbautistaappointmentfeedback}</p>
+   </div>
+  )} 
+
+
+  </div>
+)}
+
+
+
+
 
 
 
@@ -5395,9 +5811,12 @@ const handleviewappointment = (appointment) => {
 
 
 <div className="w-full mt-5 p-3 flex flex-col mb-7 bg-[#ededed] rounded-2xl  ">
-                          <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="patientadditionalappointmentnotes">Appointment Notes :</label>  
+                          <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="patientadditionalappointmentnotes">Patient Appointment Notes :</label>  
 
                            <div>{selectedpatientappointment.patientadditionalappointmentnotes ||"No additional notes"}</div>
+                                                 <div className=" w-fit h-fit mt-5 mb-5">
+                                                 <img className=" object-cover  rounded-2xl" src={selectedpatientappointment.patientadditionalappointmentnotesimage || defaultimageplaceholder}/>                 
+                                                 </div>
                           </div>
                            </div>
 
@@ -5408,32 +5827,728 @@ const handleviewappointment = (appointment) => {
  </div> )}
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 {/*Ambher Appointments Table*/}{/*Ambher Appointments Table*/}{/*Ambher Appointments Table*/}{/*Ambher Appointments Table*/}{/*Ambher Appointments Table*/}{/*Ambher Appointments Table*/}{/*Ambher Appointments Table*/}
- { activeappointmentstable === 'ambherappointmentstable' && ( <div id="ambherappointmentstable" className="animate-fadeInUp flex flex-col items-center border-t-2  border-[#909090] w-[100%] h-[83%] rounded-2xl mt-5" >
+{ activeappointmentstable === 'ambherappointmentstable' && ( <div id="ambherappointmentstable" className="animate-fadeInUp flex flex-col items-center border-t-2  border-[#909090] w-[100%] h-[83%] rounded-2xl mt-5" >
 
 <div className=" mt-5  w-full h-[60px] flex justify-between rounded-3xl pl-5 pr-5">              
-<div className="flex justify-center items-center"><h2 className="font-albertsans font-bold text-[20px] text-[#434343] mr-3 ">Search: </h2><div className="relative flex items-center justify-center gap-3"><i className="bx bx-search absolute left-3 text-2xl text-gray-500"></i><input type="text" placeholder="Enter here..." className="transition-all duration-300 ease-in-out py-2 pl-10 rounded-3xl border-2 border-[#6c6c6c] focus:bg-slate-100 focus:outline-sky-500"></input></div></div>
+    <div className="flex justify-center items-center"><h2 className="font-albertsans font-bold text-[20px] text-[#434343] mr-3 ">Search: </h2><div className="relative flex items-center justify-center gap-3"><i className="bx bx-search absolute left-3 text-2xl text-gray-500"></i><input type="text" placeholder="Enter here..." className="transition-all duration-300 ease-in-out py-2 pl-10 rounded-3xl border-2 border-[#6c6c6c] focus:bg-slate-100 focus:outline-sky-500"></input></div></div>
+    </div>
+
+    {loadingappointmens ? (
+    <div className="flex justiy-center p-8 items-center">
+    <div className="animate-spin rounded-full border-t-2 border-b-2 border-blue-500 h-12 w-12"></div>
+  </div>
+) : errorloadingappointments ? (
+  <div className="rounded-lg p-4 bg-red-50 text-red-600">
+  Error: {errorloadingappointments}
+</div>
+) : patientappointments.length === 0 ? (
+  <div className="text-yellow-600 bg-yellow-50 rounded-2xl px-4 py-6">No patient appointments found.</div>
+
+) :(<div className=" rounded-3xl h-full w-full mt-2 bg-[#f7f7f7]">
+    <table className="min-w-full divide-y divide-gray-200">
+      <thead className="bg-">
+        <tr className="text-[#ffffff] font-albertsans font-bold bg-[#2781af] rounded-tl-2xl rounded-tr-2xl">
+          <th className="rounded-tl-2xl pb-3 pt-3 pl-2 pr-2 text-center">ID</th> 
+          <th className=" pb-3 pt-3 pl-2 pr-2 text-center">Patient</th> 
+          <th className=" pb-3 pt-3 pl-2 pr-2 text-center">Date Created</th> 
+          <th className="pb-3 pt-3 pl-2 pr-2  text-center">Ambher Appoinment</th>
+
+  
+          <th className="rounded-tr-2xl pb-3 pt-3 pl-2 pr-2  text-center">Actions</th>
+        </tr>
+      </thead>
+
+
+      <tbody className="divide-y divide-gray-200 bg-white">
+      {/*AICODE*/}
+      {patientappointments.filter(appointment =>{
+        if(activeappointmentstable === 'ambherappointmentstable'){
+          return appointment.patientambherappointmentdate !== null &&
+                 appointment.patientambherappointmenttime !== null &&
+                 appointment.patientambherappointmentid !== null;
+        }
+        return true;
+         }).map((appointment) => (
+          <tr 
+            key={appointment._id}
+            className="hover:bg-gray-50 transition-all ease-in-out duration-300 border-b-2"
+          >
+            <td className="py-3 px-6 text-[#454444] text-center font-albertsans font-medium ">
+              #{appointment.patientappointmentid}
+            </td>
+            <td className="py-3 px-6 text-[#454444] text-center font-albertsans font-medium ">
+                   <div className="flex  items-center">
+                <img 
+                  src={appointment.patientappointmentprofilepicture} 
+                  alt="Profile" 
+                  className=" rounded-full h-12 mr-3 w-12 object-cover"
+                  onError={(e) => {
+                    e.target.src = 'default-profile-url';
+                  }}
+                />
+                <h1 className="font-semibold text-[#171717] text-[15px]">{appointment.patientappointmentfirstname} {appointment.patientappointmentlastname}</h1>
+                </div>
+            </td>
+
+            <td className="py-3 px-6 text-[#454444] text-center font-albertsans font-medium ">
+                <span className="font-semibold text-[15px] text-[#171717]">
+                  {new Date(appointment.createdAt).toLocaleDateString('en-US',{
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric',
+                  })}  
+                </span>          
+            </td>
+
+            <td className="py-3 px-6 text-[#454444] text-center font-albertsans font-medium ">
+              {appointment.patientambherappointmentdate && (
+                <div className="text-sm font-albertsans text-gray-900 flex  justify-center items-center">
+                  <span className="font-semibold items-start">{formatappointmatedates(appointment.patientambherappointmentdate)} </span> 
+                  <span className="ml-1 font-semibold items-start">({formatappointmenttime(appointment.patientambherappointmenttime)})</span> 
+                  <span className={`ml-3 font-albertsans font-semibold rounded-full text-[15px] leading-5 px-4 py-2 inline-flex
+${appointment.patientambherappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] text-[#421a10]':
+  appointment.patientambherappointmentstatus === 'Pending' ? 'bg-yellow-100 text-yellow-800':
+  appointment.patientambherappointmentstatus === 'Accepted' ? 'bg-[#9edc7a] text-[#2b5910]':
+  appointment.patientambherappointmentstatus === 'Completed' ? 'bg-[#74c4ce] text-[#1a5566]':
+  'bg-red-100 text-red-800'}`}>{appointment.patientambherappointmentstatus}</span>
+                </div>
+              )}
+            </td>
+
+
+
+
+
+            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium flex justify-center items-center">
+             
+            <div onClick={() => {handleviewappointment(appointment); setviewpatientappointment(true);}}
+                className="bg-[#383838]  hover:bg-[#595959]  mr-2 transition-all duration-300 ease-in-out flex justify-center items-center py-2 px-5 rounded-2xl hover:cursor-pointer"><h1 className="text-white">View</h1></div>
+
+            <div onClick={() =>  {setdeletepatientappointment(true);
+                              setselectedpatientappointment(appointment);
+            }}
+              className="bg-[#8c3226] hover:bg-[#ab4f43]  transition-all duration-300 ease-in-out flex justify-center items-center py-2 px-5 rounded-2xl hover:cursor-pointer"><i className="bx bxs-trash text-white mr-1"/><h1 className="text-white">Delete</h1></div>
+
+                    {deletepatientappointment && (
+                       <div className="bg-opacity-0 flex justify-center items-center z-50 fixed inset-0 bg-[#0000004a] bg-opacity-50">
+
+                         <div className="flex flex-col items  bg-white rounded-2xl w-[600px] h-fit  animate-fadeInUp ">
+               
+
+                            <div className="flex items-center rounded-tl-2xl rounded-tr-2xl h-[70px] bg-[#3b1616]"><i className="ml-3 bx bxs-error text-[28px] font-albertsans font-bold text-[#f1f1f1] "/><h1 className="ml-2 text-[23px] font-albertsans font-bold text-[#f0f0f0]">Delete Appointment</h1></div>
+                            <div className="flex flex-col  items-center  h-fit rounded-br-2xl rounded-bl-2xl">
+                                <div className="px-5 flex flex-col justify-center  h-[130px] w-full"><p className="font-albertsans font-medium text-[20px]">Are you sure you want to delete this appointment?</p>
+                                {selectedpatientappointment && ( <>
+                                          <p className="text-[18px] mt-3">Appointment Id: {selectedpatientappointment.patientambherappointmentid}</p> </>)}  
+                                </div>        
+                                <div className="pr-5 flex justify-end  items-center  h-[80px] w-full">
+                                  <div className="hover:cursor-pointer mr-2 bg-[#292929] hover:bg-[#414141]   rounded-2xl h-fit w-fit px-7 py-3 hover:scale-105 transition-all duration-300 ease-in-out" onClick={() => setdeletepatientappointment(false)}><p className=" text-[#ffffff]">Cancel</p></div>
+                                  <div className="hover:cursor-pointer bg-[#4e0f0f] hover:bg-[#7f1a1a] ml-2 rounded-2xl h-fit w-fit px-7 py-3 hover:scale-105 transition-all duration-300 ease-in-out" onClick={() => {handledeleteappointmentbyclinic(selectedpatientappointment.patientambherappointmentid, 'ambher');setdeletepatientappointment(false); }}><p className=" text-[#ffffff]">Delete</p></div>
+                                </div>
+                            </div>
+
+                         </div>
+                       </div>
+                    )}
+
+
+                    
+
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+    </div>
+)}
+
+{/*Viewing Appointment Details*/} {/*Viewing Appointment Details*/} {/*Viewing Appointment Details*/} {/*Viewing Appointment Details*/} {/*Viewing Appointment Details*/} {/*Viewing Appointment Details*/}
+{/*Viewing Appointment Details*/} {/*Viewing Appointment Details*/} {/*Viewing Appointment Details*/} {/*Viewing Appointment Details*/} {/*Viewing Appointment Details*/} {/*Viewing Appointment Details*/}
+                       {viewpatientappointment && selectedpatientappointment && (
+                       <div id="viewpatientappointment" className="overflow-y-auto h-auto bg-opacity-0 flex justify-center items-start z-50 fixed inset-0 bg-[#000000af] bg-opacity-50">
+                         <div className="pl-5 pr-5 bg-white rounded-2xl w-[1300px] mt-10  animate-fadeInUp ">
+                               <div className=" mt-5 border-3 flex justify-between items-center border-[#2d2d4400] w-full h-[70px]">
+                               <Link to=""><div id="patientcard"  className=" flex justify-center items-start mt-5 ml-3 hover:scale-105 hover:cursor-pointer bg-white transition-all duration-300 ease-in-out  rounded-2xl w-[500px] h-[80px]">
+                      <div className="w-max mr-3 h-full  rounded-2xl flex justify-center items-center">
+                      <img  src={selectedpatientappointment?.patientappointmentprofilepicture || defaultprofilepic}  alt="Profile" className="h-20 w-20 rounded-full object-cover"></img>
+                      </div>
+                      <div className="bg-white  flex flex-col justify-center items-start pl-2 pr-2 w-[500px] h-full  rounded-3xl">
+                        <h1 className="font-albertsans font-bold text-[20px] w-full text-[#2d3744]"> {selectedpatientappointment?.patientappointmentfirstname || ''} {selectedpatientappointment?.patientappointmentlastname || ''}</h1>
+                        <p className="text-[15px]  w-full text-[#535354]">{selectedpatientappointment?.patientappointmentemail || ''}</p>
+                      </div>
+                  </div>
+                  </Link> 
+                                 <div onClick={() => {setviewpatientappointment(false); setambhereyespecialist('');}} className="bg-[#333232] px-10 rounded-2xl hover:cursor-pointer hover:scale-105 transition-all duration-300 ease-in-out"><i className="bx bx-x text-white text-[40px] "/></div>
+                               </div>
+
+
+
+
+
+
+                <div className="mt-10 flex justify-start items-start  w-full rounded-3xl ">
+{selectedpatientappointment.patientambherappointmentdate && (
+
+
+<div className="flex flex-col mr-3 bg-[#fdfdfd]    h-auto w-full rounded-3xl">
+<div className="flex p-3">
+<img src={ambherlogo} className="w-15"/>  
+<h1 className="font-albertsans font-bold text-[20px] text-[#237234] mt-1 ml-3">Ambher Optical</h1>
+<span className={`ml-5 font-albertsans font-semibold rounded-full text-[15px] leading-5 px-4 py-2 inline-flex
+${selectedpatientappointment.patientambherappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] text-[#421a10]':
+  selectedpatientappointment.patientambherappointmentstatus === 'Pending' ? 'bg-yellow-100 text-yellow-800':
+  selectedpatientappointment.patientambherappointmentstatus === 'Accepted' ? 'bg-[#9edc7a] text-[#2b5910]':
+  selectedpatientappointment.patientambherappointmentstatus === 'Completed' ? 'bg-[#74c4ce] text-[#1a5566]':
+  'bg-red-100 text-red-800'}`}>{selectedpatientappointment.patientambherappointmentstatus}</span>
 </div>
 
-<div className=" rounded-3xl h-full w-full mt-2 bg-[#f7f7f7]">
+<div className="flex ">     
+      
+<div className="flex flex-col w-full pr-3">           
+<div className=" flex flex-col h-fit form-group ml-3  mt-4 w-full ">
+     <label className="text-[18px]  font-bold  text-[#434343] "htmlFor="patientambherappointmentdate">Appointment Details : </label>     
+  {/*<input className="h-10 w-60 p-3 mt-2 justify-center border-b-2 border-gray-600 bg-gray-200 rounded-2xl text-[#2d2d44] text-[18px]  font-semibold"   type="date" name="patientambherappointmentdate" id="patientambherappointmentdate" placeholder="" required={!!ambherservicesselected}/>*/}
+  <div className="h-max w-full  flex flex-col items-start p-3 mt-2 justify-start border-b-2 border-gray-600 bg-gray-200 rounded-2xl text-[#2d2d44] text-[18px]  font-semibold">
+    {(selectedpatientappointment.patientambherappointmentstatus === "Accepted" ||
+    selectedpatientappointment.patientambherappointmentstatus === "Completed") && (
+
+      <h1>{selectedpatientappointment.patientambherappointmenteyespecialist}</h1>
+
+  )}
+   <h1>{formatappointmatedates(selectedpatientappointment.patientambherappointmentdate)} <span className="ml-2">({formatappointmenttime(selectedpatientappointment.patientambherappointmenttime)})</span></h1>
+
+
+   {selectedpatientappointment.patientambherappointmentstatus === "Completed" && (
+<div id="patientambherappointmentpaymentotal" className="mt-5" >
+  <h3 className="font-bold text-[15px] text-[#1a690e]">Payment Total:</h3>
+  <p className="text-[#2d2d44] text-[18px]">
+    ₱{selectedpatientappointment.patientambherappointmentpaymentotal}
+  </p>
+
+</div>
+)}
+  </div>
+  
+   </div>
+
+
+
+
+
+
+</div>
+
+</div>
+
+<div className="p-4">
+<div className="flex items-center mt-5 ml-7">
+  <input className="w-7 h-7 mr-3 appearance-none border-2 border-[#2d2d44] rounded-md checked:bg-[#2d2d44] checked:border-[#2d2d44] after:text-white after:text-lg after:absolute after:left-1/2 after:top-1/2 after:content-['✓'] after:opacity-0 after:-translate-x-1/2 after:-translate-y-1/2 checked:after:opacity-100 relative cursor:pointer transition-all" checked={selectedpatientappointment.patientambherappointmentcataractscreening} type="checkbox" name="patientambherappointmentcataractscreening" id="patientambherappointmentcataractscreening" />
+  <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="patientambherappointmentcataractscreening">Visual/Cataract Screening</label>   
+  </div>
+
+<div className="flex items-center mt-5 ml-7">
+  <input className="w-7 h-7 mr-3 appearance-none border-2 border-[#2d2d44] rounded-md checked:bg-[#2d2d44] checked:border-[#2d2d44] after:text-white after:text-lg after:absolute after:left-1/2 after:top-1/2 after:content-['✓'] after:opacity-0 after:-translate-x-1/2 after:-translate-y-1/2 checked:after:opacity-100 relative cursor:pointer transition-all" checked={selectedpatientappointment.patientambherappointmentpediatricassessment} type="checkbox" name="patientambherappointmentpediatricassessment" id="patientambherappointmentpediatricassessment" />
+  <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="patientambherappointmentpediatricassessment">Pediatric Assessment</label>   
+  </div>   
+
+<div className="flex items-center mt-5 ml-7">
+  <input className="w-7 h-7 mr-3 appearance-none border-2 border-[#2d2d44] rounded-md checked:bg-[#2d2d44] checked:border-[#2d2d44] after:text-white after:text-lg after:absolute after:left-1/2 after:top-1/2 after:content-['✓'] after:opacity-0 after:-translate-x-1/2 after:-translate-y-1/2 checked:after:opacity-100 relative cursor:pointer transition-all" checked={selectedpatientappointment.patientambherappointmentpediatricoptometrist} type="checkbox" name="patientambherappointmentpediatricoptometrist" id="patientambherappointmentpediatricoptometrist" />
+  <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="patientambherappointmentpediatricoptometrist">Pediatric Optometrist</label>   
+  </div>    
+
+<div className="flex items-center mt-5 ml-7">
+  <input className="w-7 h-7 mr-3 appearance-none border-2 border-[#2d2d44] rounded-md checked:bg-[#2d2d44] checked:border-[#2d2d44] after:text-white after:text-lg after:absolute after:left-1/2 after:top-1/2 after:content-['✓'] after:opacity-0 after:-translate-x-1/2 after:-translate-y-1/2 checked:after:opacity-100 relative cursor:pointer transition-all" checked={selectedpatientappointment.patientambherappointmentcolorvisiontesting} type="checkbox" name="patientambherappointmentcolorvisiontesting" id="patientambherappointmentcolorvisiontesting" />
+  <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="patientambherappointmentcolorvisiontesting">Color Vision Testing</label>   
+  </div>    
+
+<div className="flex items-center mt-5 ml-7">
+  <input className="w-7 h-7 mr-3 appearance-none border-2 border-[#2d2d44] rounded-md checked:bg-[#2d2d44] checked:border-[#2d2d44] after:text-white after:text-lg after:absolute after:left-1/2 after:top-1/2 after:content-['✓'] after:opacity-0 after:-translate-x-1/2 after:-translate-y-1/2 checked:after:opacity-100 relative cursor:pointer transition-all" checked={selectedpatientappointment.patientambherappointmentlowvisionaid} type="checkbox" name="patientambherappointmentlowvisionaid" id="patientambherappointmentlowvisionaid" />
+  <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="patientambherappointmentlowvisionaid">Low Vision Aid</label>   
+  </div>    
+
+<div className="flex items-center mt-5 ml-7">
+  <input className="w-7 h-7 mr-3 appearance-none border-2 border-[#2d2d44] rounded-md checked:bg-[#2d2d44] checked:border-[#2d2d44] after:text-white after:text-lg after:absolute after:left-1/2 after:top-1/2 after:content-['✓'] after:opacity-0 after:-translate-x-1/2 after:-translate-y-1/2 checked:after:opacity-100 relative cursor:pointer transition-all" checked={selectedpatientappointment.patientambherappointmentrefraction} type="checkbox" name="patientambherappointmentrefraction" id="patientambherappointmentrefraction" />
+  <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="patientambherappointmentrefraction">Refraction</label>   
+  </div>      
+
+<div className="flex items-center mt-5 ml-7">
+  <input className="w-7 h-7 mr-3 appearance-none border-2 border-[#2d2d44] rounded-md checked:bg-[#2d2d44] checked:border-[#2d2d44] after:text-white after:text-lg after:absolute after:left-1/2 after:top-1/2 after:content-['✓'] after:opacity-0 after:-translate-x-1/2 after:-translate-y-1/2 checked:after:opacity-100 relative cursor:pointer transition-all" checked={selectedpatientappointment.patientambherappointmentcontactlensefitting} type="checkbox" name="patientambherappointmentcontactlensefitting" id="patientambherappointmentcontactlensefitting" />
+  <label className="text-[18px]   font-semibold font-albertsans  text-[#343436] "htmlFor="patientambherappointmentcontactlensefitting">Contact Lense Fitting</label>   
+  </div>  
+
+
+  {selectedpatientappointment.patientambherappointmentstatus === "Pending" && (
+<div id="patientambherappointmentpaymentotal" className="mt-7 ml-6 mr-4" >
+  <h1 className="font-bold text-[17px] text-[#343436] mb-3">Eye Specialist : </h1>
+  <div className=""><AmbhereyespecialistBox value={ambhereyespecialist} onChange={(e) => setambhereyespecialist(e.target.value)} /></div>  
+
+  {ambhereyespecialist && (
+  <div onClick={() => handleacceptappointment(selectedpatientappointment.patientambherappointmentid, 'ambher')} className=" bg-[#5f9e1b]  hover:bg-[#55871f] mt-4 h-[50px]  transition-all duration-300 ease-in-out flex justify-center items-center py-2 px-5 hover:cursor-pointer rounded-[20px]"><h1 className="text-white font-albertsans font-semibold text-[20px]">Accept Ambher Appointment</h1></div>
+  )} 
+  </div>
+
+
+)}
+
+
+
+{selectedpatientappointment.patientambherappointmentstatus === "Accepted" && (
+<div id="patientambherappointmentpaymentotal" className="mt-7 ml-6" >
+  <h1 className="text-[18px]  font-semibold font-albertsans  text-[#343436]mb-3">Total Payment for Ambher Optical  : </h1>
+  <input className="w-full border-b-2 border-gray-600  text-[18px]  font-semibold font-albertsans  text-[#343436]"  value={ambherappointmentpaymentotal} onChange={(e) => setambherappointmentpaymentotal(Number(e.target.value))}  type="number" name="patientambherappointmentpaymentotal" id="patientambherappointmentpaymentotal" placeholder="Total Payment"/>
+
+
+  <div className="mt-3 w-full flex flex-col">
+    <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="patientambherappointmentremarksnote">Appointment Remarks :</label>  
+    <textarea className="w-full text-[18px]  font-semibold font-albertsans  text-[#343436] rounded-md border-2 border-[#2d2d44]  " ref={textarearef} rows={1} style={{minHeight:'44px'}} type="text" value={ambherappointmentremarksnote} onChange={(e) => {setambherappointmentremarksnote(e.target.value); adjusttextareaheight();}} placeholder="Specify findings or remarks..."/>
+  </div>
+
+
+{ambherappointmentpaymentotal && ambherappointmentremarksnote && (
+  <div onClick={() => handleCompleteAppointment(selectedpatientappointment.patientambherappointmentid, 'ambher')}  className=" bg-[#2d91cf]  hover:bg-[#1b6796] mt-4 h-[50px]  transition-all duration-300 ease-in-out flex justify-center items-center py-2 px-5 hover:cursor-pointer rounded-[20px]"><h1 className="text-white font-albertsans font-semibold text-[20px]">Complete Ambher Appointment</h1></div>
+)}
+
+
+     </div>
+)}
+
+
+
+{selectedpatientappointment.patientambherappointmentstatus === "Completed" && (
+<div id="patientambherappointmentpaymentotal" className="mt-15" >
+  <div className="mt-3 w-full flex flex-col">
+    <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="patientambherappointmentremarksnote">Appointment Remarks :</label>  
+    <p>{selectedpatientappointment.patientambherappointmentremarksnote}</p>
+  </div>
+
+
+  {selectedpatientappointment.patientambherappointmentrating != 0 && selectedpatientappointment.patientambherappointmentfeedback != "" && (
+<div className="mt-10"> 
+
+<h1 className="text-[18px]  font-semibold font-albertsans  text-[#343436] ">Patient Feedback :</h1>           
+<Stack spacing={1}>
+ <Rating size="large" value={selectedpatientappointment.patientambherappointmentrating} readOnly /> 
+</Stack>  
+<p>{selectedpatientappointment.patientambherappointmentfeedback}</p>
+</div>
+)} 
+
+</div>
+)}
+
+
+
+
+
+
+
+
+
+
+</div>
+
+</div>
+)}
+
+
+
+
+
+
+
+
+
 
 </div>
 
 
 
 
- </div> )}
+
+
+
+<div className="w-full mt-5 p-3 flex flex-col mb-7 bg-[#ededed] rounded-2xl  ">
+                        <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="patientadditionalappointmentnotes">Patient Appointment Notes :</label>  
+
+                         <div>{selectedpatientappointment.patientadditionalappointmentnotes ||"No additional notes"}</div>
+                                               <div className=" w-fit h-fit mt-5 mb-5">
+                                               <img className=" object-cover  rounded-2xl" src={selectedpatientappointment.patientadditionalappointmentnotesimage || defaultimageplaceholder}/>                 
+                                               </div>
+                        </div>
+                         </div>
+
+                       </div>
+                    )}
+
+
+</div>)}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 {/*Bautista Appointments Table*/}{/*Bautista Appointments Table*/}{/*Bautista Appointments Table*/}{/*Bautista Appointments Table*/}{/*Bautista Appointments Table*/}{/*Bautista Appointments Table*/}
  { activeappointmentstable === 'bautistaappointmentstable' && ( <div id="bautistaappointmentstable" className="animate-fadeInUp flex flex-col items-center border-t-2  border-[#909090] w-[100%] h-[83%] rounded-2xl mt-5" >
+  <div className=" mt-5  w-full h-[60px] flex justify-between rounded-3xl pl-5 pr-5">              
+    <div className="flex justify-center items-center"><h2 className="font-albertsans font-bold text-[20px] text-[#434343] mr-3 ">Search: </h2><div className="relative flex items-center justify-center gap-3"><i className="bx bx-search absolute left-3 text-2xl text-gray-500"></i><input type="text" placeholder="Enter here..." className="transition-all duration-300 ease-in-out py-2 pl-10 rounded-3xl border-2 border-[#6c6c6c] focus:bg-slate-100 focus:outline-sky-500"></input></div></div>
+    </div>
 
-<div className=" mt-5  w-full h-[60px] flex justify-between rounded-3xl pl-5 pr-5">              
-<div className="flex justify-center items-center"><h2 className="font-albertsans font-bold text-[20px] text-[#434343] mr-3 ">Search: </h2><div className="relative flex items-center justify-center gap-3"><i className="bx bx-search absolute left-3 text-2xl text-gray-500"></i><input type="text" placeholder="Enter here..." className="transition-all duration-300 ease-in-out py-2 pl-10 rounded-3xl border-2 border-[#6c6c6c] focus:bg-slate-100 focus:outline-sky-500"></input></div></div>
+    {loadingappointmens ? (
+    <div className="flex justiy-center p-8 items-center">
+    <div className="animate-spin rounded-full border-t-2 border-b-2 border-blue-500 h-12 w-12"></div>
+  </div>
+) : errorloadingappointments ? (
+  <div className="rounded-lg p-4 bg-red-50 text-red-600">
+  Error: {errorloadingappointments}
+</div>
+) : patientappointments.length === 0 ? (
+  <div className="text-yellow-600 bg-yellow-50 rounded-2xl px-4 py-6">No patient appointments found.</div>
+
+) :(<div className=" rounded-3xl h-full w-full mt-2 bg-[#f7f7f7]">
+    <table className="min-w-full divide-y divide-gray-200">
+      <thead className="bg-">
+        <tr className="text-[#ffffff] font-albertsans font-bold bg-[#2781af] rounded-tl-2xl rounded-tr-2xl">
+          <th className="rounded-tl-2xl pb-3 pt-3 pl-2 pr-2 text-center">ID</th> 
+          <th className=" pb-3 pt-3 pl-2 pr-2 text-center">Patient</th> 
+          <th className=" pb-3 pt-3 pl-2 pr-2 text-center">Date Created</th> 
+          <th className="pb-3 pt-3 pl-2 pr-2  text-center">Bautista Appoinment</th>
+          <th className="rounded-tr-2xl pb-3 pt-3 pl-2 pr-2  text-center">Actions</th>
+        </tr>
+      </thead>
+
+
+      <tbody className="divide-y divide-gray-200 bg-white">
+      {patientappointments.filter(appointment =>{
+        if(activeappointmentstable === 'bautistaappointmentstable'){
+          return appointment.patientbautistaappointmentdate !== null &&
+                 appointment.patientbautistaappointmenttime !== null &&
+                 appointment.patientbautistaappointmentid !== null;
+        }
+        return true;
+         }).map((appointment) => (
+          <tr 
+            key={appointment._id}
+            className="hover:bg-gray-50 transition-all ease-in-out duration-300 border-b-2"
+          >
+            <td className="py-3 px-6 text-[#454444] text-center font-albertsans font-medium ">
+              #{appointment.patientappointmentid}
+            </td>
+            <td className="py-3 px-6 text-[#454444] text-center font-albertsans font-medium ">
+                   <div className="flex  items-center">
+                <img 
+                  src={appointment.patientappointmentprofilepicture} 
+                  alt="Profile" 
+                  className=" rounded-full h-12 mr-3 w-12 object-cover"
+                  onError={(e) => {
+                    e.target.src = 'default-profile-url';
+                  }}
+                />
+                <h1 className="font-semibold text-[#171717] text-[15px]">{appointment.patientappointmentfirstname} {appointment.patientappointmentlastname}</h1>
+                </div>
+            </td>
+
+            <td className="py-3 px-6 text-[#454444] text-center font-albertsans font-medium ">
+                <span className="font-semibold text-[15px] text-[#171717]">
+                  {new Date(appointment.createdAt).toLocaleDateString('en-US',{
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric',
+                  })}  
+                </span>          
+            </td>
+
+
+
+            <td className="py-3 px-6 text-[#454444] text-center font-albertsans font-medium ">
+              {appointment.patientbautistaappointmentdate && (
+                <div className="text-sm font-albertsans text-gray-900 flex justify-center items-center">
+                  <span className="font-semibold">{formatappointmatedates(appointment.patientbautistaappointmentdate)}</span> 
+                  <span className="ml-1 font-semibold">({formatappointmenttime(appointment.patientbautistaappointmenttime)})</span> 
+                  
+<span className={`ml-3 font-albertsans font-semibold rounded-full text-[15px] leading-5 px-4 py-2 inline-flex
+${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] text-[#421a10]':
+  appointment.patientbautistaappointmentstatus === 'Pending' ? 'bg-yellow-100 text-yellow-800':
+  appointment.patientbautistaappointmentstatus === 'Accepted' ? 'bg-[#9edc7a] text-[#2b5910]':
+  appointment.patientbautistaappointmentstatus === 'Completed' ? 'bg-[#74c4ce] text-[#103d4a]':
+  'bg-red-100 text-red-800'}`}>{appointment.patientbautistaappointmentstatus}</span>
+                </div>
+              )}
+            </td>
+
+
+
+            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium flex justify-center items-center">
+             
+            <div onClick={() => {handleviewappointment(appointment); setviewpatientappointment(true);}}
+                className="bg-[#383838]  hover:bg-[#595959]  mr-2 transition-all duration-300 ease-in-out flex justify-center items-center py-2 px-5 rounded-2xl hover:cursor-pointer"><h1 className="text-white">View</h1></div>
+
+            <div onClick={() =>  {setdeletepatientappointment(true);
+                              setselectedpatientappointment(appointment);
+            }}
+              className="bg-[#8c3226] hover:bg-[#ab4f43]  transition-all duration-300 ease-in-out flex justify-center items-center py-2 px-5 rounded-2xl hover:cursor-pointer"><i className="bx bxs-trash text-white mr-1"/><h1 className="text-white">Delete</h1></div>
+
+                    {deletepatientappointment && (
+                       <div className="bg-opacity-0 flex justify-center items-center z-50 fixed inset-0 bg-[#0000004a] bg-opacity-50">
+
+                         <div className="flex flex-col items  bg-white rounded-2xl w-[600px] h-fit  animate-fadeInUp ">
+               
+
+                            <div className="flex items-center rounded-tl-2xl rounded-tr-2xl h-[70px] bg-[#3b1616]"><i className="ml-3 bx bxs-error text-[28px] font-albertsans font-bold text-[#f1f1f1] "/><h1 className="ml-2 text-[23px] font-albertsans font-bold text-[#f0f0f0]">Delete Appointment</h1></div>
+                            <div className="flex flex-col  items-center  h-fit rounded-br-2xl rounded-bl-2xl">
+                                <div className="px-5 flex flex-col justify-center  h-[130px] w-full"><p className="font-albertsans font-medium text-[20px]">Are you sure you want to delete this appointment?</p>
+                                {selectedpatientappointment && ( <>
+                                          <p className="text-[18px] mt-3">Appointment Id: {selectedpatientappointment.patientbautistaappointmentid}</p> </>)}  
+                                </div>        
+                                <div className="pr-5 flex justify-end  items-center  h-[80px] w-full">
+                                  <div className="hover:cursor-pointer mr-2 bg-[#292929] hover:bg-[#414141]   rounded-2xl h-fit w-fit px-7 py-3 hover:scale-105 transition-all duration-300 ease-in-out" onClick={() => setdeletepatientappointment(false)}><p className=" text-[#ffffff]">Cancel</p></div>
+                                  <div className="hover:cursor-pointer bg-[#4e0f0f] hover:bg-[#7f1a1a] ml-2 rounded-2xl h-fit w-fit px-7 py-3 hover:scale-105 transition-all duration-300 ease-in-out" onClick={() => {handledeleteappointmentbyclinic(selectedpatientappointment.patientbautistaappointmentid, 'bautista') ;setdeletepatientappointment(false); }}><p className=" text-[#ffffff]">Delete</p></div>
+                                </div>
+                            </div>
+
+                         </div>
+                       </div>
+                    )}
+
+
+                    
+
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+    </div>
+)}
+
+{/*Viewing Appointment Details*/} {/*Viewing Appointment Details*/} {/*Viewing Appointment Details*/} {/*Viewing Appointment Details*/} {/*Viewing Appointment Details*/} {/*Viewing Appointment Details*/}
+{/*Viewing Appointment Details*/} {/*Viewing Appointment Details*/} {/*Viewing Appointment Details*/} {/*Viewing Appointment Details*/} {/*Viewing Appointment Details*/} {/*Viewing Appointment Details*/}
+                       {viewpatientappointment && selectedpatientappointment && (
+                       <div id="viewpatientappointment" className="overflow-y-auto h-auto bg-opacity-0 flex justify-center items-start z-50 fixed inset-0 bg-[#000000af] bg-opacity-50">
+                         <div className="pl-5 pr-5 bg-white rounded-2xl w-[1300px] mt-10  animate-fadeInUp ">
+                               <div className=" mt-5 border-3 flex justify-between items-center border-[#2d2d4400] w-full h-[70px]">
+                               <Link to=""><div id="patientcard"  className=" flex justify-center items-start mt-5 ml-3 hover:scale-105 hover:cursor-pointer bg-white transition-all duration-300 ease-in-out  rounded-2xl w-[500px] h-[80px]">
+                      <div className="w-max mr-3 h-full  rounded-2xl flex justify-center items-center">
+                      <img  src={selectedpatientappointment?.patientappointmentprofilepicture || defaultprofilepic}  alt="Profile" className="h-20 w-20 rounded-full object-cover"></img>
+                      </div>
+                      <div className="bg-white  flex flex-col justify-center items-start pl-2 pr-2 w-[500px] h-full  rounded-3xl">
+                        <h1 className="font-albertsans font-bold text-[20px] w-full text-[#2d3744]"> {selectedpatientappointment?.patientappointmentfirstname || ''} {selectedpatientappointment?.patientappointmentlastname || ''}</h1>
+                        <p className="text-[15px]  w-full text-[#535354]">{selectedpatientappointment?.patientappointmentemail || ''}</p>
+                      </div>
+                  </div>
+                  </Link> 
+                                 <div onClick={() => {setviewpatientappointment(false); setbautistaeyespecialist('');}} className="bg-[#333232] px-10 rounded-2xl hover:cursor-pointer hover:scale-105 transition-all duration-300 ease-in-out"><i className="bx bx-x text-white text-[40px] "/></div>
+                               </div>
+
+
+
+
+
+
+                <div className="mt-10 flex justify-start items-start  w-full rounded-3xl ">
+
+
+
+
+
+
+
+
+{selectedpatientappointment.patientbautistaappointmentdate && (
+<div className="flex flex-col bg-[#fdfdfd]  h-auto w-full rounded-3xl">
+<div className="flex p-3 ">
+<img src={bautistalogo} className="w-15"/>  
+<h1 className="font-albertsans font-bold text-[20px] text-[#2387c5] mt-1 ml-3">Bautista Eye Center</h1>
+<span className={`ml-5 font-albertsans font-semibold rounded-full text-[15px] leading-5 px-4 py-2 inline-flex
+  ${selectedpatientappointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] text-[#421a10]':
+    selectedpatientappointment.patientbautistaappointmentstatus === 'Pending' ? 'bg-yellow-100 text-yellow-800':
+    selectedpatientappointment.patientbautistaappointmentstatus === 'Accepted' ? 'bg-[#9edc7a] text-[#2b5910]':
+    selectedpatientappointment.patientbautistaappointmentstatus === 'Completed' ? 'bg-[#74c4ce] text-[#1a5566]':
+    'bg-red-100 text-red-800'}`}>{selectedpatientappointment.patientbautistaappointmentstatus}</span>
 </div>
 
-<div className=" rounded-3xl h-full w-full mt-2 bg-[#f7f7f7]">
 
+
+<div className="flex flex-col mr-3 pr-8 bg-[#fdfdfd] h-auto  w-full rounded-3xl">
+
+
+<div className="flex flex-col  w-full">           
+<div className="mr-10 flex flex-col h-fit form-group ml-3 mt-4 w-full ">
+     <label className="text-[18px]  font-bold  text-[#434343] "htmlFor="patientbautistaappointmentdate">Appointment Details : </label>     
+  {/*<input className="h-10 w-60 p-3 mt-2 justify-center border-b-2 border-gray-600 bg-gray-200 rounded-2xl text-[#2d2d44] text-[18px]  font-semibold"   type="date" name="patientbautistaappointmentdate" id="patientbautistaappointmentdate" placeholder="" required={!!bautistaservicesselected}/>*/}
+  <div className="h-max w-full flex flex-col items-start p-3 mt-2 justify-start border-b-2 border-gray-600 bg-gray-200 rounded-2xl text-[#2d2d44] text-[18px]  font-semibold">
+    {(selectedpatientappointment.patientbautistaappointmentstatus === "Accepted" ||
+    selectedpatientappointment.patientbautistaappointmentstatus === "Completed") && (
+
+      <h1>{selectedpatientappointment.patientbautistaappointmenteyespecialist}</h1>
+
+  )}
+   <h1>{formatappointmatedates(selectedpatientappointment.patientbautistaappointmentdate)} <span className="ml-2">({formatappointmenttime(selectedpatientappointment.patientbautistaappointmenttime)})</span></h1>
+
+
+   {selectedpatientappointment.patientbautistaappointmentstatus === "Completed" && (
+<div id="patientbautistaappointmentpaymentotal" className="mt-5.5" >
+  <h3 className="font-bold text-[15px] text-[#1a690e]">Payment Total:</h3>
+  <p className="text-[#2d2d44] text-[18px]">
+    ₱{selectedpatientappointment.patientbautistaappointmentpaymentotal}
+  </p>
+</div>
+)}
+  </div>
+  
+   </div>
+
+
+
+
+
+</div>
+
+
+
+<div className="p-4">
+<div className="flex items-center mt-5 ml-7">
+  <input className="w-7 h-7 mr-3 appearance-none border-2 border-[#2d2d44] rounded-md checked:bg-[#2d2d44] checked:border-[#2d2d44] after:text-white after:text-lg after:absolute after:left-1/2 after:top-1/2 after:content-['✓'] after:opacity-0 after:-translate-x-1/2 after:-translate-y-1/2 checked:after:opacity-100 relative cursor:pointer transition-all"  checked={selectedpatientappointment.patientbautistaappointmentcomprehensiveeyeexam} type="checkbox" name="patientbautistaappointmentcomprehensiveeyeexam" id="patientbautistaappointmentcomprehensiveeyeexam" />
+  <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="patientbautistaappointmentcomprehensiveeyeexam">Comprehensive Eye Exam</label>   
+  </div>
+
+<div className="flex items-center mt-5 ml-7">
+  <input className="w-7 h-7 mr-3 appearance-none border-2 border-[#2d2d44] rounded-md checked:bg-[#2d2d44] checked:border-[#2d2d44] after:text-white after:text-lg after:absolute after:left-1/2 after:top-1/2 after:content-['✓'] after:opacity-0 after:-translate-x-1/2 after:-translate-y-1/2 checked:after:opacity-100 relative cursor:pointer transition-all" checked={selectedpatientappointment.patientbautistaappointmentdiabeticretinopathy} type="checkbox" name="patientbautistaappointmentdiabeticretinopathy" id="patientbautistaappointmentdiabeticretinopathy" />
+  <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="patientbautistaappointmentdiabeticretinopathy">Diabetic Retinopathy</label>   
+  </div>   
+
+<div className="flex items-center mt-5 ml-7">
+  <input className="w-7 h-7 mr-3 appearance-none border-2 border-[#2d2d44] rounded-md checked:bg-[#2d2d44] checked:border-[#2d2d44] after:text-white after:text-lg after:absolute after:left-1/2 after:top-1/2 after:content-['✓'] after:opacity-0 after:-translate-x-1/2 after:-translate-y-1/2 checked:after:opacity-100 relative cursor:pointer transition-all" checked={selectedpatientappointment.patientbautistaappointmentglaucoma} type="checkbox" name="patientbautistaappointmentglaucoma" id="patientbautistaappointmentglaucoma" />
+  <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="patientbautistaappointmentglaucoma">Glaucoma</label>   
+  </div>    
+
+<div className="flex items-center mt-5 ml-7">
+  <input className="w-7 h-7 mr-3 appearance-none border-2 border-[#2d2d44] rounded-md checked:bg-[#2d2d44] checked:border-[#2d2d44] after:text-white after:text-lg after:absolute after:left-1/2 after:top-1/2 after:content-['✓'] after:opacity-0 after:-translate-x-1/2 after:-translate-y-1/2 checked:after:opacity-100 relative cursor:pointer transition-all" checked={selectedpatientappointment.patientbautistaappointmenthypertensiveretinopathy} type="checkbox" name="patientbautistaappointmenthypertensiveretinopathy" id="patientbautistaappointmenthypertensiveretinopathy" />
+  <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="patientbautistaappointmenthypertensiveretinopathy">Hypertensive Retinopathy</label>   
+  </div>    
+
+<div className="flex items-center mt-5 ml-7">
+  <input className="w-7 h-7 mr-3 appearance-none border-2 border-[#2d2d44] rounded-md checked:bg-[#2d2d44] checked:border-[#2d2d44] after:text-white after:text-lg after:absolute after:left-1/2 after:top-1/2 after:content-['✓'] after:opacity-0 after:-translate-x-1/2 after:-translate-y-1/2 checked:after:opacity-100 relative cursor:pointer transition-all" checked={selectedpatientappointment.patientbautistaappointmentretinolproblem} type="checkbox" name="patientbautistaappointmentretinolproblem" id="patientbautistaappointmentretinolproblem" />
+  <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="patientbautistaappointmentretinolproblem">Retinol Problem</label>   
+  </div>    
+
+<div className="flex items-center mt-5 ml-7">
+  <input className="w-7 h-7 mr-3 appearance-none border-2 border-[#2d2d44] rounded-md checked:bg-[#2d2d44] checked:border-[#2d2d44] after:text-white after:text-lg after:absolute after:left-1/2 after:top-1/2 after:content-['✓'] after:opacity-0 after:-translate-x-1/2 after:-translate-y-1/2 checked:after:opacity-100 relative cursor:pointer transition-all" checked={selectedpatientappointment.patientbautistaappointmentcataractsurgery} type="checkbox" name="patientbautistaappointmentcataractsurgery" id="patientbautistaappointmentcataractsurgery" />
+  <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="patientbautistaappointmentcataractsurgery">Cataract Surgery</label>   
+  </div>      
+
+<div className="flex items-center mt-5 ml-7">
+  <input className="w-7 h-7 mr-3 appearance-none border-2 border-[#2d2d44] rounded-md checked:bg-[#2d2d44] checked:border-[#2d2d44] after:text-white after:text-lg after:absolute after:left-1/2 after:top-1/2 after:content-['✓'] after:opacity-0 after:-translate-x-1/2 after:-translate-y-1/2 checked:after:opacity-100 relative cursor:pointer transition-all" checked={selectedpatientappointment.patientbautistaappointmentpterygiumsurgery} type="checkbox" name="patientbautistaappointmentpterygiumsurgery" id="patientbautistaappointmentpterygiumsurgery" />
+  <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="patientbautistaappointmentpterygiumsurgery">Pterygium Surgery</label>   
+  </div>  
+
+
+  {selectedpatientappointment.patientbautistaappointmentstatus === "Pending" && (
+<div id="patientbautistaappointmentpaymentotal" className="mt-7 ml-6" >
+  <h1 className="font-bold text-[17px] text-[#343436] mb-3">Eye Specialist : </h1>
+  <div className=""><BautistaeyespecialistBox value={bautistaeyespecialist} onChange={(e) => setbautistaeyespecialist(e.target.value)}/></div>
+ {bautistaeyespecialist && (
+  <div onClick={() => handleacceptappointment(selectedpatientappointment.patientbautistaappointmentid, 'bautista')} className=" bg-[#5f9e1b]  hover:bg-[#55871f] mt-4 h-[50px]  transition-all duration-300 ease-in-out flex justify-center items-center py-2 px-5 hover:cursor-pointer rounded-[20px]"><h1 className="text-white font-albertsans font-semibold text-[20px]">Accept Bautista Appointment</h1></div>
+ )}
+     </div>
+)}
+
+
+
+{selectedpatientappointment.patientbautistaappointmentstatus === "Accepted" && (
+<div id="patientbautistaappointmentpaymentotal" className="mt-7 ml-6" >
+  <h1 className="text-[18px]  font-semibold font-albertsans  text-[#343436]mb-3">Total Payment for Bautista Eye Center  : </h1>
+  <input className="w-full border-b-2 border-gray-600  text-[18px]  font-semibold font-albertsans  text-[#343436]"  value={bautistaappointmentpaymentotal} onChange={(e) => setbautistaappointmentpaymentotal(Number(e.target.value))}  type="number" name="patientbautistaappointmentpaymentotal" id="patientbautistaappointmentpaymentotal" placeholder="Total Payment"/>
+
+  <div className="mt-3 w-full flex flex-col">
+    <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="patientbautistaappointmentremarksnote">Appointment Remarks :</label>  
+    <textarea className="w-full text-[18px]  font-semibold font-albertsans  text-[#343436] rounded-md border-2 border-[#2d2d44]  " ref={textarearef} rows={1} style={{minHeight:'44px'}} type="text" value={bautistaappointmentremarksnote} onChange={(e) => {setbautistaappointmentremarksnote(e.target.value); adjusttextareaheight();}} placeholder="Specify findings or remarks..."/>
+  </div>
+
+
+{bautistaappointmentpaymentotal && bautistaappointmentremarksnote && (
+  <div onClick={() => handleCompleteAppointment(selectedpatientappointment.patientbautistaappointmentid, 'bautista')}  className=" bg-[#2d91cf]  hover:bg-[#1b6796] mt-4 h-[50px]  transition-all duration-300 ease-in-out flex justify-center items-center py-2 px-5 hover:cursor-pointer rounded-[20px]"><h1 className="text-white font-albertsans font-semibold text-[20px]">Complete Bautista Appointment</h1></div>
+)}
+
+     </div>
+)}
+
+
+{selectedpatientappointment.patientbautistaappointmentstatus === "Completed" && (
+<div id="patientbautistaappointmentpaymentotal" className="mt-15" >
+  <div className="mt-3 w-full flex flex-col">
+    <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="patientbautistaappointmentremarksnote">Appointment Remarks :</label>  
+    <p>{selectedpatientappointment.patientbautistaappointmentremarksnote}</p>
+  </div>
+
+  {selectedpatientappointment.patientbautistaappointmentrating != 0 && selectedpatientappointment.patientbautistaappointmentfeedback != "" && (
+  <div className="mt-10"> 
+
+  <h1 className="text-[18px]  font-semibold font-albertsans  text-[#343436] ">Patient Feedback :</h1>           
+  <Stack spacing={1}>
+   <Rating size="large" value={selectedpatientappointment.patientbautistaappointmentrating} readOnly /> 
+  </Stack>  
+  <p>{selectedpatientappointment.patientbautistaappointmentfeedback}</p>
+ </div>
+)} 
+
+
+</div>
+)}
+
+
+
+
+
+
+
+
+</div>
+
+</div>
+</div>
+)}
 </div>
 
 
@@ -5441,40 +6556,23 @@ const handleviewappointment = (appointment) => {
 
 
 
+<div className="w-full mt-5 p-3 flex flex-col mb-7 bg-[#ededed] rounded-2xl  ">
+                        <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="patientadditionalappointmentnotes">Patient Appointment Notes :</label>  
+
+                         <div>{selectedpatientappointment.patientadditionalappointmentnotes ||"No additional notes"}</div>
+                                               <div className=" w-fit h-fit mt-5 mb-5">
+                                               <img className=" object-cover  rounded-2xl" src={selectedpatientappointment.patientadditionalappointmentnotesimage || defaultimageplaceholder}/>                 
+                                               </div>
+                        </div>
+                         </div>
+
+                       </div>
+                    )}
 
 
+</div> )}
 
-{/*End Appointment Management*/}
 </div>)}
-
-
-</div>)}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
