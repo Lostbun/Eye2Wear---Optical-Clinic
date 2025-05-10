@@ -119,6 +119,16 @@ function PatientDashboard(){
 
 
 
+
+
+    const [showotherpatientbautistaappointmentotherservice, setshowotherpatientbautistaappointmentotherservice] = useState(false);
+    const [patientbautistaappointmentotherservicenote, setpatientbautistaappointmentotherservicenote] = useState("");
+
+    const [showotherpatientambherappointmentotherservice, setshowotherpatientambherappointmentotherservice] = useState(false);
+    const [patientambherappointmentotherservicenote, setpatientambherappointmentotherservicenote] = useState("");
+
+
+
   useEffect(() => {
     adjusttextareaheight();
   });
@@ -174,9 +184,12 @@ const patientsubmitappointment = async (formData) => {
       patientambherappointmentlowvisionaid: formData.has('patientambherappointmentlowvisionaid'),
       patientambherappointmentrefraction: formData.has('patientambherappointmentrefraction'),
       patientambherappointmentcontactlensefitting: formData.has('patientambherappointmentcontactlensefitting'),
+      patientambherappointmentotherservice: formData.has('patientambherappointmentotherservice'),
+      patientambherappointmentotherservicenote: patientambherappointmentotherservicenote || '',
       patientambherappointmentstatus: "Pending",
       patientambherappointmentpaymentotal: 1000,
-      patientambherappointmentremarksnote:"",
+      patientambherappointmentconsultationremarks:"",
+      patientambherappointmentprescription: "",
       patientambherappointmentrating: 0,
       patientambherappointmentfeedback: "",
 
@@ -196,9 +209,12 @@ const patientsubmitappointment = async (formData) => {
       patientbautistaappointmentretinolproblem: formData.has('patientbautistaappointmentretinolproblem'),
       patientbautistaappointmentcataractsurgery: formData.has('patientbautistaappointmentcataractsurgery'),
       patientbautistaappointmentpterygiumsurgery: formData.has('patientbautistaappointmentpterygiumsurgery'),
+      patientbautistaappointmentotherservice: formData.has('patientbautistaappointmentotherservice'),
+      patientbautistaappointmentotherservicenote: patientambherappointmentotherservicenote || '',
       patientbautistaappointmentstatus: "Pending",
       patientbautistaappointmentpaymentotal: 1000,
-      patientbautistaappointmentremarksnote: "",
+      patientbautistaappointmentconsultationremarks: "",
+      patientbautistaappointmentprescription: "",
       patientbautistaappointmentrating: 0,
       patientbautistaappointmentfeedback: "",
 
@@ -250,27 +266,37 @@ let ambherservicesselected;
 let bautistaservicesselected;
 
 const[patientappointmentformerror, setpatientappointmentformerror] = useState(null);
+
+
+
+
+
 const handlesubmitpatientappointment = (e) => {
   e.preventDefault();
   const appointmentformdata = new FormData(e.target);
-
   const patientambherappointmentdate = appointmentformdata.get('patientambherappointmentdate');
   const patientambherappointmenttime = appointmentformdata.get('patientambherappointmenttime');
   const patientbautistaappointmentdate = appointmentformdata.get('patientbautistaappointmentdate');
   const patientbautistaappointmenttime = appointmentformdata.get('patientbautistaappointmenttime');
 
+  //const currentdate = new Date().toISOString().split('T')[0];
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const tomorrowdate = tomorrow.toISOString().split('T')[0];
 
-  //Checks if any of the Ambher services are selected
   ambherservicesselected = [
     'patientambherappointmentcataractscreening',
     'patientambherappointmentpediatricassessment',
     'patientambherappointmentcolorvisiontesting',
     'patientambherappointmentlowvisionaid',
     'patientambherappointmentrefraction',
-    'patientambherappointmentcontactlensefitting'
+    'patientambherappointmentcontactlensefitting',
+    'patientambherappointmentotherservice',
+    'patientambherappointmentotherservicenote'
+
   ].some(service => appointmentformdata.has(service));
 
-  //Checks if any of the Bautista services are selected
+
   bautistaservicesselected = [
     'patientbautistaappointmentcomprehensiveeyeexam',
     'patientbautistaappointmentdiabeticretinopathy',
@@ -278,35 +304,61 @@ const handlesubmitpatientappointment = (e) => {
     'patientbautistaappointmenthypertensiveretinopathy',
     'patientbautistaappointmentretinolproblem',
     'patientbautistaappointmentcataractsurgery',
-    'patientbautistaappointmentpterygiumsurgery'
+    'patientbautistaappointmentpterygiumsurgery',
+    'patientbautistaappointmentotherservice',
+    'patientbautistaappointmentotherservicenote'
+    
   ].some(service => appointmentformdata.has(service));
 
 
   let errormessage = null;
-
+  
   if(!patientambherappointmentdate && !patientbautistaappointmentdate) {
     errormessage = "Please select at least one clinic appointment date";
   }
   else if((patientambherappointmentdate && !patientambherappointmenttime) || (patientbautistaappointmentdate && !patientbautistaappointmenttime)){
     errormessage = "Please select time for your appointment";
   }
-  else if((patientambherappointmentdate || patientambherappointmenttime) && !ambherservicesselected) {
-    errormessage = "Please at least one service from Ambher Optical";
+  else if((patientambherappointmentdate || patientambherappointmenttime) && !ambherservicesselected){
+    errormessage = "Please select at least one service from Ambher Optical";
   }
   else if((patientbautistaappointmentdate || patientbautistaappointmenttime) && !bautistaservicesselected){
-    errormessage = "Please select at lease one service from Bautista Eye Center";
+    errormessage = "Please select at least one service from Bautista Eye Center";
   }
+  else if(patientambherappointmentdate && patientambherappointmentdate < tomorrowdate) {
+    errormessage = "Scheduled appointment date for Ambher Optical must be scheduled for tomorrow or later";
+  }
+  else if(patientbautistaappointmentdate && patientbautistaappointmentdate < tomorrowdate) {
+    errormessage = "Scheduled appointment date for Bautista Eye Center must be scheduled for tomorrow or later";
+  }
+  else if(patientambherappointmentdate && patientbautistaappointmentdate &&
+          patientambherappointmentdate === patientbautistaappointmentdate &&
+          patientambherappointmenttime === patientbautistaappointmenttime) {
+          
+          errormessage = "Appointed schedule for date and time cannot be the same for both clinics";
+          }
 
-
-  if(errormessage){
+   
+   if(errormessage){
     setpatientappointmentformerror(errormessage);
     return;
-  }
+   }
 
+    setpatientappointmentformerror(null);
+    patientsubmitappointment(appointmentformdata);
 
-  setpatientappointmentformerror(null);
-  patientsubmitappointment(appointmentformdata);
 }
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -787,9 +839,9 @@ const handledeleteappointment = async (appointmentId) => {
                   )}
 
 
-                  <div className="mt-3 flex justify-center items-center  w-full rounded-3xl ">
+                  <div className="mt-3  flex justify-center items-start h-fit w-full rounded-3xl "  >
 
-                    <div className="flex flex-col mr-3 bg-[#fdfdfd] h-[450px] w-full rounded-3xl">
+                    <div className="flex flex-col mr-3 bg-[#fdfdfd] h-max w-full rounded-3xl">
                       <div className="flex p-3">
                       <img src={ambherlogo} className="w-15"/>  
                       <h1 className="font-albertsans font-bold text-[20px] text-[#237234] mt-1 ml-3">Ambher Optical</h1>
@@ -841,7 +893,18 @@ const handledeleteappointment = async (appointmentId) => {
                         <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="patientambherappointmentcontactlensefitting">Contact Lense Fitting</label>   
                         </div>  
 
-              
+                      <div className="flex items-center mt-5 ml-7">
+                        <input className="w-7 h-7 mr-3 appearance-none border-2 border-[#2d2d44] rounded-md checked:bg-[#2d2d44] checked:border-[#2d2d44] after:text-white after:text-lg after:absolute after:left-1/2 after:top-1/2 after:content-['✓'] after:opacity-0 after:-translate-x-1/2 after:-translate-y-1/2 checked:after:opacity-100 relative cursor:pointer transition-all"  checked={showotherpatientambherappointmentotherservice} onChange={(e) => setshowotherpatientambherappointmentotherservice(e.target.checked)}  type="checkbox" name="patientambherappointmentotherservice" id="patientambherappointmentotherservice" />
+                        <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="patientambherappointmentotherservice">Other</label>   
+                        </div>  
+     
+
+                      {showotherpatientambherappointmentotherservice && (
+                          <div className="mt-3 ml-5">
+                              <textarea className="text-[20px] rounded-md p-2 border-2 border-[#2d2d44] w-full text-[#2d2d44]  " ref={textarearef} rows={1} style={{minHeight:'44px'}} type="text" value={patientambherappointmentotherservicenote} onChange={(e) => {setpatientambherappointmentotherservicenote(e.target.value); adjusttextareaheight();}} placeholder="Please specify other Ambher Optical services.."/>
+                          </div>
+                        )}   
+
 
 
            
@@ -851,7 +914,7 @@ const handledeleteappointment = async (appointmentId) => {
 
                     </div>
 
-                    <div className="ml-3 bg-[#fdfdfd]  h-[450px] w-full rounded-3xl">
+                    <div className=" ml-3 bg-[#fdfdfd]  h-max w-full rounded-3xl">
                     <div className="flex p-3">
                       <img src={bautistalogo} className="w-15"/>  
                       <h1 className="font-albertsans font-bold text-[20px] text-[#2387c5] mt-1 ml-3">Bautista Eye Center</h1>
@@ -859,7 +922,7 @@ const handledeleteappointment = async (appointmentId) => {
 
 
                       
-                    <div className="flex flex-col mr-3 bg-[#fdfdfd] h-[450px] w-full rounded-3xl">
+                    <div className="flex flex-col mr-3 bg-[#fdfdfd] h-full w-full rounded-3xl">
 
 
                      <div className="flex justify-center items-center">           
@@ -908,10 +971,19 @@ const handledeleteappointment = async (appointmentId) => {
                         <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="patientbautistaappointmentpterygiumsurgery">Pterygium Surgery</label>   
                         </div>  
 
-              
+                      <div className="flex items-center mt-5 ml-7">
+                        <input className="w-7 h-7 mr-3 appearance-none border-2 border-[#2d2d44] rounded-md checked:bg-[#2d2d44] checked:border-[#2d2d44] after:text-white after:text-lg after:absolute after:left-1/2 after:top-1/2 after:content-['✓'] after:opacity-0 after:-translate-x-1/2 after:-translate-y-1/2 checked:after:opacity-100 relative cursor:pointer transition-all"  checked={showotherpatientbautistaappointmentotherservice} onChange={(e) => setshowotherpatientbautistaappointmentotherservice(e.target.checked)}  type="checkbox" name="patientbautistaappointmentotherservice" id="patientbautistaappointmentotherservice" />
+                        <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="patientbautistaappointmentotherservice">Other</label>   
+                        </div>  
+     
+
+                      {showotherpatientbautistaappointmentotherservice && (
+                          <div className="mt-3 ml-5">
+                              <textarea className="text-[20px] rounded-md p-2 border-2 border-[#2d2d44] w-full text-[#2d2d44]  " ref={textarearef} rows={1} style={{minHeight:'44px'}} type="text" value={patientbautistaappointmentotherservicenote} onChange={(e) => {setpatientbautistaappointmentotherservicenote(e.target.value); adjusttextareaheight();}} placeholder="Please specify other Bautista Eye Center services..."/>
+                          </div>
+                        )}   
 
 
-           
 
 
                      </div>
@@ -956,6 +1028,40 @@ const handledeleteappointment = async (appointmentId) => {
                </div>   
                 )}
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   {/*Patient Appointment List*/} {/*Patient Appointment List*/} {/*Patient Appointment List*/} {/*Patient Appointment List*/} {/*Patient Appointment List*/} {/*Patient Appointment List*/} {/*Patient Appointment List*/}
   {/*Patient Appointment List*/} {/*Patient Appointment List*/} {/*Patient Appointment List*/} {/*Patient Appointment List*/} {/*Patient Appointment List*/} {/*Patient Appointment List*/} {/*Patient Appointment List*/}
   {/*Patient Appointment List*/} {/*Patient Appointment List*/} {/*Patient Appointment List*/} {/*Patient Appointment List*/} {/*Patient Appointment List*/} {/*Patient Appointment List*/} {/*Patient Appointment List*/}
@@ -982,7 +1088,7 @@ const handledeleteappointment = async (appointmentId) => {
       <table className="min-w-full divide-y divide-gray-200">
         <thead className="bg-">
           <tr className="text-[#ffffff] font-albertsans font-bold bg-[#2781af] rounded-tl-2xl rounded-tr-2xl">
-            <th className="pb-3 pt-3 pl-2 pr-2 text-center">Appointment ID</th> 
+            <th className="pb-3 pt-3 pl-2 pr-2 text-center">Date Created</th> 
             <th className="pb-3 pt-3 pl-2 pr-2  text-center">Ambher Appoinment</th>
             <th className="pb-3 pt-3 pl-2 pr-2  text-center"></th>
             <th className="pb-3 pt-3 pl-2 pr-2  text-center">Bautista Appoinment</th>
@@ -998,7 +1104,7 @@ const handledeleteappointment = async (appointmentId) => {
               className="hover:bg-gray-50 transition-all ease-in-out duration-100 border-b-2"
             >
               <td className="py-3 px-6 text-[#454444] text-center font-albertsans font-medium ">
-                #{appointment.patientappointmentid}
+                {formatappointmatedates(appointment.createdAt)}{}
               </td>
               <td className="py-3 px-6 text-[#454444] text-center font-albertsans font-medium ">
                 {appointment.patientambherappointmentdate && (
@@ -1191,15 +1297,32 @@ const handledeleteappointment = async (appointmentId) => {
     </div>  
 
 
+  <div className="flex items-center mt-5 ml-7">
+    <input className="w-7 h-7 mr-3 appearance-none border-2 border-[#2d2d44] rounded-md checked:bg-[#2d2d44] checked:border-[#2d2d44] after:text-white after:text-lg after:absolute after:left-1/2 after:top-1/2 after:content-['✓'] after:opacity-0 after:-translate-x-1/2 after:-translate-y-1/2 checked:after:opacity-100 relative cursor:pointer transition-all"  checked={selectedpatientappointment.patientambherappointmentotherservice} onChange={(e) => setshowotherpatientambherappointmentotherservice(e.target.checked)}  type="checkbox" name="patientambherappointmentotherservice" id="patientambherappointmentotherservice" />
+    <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="patientambherappointmentotherservice">Other</label>   
+    </div>  
+     
+
+     {selectedpatientappointment.patientambherappointmentotherservice && (
+          <div className="mt-3 ml-17">
+              <p className="text-[18px]  font-medium font-albertsans  text-[#343436] ">- {selectedpatientappointment.patientambherappointmentotherservicenote}</p>
+          </div>
+      )}    
+
+
+
     {selectedpatientappointment.patientambherappointmentstatus === "Completed" && (
   <div id="patientambherappointmentpaymentotal" className="mt-15" >
     <div className="mt-3 w-full flex flex-col">
-      <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="patientambherappointmentremarksnote">Appointment Remarks :</label>  
-      <p>{selectedpatientappointment.patientambherappointmentremarksnote}</p>
+      <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="patientambherappointmentconsultationremarks">Consultation Remarks :</label>  
+      <p>{selectedpatientappointment.patientambherappointmentconsultationremarks}</p>
     </div>
 
 
-
+    <div className="mt-3 w-full flex flex-col">
+    <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="patientambherappointmentprescription">Presciption :</label>  
+    <p>{selectedpatientappointment.patientambherappointmentprescription}</p>
+  </div>
       
 
 
@@ -1348,16 +1471,37 @@ const handledeleteappointment = async (appointmentId) => {
   <div className="flex items-center mt-5 ml-7">
     <input className="w-7 h-7 mr-3 appearance-none border-2 border-[#2d2d44] rounded-md checked:bg-[#2d2d44] checked:border-[#2d2d44] after:text-white after:text-lg after:absolute after:left-1/2 after:top-1/2 after:content-['✓'] after:opacity-0 after:-translate-x-1/2 after:-translate-y-1/2 checked:after:opacity-100 relative cursor:pointer transition-all" checked={selectedpatientappointment.patientbautistaappointmentpterygiumsurgery} type="checkbox" name="patientbautistaappointmentpterygiumsurgery" id="patientbautistaappointmentpterygiumsurgery" />
     <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="patientbautistaappointmentpterygiumsurgery">Pterygium Surgery</label>   
+    </div> 
+
+
+  <div className="flex items-center mt-5 ml-7">
+    <input className="w-7 h-7 mr-3 appearance-none border-2 border-[#2d2d44] rounded-md checked:bg-[#2d2d44] checked:border-[#2d2d44] after:text-white after:text-lg after:absolute after:left-1/2 after:top-1/2 after:content-['✓'] after:opacity-0 after:-translate-x-1/2 after:-translate-y-1/2 checked:after:opacity-100 relative cursor:pointer transition-all"  checked={selectedpatientappointment.patientbautistaappointmentotherservice} onChange={(e) => setshowotherpatientbautistaappointmentotherservice(e.target.checked)}  type="checkbox" name="patientbautistaappointmentotherservice" id="patientbautistaappointmentotherservice" />
+    <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="patientbautistaappointmentotherservice">Other</label>   
+    
     </div>  
+     
+     {selectedpatientappointment.patientbautistaappointmentotherservice && (
+          <div className="mt-3 ml-17">
+              <p className="font-albertsans text-[17px]">{selectedpatientappointment.patientbautistaappointmentotherservicenote}</p>
+          </div>
+      )}    
+
 
 
     {selectedpatientappointment.patientbautistaappointmentstatus === "Completed" && (
   <div id="patientbautistaappointmentpaymentotal" className="mt-15" >
     <div className="mt-3 w-full flex flex-col">
-      <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="patientbautistaappointmentremarksnote">Appointment Remarks :</label>  
-      <p>{selectedpatientappointment.patientbautistaappointmentremarksnote}</p>
+      <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="patientbautistaappointmentconsultationremarks">Consultation Remarks :</label>  
+      <p>{selectedpatientappointment.patientbautistaappointmentconsultationremarks}</p>
     </div>
 
+
+    <div className="mt-3 w-full flex flex-col">
+    <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="patientbautistaappointmentprescription">Presciption :</label>  
+    <p>{selectedpatientappointment.patientbautistaappointmentprescription}</p>
+  </div>
+
+  
     {selectedpatientappointment.patientbautistaappointmentrating === 0 && selectedpatientappointment.patientbautistaappointmentfeedback === "" && (
     <div  onClick={() => setshowbautistafeedbackdialog(true)}  className="bg-[#2d91cf]  hover:bg-[#1b6796] mt-4 h-[50px]  transition-all duration-100 ease-in-out flex justify-center items-center py-2 px-5 hover:cursor-pointer rounded-[20px]"><h1 className="text-white font-albertsans font-semibold text-[20px]">Submit a Feedback</h1></div>
 

@@ -3164,8 +3164,10 @@ const showappointmentstable = (appointmentstableid) => {
  const [ambhereyespecialist, setambhereyespecialist] = useState('');
  const [ambherappointmentpaymentotal, setambherappointmentpaymentotal] = useState(null);
  const [bautistaappointmentpaymentotal, setbautistaappointmentpaymentotal] = useState(null);
- const [bautistaappointmentremarksnote, setbautistaappointmentremarksnote] = useState("");
- const [ambherappointmentremarksnote, setambherappointmentremarksnote] = useState("");
+ const [bautistaappointmentconsultationremarks, setbautistaappointmentconsultationremarks] = useState("");
+ const [ambherappointmentconsultationremarks, setambherappointmentconsultationremarks] = useState("");
+ const [bautistaappointmentprescription, setbautistaappointmentprescription] = useState("");
+ const [ambherappointmentprescription, setambherappointmentprescription] = useState("");
 
   const textarearef = useRef(null);
   const adjusttextareaheight = () => {
@@ -3175,6 +3177,19 @@ const showappointmentstable = (appointmentstableid) => {
     }
   }
 
+
+
+
+
+
+
+
+
+    const [showotherpatientbautistaappointmentotherservice, setshowotherpatientbautistaappointmentotherservice] = useState(false);
+    const [patientbautistaappointmentotherservicenote, setpatientbautistaappointmentotherservicenote] = useState("");
+
+    const [showotherpatientambherappointmentotherservice, setshowotherpatientambherappointmentotherservice] = useState(false);
+    const [patientambherappointmentotherservicenote, setpatientambherappointmentotherservicenote] = useState("");
 
 
 
@@ -3316,7 +3331,8 @@ const handledeleteappointmentbyclinic = async (appointmentId, clinicType) => {
         patientambherappointmentstatus: null,
         patientambherappointmentstatushistory: null,
         patientambherappointmentpaymentotal: null,
-        patientambherappointmentremarksnote: null,
+        patientambherappointmentconsultationremarks: null,
+        patientambherappointmentprescription: null,
         patientambherappointmentrating: null,
         patientambherappointmentfeedback: null
       } : {
@@ -3335,7 +3351,8 @@ const handledeleteappointmentbyclinic = async (appointmentId, clinicType) => {
         patientbautistaappointmentstatus: null,
         patientbautistaappointmentstatushistory: null,
         patientbautistaappointmentpaymentotal: null,
-        patientbautistaappointmentremarksnote: null,
+        patientbautistaappointmentconsultationremarks: null,
+        patientbautistaappointmentprescription: null,
         patientbautistaappointmentrating: null,
         patientbautistaappointmentfeedback: null
       };
@@ -3505,7 +3522,9 @@ const handleacceptappointment = async (appointmentId, clinicType) => {
               changedBy: adminfirstname
             },
             [`patient${clinicType}appointmentpaymentotal`]: clinicType === 'ambher' ? ambherappointmentpaymentotal : bautistaappointmentpaymentotal,
-            [`patient${clinicType}appointmentremarksnote`]: clinicType === 'ambher' ? ambherappointmentremarksnote : bautistaappointmentremarksnote
+            [`patient${clinicType}appointmentconsultationremarks`]: clinicType === 'ambher' ? ambherappointmentconsultationremarks : bautistaappointmentconsultationremarks,
+            [`patient${clinicType}appointmentprescription`]: clinicType === 'ambher' ? ambherappointmentprescription : bautistaappointmentprescription,
+
           })
         }
       );
@@ -5562,6 +5581,19 @@ const handleacceptappointment = async (appointmentId, clinicType) => {
     </div>  
 
 
+  <div className="flex items-center mt-5 ml-7">
+    <input className="w-7 h-7 mr-3 appearance-none border-2 border-[#2d2d44] rounded-md checked:bg-[#2d2d44] checked:border-[#2d2d44] after:text-white after:text-lg after:absolute after:left-1/2 after:top-1/2 after:content-['✓'] after:opacity-0 after:-translate-x-1/2 after:-translate-y-1/2 checked:after:opacity-100 relative cursor:pointer transition-all"  checked={selectedpatientappointment.patientambherappointmentotherservice} onChange={(e) => setshowotherpatientambherappointmentotherservice(e.target.checked)}  type="checkbox" name="patientambherappointmentotherservice" id="patientambherappointmentotherservice" />
+    <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="patientambherappointmentotherservice">Other</label>   
+    </div>  
+     
+     {selectedpatientappointment.patientambherappointmentotherservice && (
+          <div className="mt-3 ml-17">
+              <p className="text-[18px]  font-medium font-albertsans  text-[#343436] ">- {selectedpatientappointment.patientambherappointmentotherservicenote}</p>
+          </div>
+      )}    
+
+
+
     {selectedpatientappointment.patientambherappointmentstatus === "Pending" && (
   <div id="patientambherappointmentpaymentotal" className="mt-7 ml-6 mr-4" >
     <h1 className="font-bold text-[17px] text-[#343436] mb-3">Eye Specialist : </h1>
@@ -5584,12 +5616,20 @@ const handleacceptappointment = async (appointmentId, clinicType) => {
 
 
     <div className="mt-3 w-full flex flex-col">
-      <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="patientambherappointmentremarksnote">Appointment Remarks :</label>  
-      <textarea className="w-full text-[18px]  font-semibold font-albertsans  text-[#343436] rounded-md border-2 border-[#2d2d44]  " ref={textarearef} rows={1} style={{minHeight:'44px'}} type="text" value={ambherappointmentremarksnote} onChange={(e) => {setambherappointmentremarksnote(e.target.value); adjusttextareaheight();}} placeholder="Specify findings or remarks..."/>
+      <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="patientambherappointmentconsultationremarks">Consultation Remarks :</label>  
+      <textarea className="w-full text-[18px]  font-semibold font-albertsans  text-[#343436] rounded-md border-2 border-[#2d2d44]  " ref={textarearef} rows={1} style={{minHeight:'44px'}} type="text" value={ambherappointmentconsultationremarks} onChange={(e) => {setambherappointmentconsultationremarks(e.target.value); adjusttextareaheight();}} placeholder="Specify findings or remarks..."/>
+    </div>
+
+    
+
+
+     <div className="mt-3 w-full flex flex-col">
+      <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="patientambherappointmentprescription">Prescription :</label>  
+      <textarea className="w-full text-[18px]  font-semibold font-albertsans  text-[#343436] rounded-md border-2 border-[#2d2d44]  " ref={textarearef} rows={1} style={{minHeight:'44px'}} type="text" value={ambherappointmentprescription} onChange={(e) => {setambherappointmentprescription(e.target.value); adjusttextareaheight();}} placeholder="Specify prescription if available..."/>
     </div>
 
 
-  {ambherappointmentpaymentotal && ambherappointmentremarksnote && (
+  {ambherappointmentpaymentotal && ambherappointmentconsultationremarks && (
     <div onClick={() => handleCompleteAppointment(selectedpatientappointment.patientambherappointmentid, 'ambher')}  className=" bg-[#2d91cf]  hover:bg-[#1b6796] mt-4 h-[50px]  transition-all duration-300 ease-in-out flex justify-center items-center py-2 px-5 hover:cursor-pointer rounded-[20px]"><h1 className="text-white font-albertsans font-semibold text-[20px]">Complete Ambher Appointment</h1></div>
   )}
 
@@ -5602,11 +5642,14 @@ const handleacceptappointment = async (appointmentId, clinicType) => {
 {selectedpatientappointment.patientambherappointmentstatus === "Completed" && (
   <div id="patientambherappointmentpaymentotal" className="mt-15" >
     <div className="mt-3 w-full flex flex-col">
-      <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="patientambherappointmentremarksnote">Appointment Remarks :</label>  
-      <p>{selectedpatientappointment.patientambherappointmentremarksnote}</p>
+      <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="patientambherappointmentconsultationremarks">Consultation Remarks :</label>  
+      <p>{selectedpatientappointment.patientambherappointmentconsultationremarks}</p>
     </div>
 
-
+    <div className="mt-3 w-full flex flex-col">
+    <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="patientambherappointmentprescription">Presciption :</label>  
+    <p>{selectedpatientappointment.patientambherappointmentprescription}</p>
+  </div>
     {selectedpatientappointment.patientambherappointmentrating != 0 && selectedpatientappointment.patientambherappointmentfeedback != "" && (
   <div className="mt-10"> 
 
@@ -5634,6 +5677,11 @@ const handleacceptappointment = async (appointmentId, clinicType) => {
 
 </div>
 )}
+
+
+
+
+
 
 
 {selectedpatientappointment.patientbautistaappointmentdate && (
@@ -5724,6 +5772,22 @@ const handleacceptappointment = async (appointmentId, clinicType) => {
     <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="patientbautistaappointmentpterygiumsurgery">Pterygium Surgery</label>   
     </div>  
 
+  <div className="flex items-center mt-5 ml-7">
+    <input className="w-7 h-7 mr-3 appearance-none border-2 border-[#2d2d44] rounded-md checked:bg-[#2d2d44] checked:border-[#2d2d44] after:text-white after:text-lg after:absolute after:left-1/2 after:top-1/2 after:content-['✓'] after:opacity-0 after:-translate-x-1/2 after:-translate-y-1/2 checked:after:opacity-100 relative cursor:pointer transition-all"  checked={selectedpatientappointment.patientbautistaappointmentotherservice}  type="checkbox" name="patientbautistaappointmentotherservice" id="patientbautistaappointmentotherservice" />
+    <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="patientbautistaappointmentotherservice">Other</label>   
+    </div>  
+     
+
+     {selectedpatientappointment.patientbautistaappointmentotherservice && (
+          <div className="mt-3 ml-17">
+              <p className="text-[18px]  font-medium font-albertsans  text-[#343436] ">- {selectedpatientappointment.patientbautistaappointmentotherservicenote}</p>
+          </div>
+      )}    
+
+
+
+
+
 
     {selectedpatientappointment.patientbautistaappointmentstatus === "Pending" && (
   <div id="patientbautistaappointmentpaymentotal" className="mt-7 ml-6" >
@@ -5743,12 +5807,19 @@ const handleacceptappointment = async (appointmentId, clinicType) => {
     <input className="w-full border-b-2 border-gray-600  text-[18px]  font-semibold font-albertsans  text-[#343436]"  value={bautistaappointmentpaymentotal} onChange={(e) => setbautistaappointmentpaymentotal(Number(e.target.value))}  type="number" name="patientbautistaappointmentpaymentotal" id="patientbautistaappointmentpaymentotal" placeholder="Total Payment"/>
 
     <div className="mt-3 w-full flex flex-col">
-      <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="patientbautistaappointmentremarksnote">Appointment Remarks :</label>  
-      <textarea className="w-full text-[18px]  font-semibold font-albertsans  text-[#343436] rounded-md border-2 border-[#2d2d44]  " ref={textarearef} rows={1} style={{minHeight:'44px'}} type="text" value={bautistaappointmentremarksnote} onChange={(e) => {setbautistaappointmentremarksnote(e.target.value); adjusttextareaheight();}} placeholder="Specify findings or remarks..."/>
+      <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="patientbautistaappointmentconsultationremarks">Consultation Remarks :</label>  
+      <textarea className="w-full text-[18px]  font-semibold font-albertsans  text-[#343436] rounded-md border-2 border-[#2d2d44]  " ref={textarearef} rows={1} style={{minHeight:'44px'}} type="text" value={bautistaappointmentconsultationremarks} onChange={(e) => {setbautistaappointmentconsultationremarks(e.target.value); adjusttextareaheight();}} placeholder="Specify findings or remarks..."/>
     </div>
 
 
-  {bautistaappointmentpaymentotal && bautistaappointmentremarksnote && (
+
+    <div className="mt-3 w-full flex flex-col">
+      <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="patientbautistaappointmentprescription">Prescription :</label>  
+      <textarea className="w-full text-[18px]  font-semibold font-albertsans  text-[#343436] rounded-md border-2 border-[#2d2d44]  " ref={textarearef} rows={1} style={{minHeight:'44px'}} type="text" value={bautistaappointmentprescription} onChange={(e) => {setbautistaappointmentprescription(e.target.value); adjusttextareaheight();}} placeholder="Specify prescription if available..."/>
+    </div>
+
+
+  {bautistaappointmentpaymentotal && bautistaappointmentconsultationremarks && (
     <div onClick={() => handleCompleteAppointment(selectedpatientappointment.patientbautistaappointmentid, 'bautista')}  className=" bg-[#2d91cf]  hover:bg-[#1b6796] mt-4 h-[50px]  transition-all duration-300 ease-in-out flex justify-center items-center py-2 px-5 hover:cursor-pointer rounded-[20px]"><h1 className="text-white font-albertsans font-semibold text-[20px]">Complete Bautista Appointment</h1></div>
   )}
 
@@ -5759,9 +5830,17 @@ const handleacceptappointment = async (appointmentId, clinicType) => {
 {selectedpatientappointment.patientbautistaappointmentstatus === "Completed" && (
   <div id="patientbautistaappointmentpaymentotal" className="mt-15" >
     <div className="mt-3 w-full flex flex-col">
-      <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="patientbautistaappointmentremarksnote">Appointment Remarks :</label>  
-      <p>{selectedpatientappointment.patientbautistaappointmentremarksnote}</p>
+      <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="patientbautistaappointmentconsultationremarks">Consultation Remarks :</label>  
+      <p>{selectedpatientappointment.patientbautistaappointmentconsultationremarks}</p>
     </div>
+
+
+      <div className="mt-3 w-full flex flex-col">
+    <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="patientbautistaappointmentprescription">Presciption :</label>  
+    <p>{selectedpatientappointment.patientbautistaappointmentprescription}</p>
+  </div>
+
+
 
     {selectedpatientappointment.patientbautistaappointmentrating != 0 && selectedpatientappointment.patientbautistaappointmentfeedback != "" && (
     <div className="mt-10"> 
@@ -5887,8 +5966,8 @@ const handleacceptappointment = async (appointmentId, clinicType) => {
       {/*AICODE*/}
       {patientappointments.filter(appointment =>{
         if(activeappointmentstable === 'ambherappointmentstable'){
-          return appointment.patientambherappointmentdate !== null &&
-                 appointment.patientambherappointmenttime !== null &&
+          return appointment.patientambherappointmentdate !== "" &&
+                 appointment.patientambherappointmenttime !== "" &&
                  appointment.patientambherappointmentid !== null;
         }
         return true;
@@ -5985,6 +6064,8 @@ ${appointment.patientambherappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] tex
     </table>
     </div>
 )}
+
+
 
 {/*Viewing Appointment Details*/} {/*Viewing Appointment Details*/} {/*Viewing Appointment Details*/} {/*Viewing Appointment Details*/} {/*Viewing Appointment Details*/} {/*Viewing Appointment Details*/}
 {/*Viewing Appointment Details*/} {/*Viewing Appointment Details*/} {/*Viewing Appointment Details*/} {/*Viewing Appointment Details*/} {/*Viewing Appointment Details*/} {/*Viewing Appointment Details*/}
@@ -6100,6 +6181,18 @@ ${selectedpatientappointment.patientambherappointmentstatus === 'Cancelled' ? 'b
   <label className="text-[18px]   font-semibold font-albertsans  text-[#343436] "htmlFor="patientambherappointmentcontactlensefitting">Contact Lense Fitting</label>   
   </div>  
 
+  <div className="flex items-center mt-5 ml-7">
+    <input className="w-7 h-7 mr-3 appearance-none border-2 border-[#2d2d44] rounded-md checked:bg-[#2d2d44] checked:border-[#2d2d44] after:text-white after:text-lg after:absolute after:left-1/2 after:top-1/2 after:content-['✓'] after:opacity-0 after:-translate-x-1/2 after:-translate-y-1/2 checked:after:opacity-100 relative cursor:pointer transition-all"  checked={selectedpatientappointment.patientambherappointmentotherservice}  type="checkbox" name="patientambherappointmentotherservice" id="patientambherappointmentotherservice" />
+    <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="patientambherappointmentotherservice">Other</label>   
+    </div>  
+     
+
+     {selectedpatientappointment.patientambherappointmentotherservice && (
+          <div className="mt-3 ml-17 flex">
+               <p className="text-[18px]  font-medium font-albertsans  text-[#343436] ">- {selectedpatientappointment.patientambherappointmentotherservicenote}</p>
+          </div>
+      )}   
+
 
   {selectedpatientappointment.patientambherappointmentstatus === "Pending" && (
 <div id="patientambherappointmentpaymentotal" className="mt-7 ml-6 mr-4" >
@@ -6117,18 +6210,24 @@ ${selectedpatientappointment.patientambherappointmentstatus === 'Cancelled' ? 'b
 
 
 {selectedpatientappointment.patientambherappointmentstatus === "Accepted" && (
-<div id="patientambherappointmentpaymentotal" className="mt-7 ml-6" >
+<div id="patientambherappointmentpaymentotal" className="mt-7 ml-6 " >
   <h1 className="text-[18px]  font-semibold font-albertsans  text-[#343436]mb-3">Total Payment for Ambher Optical  : </h1>
   <input className="w-full border-b-2 border-gray-600  text-[18px]  font-semibold font-albertsans  text-[#343436]"  value={ambherappointmentpaymentotal} onChange={(e) => setambherappointmentpaymentotal(Number(e.target.value))}  type="number" name="patientambherappointmentpaymentotal" id="patientambherappointmentpaymentotal" placeholder="Total Payment"/>
 
 
   <div className="mt-3 w-full flex flex-col">
-    <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="patientambherappointmentremarksnote">Appointment Remarks :</label>  
-    <textarea className="w-full text-[18px]  font-semibold font-albertsans  text-[#343436] rounded-md border-2 border-[#2d2d44]  " ref={textarearef} rows={1} style={{minHeight:'44px'}} type="text" value={ambherappointmentremarksnote} onChange={(e) => {setambherappointmentremarksnote(e.target.value); adjusttextareaheight();}} placeholder="Specify findings or remarks..."/>
+    <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="patientambherappointmentconsultationremarks">Consultation Remarks :</label>  
+    <textarea className="w-full text-[18px]  font-semibold font-albertsans  text-[#343436] rounded-md border-2 border-[#2d2d44]  " ref={textarearef} rows={1} style={{minHeight:'44px'}} type="text" value={ambherappointmentconsultationremarks} onChange={(e) => {setambherappointmentconsultationremarks(e.target.value); adjusttextareaheight();}} placeholder="Specify findings or remarks..."/>
   </div>
 
+          
+    <div className="mt-3 w-full flex flex-col">
+      <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="patientambherappointmentprescription">Prescription :</label>  
+      <textarea className="w-full text-[18px]  font-semibold font-albertsans  text-[#343436] rounded-md border-2 border-[#2d2d44]  " ref={textarearef} rows={1} style={{minHeight:'44px'}} type="text" value={ambherappointmentprescription} onChange={(e) => {setambherappointmentprescription(e.target.value); adjusttextareaheight();}} placeholder="Specify prescription if available..."/>
+    </div>
 
-{ambherappointmentpaymentotal && ambherappointmentremarksnote && (
+
+{ambherappointmentpaymentotal && ambherappointmentconsultationremarks && (
   <div onClick={() => handleCompleteAppointment(selectedpatientappointment.patientambherappointmentid, 'ambher')}  className=" bg-[#2d91cf]  hover:bg-[#1b6796] mt-4 h-[50px]  transition-all duration-300 ease-in-out flex justify-center items-center py-2 px-5 hover:cursor-pointer rounded-[20px]"><h1 className="text-white font-albertsans font-semibold text-[20px]">Complete Ambher Appointment</h1></div>
 )}
 
@@ -6141,8 +6240,13 @@ ${selectedpatientappointment.patientambherappointmentstatus === 'Cancelled' ? 'b
 {selectedpatientappointment.patientambherappointmentstatus === "Completed" && (
 <div id="patientambherappointmentpaymentotal" className="mt-15" >
   <div className="mt-3 w-full flex flex-col">
-    <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="patientambherappointmentremarksnote">Appointment Remarks :</label>  
-    <p>{selectedpatientappointment.patientambherappointmentremarksnote}</p>
+    <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="patientambherappointmentconsultationremarks">Consultation Remarks :</label>  
+    <p>{selectedpatientappointment.patientambherappointmentconsultationremarks}</p>
+  </div>
+
+    <div className="mt-3 w-full flex flex-col">
+    <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="patientambherappointmentprescription">Presciption :</label>  
+    <p>{selectedpatientappointment.patientambherappointmentprescription}</p>
   </div>
 
 
@@ -6262,8 +6366,8 @@ ${selectedpatientappointment.patientambherappointmentstatus === 'Cancelled' ? 'b
       <tbody className="divide-y divide-gray-200 bg-white">
       {patientappointments.filter(appointment =>{
         if(activeappointmentstable === 'bautistaappointmentstable'){
-          return appointment.patientbautistaappointmentdate !== null &&
-                 appointment.patientbautistaappointmenttime !== null &&
+          return appointment.patientbautistaappointmentdate !== "" &&
+                 appointment.patientbautistaappointmenttime !== "" &&
                  appointment.patientbautistaappointmentid !== null;
         }
         return true;
@@ -6484,6 +6588,20 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
   </div>  
 
 
+  <div className="flex items-center mt-5 ml-7">
+    <input className="w-7 h-7 mr-3 appearance-none border-2 border-[#2d2d44] rounded-md checked:bg-[#2d2d44] checked:border-[#2d2d44] after:text-white after:text-lg after:absolute after:left-1/2 after:top-1/2 after:content-['✓'] after:opacity-0 after:-translate-x-1/2 after:-translate-y-1/2 checked:after:opacity-100 relative cursor:pointer transition-all"  checked={selectedpatientappointment.patientbautistaappointmentotherservice} onChange={(e) => setshowotherpatientbautistaappointmentotherservice(e.target.checked)}  type="checkbox" name="patientbautistaappointmentotherservice" id="patientbautistaappointmentotherservice" />
+    <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="patientbautistaappointmentotherservice">Other</label>   
+    </div>  
+     
+
+     {selectedpatientappointment.patientbautistaappointmentotherservice && (
+          <div className="mt-3 ml-17">
+              <p className="text-[18px]  font-medium font-albertsans  text-[#343436] ">- {selectedpatientappointment.patientbautistaappointmentotherservicenote}</p>
+          </div>
+      )}    
+
+
+
   {selectedpatientappointment.patientbautistaappointmentstatus === "Pending" && (
 <div id="patientbautistaappointmentpaymentotal" className="mt-7 ml-6" >
   <h1 className="font-bold text-[17px] text-[#343436] mb-3">Eye Specialist : </h1>
@@ -6502,12 +6620,18 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
   <input className="w-full border-b-2 border-gray-600  text-[18px]  font-semibold font-albertsans  text-[#343436]"  value={bautistaappointmentpaymentotal} onChange={(e) => setbautistaappointmentpaymentotal(Number(e.target.value))}  type="number" name="patientbautistaappointmentpaymentotal" id="patientbautistaappointmentpaymentotal" placeholder="Total Payment"/>
 
   <div className="mt-3 w-full flex flex-col">
-    <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="patientbautistaappointmentremarksnote">Appointment Remarks :</label>  
-    <textarea className="w-full text-[18px]  font-semibold font-albertsans  text-[#343436] rounded-md border-2 border-[#2d2d44]  " ref={textarearef} rows={1} style={{minHeight:'44px'}} type="text" value={bautistaappointmentremarksnote} onChange={(e) => {setbautistaappointmentremarksnote(e.target.value); adjusttextareaheight();}} placeholder="Specify findings or remarks..."/>
+    <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="patientbautistaappointmentconsultationremarks">Consultation Remarks :</label>  
+    <textarea className="w-full text-[18px]  font-semibold font-albertsans  text-[#343436] rounded-md border-2 border-[#2d2d44]  " ref={textarearef} rows={1} style={{minHeight:'44px'}} type="text" value={bautistaappointmentconsultationremarks} onChange={(e) => {setbautistaappointmentconsultationremarks(e.target.value); adjusttextareaheight();}} placeholder="Specify findings or remarks..."/>
   </div>
 
 
-{bautistaappointmentpaymentotal && bautistaappointmentremarksnote && (
+    <div className="mt-3 w-full flex flex-col">
+      <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="patientbautistaappointmentprescription">Prescription :</label>  
+      <textarea className="w-full text-[18px]  font-semibold font-albertsans  text-[#343436] rounded-md border-2 border-[#2d2d44]  " ref={textarearef} rows={1} style={{minHeight:'44px'}} type="text" value={bautistaappointmentprescription} onChange={(e) => {setbautistaappointmentprescription(e.target.value); adjusttextareaheight();}} placeholder="Specify prescription if available..."/>
+    </div>
+
+
+{bautistaappointmentpaymentotal && bautistaappointmentconsultationremarks && (
   <div onClick={() => handleCompleteAppointment(selectedpatientappointment.patientbautistaappointmentid, 'bautista')}  className=" bg-[#2d91cf]  hover:bg-[#1b6796] mt-4 h-[50px]  transition-all duration-300 ease-in-out flex justify-center items-center py-2 px-5 hover:cursor-pointer rounded-[20px]"><h1 className="text-white font-albertsans font-semibold text-[20px]">Complete Bautista Appointment</h1></div>
 )}
 
@@ -6518,9 +6642,16 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
 {selectedpatientappointment.patientbautistaappointmentstatus === "Completed" && (
 <div id="patientbautistaappointmentpaymentotal" className="mt-15" >
   <div className="mt-3 w-full flex flex-col">
-    <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="patientbautistaappointmentremarksnote">Appointment Remarks :</label>  
-    <p>{selectedpatientappointment.patientbautistaappointmentremarksnote}</p>
+    <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="patientbautistaappointmentconsultationremarks">Consultation Remarks :</label>  
+    <p>{selectedpatientappointment.patientbautistaappointmentconsultationremarks}</p>
   </div>
+
+
+    <div className="mt-3 w-full flex flex-col">
+    <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="patientbautistaappointmentprescription">Presciption :</label>  
+    <p>{selectedpatientappointment.patientbautistaappointmentprescription}</p>
+  </div>
+
 
   {selectedpatientappointment.patientbautistaappointmentrating != 0 && selectedpatientappointment.patientbautistaappointmentfeedback != "" && (
   <div className="mt-10"> 

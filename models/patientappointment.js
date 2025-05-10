@@ -73,6 +73,8 @@ patientambherappointmentcolorvisiontesting: {type: Boolean, default: false},
 patientambherappointmentlowvisionaid: {type: Boolean, default: false},
 patientambherappointmentrefraction: {type: Boolean, default: false},
 patientambherappointmentcontactlensefitting: {type: Boolean, default: false},
+patientambherappointmentotherservice: {type: Boolean, default: false},
+patientambherappointmentotherservicenote: String,
 patientambherappointmentstatus:{type:String, enum:['Cancelled', 'Pending', 'Declined', 'Accepted','Completed'], default: 'Pending'},
 patientambherappointmentstatushistory: [{
     status:{
@@ -87,7 +89,8 @@ patientambherappointmentstatushistory: [{
 
 }],
 patientambherappointmentpaymentotal: Number,
-patientambherappointmentremarksnote: String,
+patientambherappointmentconsultationremarks: String,
+patientambherappointmentprescription: String,
 patientambherappointmentrating:{
     type: Number,
     min: 0,
@@ -95,7 +98,6 @@ patientambherappointmentrating:{
     default: null,
 },
 patientambherappointmentfeedback: String,
-
 
 
 
@@ -125,6 +127,8 @@ patientbautistaappointmenthypertensiveretinopathy: {type: Boolean, default: fals
 patientbautistaappointmentretinolproblem: {type: Boolean, default: false},
 patientbautistaappointmentcataractsurgery: {type: Boolean, default: false},
 patientbautistaappointmentpterygiumsurgery: {type: Boolean, default: false},
+patientbautistaappointmentotherservice: {type: Boolean, default: false},
+patientbautistaappointmentotherservicenote: String,
 patientbautistaappointmentstatus:{type:String, enum:['Cancelled', 'Pending', 'Declined', 'Accepted','Completed'], default: 'Pending'},
 patientbautistaappointmentstatushistory: [{
     status:{
@@ -139,7 +143,8 @@ patientbautistaappointmentstatushistory: [{
 
 }],
 patientbautistaappointmentpaymentotal: Number,
-patientbautistaappointmentremarksnote: String,
+patientbautistaappointmentconsultationremarks: String,
+patientbautistaappointmentprescription: String,
 patientbautistaappointmentrating:{
     type: Number,
     min: 0,
@@ -147,6 +152,21 @@ patientbautistaappointmentrating:{
     default: null,
 },
 patientbautistaappointmentfeedback: String,
+
+
+
+
+
+//TENTATIVE APPOINTMENT
+//TENTATIVE APPOINTMENT
+//TENTATIVE APPOINTMENT
+//TENTATIVE APPOINTMENT
+//TENTATIVE APPOINTMENT
+//TENTATIVE APPOINTMENT
+
+
+
+
 
 
 
