@@ -188,6 +188,7 @@ const patientsubmitappointment = async (formData) => {
       patientambherappointmentotherservicenote: patientambherappointmentotherservicenote || '',
       patientambherappointmentstatus: "Pending",
       patientambherappointmentpaymentotal: 1000,
+      patientambherappointmentconsultationremarkssubject: "",
       patientambherappointmentconsultationremarks:"",
       patientambherappointmentprescription: "",
       patientambherappointmentrating: 0,
@@ -213,6 +214,7 @@ const patientsubmitappointment = async (formData) => {
       patientbautistaappointmentotherservicenote: patientambherappointmentotherservicenote || '',
       patientbautistaappointmentstatus: "Pending",
       patientbautistaappointmentpaymentotal: 1000,
+      patientbautistaappointmentconsultationremarkssubject: "",
       patientbautistaappointmentconsultationremarks: "",
       patientbautistaappointmentprescription: "",
       patientbautistaappointmentrating: 0,
@@ -1313,6 +1315,13 @@ const handledeleteappointment = async (appointmentId) => {
 
     {selectedpatientappointment.patientambherappointmentstatus === "Completed" && (
   <div id="patientambherappointmentpaymentotal" className="mt-15" >
+
+
+    <div className="mt-3 w-full flex flex-col">
+      <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="patientambherappointmentconsultationremarkssubject">Consultation Subject :</label>  
+      <p>{selectedpatientappointment.patientambherappointmentconsultationremarkssubject}</p>
+    </div>
+
     <div className="mt-3 w-full flex flex-col">
       <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="patientambherappointmentconsultationremarks">Consultation Remarks :</label>  
       <p>{selectedpatientappointment.patientambherappointmentconsultationremarks}</p>
@@ -1490,6 +1499,12 @@ const handledeleteappointment = async (appointmentId) => {
 
     {selectedpatientappointment.patientbautistaappointmentstatus === "Completed" && (
   <div id="patientbautistaappointmentpaymentotal" className="mt-15" >
+
+    <div className="mt-3 w-full flex flex-col">
+      <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="patientbautistaappointmentconsultationremarkssubject">Consultation Subject :</label>  
+      <p>{selectedpatientappointment.patientbautistaappointmentconsultationremarkssubject}</p>
+    </div>
+
     <div className="mt-3 w-full flex flex-col">
       <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="patientbautistaappointmentconsultationremarks">Consultation Remarks :</label>  
       <p>{selectedpatientappointment.patientbautistaappointmentconsultationremarks}</p>

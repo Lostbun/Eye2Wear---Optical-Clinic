@@ -89,6 +89,7 @@ patientambherappointmentstatushistory: [{
 
 }],
 patientambherappointmentpaymentotal: Number,
+patientambherappointmentconsultationremarkssubject: String,
 patientambherappointmentconsultationremarks: String,
 patientambherappointmentprescription: String,
 patientambherappointmentrating:{
@@ -143,6 +144,7 @@ patientbautistaappointmentstatushistory: [{
 
 }],
 patientbautistaappointmentpaymentotal: Number,
+patientbautistaappointmentconsultationremarkssubject: String,
 patientbautistaappointmentconsultationremarks: String,
 patientbautistaappointmentprescription: String,
 patientbautistaappointmentrating:{
@@ -155,14 +157,6 @@ patientbautistaappointmentfeedback: String,
 
 
 
-
-
-//TENTATIVE APPOINTMENT
-//TENTATIVE APPOINTMENT
-//TENTATIVE APPOINTMENT
-//TENTATIVE APPOINTMENT
-//TENTATIVE APPOINTMENT
-//TENTATIVE APPOINTMENT
 
 
 

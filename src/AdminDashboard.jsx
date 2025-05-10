@@ -362,21 +362,21 @@ function AdminDashboard(){
                 />
                 </div>
               </td>
-              <td  className="py-3 px-6 text-[#454444] text-center font-albertsans font-medium ">{patient.patientlastname}</td>
-              <td  className="py-3 px-6 text-[#454444] text-center font-albertsans font-medium max-w-[150px]">{patient.patientfirstname}</td>
-              <td  className="py-3 px-6 text-[#454444] text-center font-albertsans font-medium">{patient.patientmiddlename}</td>
-              <td  className="py-3 px-6 text-[#454444] text-center font-albertsans font-medium">
+              <td  className="py-3 px-6 text-[#171717] text-center font-albertsans font-medium ">{patient.patientlastname}</td>
+              <td  className="py-3 px-6 text-[#171717] text-center font-albertsans font-medium max-w-[150px]">{patient.patientfirstname}</td>
+              <td  className="py-3 px-6 text-[#171717] text-center font-albertsans font-medium">{patient.patientmiddlename}</td>
+              <td  className="py-3 px-6 text-[#171717] text-center font-albertsans font-medium">
                 <a href={`mailto:${patient.patientemail}`} className="text-blue-400 hover:underline">
                   {patient.patientemail}
                 </a>
 
               </td>
-              <td  className="py-3 px-6 text-[#454444] text-center font-albertsans font-medium">
+              <td  className="py-3 px-6 text-[#171717] text-center font-albertsans font-medium">
                 <span className={`rounded-2xl text-xs px-5 py-4 ${patient.isVerified ? 'text-green-800 bg-green-100' : 'text-yellow-800 bg-yellow-100'}`}>
                   {patient.isVerified ? 'Active' : 'Pending'}
                 </span>
               </td>
-              <td  className="py-3 px-6 text-[#454444] text-center font-albertsans font-medium">
+              <td  className="py-3 px-6 text-[#171717] text-center font-albertsans font-medium">
                 {new Date(patient.createdAt).toLocaleDateString('en-US',{
                   year:'numeric',
                   month: 'short',
@@ -958,24 +958,24 @@ const [showaddstaffdialog, setshowaddstaffdialog] = useState(false);
                 />
                 </div>
               </td>
-              <td  className="py-3 px-6 text-[#454444] text-center font-albertsans font-medium ">{staff.stafflastname}</td>
-              <td  className="py-3 px-6 text-[#454444] text-center font-albertsans font-medium max-w-[150px]">{staff.stafffirstname}</td>
-              <td  className="py-3 px-6 text-[#454444] text-center font-albertsans font-medium">{staff.staffmiddlename}</td>
+              <td  className="py-3 px-6 text-[#171717] text-center font-albertsans font-medium ">{staff.stafflastname}</td>
+              <td  className="py-3 px-6 text-[#171717] text-center font-albertsans font-medium max-w-[150px]">{staff.stafffirstname}</td>
+              <td  className="py-3 px-6 text-[#171717] text-center font-albertsans font-medium">{staff.staffmiddlename}</td>
       
-              <td  className="py-3 px-6 text-[#454444] text-center font-albertsans font-medium">
+              <td  className="py-3 px-6 text-[#171717] text-center font-albertsans font-medium">
                 <a href={`mailto:${staff.staffemail}`} className="text-blue-400 hover:underline">
                   {staff.staffemail}
                 </a>
 
               </td>
-              <td  className="py-3 px-6 text-[#454444] text-center font-albertsans font-medium">{staff.staffclinic}</td>
-              <td  className="py-3 px-6 text-[#454444] text-center font-albertsans font-medium">{staff.staffiseyespecialist}</td>
-              <td  className="py-3 px-6 text-[#454444] text-center font-albertsans font-medium">
+              <td  className="py-3 px-6 text-[#171717] text-center font-albertsans font-medium">{staff.staffclinic}</td>
+              <td  className="py-3 px-6 text-[#171717] text-center font-albertsans font-medium">{staff.staffiseyespecialist}</td>
+              <td  className="py-3 px-6 text-[#171717] text-center font-albertsans font-medium">
                 <span className={`rounded-2xl text-xs px-5 py-4 ${staff.isVerified ? 'text-green-800 bg-green-100' : 'text-yellow-800 bg-yellow-100'}`}>
                   {staff.isVerified ? 'Active' : 'Pending'}
                 </span>
               </td>
-              <td  className="py-3 px-6 text-[#454444] text-center font-albertsans font-medium">
+              <td  className="py-3 px-6 text-[#171717] text-center font-albertsans font-medium">
                 {new Date(staff.createdAt).toLocaleDateString('en-US',{
                   year:'numeric',
                   month: 'short',
@@ -1572,23 +1572,23 @@ const [showaddstaffdialog, setshowaddstaffdialog] = useState(false);
                   />
                   </div>
                 </td>
-                <td  className="py-3 px-6 text-[#454444] text-center font-albertsans font-medium ">{owner.ownerlastname}</td>
-                <td  className="py-3 px-6 text-[#454444] text-center font-albertsans font-medium max-w-[150px]">{owner.ownerfirstname}</td>
-                <td  className="py-3 px-6 text-[#454444] text-center font-albertsans font-medium">{owner.ownermiddlename}</td>
-                <td  className="py-3 px-6 text-[#454444] text-center font-albertsans font-medium">
+                <td  className="py-3 px-6 text-[#171717] text-center font-albertsans font-medium ">{owner.ownerlastname}</td>
+                <td  className="py-3 px-6 text-[#171717] text-center font-albertsans font-medium max-w-[150px]">{owner.ownerfirstname}</td>
+                <td  className="py-3 px-6 text-[#171717] text-center font-albertsans font-medium">{owner.ownermiddlename}</td>
+                <td  className="py-3 px-6 text-[#171717] text-center font-albertsans font-medium">
                   <a href={`mailto:${owner.owneremail}`} className="text-blue-400 hover:underline">
                     {owner.owneremail}
                   </a>
   
                 </td>
-                <td  className="py-3 px-6 text-[#454444] text-center font-albertsans font-medium">{owner.ownerclinic}</td>
-                <td  className="py-3 px-6 text-[#454444] text-center font-albertsans font-medium">{owner.owneriseyespecialist}</td>
-                <td  className="py-3 px-6 text-[#454444] text-center font-albertsans font-medium">
+                <td  className="py-3 px-6 text-[#171717] text-center font-albertsans font-medium">{owner.ownerclinic}</td>
+                <td  className="py-3 px-6 text-[#171717] text-center font-albertsans font-medium">{owner.owneriseyespecialist}</td>
+                <td  className="py-3 px-6 text-[#171717] text-center font-albertsans font-medium">
                   <span className={`rounded-2xl text-xs px-5 py-4 ${owner.isVerified ? 'text-green-800 bg-green-100' : 'text-yellow-800 bg-yellow-100'}`}>
                     {owner.isVerified ? 'Active' : 'Pending'}
                   </span>
                 </td>
-                <td  className="py-3 px-6 text-[#454444] text-center font-albertsans font-medium">
+                <td  className="py-3 px-6 text-[#171717] text-center font-albertsans font-medium">
                   {new Date(owner.createdAt).toLocaleDateString('en-US',{
                     year:'numeric',
                     month: 'short',
@@ -2185,21 +2185,21 @@ return (
               />
               </div>
             </td>
-            <td  className="py-3 px-6 text-[#454444] text-center font-albertsans font-medium ">{admin.adminlastname}</td>
-            <td  className="py-3 px-6 text-[#454444] text-center font-albertsans font-medium max-w-[150px]">{admin.adminfirstname}</td>
-            <td  className="py-3 px-6 text-[#454444] text-center font-albertsans font-medium">{admin.adminmiddlename}</td>
-            <td  className="py-3 px-6 text-[#454444] text-center font-albertsans font-medium">
+            <td  className="py-3 px-6 text-[#171717] text-center font-albertsans font-medium ">{admin.adminlastname}</td>
+            <td  className="py-3 px-6 text-[#171717] text-center font-albertsans font-medium max-w-[150px]">{admin.adminfirstname}</td>
+            <td  className="py-3 px-6 text-[#171717] text-center font-albertsans font-medium">{admin.adminmiddlename}</td>
+            <td  className="py-3 px-6 text-[#171717] text-center font-albertsans font-medium">
               <a href={`mailto:${admin.adminemail}`} className="text-blue-400 hover:underline">
                 {admin.adminemail}
               </a>
 
             </td>
-            <td  className="py-3 px-6 text-[#454444] text-center font-albertsans font-medium">
+            <td  className="py-3 px-6 text-[#171717] text-center font-albertsans font-medium">
               <span className={`rounded-2xl text-xs px-5 py-4 ${admin.isVerified ? 'text-green-800 bg-green-100' : 'text-yellow-800 bg-yellow-100'}`}>
                 {admin.isVerified ? 'Active' : 'Pending'}
               </span>
             </td>
-            <td  className="py-3 px-6 text-[#454444] text-center font-albertsans font-medium">
+            <td  className="py-3 px-6 text-[#171717] text-center font-albertsans font-medium">
               {new Date(admin.createdAt).toLocaleDateString('en-US',{
                 year:'numeric',
                 month: 'short',
@@ -3164,6 +3164,8 @@ const showappointmentstable = (appointmentstableid) => {
  const [ambhereyespecialist, setambhereyespecialist] = useState('');
  const [ambherappointmentpaymentotal, setambherappointmentpaymentotal] = useState(null);
  const [bautistaappointmentpaymentotal, setbautistaappointmentpaymentotal] = useState(null);
+ const [bautistaappointmentconsultationremarkssubject, setbautistaappointmentconsultationremarkssubject] = useState("");
+ const [ambherappointmentconsultationremarkssubject, setambherappointmentconsultationremarkssubject] = useState("");
  const [bautistaappointmentconsultationremarks, setbautistaappointmentconsultationremarks] = useState("");
  const [ambherappointmentconsultationremarks, setambherappointmentconsultationremarks] = useState("");
  const [bautistaappointmentprescription, setbautistaappointmentprescription] = useState("");
@@ -3331,6 +3333,7 @@ const handledeleteappointmentbyclinic = async (appointmentId, clinicType) => {
         patientambherappointmentstatus: null,
         patientambherappointmentstatushistory: null,
         patientambherappointmentpaymentotal: null,
+        patientambherappointmentconsultationremarkssubject: null,
         patientambherappointmentconsultationremarks: null,
         patientambherappointmentprescription: null,
         patientambherappointmentrating: null,
@@ -3351,6 +3354,7 @@ const handledeleteappointmentbyclinic = async (appointmentId, clinicType) => {
         patientbautistaappointmentstatus: null,
         patientbautistaappointmentstatushistory: null,
         patientbautistaappointmentpaymentotal: null,
+        patientbautistaappointmentconsultationremarkssubject: null,
         patientbautistaappointmentconsultationremarks: null,
         patientbautistaappointmentprescription: null,
         patientbautistaappointmentrating: null,
@@ -3522,6 +3526,7 @@ const handleacceptappointment = async (appointmentId, clinicType) => {
               changedBy: adminfirstname
             },
             [`patient${clinicType}appointmentpaymentotal`]: clinicType === 'ambher' ? ambherappointmentpaymentotal : bautistaappointmentpaymentotal,
+            [`patient${clinicType}appointmentconsultationremarkssubject`]: clinicType === 'ambher' ? ambherappointmentconsultationremarkssubject : bautistaappointmentconsultationremarkssubject,
             [`patient${clinicType}appointmentconsultationremarks`]: clinicType === 'ambher' ? ambherappointmentconsultationremarks : bautistaappointmentconsultationremarks,
             [`patient${clinicType}appointmentprescription`]: clinicType === 'ambher' ? ambherappointmentprescription : bautistaappointmentprescription,
 
@@ -3552,6 +3557,41 @@ const handleacceptappointment = async (appointmentId, clinicType) => {
     }
   };
   
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS  
+ //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS  
+ //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS  
+ //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS  
+ //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS  
+
+const [activemedicalrecordstable, setactivemedicalrecordstable] = useState('allmedicalrecordstable');
+const showmedicalrecordstable = (medicalrecordstableid) => {
+      setactivemedicalrecordstable(medicalrecordstableid);
+};
+
+
+const [activepatientmedicalrecordstable, setactivepatientmedicalrecordstable] = useState('medicalrecordsconsultationtable');
+const showpatientmedicalrecordstable = (patientmedicalrecordstableid) => {
+      setactivepatientmedicalrecordstable(patientmedicalrecordstableid);
+};
+
+const [selectedpatientmedicalrecord,setselectedpatientmedicalrecord] = useState(null);
+const [showpatientmedicalrecord, setshowpatientmedicalrecord] = useState(false);
 
 
 
@@ -5244,40 +5284,6 @@ const handleacceptappointment = async (appointmentId, clinicType) => {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
  {/*APPOINTMENT MANAGEMENT*/} {/*APPOINTMENT MANAGEMENT*/} {/*APPOINTMENT MANAGEMENT*/} {/*APPOINTMENT MANAGEMENT*/} {/*APPOINTMENT MANAGEMENT*/} {/*APPOINTMENT MANAGEMENT*/}
  {/*APPOINTMENT MANAGEMENT*/} {/*APPOINTMENT MANAGEMENT*/} {/*APPOINTMENT MANAGEMENT*/} {/*APPOINTMENT MANAGEMENT*/} {/*APPOINTMENT MANAGEMENT*/} {/*APPOINTMENT MANAGEMENT*/}
  {/*APPOINTMENT MANAGEMENT*/} {/*APPOINTMENT MANAGEMENT*/} {/*APPOINTMENT MANAGEMENT*/} {/*APPOINTMENT MANAGEMENT*/} {/*APPOINTMENT MANAGEMENT*/} {/*APPOINTMENT MANAGEMENT*/}
@@ -5363,10 +5369,10 @@ const handleacceptappointment = async (appointmentId, clinicType) => {
               key={appointment._id}
               className="hover:bg-gray-50 transition-all ease-in-out duration-300 border-b-2"
             >
-              <td className="py-3 px-6 text-[#454444] text-center font-albertsans font-medium ">
+              <td className="py-3 px-6 text-[#171717] text-[15px] text-center font-albertsans font-medium  ">
                 #{appointment.patientappointmentid}
               </td>
-              <td className="py-3 px-6 text-[#454444] text-center font-albertsans font-medium ">
+              <td className="py-3 px-6 text-[#171717] text-center font-albertsans font-medium ">
                      <div className="flex  items-center">
                   <img 
                     src={appointment.patientappointmentprofilepicture} 
@@ -5376,12 +5382,12 @@ const handleacceptappointment = async (appointmentId, clinicType) => {
                       e.target.src = 'default-profile-url';
                     }}
                   />
-                  <h1 className="font-semibold text-[#171717] text-[15px]">{appointment.patientappointmentfirstname} {appointment.patientappointmentlastname}</h1>
+                  <h1 className="py-3 px-6 text-[#171717] text-[15px] text-center font-albertsans font-medium ">{appointment.patientappointmentfirstname} {appointment.patientappointmentlastname}</h1>
                   </div>
               </td>
 
-              <td className="py-3 px-6 text-[#454444] text-center font-albertsans font-medium ">
-                  <span className="font-semibold text-[15px] text-[#171717]">
+              <td className="py-3 px-6 text-[#171717] text-center font-albertsans font-medium ">
+                  <span className="py-3 px-6 text-[#171717] text-[15px]  text-center font-albertsans font-medium ">
                     {new Date(appointment.createdAt).toLocaleDateString('en-US',{
                       month: 'short',
                       day: 'numeric',
@@ -5390,11 +5396,11 @@ const handleacceptappointment = async (appointmentId, clinicType) => {
                   </span>          
               </td>
 
-              <td className="py-3 px-6 text-[#454444] text-center font-albertsans font-medium ">
+              <td className="py-3 px-6 text-[#171717] text-center font-albertsans font-medium ">
                 {appointment.patientambherappointmentdate && (
-                  <div className="text-sm font-albertsans text-gray-900 flex  justify-center items-center">
-                    <span className="font-semibold items-start">{formatappointmatedates(appointment.patientambherappointmentdate)} </span> 
-                    <span className="ml-1 font-semibold items-start">({formatappointmenttime(appointment.patientambherappointmenttime)})</span> 
+                  <div className="font-albertsans text-[#171717] font-medium flex  justify-center items-center">
+                    <span className="font-albertsans text-[#171717] text-[15px] font-medium">{formatappointmatedates(appointment.patientambherappointmentdate)} </span> 
+                    <span className="ml-1 font-albertsans text-[#171717] text-[15px] font-medium">({formatappointmenttime(appointment.patientambherappointmenttime)})</span> 
                     <span className={`ml-3 font-albertsans font-semibold rounded-full text-[15px] leading-5 px-4 py-2 inline-flex
   ${appointment.patientambherappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] text-[#421a10]':
     appointment.patientambherappointmentstatus === 'Pending' ? 'bg-yellow-100 text-yellow-800':
@@ -5405,13 +5411,13 @@ const handleacceptappointment = async (appointmentId, clinicType) => {
                 )}
               </td>
 
-              <td className="py-3 px-6 text-[#454444] text-center font-albertsans font-medium ">
+              <td className="py-3 px-6 w-auto  text-center font-albertsans text-[#171717] font-medium ">
                 {appointment.patientbautistaappointmentdate && (
-                  <div className="text-sm font-albertsans text-gray-900 flex justify-center items-center">
-                    <span className="font-semibold">{formatappointmatedates(appointment.patientbautistaappointmentdate)}</span> 
-                    <span className="ml-1 font-semibold">({formatappointmenttime(appointment.patientbautistaappointmenttime)})</span> 
+                  <div className="font-albertsans text-[#171717] font-medium flex justify-center items-center">
+                    <span className="font-albertsans text-[15px]  text-[#171717] font-medium">{formatappointmatedates(appointment.patientbautistaappointmentdate)}</span> 
+                    <span className="ml-1 font-albertsans  text-[15px] text-[#171717] font-medium">({formatappointmenttime(appointment.patientbautistaappointmenttime)})</span> 
                     
-<span className={`ml-3 font-albertsans font-semibold rounded-full text-[15px] leading-5 px-4 py-2 inline-flex
+<span className={` ml-3 font-albertsans font-semibold rounded-full text-[15px] leading-5 px-4 py-2 inline-flex
   ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] text-[#421a10]':
     appointment.patientbautistaappointmentstatus === 'Pending' ? 'bg-yellow-100 text-yellow-800':
     appointment.patientbautistaappointmentstatus === 'Accepted' ? 'bg-[#9edc7a] text-[#2b5910]':
@@ -5426,7 +5432,7 @@ const handleacceptappointment = async (appointmentId, clinicType) => {
               <td className="px-6 py-4 whitespace-nowrap text-sm font-medium flex justify-center items-center">
                
               <div onClick={() => {handleviewappointment(appointment); setviewpatientappointment(true);}}
-                  className="bg-[#383838]  hover:bg-[#595959]  mr-2 transition-all duration-300 ease-in-out flex justify-center items-center py-2 px-5 rounded-2xl hover:cursor-pointer"><h1 className="text-white">View</h1></div>
+                  className="bg-[#383838]  hover:bg-[#595959]  mr-2 transition-all duration-300 ease-in-out flex justify-center items-center py-2 px-5 rounded-2xl hover:cursor-pointer"><h1 className="text-white ">View</h1></div>
 
               <div onClick={() =>  {setdeletepatientappointment(true);
                                 setselectedpatientappointment(appointment);
@@ -5616,6 +5622,12 @@ const handleacceptappointment = async (appointmentId, clinicType) => {
 
 
     <div className="mt-3 w-full flex flex-col">
+      <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="patientambherappointmentconsultationremarkssubject">Consultation Subject :</label>  
+      <textarea className="w-full text-[18px]  font-semibold font-albertsans  text-[#343436] rounded-md border-2 border-[#2d2d44]  " ref={textarearef} rows={1} style={{minHeight:'44px'}} type="text" value={ambherappointmentconsultationremarkssubject} onChange={(e) => {setambherappointmentconsultationremarkssubject(e.target.value); adjusttextareaheight();}} placeholder="Specify findings or remarks..."/>
+    </div>
+
+
+    <div className="mt-3 w-full flex flex-col">
       <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="patientambherappointmentconsultationremarks">Consultation Remarks :</label>  
       <textarea className="w-full text-[18px]  font-semibold font-albertsans  text-[#343436] rounded-md border-2 border-[#2d2d44]  " ref={textarearef} rows={1} style={{minHeight:'44px'}} type="text" value={ambherappointmentconsultationremarks} onChange={(e) => {setambherappointmentconsultationremarks(e.target.value); adjusttextareaheight();}} placeholder="Specify findings or remarks..."/>
     </div>
@@ -5641,6 +5653,14 @@ const handleacceptappointment = async (appointmentId, clinicType) => {
 
 {selectedpatientappointment.patientambherappointmentstatus === "Completed" && (
   <div id="patientambherappointmentpaymentotal" className="mt-15" >
+
+
+    <div className="mt-3 w-full flex flex-col">
+      <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="patientambherappointmentconsultationremarkssubject">Consultation Subject :</label>  
+      <p>{selectedpatientappointment.patientambherappointmentconsultationremarkssubject}</p>
+    </div>
+
+
     <div className="mt-3 w-full flex flex-col">
       <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="patientambherappointmentconsultationremarks">Consultation Remarks :</label>  
       <p>{selectedpatientappointment.patientambherappointmentconsultationremarks}</p>
@@ -5807,6 +5827,11 @@ const handleacceptappointment = async (appointmentId, clinicType) => {
     <input className="w-full border-b-2 border-gray-600  text-[18px]  font-semibold font-albertsans  text-[#343436]"  value={bautistaappointmentpaymentotal} onChange={(e) => setbautistaappointmentpaymentotal(Number(e.target.value))}  type="number" name="patientbautistaappointmentpaymentotal" id="patientbautistaappointmentpaymentotal" placeholder="Total Payment"/>
 
     <div className="mt-3 w-full flex flex-col">
+      <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="patientbautistaappointmentconsultationremarkssubject">Consultation Subject :</label>  
+      <textarea className="w-full text-[18px]  font-semibold font-albertsans  text-[#343436] rounded-md border-2 border-[#2d2d44]  " ref={textarearef} rows={1} style={{minHeight:'44px'}} type="text" value={bautistaappointmentconsultationremarkssubject} onChange={(e) => {setbautistaappointmentconsultationremarkssubject(e.target.value); adjusttextareaheight();}} placeholder="Specify consultation subject..."/>
+    </div>
+
+    <div className="mt-3 w-full flex flex-col">
       <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="patientbautistaappointmentconsultationremarks">Consultation Remarks :</label>  
       <textarea className="w-full text-[18px]  font-semibold font-albertsans  text-[#343436] rounded-md border-2 border-[#2d2d44]  " ref={textarearef} rows={1} style={{minHeight:'44px'}} type="text" value={bautistaappointmentconsultationremarks} onChange={(e) => {setbautistaappointmentconsultationremarks(e.target.value); adjusttextareaheight();}} placeholder="Specify findings or remarks..."/>
     </div>
@@ -5829,6 +5854,13 @@ const handleacceptappointment = async (appointmentId, clinicType) => {
 
 {selectedpatientappointment.patientbautistaappointmentstatus === "Completed" && (
   <div id="patientbautistaappointmentpaymentotal" className="mt-15" >
+
+
+    <div className="mt-3 w-full flex flex-col">
+      <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="patientbautistaappointmentconsultationremarkssubject">Consultation Subject :</label>  
+      <p>{selectedpatientappointment.patientbautistaappointmentconsultationremarkssubject}</p>
+    </div>
+
     <div className="mt-3 w-full flex flex-col">
       <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="patientbautistaappointmentconsultationremarks">Consultation Remarks :</label>  
       <p>{selectedpatientappointment.patientbautistaappointmentconsultationremarks}</p>
@@ -5889,7 +5921,7 @@ const handleacceptappointment = async (appointmentId, clinicType) => {
 
 
 
-<div className="w-full mt-5 p-3 flex flex-col mb-7 bg-[#ededed] rounded-2xl  ">
+<div className="w-full mt-5 p-3 flex flex-col mb-7 bg-[#e5e7eb] rounded-2xl  ">
                           <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="patientadditionalappointmentnotes">Patient Appointment Notes :</label>  
 
                            <div>{selectedpatientappointment.patientadditionalappointmentnotes ||"No additional notes"}</div>
@@ -5904,12 +5936,6 @@ const handleacceptappointment = async (appointmentId, clinicType) => {
 
 
  </div> )}
-
-
-
-
-
-
 
 
 
@@ -5963,7 +5989,7 @@ const handleacceptappointment = async (appointmentId, clinicType) => {
 
 
       <tbody className="divide-y divide-gray-200 bg-white">
-      {/*AICODE*/}
+    
       {patientappointments.filter(appointment =>{
         if(activeappointmentstable === 'ambherappointmentstable'){
           return appointment.patientambherappointmentdate !== "" &&
@@ -5976,10 +6002,10 @@ const handleacceptappointment = async (appointmentId, clinicType) => {
             key={appointment._id}
             className="hover:bg-gray-50 transition-all ease-in-out duration-300 border-b-2"
           >
-            <td className="py-3 px-6 text-[#454444] text-center font-albertsans font-medium ">
+            <td className="py-3 px-6 text-[#171717] text-center font-albertsans font-medium ">
               #{appointment.patientappointmentid}
             </td>
-            <td className="py-3 px-6 text-[#454444] text-center font-albertsans font-medium ">
+            <td className="py-3 px-6 text-[#171717] text-center font-albertsans font-medium ">
                    <div className="flex  items-center">
                 <img 
                   src={appointment.patientappointmentprofilepicture} 
@@ -5989,12 +6015,12 @@ const handleacceptappointment = async (appointmentId, clinicType) => {
                     e.target.src = 'default-profile-url';
                   }}
                 />
-                <h1 className="font-semibold text-[#171717] text-[15px]">{appointment.patientappointmentfirstname} {appointment.patientappointmentlastname}</h1>
+                <h1 className="font-albertsans text-[#171717]font-medium ">{appointment.patientappointmentfirstname} {appointment.patientappointmentlastname}</h1>
                 </div>
             </td>
 
-            <td className="py-3 px-6 text-[#454444] text-center font-albertsans font-medium ">
-                <span className="font-semibold text-[15px] text-[#171717]">
+            <td className="py-3 px-6  text-center font-albertsans text-[#171717] font-medium ">
+                <span className="font-albertsans text-[#171717]font-medium">
                   {new Date(appointment.createdAt).toLocaleDateString('en-US',{
                     month: 'short',
                     day: 'numeric',
@@ -6003,11 +6029,11 @@ const handleacceptappointment = async (appointmentId, clinicType) => {
                 </span>          
             </td>
 
-            <td className="py-3 px-6 text-[#454444] text-center font-albertsans font-medium ">
+            <td className="">
               {appointment.patientambherappointmentdate && (
-                <div className="text-sm font-albertsans text-gray-900 flex  justify-center items-center">
-                  <span className="font-semibold items-start">{formatappointmatedates(appointment.patientambherappointmentdate)} </span> 
-                  <span className="ml-1 font-semibold items-start">({formatappointmenttime(appointment.patientambherappointmenttime)})</span> 
+                <div className=" font-albertsans text-[#171717] font-medium flex  justify-center items-center">
+                  <span className="font-albertsans text-[#171717]font-medium">{formatappointmatedates(appointment.patientambherappointmentdate)} </span> 
+                  <span className="ml-1 font-albertsans text-[#171717]font-medium">({formatappointmenttime(appointment.patientambherappointmenttime)})</span> 
                   <span className={`ml-3 font-albertsans font-semibold rounded-full text-[15px] leading-5 px-4 py-2 inline-flex
 ${appointment.patientambherappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] text-[#421a10]':
   appointment.patientambherappointmentstatus === 'Pending' ? 'bg-yellow-100 text-yellow-800':
@@ -6140,7 +6166,6 @@ ${selectedpatientappointment.patientambherappointmentstatus === 'Cancelled' ? 'b
 
 
 
-
 </div>
 
 </div>
@@ -6215,6 +6240,12 @@ ${selectedpatientappointment.patientambherappointmentstatus === 'Cancelled' ? 'b
   <input className="w-full border-b-2 border-gray-600  text-[18px]  font-semibold font-albertsans  text-[#343436]"  value={ambherappointmentpaymentotal} onChange={(e) => setambherappointmentpaymentotal(Number(e.target.value))}  type="number" name="patientambherappointmentpaymentotal" id="patientambherappointmentpaymentotal" placeholder="Total Payment"/>
 
 
+
+  <div className="mt-3 w-full flex flex-col">
+    <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="patientambherappointmentconsultationremarkssubject">Consultation Subject :</label>  
+    <textarea className="w-full text-[18px]  font-semibold font-albertsans  text-[#343436] rounded-md border-2 border-[#2d2d44]  " ref={textarearef} rows={1} style={{minHeight:'44px'}} type="text" value={ambherappointmentconsultationremarkssubject} onChange={(e) => {setambherappointmentconsultationremarkssubject(e.target.value); adjusttextareaheight();}} placeholder="Specify findings or remarks..."/>
+  </div>
+
   <div className="mt-3 w-full flex flex-col">
     <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="patientambherappointmentconsultationremarks">Consultation Remarks :</label>  
     <textarea className="w-full text-[18px]  font-semibold font-albertsans  text-[#343436] rounded-md border-2 border-[#2d2d44]  " ref={textarearef} rows={1} style={{minHeight:'44px'}} type="text" value={ambherappointmentconsultationremarks} onChange={(e) => {setambherappointmentconsultationremarks(e.target.value); adjusttextareaheight();}} placeholder="Specify findings or remarks..."/>
@@ -6239,6 +6270,13 @@ ${selectedpatientappointment.patientambherappointmentstatus === 'Cancelled' ? 'b
 
 {selectedpatientappointment.patientambherappointmentstatus === "Completed" && (
 <div id="patientambherappointmentpaymentotal" className="mt-15" >
+
+
+  <div className="mt-3 w-full flex flex-col">
+    <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="patientambherappointmentconsultationremarkssubject">Consultation Subject :</label>  
+    <p>{selectedpatientappointment.patientambherappointmentconsultationremarkssubject}</p>
+  </div>
+
   <div className="mt-3 w-full flex flex-col">
     <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="patientambherappointmentconsultationremarks">Consultation Remarks :</label>  
     <p>{selectedpatientappointment.patientambherappointmentconsultationremarks}</p>
@@ -6266,13 +6304,6 @@ ${selectedpatientappointment.patientambherappointmentstatus === 'Cancelled' ? 'b
 
 
 
-
-
-
-
-
-
-
 </div>
 
 </div>
@@ -6280,22 +6311,10 @@ ${selectedpatientappointment.patientambherappointmentstatus === 'Cancelled' ? 'b
 
 
 
-
-
-
-
-
-
-
 </div>
 
 
-
-
-
-
-
-<div className="w-full mt-5 p-3 flex flex-col mb-7 bg-[#ededed] rounded-2xl  ">
+<div className="w-full mt-5 p-3 flex flex-col mb-7 bg-[#e5e7eb] rounded-2xl  ">
                         <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="patientadditionalappointmentnotes">Patient Appointment Notes :</label>  
 
                          <div>{selectedpatientappointment.patientadditionalappointmentnotes ||"No additional notes"}</div>
@@ -6310,22 +6329,6 @@ ${selectedpatientappointment.patientambherappointmentstatus === 'Cancelled' ? 'b
 
 
 </div>)}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -6376,10 +6379,10 @@ ${selectedpatientappointment.patientambherappointmentstatus === 'Cancelled' ? 'b
             key={appointment._id}
             className="hover:bg-gray-50 transition-all ease-in-out duration-300 border-b-2"
           >
-            <td className="py-3 px-6 text-[#454444] text-center font-albertsans font-medium ">
+            <td className="py-3 px-6  text-center font-albertsans text-[#171717]font-medium ">
               #{appointment.patientappointmentid}
             </td>
-            <td className="py-3 px-6 text-[#454444] text-center font-albertsans font-medium ">
+            <td className="py-3 px-6 text-[#171717] text-center font-albertsans font-medium ">
                    <div className="flex  items-center">
                 <img 
                   src={appointment.patientappointmentprofilepicture} 
@@ -6389,12 +6392,12 @@ ${selectedpatientappointment.patientambherappointmentstatus === 'Cancelled' ? 'b
                     e.target.src = 'default-profile-url';
                   }}
                 />
-                <h1 className="font-semibold text-[#171717] text-[15px]">{appointment.patientappointmentfirstname} {appointment.patientappointmentlastname}</h1>
+                <h1 className="font-albertsans text-[#171717]font-medium">{appointment.patientappointmentfirstname} {appointment.patientappointmentlastname}</h1>
                 </div>
             </td>
 
-            <td className="py-3 px-6 text-[#454444] text-center font-albertsans font-medium ">
-                <span className="font-semibold text-[15px] text-[#171717]">
+            <td className="py-3 px-6 text-[#171717] text-center font-albertsans font-medium ">
+                <span className="font-albertsans text-[#171717]font-medium">
                   {new Date(appointment.createdAt).toLocaleDateString('en-US',{
                     month: 'short',
                     day: 'numeric',
@@ -6405,11 +6408,11 @@ ${selectedpatientappointment.patientambherappointmentstatus === 'Cancelled' ? 'b
 
 
 
-            <td className="py-3 px-6 text-[#454444] text-center font-albertsans font-medium ">
+            <td className="py-3 px-6 text-[#171717] text-center font-albertsans font-medium ">
               {appointment.patientbautistaappointmentdate && (
-                <div className="text-sm font-albertsans text-gray-900 flex justify-center items-center">
-                  <span className="font-semibold">{formatappointmatedates(appointment.patientbautistaappointmentdate)}</span> 
-                  <span className="ml-1 font-semibold">({formatappointmenttime(appointment.patientbautistaappointmenttime)})</span> 
+                <div className="font-albertsans text-[#171717] font-medium flex justify-center items-center">
+                  <span className="font-albertsans text-[#171717] font-medium">{formatappointmatedates(appointment.patientbautistaappointmentdate)}</span> 
+                  <span className="ml-1 font-albertsans text-[#171717] font-medium">({formatappointmenttime(appointment.patientbautistaappointmenttime)})</span> 
                   
 <span className={`ml-3 font-albertsans font-semibold rounded-full text-[15px] leading-5 px-4 py-2 inline-flex
 ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] text-[#421a10]':
@@ -6619,6 +6622,12 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
   <h1 className="text-[18px]  font-semibold font-albertsans  text-[#343436]mb-3">Total Payment for Bautista Eye Center  : </h1>
   <input className="w-full border-b-2 border-gray-600  text-[18px]  font-semibold font-albertsans  text-[#343436]"  value={bautistaappointmentpaymentotal} onChange={(e) => setbautistaappointmentpaymentotal(Number(e.target.value))}  type="number" name="patientbautistaappointmentpaymentotal" id="patientbautistaappointmentpaymentotal" placeholder="Total Payment"/>
 
+
+  <div className="mt-3 w-full flex flex-col">
+    <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="patientbautistaappointmentconsultationremarkssubject">Consultation Subject :</label>  
+    <textarea className="w-full text-[18px]  font-semibold font-albertsans  text-[#343436] rounded-md border-2 border-[#2d2d44]  " ref={textarearef} rows={1} style={{minHeight:'44px'}} type="text" value={bautistaappointmentconsultationremarkssubject} onChange={(e) => {setbautistaappointmentconsultationremarkssubject(e.target.value); adjusttextareaheight();}} placeholder="Specify findings or remarks..."/>
+  </div>
+
   <div className="mt-3 w-full flex flex-col">
     <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="patientbautistaappointmentconsultationremarks">Consultation Remarks :</label>  
     <textarea className="w-full text-[18px]  font-semibold font-albertsans  text-[#343436] rounded-md border-2 border-[#2d2d44]  " ref={textarearef} rows={1} style={{minHeight:'44px'}} type="text" value={bautistaappointmentconsultationremarks} onChange={(e) => {setbautistaappointmentconsultationremarks(e.target.value); adjusttextareaheight();}} placeholder="Specify findings or remarks..."/>
@@ -6641,6 +6650,12 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
 
 {selectedpatientappointment.patientbautistaappointmentstatus === "Completed" && (
 <div id="patientbautistaappointmentpaymentotal" className="mt-15" >
+
+  <div className="mt-3 w-full flex flex-col">
+    <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="patientbautistaappointmentconsultationremarkssubject">Consultation Subject :</label>  
+    <p>{selectedpatientappointment.patientbautistaappointmentconsultationremarkssubject}</p>
+  </div>
+
   <div className="mt-3 w-full flex flex-col">
     <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="patientbautistaappointmentconsultationremarks">Consultation Remarks :</label>  
     <p>{selectedpatientappointment.patientbautistaappointmentconsultationremarks}</p>
@@ -6670,11 +6685,6 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
 
 
 
-
-
-
-
-
 </div>
 
 </div>
@@ -6685,9 +6695,7 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
 
 
 
-
-
-<div className="w-full mt-5 p-3 flex flex-col mb-7 bg-[#ededed] rounded-2xl  ">
+<div className="w-full mt-5 p-3 flex flex-col mb-7 bg-[#e5e7eb] rounded-2xl  ">
                         <label className="text-[18px]  font-semibold font-albertsans  text-[#343436] "htmlFor="patientadditionalappointmentnotes">Patient Appointment Notes :</label>  
 
                          <div>{selectedpatientappointment.patientadditionalappointmentnotes ||"No additional notes"}</div>
@@ -6740,8 +6748,361 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
 
 
 
+              {/*Start of Medical Records*/}{/*Start of Medical Records*/}{/*Start of Medical Records*/}{/*Start of Medical Records*/}{/*Start of Medical Records*/}{/*Start of Medical Records*/}{/*Start of Medical Records*/}
+              { activedashboard === 'medicalrecords' && (<div id="medicalrecords" className="pl-5 pr-5 pb-4 pt-4 transition-all duration-300  ease-in-out border-1 bg-white border-gray-200 shadow-lg w-[100%] h-[100%] rounded-2xl" >   
+                
 
-              { activedashboard === 'medicalrecords' && ( <div id="medicalrecords" className="border-2 border-yellow-500 w-[100%] h-[100%] rounded-2xl" >   </div> )}
+
+              <div className="flex items-center"><i className="bx bxs-data text-[#184d85] text-[25px] mr-2"/> <h1 className=" font-albertsans font-bold text-[#184d85] text-[25px]">Medical Records</h1></div>
+
+
+
+{loggedinusertype?.type === "Admin"&& (
+
+  <div className="flex justify-between items-center mt-3 h-[60px]">
+  <div onClick={() => showmedicalrecordstable('allmedicalrecordstable')}  className={`hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 pb-3 pt-3 text-center flex justify-center items-center ${activemedicalrecordstable ==='allmedicalrecordstable' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d] ${activemedicalrecordstable ==='allmedicalrecordstable' ? 'text-white' : ''}`}>All</h1></div>
+  <div onClick={() => showmedicalrecordstable('ambhermedicalrecordstable')}  className={`hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 pb-3 pt-3 text-center flex justify-center items-center ${activemedicalrecordstable ==='ambhermedicalrecordstable' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d] ${activemedicalrecordstable ==='ambhermedicalrecordstable' ? 'text-white' : ''}`}>Ambher Optical</h1></div>
+  <div onClick={() => showmedicalrecordstable('bautistamedicalrecordstable')}  className={`hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 pb-3 pt-3 text-center flex justify-center items-center ${activemedicalrecordstable ==='bautistamedicalrecordstable' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d] ${activemedicalrecordstable ==='bautistamedicalrecordstable' ? 'text-white' : ''}`}>Bautista Eye Center</h1></div>
+  </div>
+ )} 
+ 
+
+
+
+{(loggedinusertype?.type === "Owner" || loggedinusertype?.type === "Staff") && loggedinusertype?.clinic === "Bautista Eye Center" && (
+  <div className="flex justify-between items-center mt-3 h-[60px]">
+  <div onClick={() => showmedicalrecordstable('bautistamedicalrecordstable')}  className={`hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 pb-3 pt-3 text-center flex justify-center items-center ${activemedicalrecordstable ==='bautistamedicalrecordstable' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d] ${activemedicalrecordstable ==='bautistamedicalrecordstable' ? 'text-white' : ''}`}>Bautista Eye Center</h1></div>
+  </div>
+ )}
+
+
+
+{(loggedinusertype?.type === "Owner" || loggedinusertype?.type === "Staff") && loggedinusertype?.clinic === "Ambher Optical" && (
+  <div className="flex justify-between items-center mt-3 h-[60px]">
+  <div onClick={() => showmedicalrecordstable('ambhermedicalrecordstable')}  className={`hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 pb-3 pt-3 text-center flex justify-center items-center ${activemedicalrecordstable ==='ambhermedicalrecordstable' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d] ${activemedicalrecordstable ==='ambhermedicalrecordstable' ? 'text-white' : ''}`}>Ambher Optical</h1></div>
+  </div>
+ )} 
+
+
+
+
+
+
+
+
+
+
+
+ { activemedicalrecordstable === 'allmedicalrecordstable' && ( <div id="allmedicalrecordstable" className="animate-fadeInUp flex flex-col items-center border-t-2  border-[#909090] w-[100%] h-[83%] rounded-2xl mt-5" >
+
+      <div className=" mt-5  w-full h-[60px] flex justify-between rounded-3xl pl-5 pr-5">              
+      <div className="flex justify-center items-center"><h2 className="font-albertsans font-bold text-[20px] text-[#434343] mr-3 ">Search: </h2><div className="relative flex items-center justify-center gap-3"><i className="bx bx-search absolute left-3 text-2xl text-gray-500"></i><input type="text" placeholder="Enter here..." className="transition-all duration-300 ease-in-out py-2 pl-10 rounded-3xl border-2 border-[#6c6c6c] focus:bg-slate-100 focus:outline-sky-500"></input></div></div>
+      </div>
+
+    {loadingappointmens ? (
+    <div className="flex justiy-center p-8 items-center">
+    <div className="animate-spin rounded-full border-t-2 border-b-2 border-blue-500 h-12 w-12"></div>
+  </div>
+) : errorloadingappointments ? (
+  <div className="rounded-lg p-4 bg-red-50 text-red-600">
+  Error: {errorloadingappointments}
+</div>
+) : patientappointments.length === 0 ? (
+  <div className="text-yellow-600 bg-yellow-50 rounded-2xl px-4 py-6">No patient appointments found.</div>
+
+) :(
+
+<div className="overflow-y-auto  rounded-3xl  w-full mt-2 bg-[#f7f7f7] ">
+    <table className=" min-w-full divide-y divide-gray-200 ">
+      <thead className="bg-">
+        <tr className="text-[#ffffff] font-albertsans font-bold bg-[#2781af] rounded-tl-2xl rounded-tr-2xl">
+          <th className="rounded-tl-2xl pb-3 pt-3 pl-2 pr-2 text-center">ID</th> 
+          <th className=" pb-3 pt-3 pl-2 pr-2 text-center">Patient</th> 
+          <th className=" pb-3 pt-3 pl-2 pr-2 text-center">Last Ambher Appointment</th> 
+          <th className="pb-3 pt-3 pl-2 pr-2  text-center">Last Bautista Appointment</th>
+
+  
+          <th className="rounded-tr-2xl pb-3 pt-3 pl-2 pr-2  text-center">Actions</th>
+        </tr>
+      </thead>
+
+
+      <tbody className=" divide-y divide-gray-200 bg-white  ">
+
+      {patientdemographics.map((patients) => (
+          <tr 
+            key={patients._id}
+            className="hover:bg-gray-50 transition-all ease-in-out duration-300 border-b-2"
+          >
+            <td className="py-3 px-6 font-albertsans text-[#171717]  text-center text-[15px] font-medium ">
+              #{patients.patientdemographicId}
+            </td>
+            <td className="py-3 px-6 text-[#171717] text-center font-albertsans font-medium ">
+                   <div className="flex  items-center">
+                <img 
+                  src={patients.patientprofilepicture} 
+                  alt="Profile" 
+                  className=" rounded-full h-12 mr-3 w-12 object-cover"
+                  onError={(e) => {
+                    e.target.src = 'default-profile-url';
+                  }}
+                />
+                <h1 className="font-albertsans text-[#171717]  text-center text-[15px] font-medium ">{patients.patientfirstname} {patients.patientlastname}</h1>
+                </div>
+            </td>
+
+            <td className="py-3 px-6 text-[#171717] text-center font-albertsans font-medium ">
+                {(() => {
+                const lastambherappointment = patientappointments
+                                                .filter(lastapp => lastapp.patientappointmentemail === patients.patientemail && lastapp.patientambherappointmentdate && lastapp.patientambherappointmentstatus === 'Completed')
+                                                .sort((a,b) => new Date(b.patientambherappointmentdate) - new Date(a.patientambherappointmentdate))[0];
+                
+                return lastambherappointment ? (
+                  <div>
+                    <p>{formatappointmatedates(lastambherappointment.patientambherappointmentdate)}</p>
+                    <p className="text-gray-500 text-[14px]">{formatappointmenttime(lastambherappointment.patientambherappointmenttime)}</p>
+                  </div>
+                ):(
+                  <p className="text-gray-500">No completed appointments</p>
+                );
+               })()}
+            </td>
+
+            <td className="py-3 px-6 text-[#171717] text-center font-albertsans font-medium ">
+               {(() => {
+                const lastbautistaappointment = patientappointments
+                                                .filter(lastapp => lastapp.patientappointmentemail === patients.patientemail && lastapp.patientbautistaappointmentdate  && lastapp.patientbautistaappointmentstatus === 'Completed')
+                                                .sort((a,b) => new Date(b.patientbautistaappointmentdate) - new Date(a.patientbautistaappointmentdate))[0];
+                
+                return lastbautistaappointment ? (
+                  <div>
+                    <p>{formatappointmatedates(lastbautistaappointment.patientbautistaappointmentdate)}</p>
+                    <p className="text-gray-500 text-[14px]">{formatappointmenttime(lastbautistaappointment.patientbautistaappointmenttime)}</p>
+                  </div>
+                ):(
+                  <p className="text-gray-500">No completed appointments</p>
+                );
+               })()}
+            </td>
+
+
+
+
+
+            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium flex justify-center items-center">
+             
+            <div onClick={() =>  {setshowpatientmedicalrecord(true);
+                                  setselectedpatientmedicalrecord(patients);
+            }} className="bg-[#383838]  hover:bg-[#595959]  mr-2 transition-all duration-300 ease-in-out flex justify-center items-center py-2 px-5 rounded-2xl hover:cursor-pointer"><h1 className="text-white">View</h1></div>
+
+
+
+
+                    
+
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+    </div>
+)}
+
+ </div> )}
+
+
+
+
+       {showpatientmedicalrecord && (
+       <div id="patientdemographicprofileform" className="bg-opacity-0 flex justify-center items-center z-50 fixed inset-0 bg-[#000000af] bg-opacity-50">
+         <div className="pl-5 pr-5 pb-5 bg-white rounded-2xl w-[1300px] h-[780px]  animate-fadeInUp ">
+              <div className=" mt-5 border-3 flex justify-between items-center border-[#2d2d4400] w-full h-[70px]">
+                <div className="flex justify-center items-center"><img src={darklogo} alt="Eye2Wear: Optical Clinic" className="w-15 hover:scale-105 transition-all   p-1"></img><h1 className="text-[#184d85] font-albertsans font-bold ml-3 text-[30px]">Patient Medical Record</h1></div>
+                <div onClick={() => setshowpatientmedicalrecord(false)} className="bg-[#333232] px-10 rounded-2xl hover:cursor-pointer hover:scale-105 transition-all duration-300 ease-in-out"><i className="bx bx-x text-white text-[40px] "/></div>
+              </div>
+
+              <div className="flex justify-center items-center rounded-2xl h-[670px] w-full">
+                <div className=" flex flex-col pt-10 pl-3 items-center h-full w-[35%]  rounded-2xl">
+                    <img src={selectedpatientmedicalrecord.patientprofilepicture} className="w-65 h-65 rounded-full"></img>
+                     <div className="mt-10  flex  items-center h-auto w-full">
+                      <h1 className="  w-[130px] font-albertsans font-semibold italic text-[#3d3d3d] text-[20px]">Name :</h1>
+                      <p className=" text-center bg-[#e5e7eb] px-4 rounded-2xl py-1 font-albertsans font-semibold italic text-[#3d3d3d] text-[19px]">{selectedpatientmedicalrecord.patientfirstname}  {selectedpatientmedicalrecord.patientlastname}</p>
+                     </div>
+                     <div className="mt-3   flex  items-center h-auto w-full">
+                      <h1 className=" w-[130px] font-albertsans font-semibold italic text-[#3d3d3d] text-[20px]">Email :</h1>
+                      <p className=" text-center  bg-[#e5e7eb] px-4 rounded-2xl py-1 font-albertsans font-semibold italic text-[#3d3d3d] text-[19px]">{selectedpatientmedicalrecord.patientemail}</p>
+                     </div>
+                      <div className="mt-3   flex  items-center h-auto w-full">
+                      <h1 className=" w-[130px] font-albertsans font-semibold italic text-[#3d3d3d] text-[20px]">Contact No :</h1>
+                      <p className=" text-center  bg-[#e5e7eb] px-4 rounded-2xl py-1 font-albertsans font-semibold italic text-[#3d3d3d] text-[19px]">{selectedpatientmedicalrecord.patientcontactnumber}</p>
+                     </div>
+                      <div className="mt-3   flex  items-center h-auto w-full">
+                      <h1 className="w-[130px] font-albertsans font-semibold italic text-[#3d3d3d] text-[20px]">Gender :</h1>
+                      <p className=" text-center  bg-[#e5e7eb] px-4 rounded-2xl py-1 font-albertsans font-semibold italic text-[#3d3d3d] text-[19px]">{selectedpatientmedicalrecord.patientgender}</p>
+                     </div>
+                      <div className="mt-3   flex  items-center h-auto w-full">
+                      <h1 className=" w-[130px] font-albertsans font-semibold italic text-[#3d3d3d] text-[20px]">Bithdate :</h1>
+                      <p className=" text-center  bg-[#e5e7eb] px-4 rounded-2xl py-1 font-albertsans font-semibold italic text-[#3d3d3d] text-[19px]">{formatappointmatedates(selectedpatientmedicalrecord.patientbirthdate)}</p>
+                     </div>
+                                  
+            
+
+                </div>
+                <div className="h-full flex flex-col  w-[65%] px-3 rounded-2xl">
+                    <div className="flex justify-center items-center mt-3 w-full h-[60px]">
+                    <div onClick={() => showpatientmedicalrecordstable('medicalrecordsconsultationtable')}  className={`w-full mr-5 hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 pb-3 pt-3 text-center flex justify-center items-center ${activepatientmedicalrecordstable ==='medicalrecordsconsultationtable' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d] ${activepatientmedicalrecordstable ==='medicalrecordsconsultationtable' ? 'text-white' : ''}`}>Consultation</h1></div>
+                    <div onClick={() => showpatientmedicalrecordstable('medicalrecordspastvisitstable')}  className={` w-full ml-5 hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 pb-3 pt-3 text-center flex justify-center items-center ${activepatientmedicalrecordstable ==='medicalrecordspastvisitstable' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d]   ${activepatientmedicalrecordstable ==='medicalrecordspastvisitstable' ? 'text-white' : ''}`}>Past Visits</h1></div>
+                    </div>
+
+               { activepatientmedicalrecordstable === 'medicalrecordsconsultationtable' && (
+                <div  id='medicalrecordsconsultationtable'className="p-2 w-full h-full bg-[#e5e7eb] mt-3 rounded-2xl">  
+
+ 
+
+ {/*AICODE*/}
+     {(() => {
+      // Filter and sort completed appointments
+      const completedAppointments = patientappointments
+        .filter(appointment => 
+          appointment.patientappointmentemail === selectedpatientmedicalrecord.patientemail && 
+          ((appointment.patientambherappointmentstatus === 'Completed') || 
+           (appointment.patientbautistaappointmentstatus === 'Completed'))
+        )
+        .sort((a, b) => {
+          const dateA = new Date(a.patientambherappointmentdate || a.patientbautistaappointmentdate);
+          const dateB = new Date(b.patientambherappointmentdate || b.patientbautistaappointmentdate);
+          return dateB - dateA;
+        });
+
+
+      // Render each appointment
+      return completedAppointments.map((appointment, index) => (
+        <div key={index} className="pl-3 w-full h-[80px] shadow-sm bg-white rounded-2xl flex justify-between items-center mt-3">
+          {/* Subject */}
+          <div className="px-2 flex justify-center items-center rounded-2xl h-full w-[220px]">
+            <h1 className="font-albertsans truncate w-full font-semibold text-[18px]">
+              {appointment.patientambherappointmentstatus === 'Completed' 
+                ? appointment.patientambherappointmentconsultationremarkssubject
+                : appointment.patientbautistaappointmentconsultationremarkssubject}
+            </h1>
+          </div>
+
+
+
+
+          {/* Date and Time */}
+          <div className="px-2 flex flex-col justify-center items-center rounded-2xl h-full w-[220px]">
+            <h1 className="font-medium truncate w-full">
+              {formatappointmatedates(
+                appointment.patientambherappointmentstatus === 'Completed'
+                  ? appointment.patientambherappointmentdate
+                  : appointment.patientbautistaappointmentdate
+              )}
+            </h1>
+            <h1 className="font-sm truncate w-full text-[14px]">
+              {formatappointmenttime(
+                appointment.patientambherappointmentstatus === 'Completed'
+                  ? appointment.patientambherappointmenttime
+                  : appointment.patientbautistaappointmenttime
+              )}
+            </h1>
+          </div>
+
+          {/* Eye Specialist */}
+          <div className="px-2 flex justify-center items-center rounded-2xl h-full w-[220px]">
+            <h1 className="font-medium truncate w-full">
+              {appointment.patientambherappointmentstatus === 'Completed'
+                ? appointment.patientambherappointmenteyespecialist
+                : appointment.patientbautistaappointmenteyespecialist}
+            </h1>
+          </div>
+
+          {/* View Button */}
+          <div className="rounded-2xl h-full w-auto mr-4 flex justify-center items-center">
+            <div 
+              onClick={() => {
+                setselectedpatientappointment(appointment);
+
+              }}
+              className="bg-[#383838] hover:bg-[#595959] transition-all duration-300 ease-in-out flex justify-center items-center py-2 px-5 rounded-2xl hover:cursor-pointer"
+            >
+              <h1 className="text-white">View</h1>
+            </div>
+          </div>
+        </div>
+      ));
+    })()}
+
+
+
+   </div>
+               )}
+
+
+
+               { activepatientmedicalrecordstable === 'medicalrecordspastvisitstable' && (
+                <div  id='medicalrecordspastvisitstable'className="w-full h-full bg-[#e5e7eb] mt-3 rounded-2xl">  
+                   
+                 </div>
+               )}
+            
+
+                 
+                </div>
+              </div>
+                         
+
+       </div>
+     </div>)}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </div> )}
+              {/*End of Medical Records*/}{/*End of Medical Records*/}{/*End of Medical Records*/}{/*End of Medical Records*/}{/*End of Medical Records*/}{/*End of Medical Records*/}{/*End of Medical Records*/}
+              
+              
+              
+
+
+
+
+
+
+
+
+
+
+              
+              
+              
+              
+              
+              
+              
+              
+              
+              
               { activedashboard === 'inventorymanagement' && ( <div id="inventorymanagement" className="border-2 border-orange-500 w-[100%] h-[100%] rounded-2xl" > sadasd8 </div> )}
               { activedashboard === 'billingsandorders' && ( <div id="billingsandorders" className="border-2 border-red-500 w-[100%] h-[100%] rounded-2xl" > asdas7  </div> )}
               { activedashboard === 'communicationcenter' && ( <div id="communicationcenter" className="border-2 border-red-500 w-[100%] h-[100%] rounded-2xl" > sadasd6  </div> )}
