@@ -3581,7 +3581,15 @@ const handleacceptappointment = async (appointmentId, clinicType) => {
 
 
 
-
+ //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS  
+ //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS  
+ //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS  
+ //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS  
+ //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS  
+ //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS  
+ //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS  
+ //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS  
+ //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS  
  //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS  
  //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS  
  //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS  
@@ -3593,7 +3601,7 @@ const showmedicalrecordstable = (medicalrecordstableid) => {
       setactivemedicalrecordstable(medicalrecordstableid);
 };
 
-
+const [showotherclinicrecord, setshowotherclinicrecord] = useState(false);
 const [activepatientmedicalrecordstable, setactivepatientmedicalrecordstable] = useState('medicalrecordsconsultationtable');
 const showpatientmedicalrecordstable = (patientmedicalrecordstableid) => {
       setactivepatientmedicalrecordstable(patientmedicalrecordstableid);
@@ -7333,14 +7341,16 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
             <div className="rounded-2xl h-full w-auto mr-4 flex justify-center items-center">
               <div 
                 onClick={() => {
-                  setshowpatientmedicalrecordconsultation(true);
+                  setshowotherclinicrecord(true);
                   setselectedpatientappointment({
                     ...record,
+                    otherclinicid: record.patientotherclinicrecordid,
                     date: record.patientotherclinicconsultationdate,
                     eyespecialist: record.patientothercliniceyespecialist,
-                    consultationremarkssubject: record.patientotherclinicname,
-                    consultationremarks: `Submitted by: ${record.patientotherclinicsubmittedbyfirstname} ${record.patientotherclinicsubmittedbymiddlename} ${record.patientotherclinicsubmittedbylastname} (${record.patientotherclinicsubmittedbytype})`,
-                    consultationprescription: "See attached record image",
+                    clinicname: record.patientotherclinicname,
+                    submittedbyfirstname: record.patientotherclinicsubmittedbyfirstname,
+                    submittedbymiddlename: record.patientotherclinicsubmittedbymiddlename,
+                    submittedbylastname: record.patientotherclinicsubmittedbylastname,
                     patientotherclinicrecordimage: record.patientotherclinicrecordimage
                   });
                 }} 
@@ -7489,6 +7499,68 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
 
        
      </div>)}
+
+
+
+
+
+    {showotherclinicrecord && (
+
+       <div id="patientshowpatientaddothermedicalrecord" className="overflow-y-auto bg-opacity-0 flex justify-center items-start z-50 fixed inset-0 bg-[#000000af] bg-opacity-50">
+         <div className="mt-30 mb-30 pl-5 pr-5 pb-5 bg-white rounded-2xl w-[800px] h-max  animate-fadeInUp ">
+              <div className=" mt-5 border-3 flex justify-between items-center border-[#2d2d4400] w-full h-[70px]">
+                <div className="flex justify-center items-center"><img src={darklogo} alt="Eye2Wear: Optical Clinic" className="w-15 hover:scale-105 transition-all   p-1"></img><h1 className="text-[#184d85] font-albertsans font-bold ml-3 text-[30px]">View Clinic Record</h1></div>
+                <div onClick={() => setshowotherclinicrecord(false)} className="bg-[#333232] px-10 rounded-2xl hover:cursor-pointer hover:scale-105 transition-all duration-300 ease-in-out"><i className="bx bx-x text-white text-[40px] "/></div>
+              </div>
+
+            <form onSubmit={submitotherclinicdata}>
+              <div className="px-2 pt-5 flex flex-col justify-center items-center  h-max w-full rounded-2xl ">
+                         <div className=" form-group flex justify-center items-center mb-3">
+                             <label className=" w-[180px] font-albertsans font-bold italic text-[#3d3d3d] text-[20px]" htmlFor="otherclinicname">Clinic :</label>
+                             <div className="flex flex-col ">
+                             <input className="bg-gray-200 text-[20px] text-gray-600 pl-3 rounded-2xl ml-3 h-10 w-114" value={selectedpatientappointment.clinicname}  id="otherclinicname" name="otherclinicname" required  placeholder="Other clinic name..."/>
+                              </div>
+                          </div>
+
+
+                          <div className=" form-group flex justify-center items-center mb-3">
+                             <label className=" w-[180px] font-albertsans font-bold italic text-[#3d3d3d] text-[20px]" htmlFor="othercliniceyespecialist">Eye Specialist :</label>
+                             <div className="flex flex-col ">
+                             <input className="bg-gray-200 text-[20px] text-gray-600 pl-3 rounded-2xl ml-3 h-10 w-114" value={selectedpatientappointment.eyespecialist} id="othercliniceyespecialist" name="othercliniceyespecialist" required  placeholder="Eye specialist name..."/>
+                              </div>
+                          </div>
+
+                          <div className="form-group flex  items-center mb-3">
+                             <label className=" w-[192px] font-albertsans font-bold italic text-[#3d3d3d] text-[20px]"htmlFor="otherclinicconsultationdate">Consulted Date: </label>     
+                             <input className=" h-10 w-114 p-3 mt-2 justify-center border-b-2 border-gray-600 bg-gray-200 rounded-2xl text-[#2d2d44] text-[18px]  font-semibold" value={selectedpatientappointment.date} type="date" name="patientambherappointmentdate" id="patientambherappointmentdate" placeholder="" /> </div>
+                     
+
+
+                          <div className="flex flex-col justify center items-center w-fit h-fit mt-5">
+                              <img className=" object-cover max-w-150 rounded-2xl" src={selectedpatientappointment.patientotherclinicrecordimage || defaultimageplaceholder}/>
+                                              
+                              <input  className="hidden" type="file" onChange={otherclinichandleprofilechange} accept="image/jpeg, image/jpg, image/png" ref={otherclinicimageinputref} />
+
+
+  
+                          </div>
+              </div>
+
+</form>
+
+
+       </div>
+
+
+
+       
+     </div>
+
+
+    )}
+
+
+
 
 
 
