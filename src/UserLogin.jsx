@@ -163,7 +163,9 @@ function UserLogin(){
                 localStorage.setItem("stafftoken", data.jsontoken);
                 localStorage.setItem("currentuser", JSON.stringify({
                   type: 'Staff',
-                  name: data.staff.stafffirstname,
+                  firstname: data.staff.stafffirstname,
+                  middlename: data.staff.staffmiddlename,
+                  lastname: data.staff.stafflastname,
                   profilepicture: data.staff.staffprofilepicture
                 }));
 
@@ -185,7 +187,9 @@ function UserLogin(){
                 localStorage.setItem("ownertoken", data.jsontoken);
                 localStorage.setItem("currentuser", JSON.stringify({
                   type: 'Owner',
-                  name: data.owner.ownerfirstname,
+                  firstname: data.owner.ownerfirstname,
+                  middlename: data.owner.ownermiddlename,
+                  lastname: data.owner.ownerlastname,
                   profilepicture: data.owner.ownerprofilepicture,
                   clinic: data.owner.ownerclinic,
                 }));
@@ -206,7 +210,9 @@ function UserLogin(){
                 localStorage.setItem("admintoken", data.jsontoken);
                 localStorage.setItem("currentuser", JSON.stringify({
                   type: 'Admin',
-                  name: data.admin.adminfirstname,
+                  firstname: data.admin.adminfirstname,
+                  middlename: data.admin.adminmiddlename,
+                  lastname: data.admin.adminlastname,
                   profilepicture: data.admin.adminprofilepicture
                 }));
                 
