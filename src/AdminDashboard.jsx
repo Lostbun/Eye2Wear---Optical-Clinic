@@ -3896,14 +3896,18 @@ const deleteotherclinicrecord = async () => {
 
 
 
-//INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT
-//INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT
-//INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT
-//INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT
-//INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT
-//INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT
-//INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT
 
+
+
+
+
+
+ //CATEGORIES MANAGEMENT //CATEGORIES MANAGEMENT //CATEGORIES MANAGEMENT //CATEGORIES MANAGEMENT //CATEGORIES MANAGEMENT //CATEGORIES MANAGEMENT //CATEGORIES MANAGEMENT //CATEGORIES MANAGEMENT
+ //CATEGORIES MANAGEMENT //CATEGORIES MANAGEMENT //CATEGORIES MANAGEMENT //CATEGORIES MANAGEMENT //CATEGORIES MANAGEMENT //CATEGORIES MANAGEMENT //CATEGORIES MANAGEMENT //CATEGORIES MANAGEMENT
+ //CATEGORIES MANAGEMENT //CATEGORIES MANAGEMENT //CATEGORIES MANAGEMENT //CATEGORIES MANAGEMENT //CATEGORIES MANAGEMENT //CATEGORIES MANAGEMENT //CATEGORIES MANAGEMENT //CATEGORIES MANAGEMENT
+ //CATEGORIES MANAGEMENT //CATEGORIES MANAGEMENT //CATEGORIES MANAGEMENT //CATEGORIES MANAGEMENT //CATEGORIES MANAGEMENT //CATEGORIES MANAGEMENT //CATEGORIES MANAGEMENT //CATEGORIES MANAGEMENT
+ //CATEGORIES MANAGEMENT //CATEGORIES MANAGEMENT //CATEGORIES MANAGEMENT //CATEGORIES MANAGEMENT //CATEGORIES MANAGEMENT //CATEGORIES MANAGEMENT //CATEGORIES MANAGEMENT //CATEGORIES MANAGEMENT
+ //CATEGORIES MANAGEMENT //CATEGORIES MANAGEMENT //CATEGORIES MANAGEMENT //CATEGORIES MANAGEMENT //CATEGORIES MANAGEMENT //CATEGORIES MANAGEMENT //CATEGORIES MANAGEMENT //CATEGORIES MANAGEMENT
 
 const [activeinventorytable, setactiveinventorytable] = useState('ambherinventorytable');
 const showinventorytable = (inventorytableid) => {
@@ -3916,11 +3920,11 @@ const [ambherinventorycategoryissubmitting, setambherinventorycategoryissubmitti
 const [ambherinventorycategorynamecheck, setambherinventorycategorynamecheck] = useState(false);
 const [ambherinventorycategorynameerror, setambherinventorycategorynameerror] = useState(false);
 const [ambherinventorycategorynameexist, setambherinventorycategorynameexist] = useState(false);
-
+const [ambherinventorycategorylist, setambherinventorycategorylist] = useState([]);
+const [loadingambherinventorycategorylist, setloadingambherinventorycategorylist] = useState(true);
 
 
 const currentuserdata = JSON.parse(localStorage.getItem("currentuser")) || {};
-
 
 
  //INSERT AMBHER INVENTORY CATEGORY NAME //INSERT AMBHER INVENTORY CATEGORY NAME //INSERT AMBHER INVENTORY CATEGORY NAME //INSERT AMBHER INVENTORY CATEGORY NAME //INSERT AMBHER INVENTORY CATEGORY NAME 
@@ -4038,7 +4042,39 @@ useEffect(() => {
 
 
 
+//Fetching Ambher Inventory Categories
+useEffect(() => {
+  const fetchambhercategories = async () => {
+    try{
+      const response = await fetch('http://localhost:3000/api/ambherinventorycategory');
+      if(!response.ok) throw new Error("Failed to fetch Ambher Inevntory Categories");
 
+      const data = await response.json();
+      setambherinventorycategorylist(data);
+    
+    }catch(error){
+      console.error("Error fetching ambher categories: ", error);
+    }finally{
+      setloadingambherinventorycategorylist(false);
+    }
+  };
+  fetchambhercategories();
+}, []);
+
+
+
+
+
+
+
+
+//INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT
+//INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT
+//INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT
+//INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT
+//INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT
+//INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT
+//INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT
 
 
 
@@ -8088,7 +8124,86 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
                       <div onClick={() => setshowaddambheraddinventorycategory(true)}  className="py-2 w-[200px] mt-1 mb-1 hover:cursor-pointer hover:scale-103 bg-[#4ca22b] rounded-3xl flex justify-center items-center pl-3 pr-3 transition-all duration-300 ease-in-out"><i className="bx bx-categories text-white font-bold text-[30px]"/><p className="font-bold font-albertsans text-white text-[18px] ml-2">Add Category</p></div>
 
                 </div>
-                <div className=" h-full w-full rounded-2xl"></div>
+                <div  className="p-2  animate-fadeInUp flex  items-center border-t-2  border-[#909090] w-[100%] h-[83%] rounded-2xl mt-5" >
+<div className=" rounded-3xl h-full w-full mt-2 bg-[#f7f7f7]">
+    <table className="min-w-full divide-y divide-gray-200">
+      <thead className="bg-">
+        <tr className="text-[#ffffff] font-albertsans font-bold bg-[#2781af] rounded-tl-2xl rounded-tr-2xl">
+          <th className="rounded-tl-2xl pb-3 pt-3 pl-2 pr-2 text-center">Id</th> 
+          <th className=" pb-3 pt-3 pl-2 pr-2 text-center">Category</th> 
+          <th className=" pb-3 pt-3 pl-2 pr-2 text-center">Created By</th> 
+          <th className="pb-3 pt-3 pl-2 pr-2  text-center">Date Created</th>
+
+  
+          <th className="rounded-tr-2xl pb-3 pt-3 pl-2 pr-2  text-center">Actions</th>
+        </tr>
+      </thead>
+
+
+      <tbody className="divide-y divide-gray-200 bg-white">
+  {loadingambherinventorycategorylist ? (
+    <tr>
+
+        <div className="flex justify-center items-center p-8">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+        </div>
+
+    </tr>
+  ) : ambherinventorycategorylist.length === 0 ? (
+    <tr>
+      <td  className=" py-4 text-center ">
+        No categories found
+      </td>
+    </tr>
+  ) : (
+    ambherinventorycategorylist.map((category) => (
+
+      <tr 
+        key={category._id}
+        className="hover:bg-gray-50 transition-all ease-in-out duration-300 border-b-2"
+      >
+        <td className="px-5 font-albertsans text-[#171717]  text-center text-[15px] font-medium ">
+          {category.ambherinventorycategoryid}
+        </td>
+        <td className="px-5 font-albertsans text-[#171717]  text-center text-[15px] font-medium ">
+          {category.ambherinventorycategoryname}
+        </td>
+        <td className="px-5 font-albertsans text-[#171717]  text-center text-[15px] font-medium ">
+          <div className="flex items-center justify-center">
+            <img 
+              src={category.ambherinventorycategoryaddedbyprofilepicture || 'default-profile.png'}
+              alt="Profile" 
+              className="rounded-full h-12 w-12 object-cover mr-3"
+              onError={(e) => {
+                e.target.src = 'default-profile.png';
+              }}
+            />
+            <div>
+              <p className="font-medium">
+                {category.ambherinventorycategoryaddedbyfirstname} {category.ambherinventorycategoryaddedbylastname}
+              </p>
+              <p className="text-gray-500 text-sm ">
+                {category.ambherinventorycategoryaddedbytype}
+              </p>
+            </div>
+          </div>
+        </td>
+        <td className="px-5 font-albertsans text-[#171717]  text-center text-[15px] font-medium ">
+          {new Date(category.createdAt).toLocaleDateString()}
+        </td>
+        <td className="flex justify-center items-center  font-medium px-5 py-4 whitespace-nowrap text-sm  ">
+
+
+            <div 
+              className="bg-[#8c3226] hover:bg-[#ab4f43]  transition-all duration-300 ease-in-out flex justify-center items-center py-2 px-5 rounded-2xl hover:cursor-pointer"><i className="bx bxs-trash text-white mr-1"/><h1 className="text-white">Delete</h1></div>
+        </td>
+      </tr>
+    ))
+  )}
+</tbody>
+    </table>
+    </div>
+                </div>
               </div>
           
         
@@ -8098,6 +8213,11 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
 
 
           )}
+
+
+
+
+
 
 
 
