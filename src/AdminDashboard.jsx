@@ -21,7 +21,7 @@ import { AmbhereyespecialistBox } from "./components/AmbhereyespecialistBox";
 import Rating from '@mui/material/Rating';
 import Stack from '@mui/material/Stack';
 import defaultimageplaceholder from "../src/assets/images/defaultimageplaceholder.png";
-
+import { AmbherinventorycategoryBox } from "./components/AmbherinventorycategoryBox";
 
 function AdminDashboard(){
 
@@ -3924,6 +3924,7 @@ const [ambherinventorycategorynameexist, setambherinventorycategorynameexist] = 
 const [ambherinventorycategorylist, setambherinventorycategorylist] = useState([]);
 const [loadingambherinventorycategorylist, setloadingambherinventorycategorylist] = useState(true);
 const [selectedambherinventorycategory, setselectedambherinventorycategory] = useState(null);
+const [ambherinventorycategorynamebox, setambherinventorycategorynamebox] = useState("");
 
 const currentuserdata = JSON.parse(localStorage.getItem("currentuser")) || {};
 
@@ -4062,6 +4063,25 @@ useEffect(() => {
   fetchambhercategories();
 }, []);
 
+
+
+const fetchambherinventorycategories = async () => {
+  try{
+    const response = await fetch('http://localhost:3000/api/ambherinventorycategory');
+    if(!response.ok) throw new Error("Failed to retrieve ambher inventory categories");
+
+    const data = await response.json();
+    setambherinventorycategorylist(data);
+  }catch(error){
+    console.error("Fetching ambherinventorycategory failed", error);
+  }finally{
+    setloadingambherinventorycategorylist(false);
+  }
+};
+
+useEffect(() => {
+  fetchambherinventorycategories();
+}, []);
 
 
 
@@ -8100,10 +8120,10 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
 
               <div className="flex items-center"><i className="bx bxs-package text-[#184d85] text-[25px] mr-2"/> <h1 className=" font-albertsans font-bold text-[#184d85] text-[25px]">Inventory Management</h1></div>
 
-  <div className="flex justify-between items-center mt-3 h-[60px]">
+  <div className="flex justify-start items-center mt-3 h-[60px]">
  {/*<div onClick={() => showinventorytable('allinventorytable')}  className={`hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 pb-3 pt-3 text-center flex justify-center items-center ${activeinventorytable ==='allinventorytable' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d] ${activeinventorytable ==='allinventorytable' ? 'text-white' : ''}`}>All</h1></div>*/}
-  <div onClick={() => showinventorytable('ambherinventorytable')}  className={`hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 pb-3 pt-3 text-center flex justify-center items-center ${activeinventorytable ==='ambherinventorytable' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d] ${activeinventorytable ==='ambherinventorytable' ? 'text-white' : ''}`}>Ambher Optical</h1></div>
-  <div onClick={() => showinventorytable('bautistainventorytable')}  className={`hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 pb-3 pt-3 text-center flex justify-center items-center ${activeinventorytable ==='bautistainventorytable' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d] ${activeinventorytable ==='bautistainventorytable' ? 'text-white' : ''}`}>Bautista Eye Center</h1></div>
+  <div onClick={() => showinventorytable('ambherinventorytable')}  className={`mr-3 hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 pb-3 pt-3 text-center flex justify-center items-center ${activeinventorytable ==='ambherinventorytable' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d] ${activeinventorytable ==='ambherinventorytable' ? 'text-white' : ''}`}>Ambher Optical</h1></div>
+  <div onClick={() => showinventorytable('bautistainventorytable')}  className={`ml-3 hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 pb-3 pt-3 text-center flex justify-center items-center ${activeinventorytable ==='bautistainventorytable' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d] ${activeinventorytable ==='bautistainventorytable' ? 'text-white' : ''}`}>Bautista Eye Center</h1></div>
   </div>
 
 
@@ -8122,7 +8142,9 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
 
           <div className="p-3 shadow-lg rounded-2xl w-[20%] h-full  mr-2">
         
-                <div onClick={() => setshowaddambherinventorycategorydialog(true)}   className=" mt-1 mb-1 hover:cursor-pointer hover:scale-103 bg-[#383838] rounded-3xl flex justify-center items-center px-4 py-2 transition-all duration-300 ease-in-out"><p className="font-semibold font-albertsans text-white text-[18px] ml-2">Manage Categories</p></div>
+                <div onClick={() => {setambherinventorycategorynamebox(null); setshowaddambherinventorycategorydialog(true);}}   className=" mt-1 mb-1 hover:cursor-pointer hover:scale-103 bg-[#383838] rounded-3xl flex justify-center items-center px-4 py-2 transition-all duration-300 ease-in-out"><p className="font-semibold font-albertsans text-white text-[18px] ml-2">Manage Categories</p></div>
+                <div className=""> <AmbherinventorycategoryBox value={ambherinventorycategorynamebox} loading={loadingambherinventorycategorylist} onChange={(e) => setambherinventorycategorynamebox(e.target.value)} categories={ambherinventorycategorylist}/></div>
+
           </div>
           <div className="ml-2 rounded-2xl w-[90%] h-full bg-[#E5E7EB]">
 
@@ -8255,7 +8277,7 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
                 <div className="flex justify-center items-center"><img src={darklogo} alt="Eye2Wear: Optical Clinic" className="w-15 hover:scale-105 transition-all   p-1"></img><h1 className="text-[#184d85] font-albertsans font-bold ml-3 text-[30px]">Add Category Name</h1></div>
                 <div onClick={() => setshowaddambheraddinventorycategory(false)} className="bg-[#333232] px-10 rounded-2xl hover:cursor-pointer hover:scale-105 transition-all duration-300 ease-in-out"><i className="bx bx-x text-white text-[40px] "/></div>
               </div>
-  <form onSubmit={submitambherinventorycategory}>
+        <form onSubmit={submitambherinventorycategory}>
               <div className="flex flex-col justify-center items-center h-[84%] rounded-2xl w-full">
                 <div className="  mt-10 h-auto  w-full rounded-2xl flex flex-col  justify-center items-end">
                        <div className="w-full ">
