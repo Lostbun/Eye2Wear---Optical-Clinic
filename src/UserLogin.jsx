@@ -166,6 +166,7 @@ function UserLogin(){
                   firstname: data.staff.stafffirstname,
                   middlename: data.staff.staffmiddlename,
                   lastname: data.staff.stafflastname,
+                  email: data.staff.staffemail,
                   profilepicture: data.staff.staffprofilepicture
                 }));
 
@@ -191,6 +192,7 @@ function UserLogin(){
                   middlename: data.owner.ownermiddlename,
                   lastname: data.owner.ownerlastname,
                   profilepicture: data.owner.ownerprofilepicture,
+                  email: data.owner.owneremail,
                   clinic: data.owner.ownerclinic,
                 }));
                 
@@ -213,6 +215,7 @@ function UserLogin(){
                   firstname: data.admin.adminfirstname,
                   middlename: data.admin.adminmiddlename,
                   lastname: data.admin.adminlastname,
+                  email: data.admin.adminemail,
                   profilepicture: data.admin.adminprofilepicture
                 }));
                 

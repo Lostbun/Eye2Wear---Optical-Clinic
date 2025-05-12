@@ -529,7 +529,7 @@ function AdminDashboard(){
 
 
   //Chceks if email is already existing
-  useEffect(() => {
+ useEffect(() => {
         const debounceemailcheck = async () => {
           
           //Don't check if email input is empty
@@ -555,17 +555,36 @@ function AdminDashboard(){
        
             );
   
+
+
+            //Request to server if the email exists in staffaccounts collection
+            const staffresponse = await fetch(
+               `http://localhost:3000/api/staffaccounts/check-email/${encodeURIComponent(formdata.patientemail)}`
+                   
+            );
+
+
+            //Request to server if the email exists in adminaccounts collection
+            const ownerresponse = await fetch(
+                `http://localhost:3000/api/owneraccounts/check-email/${encodeURIComponent(formdata.patientemail)}`
+                   
+             );
+
+
             //Request to server if the email exists in adminaccounts collection
             const adminresponse = await fetch(
-              `http://localhost:3000/api/adminaccounts/check-email/${encodeURIComponent(formdata.patientemail)}`
-       
+                `http://localhost:3000/api/adminaccounts/check-email/${encodeURIComponent(formdata.patientemail)}`
+                   
             );
             
           const patientdata = await patientresponse.json();
+          const staffdata = await staffresponse.json();
+          const ownerdata = await ownerresponse.json();
           const admindata = await adminresponse.json();
+
           //Save wether email existss in db
-          setemailexist(patientdata.exists  ||  admindata.exists); 
-          setemailerror(patientdata.exists  ||  admindata.exists);
+          setemailexist(patientdata.exists || staffdata.exists  ||  ownerdata.exists   ||  admindata.exists); 
+          setemailerror(patientdata.exists || staffdata.exists  ||  ownerdata.exists   ||  admindata.exists);
   
   
   
@@ -582,6 +601,7 @@ function AdminDashboard(){
         const timer = setTimeout(debounceemailcheck, 500);
         return () => clearTimeout(timer); //Cleanup
   }, [formdata.patientemail]);
+
 
 
 
@@ -2812,7 +2832,6 @@ const renderpatientprofiles = () => {
   //Debounce Email Check
   useEffect(() =>{
     const demoformdebounceemailcheck = async () => {
-
       if(!demoformdata.patientemail) {
         setdemopatientemailerror(false);
         setdemopatientemailexist(false);
@@ -2820,7 +2839,6 @@ const renderpatientprofiles = () => {
         setemailisnotpatienterror(false);
         return;
       }
-
 
 
       if(!demopatientemailcharacters.test(demoformdata.patientemail)){
@@ -2836,71 +2854,69 @@ const renderpatientprofiles = () => {
 
 
 
-
-
       try{
+        const demoresponse = await fetch(`http://localhost:3000/api/patientdemographics/patientemail/${encodeURIComponent(demoformdata.patientemail)}`);
+
+        const demodata = await demoresponse.json();
+
+        if(demodata && !demodata.message){
+          setdemopatientemailerror(true);
+          setdemopatientemailexist(true);
+          setemailisnotpatient(false);
+          setemailisnotpatienterror(false);
+          setdemopatientcheckemail(false);
+          return;
+        }
+
         const [patientresponse, staffresponse, ownerresponse, adminresponse] = await Promise.all([
           fetch(`http://localhost:3000/api/patientaccounts/check-email/${encodeURIComponent(demoformdata.patientemail)}`),
           fetch(`http://localhost:3000/api/staffaccounts/check-email/${encodeURIComponent(demoformdata.patientemail)}`),
           fetch(`http://localhost:3000/api/owneraccounts/check-email/${encodeURIComponent(demoformdata.patientemail)}`),
-          fetch(`http://localhost:3000/api/adminaccounts/check-email/${encodeURIComponent(demoformdata.patientemail)}`),
+          fetch(`http://localhost:3000/api/adminaccounts/check-email/${encodeURIComponent(demoformdata.patientemail)}`)
         ]);
 
 
         const [patientdata, staffdata, ownerdata, admindata] = await Promise.all([
-          patientresponse.json(),
-          staffresponse.json(),
-          ownerresponse.json(),
-          adminresponse.json()
+            patientresponse.json(),
+            staffresponse.json(),
+            ownerresponse.json(),
+            adminresponse.json()
         ]);
+
 
         const accountexists = patientdata.exists || staffdata.exists || ownerdata.exists || admindata.exists;
 
         if(accountexists){
-            const demoresponse = await fetch(
-              `http://localhost:3000/api/patientdemographics/patientemail/${encodeURIComponent(demoformdata.patientemail)}`
-            );
-
-            const demodata = await demoresponse.json();
-
-            if(demodata.exists) {
-              setdemopatientemailerror(true);
-              setdemopatientemailexist(true);
-              setemailisnotpatient(false);
-              setemailisnotpatienterror(false); 
-            }else{
-              
-              const isnonpatient = staffdata.exists || ownerdata.exists || admindata.exits;
-              setdemopatientemailerror(false);
-              setdemopatientemailexist(false);
-              setemailisnotpatient(isnonpatient);
-              setemailisnotpatienterror(isnonpatient);
-            }
+            const isnonpatient = staffdata.exists || ownerdata.exists || admindata.exists;
+            setdemopatientemailerror(false);
+            setdemopatientemailexist(false);
+            setemailisnotpatient(isnonpatient);
+            setemailisnotpatienterror(isnonpatient);
         }else{
-          setdemopatientemailerror(false);
-          setdemopatientemailexist(false);
-          setemailisnotpatient(false);
-          setemailisnotpatienterror(false); 
-
+            setdemopatientemailerror(false);
+            setdemopatientemailexist(false);
+            setemailisnotpatient(false);
+            setemailisnotpatienterror(false);
         }
 
 
       }catch(error){
         console.error("Failed Email Validation: ", error);
-        setdemopatientemailerror(false);
-        setdemopatientemailexist(false);
-        setemailisnotpatient(false);
-        setemailisnotpatienterror(false); 
-      
+            setdemopatientemailerror(false);
+            setdemopatientemailexist(false);
+            setemailisnotpatient(false);
+            setemailisnotpatienterror(false);
       }finally{
-        setdemopatientcheckemail(false);
+            setdemopatientcheckemail(false);
       }
+
 
     };
 
     const timer = setTimeout(demoformdebounceemailcheck, 500);
     return () => clearTimeout(timer);
   }, [demoformdata.patientemail]);
+
  
 
 
@@ -3880,6 +3896,327 @@ const deleteotherclinicrecord = async () => {
 
 
 
+//INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT
+//INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT
+//INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT
+//INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT
+//INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT
+//INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT
+//INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT
+
+
+const [activeinventorytable, setactiveinventorytable] = useState('ambherinventorytable');
+const showinventorytable = (inventorytableid) => {
+      setactiveinventorytable(inventorytableid);
+};
+const [showaddambherinventorycategorydialog, setshowaddambherinventorycategorydialog] = useState(false);
+const [showaddambheraddinventorycategory, setshowaddambheraddinventorycategory] = useState(false);
+const [ambherinventorycategorynameset, setambherinventorycategorynameset] = useState("");
+const [ambherinventorycategoryissubmitting, setambherinventorycategoryissubmitting] = useState(false);
+const [ambherinventorycategorynamecheck, setambherinventorycategorynamecheck] = useState(false);
+const [ambherinventorycategorynameerror, setambherinventorycategorynameerror] = useState(false);
+const [ambherinventorycategorynameexist, setambherinventorycategorynameexist] = useState(false);
+
+
+
+const currentuserdata = JSON.parse(localStorage.getItem("currentuser")) || {};
+
+
+
+ //INSERT AMBHER INVENTORY CATEGORY NAME //INSERT AMBHER INVENTORY CATEGORY NAME //INSERT AMBHER INVENTORY CATEGORY NAME //INSERT AMBHER INVENTORY CATEGORY NAME //INSERT AMBHER INVENTORY CATEGORY NAME 
+const submitambherinventorycategory = async (e) => {
+    e.preventDefault();
+    setambherinventorycategoryissubmitting(true);
+
+  try{
+
+
+    const ambherinventorycategorydata = {
+
+
+      ambherinventorycategoryname: ambherinventorycategorynameset,
+
+      ambherinventorycategoryaddedbyprofilepicture: currentuserdata.profilepicture || '',
+      ambherinventorycategoryaddedbylastname: currentuserdata.lastname || '',
+      ambherinventorycategoryaddedbyfirstname: currentuserdata.firstname || '',
+      ambherinventorycategoryaddedbymiddlename: currentuserdata.middlename || '',
+      ambherinventorycategoryaddedbytype: currentuserdata.type || '',
+      ambherinventorycategoryaddedbyemail: currentuserdata.email || '',
+
+
+
+
+    }
+
+    console.log(ambherinventorycategorydata);
+    const response = await fetch('http://localhost:3000/api/ambherinventorycategory',{
+      method: 'POST',
+      headers: {
+        'Content-Type' : 'application/json',
+        'Authorization': `Bearer ${currentusertoken}`
+      },
+      body: JSON.stringify(ambherinventorycategorydata)
+    });
+
+
+
+    if(!response.ok){
+      throw new Error(`Response fetching error! Error: ${response.status}`);
+
+    }
+
+
+    const result = await response.json();
+    console.log('Ambher Inventory Category insertion successful: ', result);
+
+
+    setambherinventorycategorynameset("");
+    setshowaddambheraddinventorycategory(false);
+
+
+  }catch(error) {
+    console.error('Error Ambher Inventory Category insertion: ', error);
+    setambherinventorycategoryissubmitting(false);
+  }finally{
+    setambherinventorycategoryissubmitting(false);
+  }
+};
+
+
+
+
+//Checks If Category Name is Already is Existing
+useEffect(() => {
+  let ismounted = true;
+  const checkambherinventorycategoryname = async () => {
+    const categoryname = ambherinventorycategorynameset.trim();
+
+    if(!categoryname){
+      if(ismounted){
+        setambherinventorycategorynameerror(false);
+        setambherinventorycategorynameexist(false);
+      }
+      return;
+    }
+
+
+    if (ismounted) setambherinventorycategorynamecheck(true);
+
+    try{
+      const response = await fetch(`http://localhost:3000/api/ambherinventorycategory/ambherinventorycategoryname/${encodeURIComponent(categoryname)}`);
+   
+      if(!ismounted) return;
+
+      const data = await response.json();
+
+      if(response.ok){
+        setambherinventorycategorynameerror(true);
+        setambherinventorycategorynameexist(true);
+      }else if(response.status === 404){
+        setambherinventorycategorynameerror(false);
+        setambherinventorycategorynameexist(false);
+      }
+    
+    }catch(error){
+      if(ismounted){
+        setambherinventorycategorynameerror(false);
+        setambherinventorycategorynameexist(false);
+      }
+    }finally{
+      if(ismounted) setambherinventorycategorynamecheck(false);
+    }
+
+  };
+
+
+  const timer = setTimeout(checkambherinventorycategoryname, 500);
+  return () => {
+    ismounted = false;
+    clearTimeout(timer);
+  };
+}, [ambherinventorycategorynameset])
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -4389,9 +4726,9 @@ const deleteotherclinicrecord = async () => {
                                          <label className="  font-albertsans font-bold italic text-[#595968] text-[21px]" htmlFor="email">Email :</label>
                                           <div className="flex flex-col">
                                           <input className=" bg-gray-200 text-[20px]  text-gray-600 pl-3 rounded-2xl ml-22 h-10 w-70" placeholder="Enter your email..." type="text" name="patientemail" id="patientemail" value={formdata.patientemail} onChange={handlechange} required/>
-                                         {checkemail && <p className="text-gray-500 text-sm ml-22">Checking Email</p>}
-                                         {emailerror && !emailexist && !emailcharacters.test(formdata.patientemail) && (<p className="text-red-500 text-sm ml-22">Enter a valid email address</p>)}
-                                          {emailerror && emailexist && (<p className= "text-red-500 text-sm ml-22">Email already exist</p>)}
+                                              {checkemail && <p className="text-gray-500 text-sm ml-22">Checking Email</p>}
+                                              {emailerror && !emailexist && !emailcharacters.test(formdata.patientemail) && (<p className="text-red-500 text-sm ml-22">Enter a valid email address</p>)}
+                                               {emailerror && emailexist && (<p className= "text-red-500 text-sm ml-22">Email already exist</p>)}
                                                         
                                          </div>
                                           </div>
@@ -5394,6 +5731,8 @@ const deleteotherclinicrecord = async () => {
                                      {demopatientcheckemail && (
                                       <p className="text-gray-500 text-sm">Checking Email...</p>
                                      )}
+
+   
 
                                      {!demopatientcheckemail && (
                                       <>
@@ -7592,19 +7931,6 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
               
      )}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
                 
               </div> )}
               {/*End of Medical Records*/}{/*End of Medical Records*/}{/*End of Medical Records*/}{/*End of Medical Records*/}{/*End of Medical Records*/}{/*End of Medical Records*/}{/*End of Medical Records*/}
@@ -7621,17 +7947,329 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+              {/*Start of Inventory Management*/}{/*Start of Inventory Management*/}{/*Start of Inventory Management*/}{/*Start of Inventory Management*/}{/*Start of Inventory Management*/}{/*Start of Inventory Management*/}
+              {/*Start of Inventory Management*/}{/*Start of Inventory Management*/}{/*Start of Inventory Management*/}{/*Start of Inventory Management*/}{/*Start of Inventory Management*/}{/*Start of Inventory Management*/}
+              {/*Start of Inventory Management*/}{/*Start of Inventory Management*/}{/*Start of Inventory Management*/}{/*Start of Inventory Management*/}{/*Start of Inventory Management*/}{/*Start of Inventory Management*/}
+              {/*Start of Inventory Management*/}{/*Start of Inventory Management*/}{/*Start of Inventory Management*/}{/*Start of Inventory Management*/}{/*Start of Inventory Management*/}{/*Start of Inventory Management*/}
+              {/*Start of Inventory Management*/}{/*Start of Inventory Management*/}{/*Start of Inventory Management*/}{/*Start of Inventory Management*/}{/*Start of Inventory Management*/}{/*Start of Inventory Management*/}
+
+              { activedashboard === 'inventorymanagement' && ( <div id="inventorymanagement" className="pl-5 pr-5 pb-4 pt-4 transition-all duration-300  ease-in-out border-1 bg-white border-gray-200 shadow-lg w-[100%] h-[100%] rounded-2xl" >   
+
+              <div className="flex items-center"><i className="bx bxs-package text-[#184d85] text-[25px] mr-2"/> <h1 className=" font-albertsans font-bold text-[#184d85] text-[25px]">Inventory Management</h1></div>
+
+  <div className="flex justify-between items-center mt-3 h-[60px]">
+ {/*<div onClick={() => showinventorytable('allinventorytable')}  className={`hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 pb-3 pt-3 text-center flex justify-center items-center ${activeinventorytable ==='allinventorytable' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d] ${activeinventorytable ==='allinventorytable' ? 'text-white' : ''}`}>All</h1></div>*/}
+  <div onClick={() => showinventorytable('ambherinventorytable')}  className={`hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 pb-3 pt-3 text-center flex justify-center items-center ${activeinventorytable ==='ambherinventorytable' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d] ${activeinventorytable ==='ambherinventorytable' ? 'text-white' : ''}`}>Ambher Optical</h1></div>
+  <div onClick={() => showinventorytable('bautistainventorytable')}  className={`hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 pb-3 pt-3 text-center flex justify-center items-center ${activeinventorytable ==='bautistainventorytable' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d] ${activeinventorytable ==='bautistainventorytable' ? 'text-white' : ''}`}>Bautista Eye Center</h1></div>
+  </div>
+
+
+          { activeinventorytable === 'allinventorytable' && ( <div id="allinventorytable" className="animate-fadeInUp flex flex-col items-center border-t-2  border-[#909090] w-[100%] h-[90%] rounded-2xl mt-5" >   
+
+          </div>)}
+                
+
+
+
+
+
+
+
+          { activeinventorytable === 'ambherinventorytable' && ( <div id="ambherinventorytable" className="p-2  animate-fadeInUp flex  items-center border-t-2  border-[#909090] w-[100%] h-[83%] rounded-2xl mt-5" >
+
+          <div className="p-3 shadow-lg rounded-2xl w-[20%] h-full  mr-2">
+        
+                <div onClick={() => setshowaddambherinventorycategorydialog(true)}   className=" mt-1 mb-1 hover:cursor-pointer hover:scale-103 bg-[#383838] rounded-3xl flex justify-center items-center px-4 py-2 transition-all duration-300 ease-in-out"><p className="font-semibold font-albertsans text-white text-[18px] ml-2">Manage Categories</p></div>
+          </div>
+          <div className="ml-2 rounded-2xl w-[90%] h-full bg-[#E5E7EB]">
+
+          </div>
+
+          </div>)}
+
+
+
+
+
+
+
+
+
+          {showaddambherinventorycategorydialog && (
+
+       <div className="bg-opacity-0 flex justify-center items-center z-50 fixed inset-0 bg-[#000000af] bg-opacity-50">
+         <div className="pl-5 pr-5 bg-white rounded-2xl w-[1300px] h-[700px]  animate-fadeInUp ">
+              <div className=" mt-5 border-3 flex justify-between items-center border-[#2d2d4400] w-full h-[70px]">
+                <div className="flex justify-center items-center"><img src={darklogo} alt="Eye2Wear: Optical Clinic" className="w-15 hover:scale-105 transition-all   p-1"></img><h1 className="text-[#184d85] font-albertsans font-bold ml-3 text-[30px]">Category Management</h1></div>
+                <div onClick={() => setshowaddambherinventorycategorydialog(false)} className="bg-[#333232] px-10 rounded-2xl hover:cursor-pointer hover:scale-105 transition-all duration-300 ease-in-out"><i className="bx bx-x text-white text-[40px] "/></div>
+              </div>
+          
+              <div className="flex flex-col justify-center items-center h-[84%] rounded-2xl w-full">
+                <div className=" h-[10%] mb-2 mt-2 w-full rounded-2xl flex justify-end items-center">
+                      <div onClick={() => setshowaddambheraddinventorycategory(true)}  className="py-2 w-[200px] mt-1 mb-1 hover:cursor-pointer hover:scale-103 bg-[#4ca22b] rounded-3xl flex justify-center items-center pl-3 pr-3 transition-all duration-300 ease-in-out"><i className="bx bx-categories text-white font-bold text-[30px]"/><p className="font-bold font-albertsans text-white text-[18px] ml-2">Add Category</p></div>
+
+                </div>
+                <div className=" h-full w-full rounded-2xl"></div>
+              </div>
+          
+        
+         </div>
+       </div>
+ 
+
+
+          )}
+
+
+
+          {showaddambheraddinventorycategory && (
+
+       <div className="bg-opacity-0 flex justify-center items-center z-50 fixed inset-0 bg-[#000000af] bg-opacity-50">
+         <div className="pl-5 pr-5 bg-white rounded-2xl w-[700px] h-[270px]  animate-fadeInUp ">
+              <div className=" mt-5 border-3 flex justify-between items-center border-[#2d2d4400] w-full h-[70px]">
+                <div className="flex justify-center items-center"><img src={darklogo} alt="Eye2Wear: Optical Clinic" className="w-15 hover:scale-105 transition-all   p-1"></img><h1 className="text-[#184d85] font-albertsans font-bold ml-3 text-[30px]">Add Category Name</h1></div>
+                <div onClick={() => setshowaddambheraddinventorycategory(false)} className="bg-[#333232] px-10 rounded-2xl hover:cursor-pointer hover:scale-105 transition-all duration-300 ease-in-out"><i className="bx bx-x text-white text-[40px] "/></div>
+              </div>
+  <form onSubmit={submitambherinventorycategory}>
+              <div className="flex flex-col justify-center items-center h-[84%] rounded-2xl w-full">
+                <div className="  mt-10 h-auto  w-full rounded-2xl flex flex-col  justify-center items-end">
+                       <div className="w-full ">
+                          <label className="font-albertsans font-bold italic text-[#595968] text-[21px]" htmlFor="lastname">Category Name :</label>
+                          <input className="bg-gray-200 text-[20px]  text-gray-600 pl-3 rounded-2xl ml-3 h-10 w-120"  value={ambherinventorycategorynameset} onChange={(e) => setambherinventorycategorynameset(e.target.value)} type="text" name="patientlastname" id="patientlastname"  required/></div>
+                     
+                          {ambherinventorycategorynamecheck && (
+                             <div className="mt-1 w-120">
+                                      <p className="text-gray-500  font-medium font-albertsans">Checking Category Name...</p>
+                             </div>
+                          )}
+                          
+                          {ambherinventorycategorynameexist && (
+                             <div className="mt-1 w-120">
+                                      <p className="text-red-500 font-medium font-albertsans">Category is already existing...</p>
+                             </div>
+                          )}
+
+
               
-              
-              
-              
-              
-              
-              
-              
-              
-              
-              { activedashboard === 'inventorymanagement' && ( <div id="inventorymanagement" className="border-2 border-orange-500 w-[100%] h-[100%] rounded-2xl" > sadasd8 </div> )}
+                      <button type="submit" disabled={ambherinventorycategoryissubmitting} className="submit-btn mt-2 w-full" style={{ backgroundColor: "#4ca22b", fontSize: "20px", padding: "10px 20px", color: "white", borderRadius: "20px", width: "200px"  }}>
+                        {ambherinventorycategoryissubmitting ? "Adding..." : "Add"}
+                      </button>       
+           
+
+                </div>
+                <div className=" h-full w-full rounded-2xl"></div>
+             
+              </div>
+      </form>
+         </div>
+       </div>
+
+          )}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+          { activeinventorytable === 'bautistainventorytable' && ( <div id="bautistainventorytable" className="animate-fadeInUp flex flex-col items-center border-t-2  border-[#909090] w-[100%] h-[90%] rounded-2xl mt-5" >
+
+          </div>)}
+
+
+              </div> )}
+
+              {/*End of Inventory Management*/}{/*End of Inventory Management*/}{/*End of Inventory Management*/}{/*End of Inventory Management*/}{/*End of Inventory Management*/}{/*End of Inventory Management*/}{/*End of Inventory Management*/}
+              {/*End of Inventory Management*/}{/*End of Inventory Management*/}{/*End of Inventory Management*/}{/*End of Inventory Management*/}{/*End of Inventory Management*/}{/*End of Inventory Management*/}{/*End of Inventory Management*/}
+              {/*End of Inventory Management*/}{/*End of Inventory Management*/}{/*End of Inventory Management*/}{/*End of Inventory Management*/}{/*End of Inventory Management*/}{/*End of Inventory Management*/}{/*End of Inventory Management*/}
+              {/*End of Inventory Management*/}{/*End of Inventory Management*/}{/*End of Inventory Management*/}{/*End of Inventory Management*/}{/*End of Inventory Management*/}{/*End of Inventory Management*/}{/*End of Inventory Management*/}
+              {/*End of Inventory Management*/}{/*End of Inventory Management*/}{/*End of Inventory Management*/}{/*End of Inventory Management*/}{/*End of Inventory Management*/}{/*End of Inventory Management*/}{/*End of Inventory Management*/}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
               { activedashboard === 'billingsandorders' && ( <div id="billingsandorders" className="border-2 border-red-500 w-[100%] h-[100%] rounded-2xl" > asdas7  </div> )}
               { activedashboard === 'communicationcenter' && ( <div id="communicationcenter" className="border-2 border-red-500 w-[100%] h-[100%] rounded-2xl" > sadasd6  </div> )}
               { activedashboard === 'reportingandanalytics' && ( <div id="reportingandanalytics" className="border-2 border-red-500 w-[100%] h-[100%] rounded-2xl" >  asdasd5 </div> )}

@@ -13,7 +13,7 @@ import accountcreationemailrouter from "./routes/accountcreationemail.route.js";
 import accountdeletionemailrouter from "./routes/accountdeletionemail.route.js";
 import patientappointmentrouter from "./routes/patientappointment.routes.js";
 import otherclinicrouter from "./routes/otherclinic.route.js";
-
+import ambherinventorycategoryrouter from "./routes/ambherinventorycategory.route.js"
 
 
 const {Connection} = mongoose;
@@ -74,7 +74,8 @@ app.use("/api/patientdemographics", patientdemographicrouter);
 app.use("/api/patientappointments", patientappointmentrouter);
 //Routes
 app.use("/api/otherclinicrecord", otherclinicrouter);
-
+//Routes
+app.use("/api/ambherinventorycategory", ambherinventorycategoryrouter);
 
 
 
