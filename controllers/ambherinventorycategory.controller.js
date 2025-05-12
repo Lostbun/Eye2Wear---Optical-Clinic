@@ -36,10 +36,10 @@ import AmbherInventoryCategory from "../models/ambherinventorycategory.js";
         }
     };
 
+     
 
 
-
-
+//Get  Clinic AmbherInventoryCategory by Name
    export const getambherinventorycategorybyname = async (req, res) => {
 
      try{
@@ -67,8 +67,9 @@ import AmbherInventoryCategory from "../models/ambherinventorycategory.js";
 
     //AICODE//AICODE//AICODE//AICODE//AICODE
     //Update AmbherInventoryCategory Details
-    // ... existing code ...
 
+
+    
     export const updateambherinventorycategorybyid = async (req, res) => {
         try {
             const { id } = req.params;
@@ -88,13 +89,11 @@ import AmbherInventoryCategory from "../models/ambherinventorycategory.js";
         }
     };
 
-    // ... existing code ...
 
 
 
 
 
-    //AI CODE
     //Delete ambherinventorycategoryId Details
     export const deleteambherinventorycategorybyid = async (req, res) => {
         try {

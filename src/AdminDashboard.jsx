@@ -3915,6 +3915,7 @@ const showinventorytable = (inventorytableid) => {
 };
 const [showaddambherinventorycategorydialog, setshowaddambherinventorycategorydialog] = useState(false);
 const [showaddambheraddinventorycategory, setshowaddambheraddinventorycategory] = useState(false);
+const [showdeleteambherinventorycategorydialog, setshowdeleteambherinventorycategorydialog] = useState(false);
 const [ambherinventorycategorynameset, setambherinventorycategorynameset] = useState("");
 const [ambherinventorycategoryissubmitting, setambherinventorycategoryissubmitting] = useState(false);
 const [ambherinventorycategorynamecheck, setambherinventorycategorynamecheck] = useState(false);
@@ -3922,7 +3923,7 @@ const [ambherinventorycategorynameerror, setambherinventorycategorynameerror] = 
 const [ambherinventorycategorynameexist, setambherinventorycategorynameexist] = useState(false);
 const [ambherinventorycategorylist, setambherinventorycategorylist] = useState([]);
 const [loadingambherinventorycategorylist, setloadingambherinventorycategorylist] = useState(true);
-
+const [selectedambherinventorycategory, setselectedambherinventorycategory] = useState(null);
 
 const currentuserdata = JSON.parse(localStorage.getItem("currentuser")) || {};
 
@@ -3973,7 +3974,7 @@ const submitambherinventorycategory = async (e) => {
     const result = await response.json();
     console.log('Ambher Inventory Category insertion successful: ', result);
 
-
+    setambherinventorycategorylist(prev => [result, ...prev]);
     setambherinventorycategorynameset("");
     setshowaddambheraddinventorycategory(false);
 
@@ -4060,6 +4061,33 @@ useEffect(() => {
   };
   fetchambhercategories();
 }, []);
+
+
+
+
+//Delete Ambher Inventory Category
+const deleteambherinventorycategory = async () => {
+  if(!selectedambherinventorycategory) return;
+
+  try{
+    const response = await fetch(`http://localhost:3000/api/ambherinventorycategory/${selectedambherinventorycategory.ambherinventorycategoryid}`,{
+      method: 'DELETE',
+      headers:{
+        'Authorization' : `Bearer ${currentusertoken}`
+      }
+    });
+
+    if(!response.ok) throw new Error("Failed to delete ambher inventory category");
+
+    setambherinventorycategorylist(prev => prev.filter(cat => cat.ambherinventorycategoryid !== selectedambherinventorycategory.ambherinventorycategoryid));
+    setshowdeleteambherinventorycategorydialog(false);
+    setselectedambherinventorycategory(null);
+
+  }catch(error){
+    console.error("Ambher Inventory Category Delete Failed: ", error);
+  }
+}
+
 
 
 
@@ -8126,11 +8154,13 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
                 </div>
                 <div  className="p-2  animate-fadeInUp flex  items-center border-t-2  border-[#909090] w-[100%] h-[83%] rounded-2xl mt-5" >
 <div className=" rounded-3xl h-full w-full mt-2 bg-[#f7f7f7]">
-    <table className="min-w-full divide-y divide-gray-200">
+    {ambherinventorycategorylist.length === 0 ? (
+        <div className="bg-yellow-100 w-full py-3 rounded-tl-2xl rounded-tr-2xl flex justify-center items-center"><h1 className="text-yellow-900 font-albertsans font-medium ">No Ambher Optical Inventory Categories</h1></div>
+  ):(
+   <table className="min-w-full divide-y divide-gray-200">
       <thead className="bg-">
         <tr className="text-[#ffffff] font-albertsans font-bold bg-[#2781af] rounded-tl-2xl rounded-tr-2xl">
-          <th className="rounded-tl-2xl pb-3 pt-3 pl-2 pr-2 text-center">Id</th> 
-          <th className=" pb-3 pt-3 pl-2 pr-2 text-center">Category</th> 
+          <th className="rounded-tl-2xl pb-3 pt-3 pl-2 pr-2 text-center">Category</th> 
           <th className=" pb-3 pt-3 pl-2 pr-2 text-center">Created By</th> 
           <th className="pb-3 pt-3 pl-2 pr-2  text-center">Date Created</th>
 
@@ -8138,6 +8168,8 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
           <th className="rounded-tr-2xl pb-3 pt-3 pl-2 pr-2  text-center">Actions</th>
         </tr>
       </thead>
+
+
 
 
       <tbody className="divide-y divide-gray-200 bg-white">
@@ -8149,22 +8181,14 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
         </div>
 
     </tr>
-  ) : ambherinventorycategorylist.length === 0 ? (
-    <tr>
-      <td  className=" py-4 text-center ">
-        No categories found
-      </td>
-    </tr>
-  ) : (
+  ): (
     ambherinventorycategorylist.map((category) => (
 
       <tr 
         key={category._id}
         className="hover:bg-gray-50 transition-all ease-in-out duration-300 border-b-2"
       >
-        <td className="px-5 font-albertsans text-[#171717]  text-center text-[15px] font-medium ">
-          {category.ambherinventorycategoryid}
-        </td>
+
         <td className="px-5 font-albertsans text-[#171717]  text-center text-[15px] font-medium ">
           {category.ambherinventorycategoryname}
         </td>
@@ -8194,14 +8218,16 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
         <td className="flex justify-center items-center  font-medium px-5 py-4 whitespace-nowrap text-sm  ">
 
 
-            <div 
-              className="bg-[#8c3226] hover:bg-[#ab4f43]  transition-all duration-300 ease-in-out flex justify-center items-center py-2 px-5 rounded-2xl hover:cursor-pointer"><i className="bx bxs-trash text-white mr-1"/><h1 className="text-white">Delete</h1></div>
+            <div onClick={() => {setshowdeleteambherinventorycategorydialog(true);
+                                setselectedambherinventorycategory(category);}} className="bg-[#8c3226] hover:bg-[#ab4f43]  transition-all duration-300 ease-in-out flex justify-center items-center py-2 px-5 rounded-2xl hover:cursor-pointer"><i className="bx bxs-trash text-white mr-1"/><h1 className="text-white">Delete</h1></div>
         </td>
       </tr>
     ))
   )}
 </tbody>
-    </table>
+ </table>
+  )}
+    
     </div>
                 </div>
               </div>
@@ -8264,6 +8290,30 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
        </div>
 
           )}
+
+
+
+          {showdeleteambherinventorycategorydialog && (
+                       <div className="bg-opacity-0 flex justify-center items-center z-50 fixed inset-0 bg-[#0000004a] bg-opacity-50">
+
+                         <div className="flex flex-col items  bg-white rounded-2xl w-[600px] h-fit  animate-fadeInUp ">
+               
+
+                            <div className="flex items-center rounded-tl-2xl rounded-tr-2xl h-[70px] bg-[#3b1616]"><i className="ml-3 bx bxs-error text-[28px] font-albertsans font-bold text-[#f1f1f1] "/><h1 className="ml-2 text-[23px] font-albertsans font-bold text-[#f0f0f0]">Delete Inventory Category</h1></div>
+                            <div className="flex flex-col  items-center  h-fit rounded-br-2xl rounded-bl-2xl">
+                                <div className="px-5 flex flex-col justify-center  h-[130px] w-full"><p className="font-albertsans font-medium text-[20px]">Are you sure you want to delete this category?</p>
+                                {selectedambherinventorycategory && ( <>
+                                          <p className="text-[18px] mt-3">Category Name: {selectedambherinventorycategory.ambherinventorycategoryname}</p> </>)}  
+                                </div>        
+                                <div className="pr-5 flex justify-end  items-center  h-[80px] w-full">
+                                  <div className="hover:cursor-pointer mr-2 bg-[#292929] hover:bg-[#414141]   rounded-2xl h-fit w-fit px-7 py-3 hover:scale-105 transition-all duration-300 ease-in-out" onClick={() => setshowdeleteambherinventorycategorydialog(false)}><p className=" text-[#ffffff]">Cancel</p></div>
+                                  <div className="hover:cursor-pointer bg-[#4e0f0f] hover:bg-[#7f1a1a] ml-2 rounded-2xl h-fit w-fit px-7 py-3 hover:scale-105 transition-all duration-300 ease-in-out" onClick={() => deleteambherinventorycategory()}><p className=" text-[#ffffff]">Delete</p></div>
+                                </div>
+                            </div>
+
+                         </div>
+                       </div>
+                    )}
 
 
 
