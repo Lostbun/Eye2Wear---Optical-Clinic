@@ -36,7 +36,7 @@ export function BautistainventorycategoryBox({ value, onChange, categories, load
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button
-          className="w-full justify-between !bg-[#2d2d44] text-white"
+          className="w-[281px] justify-between !bg-[#2d2d44] text-white"
           role="combobox"
           aria-expanded={open}
         >
@@ -44,7 +44,7 @@ export function BautistainventorycategoryBox({ value, onChange, categories, load
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[400px] p-0 !bg-[#2d2d44] text-white rounded-3xl">
+      <PopoverContent className="w-[281px]   p-0 !bg-[#2d2d44] text-white rounded-3xl">
         <Command>
           <CommandGroup>
             {loading ? (

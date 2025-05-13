@@ -276,8 +276,8 @@ function PatientLandingpage(){
 
 
 
-      
-     {/* Third Section */} {/* Third Section */} {/* Third Section */} {/* Third Section */} {/* Third Section */}
+      {/*
+     {/* Third Section */} {/* Third Section */} {/* Third Section */} {/* Third Section */} {/* Third Section 
      <section className="bg-white h-[270vh] w-[98vw]  " >
 
 
@@ -288,11 +288,11 @@ function PatientLandingpage(){
       </div>
 
 
-     </section>
+     </section>*/}
 
 
-
-     {/* Fourth Section */} {/* Fourth Section */} {/* Fourth Section */} {/* Fourth Section */} {/* Fourth Section */}
+{/* 
+     {/* Fourth Section */} {/* Fourth Section */} {/* Fourth Section */} {/* Fourth Section */} {/* Fourth Section 
       <section className="bg-white h-screen w-[98vw]" >
 
 
@@ -301,10 +301,10 @@ function PatientLandingpage(){
       </div>
 
 
-    </section>
+    </section> */}
+ {/*
 
-
-    {/* Fifth Section */} {/* Fifth Section */} {/* Fifth Section */} {/* Fifth Section */} {/* Fifth Section */}   
+    {/* Fifth Section */} {/* Fifth Section */} {/* Fifth Section */} {/* Fifth Section */} {/* Fifth Section    
     <section className="bg-white h-screen w-[98vw]" >
 
 
@@ -314,7 +314,7 @@ function PatientLandingpage(){
 
 
     </section>
-
+*/}
 
 
 

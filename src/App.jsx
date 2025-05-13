@@ -7,6 +7,7 @@ import PatientInformation from './PatientInformation'
 import AdminDashboard from './AdminDashboard'
 import ResetPassword from './ResetPassword'
 import PatientDashboard from './PatientDashboard'
+import PatientProducts from './PatientProducts'
 
 
 
@@ -25,6 +26,7 @@ function App() {
             <Route path='/admindashboard' element={<AdminDashboard/>}></Route>
             <Route path="/reset-password/:id/:token" element={<ResetPassword/>}/>
             <Route path='/patientdashboard' element={<PatientDashboard/>}></Route>
+            <Route path='/patientproducts' element={<PatientProducts/>}></Route>
           </Routes>
         </BrowserRouter>
 
