@@ -3930,7 +3930,9 @@ const [ambherinventorycategorynameexist, setambherinventorycategorynameexist] = 
 const [ambherinventorycategorylist, setambherinventorycategorylist] = useState([]);
 const [loadingambherinventorycategorylist, setloadingambherinventorycategorylist] = useState(true);
 const [selectedambherinventorycategory, setselectedambherinventorycategory] = useState(null);
-const [ambherinventorycategorynamebox, setambherinventorycategorynamebox] = useState("");
+
+
+
 
 const currentuserdata = JSON.parse(localStorage.getItem("currentuser")) || {};
 
@@ -4113,6 +4115,18 @@ const deleteambherinventorycategory = async () => {
     console.error("Ambher Inventory Category Delete Failed: ", error);
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -4347,6 +4361,8 @@ const deletebautistainventorycategory = async () => {
 
 
 
+
+
 //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT
 //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT
 //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT
@@ -4354,9 +4370,210 @@ const deletebautistainventorycategory = async () => {
 //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT
 //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT
 //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT //INVENTORY MANAGEMENT
+const [showaddambherinventoryproductdialog, setshowaddambherinventoryproductdialog] = useState(false);
+const [ambherinventorycategorynamebox, setambherinventorycategorynamebox] = useState("");
+const [addambherinventoryproductname, setaddambherinventoryproductname] = useState("");
+const [addambherinventoryproductbrand, setaddambherinventoryproductbrand] = useState("");
+const [addambherinventoryproductmodelnumber, setaddambherinventoryproductmodelnumber] = useState("");
+const [addambherinventoryproductdescription, setaddambherinventoryproductdescription] = useState("");
+const [addambherinventoryproductprice, setaddambherinventoryproductprice] = useState();
+const [addambherinventoryproductquantity, setaddambherinventoryproductquantity] = useState();
+const [addambherinventoryproductimageselectedimages, setaddambherinventoryproductimageselectedimages] = useState([]);
+const [addambherinventoryproductimagepreviewimages, setaddambherinventoryproductimagepreviewimages] = useState([]);
+const [currentimageindex, setcurrentimageindex] = useState(0);
+const addambherinventoryproductimageimageinputref = useRef(null);
+const [ambherinventoryproductissubmitting, setambherinventoryproductissubmitting] = useState(false);
+
+
+//PRODUCT IMAGE HANDLING
+
+const addambherinventoryproductimagehandlechange = async (e) => {
+  const files = Array.from(e.target.files);
+
+  if(addambherinventoryproductimageselectedimages.length + files.length > 5){
+    alert("Maximum of only 5 product images");
+    return;
+  }
+
+  const imagefiletype = ['image/png', 'image/jpeg', 'image/webp'];
+  const maximagefile = 2;
+
+  for(const file of files) {
+    if(!imagefiletype.includes(file.type)) {
+      alert("Please select image files (JPG / PNG");
+      return;
+    }
+
+    if(file.size > maximagefile * 1024 * 1024) {
+      alert("Please select images under 2MB");
+      return;
+    }
+  }
 
 
 
+  try{
+    const compressedimages = await Promise.all(
+      files.map(async (file) => {
+        const imageconfiguration = {
+          maximagemb: 1,
+          maxworh: 800,
+          useWebWorker: true,
+          initialQuality: 0.8
+        };
+
+        const compressedimage = await imageCompression(file, imageconfiguration);
+        return compressedimage;
+      })
+    );
+
+
+
+    const previewurls = await Promise.all(
+      compressedimages.map((image) => {
+        return new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            resolve(reader.result);
+          };
+          reader.readAsDataURL(image);
+        });
+      })
+    );
+
+
+
+    setaddambherinventoryproductimageselectedimages(prev => [...prev, ...compressedimages]);
+    setaddambherinventoryproductimagepreviewimages(prev => [...prev, ...previewurls]);
+    setcurrentimageindex(0);
+
+
+  }catch(error){
+    console.error("Image compression failed: ", error.message);
+    alert("Image compression failed");
+  }
+
+  if(addambherinventoryproductimageimageinputref.current){
+     addambherinventoryproductimageimageinputref.current.value = "";
+  }
+
+};
+
+const handlepreviousimage = () => {
+  setcurrentimageindex(prev =>
+    prev === 0 ? addambherinventoryproductimagepreviewimages.length - 1 : prev - 1
+  );
+};
+
+const handlenextimage = () => {
+  setcurrentimageindex(prev =>
+    prev === addambherinventoryproductimagepreviewimages.length - 1 ? 0 : prev + 1
+  );
+};
+
+const addambherinventoryproductimagehandleremove = (indextoremove) => {
+  setaddambherinventoryproductimageselectedimages(prev =>
+    prev.filter((_, index) => index !== indextoremove)
+  );
+
+  setaddambherinventoryproductimagepreviewimages(prev =>
+    prev.filter((_, index) => index !== indextoremove)
+  );
+
+  setcurrentimageindex(prev =>
+    prev >= indextoremove && prev > 0 ? prev - 1 : prev
+  );
+};
+
+const addambherinventoryproductimagehandleuploadclick = () => {
+  addambherinventoryproductimageimageinputref.current.click();
+};
+
+ const resetaddambherinventoryproductdialog = () => {
+  setambherinventorycategorynamebox("");
+  setaddambherinventoryproductname("");
+  setaddambherinventoryproductbrand("");
+  setaddambherinventoryproductmodelnumber("");
+  setaddambherinventoryproductdescription("");
+  setaddambherinventoryproductprice("");
+  setaddambherinventoryproductquantity("");
+  setaddambherinventoryproductimageselectedimages([]);
+  setaddambherinventoryproductimagepreviewimages([]);
+  setcurrentimageindex(0);
+  setmessage('');
+};
+
+
+
+
+//INSERTING PRODUCT
+const handlesubmitaddambherinventoryproduct = async (e) => {
+
+    e.preventDefault();
+    setambherinventoryproductissubmitting(true);
+
+  try{
+
+
+    const ambherproductimages = addambherinventoryproductimagepreviewimages.join(',');
+
+    const ambherinventoryproductdata = {
+
+
+      ambherinventoryproductcategory: ambherinventorycategorynamebox || '',
+      ambherinventoryproductname: addambherinventoryproductname || '',
+      ambherinventoryproductbrand:  addambherinventoryproductbrand || '',
+      ambherinventoryproductmodelnumber: addambherinventoryproductmodelnumber || '',
+      ambherinventoryproductdescription: addambherinventoryproductdescription || '',
+      ambherinventoryproductprice: Number(addambherinventoryproductprice) || 0,
+      ambherinventoryproductquantity:  Number(addambherinventoryproductquantity) || 0,
+      ambherinventoryproductimagepreviewimages: ambherproductimages || '',
+
+
+
+      ambherinventoryproductaddedbyprofilepicture: currentuserdata.profilepicture || '',
+      ambherinventoryproductaddedbylastname: currentuserdata.lastname || '',
+      ambherinventoryproductaddedbyfirstname: currentuserdata.firstname || '',
+      ambherinventoryproductaddedbymiddlename: currentuserdata.middlename || '',
+      ambherinventoryproductaddedbytype: currentuserdata.type || '',
+      ambherinventoryproductaddedbyemail: currentuserdata.email || '',
+
+
+
+    }
+
+    console.log(ambherinventoryproductdata);
+    const response = await fetch('http://localhost:3000/api/ambherinventoryproduct',{
+      method: 'POST',
+      headers: {
+        'Content-Type' : 'application/json',
+        'Authorization': `Bearer ${currentusertoken}`
+      },
+      body: JSON.stringify(ambherinventoryproductdata)
+    });
+
+
+
+    if(!response.ok){
+      throw new Error(`Response fetching error! Error: ${response.status}`);
+
+    }
+
+
+    const result = await response.json();
+    console.log('Ambher Inventory Product insertion successful: ', result);
+
+    resetaddambherinventoryproductdialog();
+    setshowaddambherinventoryproductdialog(false);
+
+  }catch(error) {
+    console.error('Error Ambher Inventory Product insertion: ', error);
+    setambherinventoryproductissubmitting(false);
+  }finally{
+    setambherinventoryproductissubmitting(false);
+  }
+
+};
 
 
 
@@ -8320,27 +8537,6 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
               {/*Start of Inventory Management*/}{/*Start of Inventory Management*/}{/*Start of Inventory Management*/}{/*Start of Inventory Management*/}{/*Start of Inventory Management*/}{/*Start of Inventory Management*/}
               {/*Start of Inventory Management*/}{/*Start of Inventory Management*/}{/*Start of Inventory Management*/}{/*Start of Inventory Management*/}{/*Start of Inventory Management*/}{/*Start of Inventory Management*/}
               {/*Start of Inventory Management*/}{/*Start of Inventory Management*/}{/*Start of Inventory Management*/}{/*Start of Inventory Management*/}{/*Start of Inventory Management*/}{/*Start of Inventory Management*/}
@@ -8366,12 +8562,12 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
 
 
 
-          { activeinventorytable === 'ambherinventorytable' && ( <div id="ambherinventorytable" className="p-2  animate-fadeInUp flex  items-center border-t-2  border-[#909090] w-[100%] h-[83%] rounded-2xl mt-5" >
+          { activeinventorytable === 'ambherinventorytable' && ( <div id="ambherinventorytable" className="p-2  animate-fadeInUp flex  items-start border-t-2  border-[#909090] w-[100%] h-[83%] rounded-2xl mt-5" >
 
-          <div className="p-3 shadow-lg rounded-2xl w-[20%] h-full  mr-2 overflow-y-auto overflow-x-hidden">
+          <div className="p-3 shadow-b-lg border-b-2  rounded-2xl w-[20%] h-full  mr-2 overflow-y-auto overflow-x-hidden">
         
                 <div onClick={() => {setambherinventorycategorynamebox(null); setshowaddambherinventorycategorydialog(true);}}   className=" mt-1 mb-1 hover:cursor-pointer hover:scale-103 bg-[#383838] rounded-3xl flex justify-center items-center px-4 py-2 transition-all duration-300 ease-in-out"><p className="font-semibold font-albertsans text-white text-[18px] ml-2">Manage Categories</p></div>
-                <div className="flex items center w-full mt-7"><i className="bx bx-filter font-albertsans font-semibold text-[#363636] text-[25px]" /><h1 className="ml-2 text-[16px] font-albertsans font-semibold text-[#363636]">Filter by category</h1></div>
+                <div className="border-b-2 pb-3 flex items center w-full mt-7"><i className="bx bx-filter font-albertsans font-semibold text-[#363636] text-[25px]" /><h1 className="ml-2 text-[16px] font-albertsans font-semibold text-[#363636]">Filter by category</h1></div>
 
                 <div onClick={() => showambherinventorycategory('all')}  className={`mt-3 hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 py-2 text-center flex justify-center items-center ${activeambherinventorycategorytable ==='all' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d] ${activeambherinventorycategorytable ==='all' ? 'text-white' : ''}`}>All</h1></div>
 
@@ -8386,8 +8582,10 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
             {/*<div className=""> <AmbherinventorycategoryBox value={ambherinventorycategorynamebox} loading={loadingambherinventorycategorylist} onChange={(e) => setambherinventorycategorynamebox(e.target.value)} categories={ambherinventorycategorylist}/></div>*/}
 
           </div>
-          <div className="ml-2 rounded-2xl w-[90%] h-full bg-[#E5E7EB]">
+          <div className=" flex flex-col justify-start  ml-2 rounded-2xl w-[90%]  h-[540px] shadow-b-lg ">
+              <div className="flex justify-end items-center w-full h-[9%] rounded-2xl mb-2"> <div onClick={() => setshowaddambherinventoryproductdialog(true)}  className="w-50 p-2 hover:cursor-pointer hover:scale-103 bg-[#4ca22b] rounded-3xl flex justify-center items-center pl-3 pr-3 transition-all duration-300 ease-in-out"><i className="bx  bx-plus text-white font-bold text-[30px]"/><p className="font-bold font-albertsans text-white text-[18px] ml-2">Add Product</p></div> </div>
 
+              <div className="w-full h-full rounded-2xl bg-[#fafafa]"> </div>
           </div>
 
           </div>)}
@@ -8399,7 +8597,7 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
 
 
 
-
+        {/*Ambher Inventory Category*/}
           {showaddambherinventorycategorydialog && (
 
        <div className="bg-opacity-0 flex justify-center items-center z-50 fixed inset-0 bg-[#000000af] bg-opacity-50">
@@ -8568,8 +8766,141 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
                        </div>
           )}
 
+        {/*Ambher Inventory Product*/}
+          {showaddambherinventoryproductdialog && (
+
+                         <div className="overflow-y-auto h-auto  bg-opacity-0 flex justify-center items-start z-50 fixed inset-0 bg-[#000000af] bg-opacity-50">
+                           <div className="mt-10 pl-5 pr-5 bg-white rounded-2xl w-[1300px] h-auto mb-10 animate-fadeInUp ">
+                                <div className=" mt-5 border-3 flex justify-between items-center border-[#2d2d4400] w-full h-[70px]">
+                                  <div className="flex justify-center items-center"><img src={darklogo} alt="Eye2Wear: Optical Clinic" className="w-15 hover:scale-105 transition-all   p-1"></img><h1 className="text-[#184d85] font-albertsans font-bold ml-3 text-[30px]">Add Product</h1></div>
+                                  <div onClick={() => {setshowaddambherinventoryproductdialog(false);  resetaddambherinventoryproductdialog(); }} className="bg-[#333232] px-10 rounded-2xl hover:cursor-pointer hover:scale-105 transition-all duration-300 ease-in-out"><i className="bx bx-x text-white text-[40px] "/></div>
+                                </div>
+
+                          <form className="flex flex-col  ml-15 mr-15 mt-5   w-fullx" onSubmit={handlesubmitaddambherinventoryproduct}>
+                                <div className="flex justify-center items-start bg-[#fcfcfc] rounded-2xl w-full h-auto">
+                                  <div className="pb-10 w-full h-full mr-15 rounded-2xl flex justify-center mt-5">
 
 
+
+                                      <div className="h-fit w-fit ">
+  
+                                        <div className="relative">
+                                          <img  className=" w-120 object-cover rounded-2xl h-120 " src={addambherinventoryproductimagepreviewimages[currentimageindex] || defaultimageplaceholder} />
+                                    
+                                          {addambherinventoryproductimagepreviewimages.length > 1 && (
+                                            <>
+                                              <button onClick={handlepreviousimage}className="bg-opacity-50   hover:bg-opacity-75 rounded-full text-white p-2 absolute left-2 top-1/2 transform -translate-y-1/2 bg-black "><i className="bx bx-chevron-left text-2xl" /></button>
+                                              <button onClick={handlenextimage}  className="rounded-full absolute bg-opacity-50 text-white p-2  transform -translate-y-1/2 bg-black hover:bg-opacity-75 right-2 top-1/2  "><i className="bx bx-chevron-right text-2xl" /></button>
+                                            </>
+                                          )}
+                                        </div>
+                                      
+                                      
+                                        {addambherinventoryproductimagepreviewimages.length > 0 && (
+                                          <div className="overflow-x-auto flex gap-2 mt-2 ">
+                                            {addambherinventoryproductimagepreviewimages.map((preview, index) => (
+                                                <div key={index} className="relative">
+                                                <img src={preview} className={`rounded-lg cursor-pointer object-cover w-20 h-20 ${currentimageindex === index ? 'ring-2 ring-blue-500' : ''}`} />
+                                                <button onClick={() => addambherinventoryproductimagehandleremove(index)}   className="absolute -top-2 -right-2  rounded-full p-1 hover:bg-red-600 bg-red-500 text-white  " > <i className="bx bx-x text-lg" /></button>
+                                              </div>
+                                            ))}
+                                          </div>
+                                        )}
+                                      
+                                      
+                                        <input className="hidden"  multiple type="file" accept="image/jpeg, image/jpg, image/png" ref={addambherinventoryproductimageimageinputref} onChange={addambherinventoryproductimagehandlechange}    />
+
+                                        <div onClick={addambherinventoryproductimagehandleuploadclick} className="hover:cursor-pointer  hover:scale-105 transition-all mt-3 rounded-2xl flex justify-center items-center align-middle p-3 bg-[#0ea0cd]  " ><i className="bx bx-image pr-2 font-bold text-[22px] text-white"/>
+                                          <p className="text-white font-semibold text-[20px] ">Upload {addambherinventoryproductimagepreviewimages.length}/5 Images</p>
+
+                                        </div>
+                                      </div>
+
+
+
+
+
+
+
+
+
+                                  </div>
+
+                                  <div className="w-full h-auto flex items-start mb-10 rounded-2xl">
+                                        <div className=" w-full h-auto  rounded-4xl">
+                                  
+                                  
+              
+                                        <div className="registration-container">
+                                     
+                                        <h1 className=" font-league text-[#3da9d1] text-[27px] ">Product Details</h1>
+                                        {message.text && (
+                                          <div className={`message ${message.type} text-${message.type === 'error' ? 'red' : 'green'}-600 font-bold`}>
+                                            {message.text}
+                                          </div>
+                                        )}
+                                  
+                                        <h1 className=" font-albertsans font-semibold italic text-[#595968] text-[20px]">Let's add product inventory!</h1>
+                                  
+                                  
+                                  
+                                  
+                                        <div className="form-group mt-10  flex">
+                                        <label className="  font-albertsans font-bold italic text-[#595968] text-[19px]" htmlFor="ambherinventorycategorynamebox">Category :</label>
+                                        <div className="flex flex-col">
+                                        <div className="ml-13"> <AmbherinventorycategoryBox  value={ambherinventorycategorynamebox} loading={loadingambherinventorycategorylist} onChange={(e) => setambherinventorycategorynamebox(e.target.value)} categories={ambherinventorycategorylist}/></div>
+                                        </div>
+                                        </div>
+                                  
+                                  
+                                  
+                                        <div className="form-group mt-5">
+                                        <label className="font-albertsans font-bold italic text-[#595968] text-[19px]" htmlFor="addambherinventoryproductname">Product Name : </label>
+                                        <input className="bg-gray-200 text-[18px] text-gray-600 pl-3 rounded-2xl ml-1 h-10 w-70" placeholder="Enter Product Name..." type="text" name="addambherinventoryproductname" id="addambherinventoryproductname" value={addambherinventoryproductname} onChange={(e) => setaddambherinventoryproductname(e.target.value)} required /></div>
+                                  
+                                        <div className="form-group mt-5">
+                                        <label className="font-albertsans font-bold italic text-[#595968] text-[19px]" htmlFor="addambherinventoryproductbrand">Product Brand : </label>
+                                        <input className="bg-gray-200 text-[18px]  text-gray-600 pl-3 rounded-2xl ml-1 h-10 w-70" placeholder="Enter Product Brand..." type="text" name="addambherinventoryproductbrand" id="addambherinventoryproductbrand" value={addambherinventoryproductbrand} onChange={(e) => setaddambherinventoryproductbrand(e.target.value)} required/></div>
+                                  
+                                        <div className="form-group mt-5">
+                                        <label className="font-albertsans font-bold italic text-[#595968] text-[19px]" htmlFor="addambherinventoryproductmodelnumber">Model Number :</label>
+                                        <input className="bg-gray-200 text-[18px]  text-gray-600 pl-3 rounded-2xl ml-2  h-10 w-70" placeholder="Enter Model Number..." type="text" name="addambherinventoryproductmodelnumber" id="addambherinventoryproductmodelnumber" value={addambherinventoryproductmodelnumber} onChange={(e) => setaddambherinventoryproductmodelnumber(e.target.value)} required/></div>
+                                  
+                                        <div className="form-group mt-5 flex flex-col">
+                                        <label className="font-albertsans font-bold italic text-[#595968] text-[19px]" htmlFor="addambherinventoryproductdescription">Product Description:</label>
+                                         <textarea className="w-full text-[18px]  text-gray-600 rounded-md  border-2  " ref={textarearef} rows={1} style={{minHeight:'44px'}} type="text" value={addambherinventoryproductdescription} onChange={(e) => {setaddambherinventoryproductdescription(e.target.value); adjusttextareaheight();}} placeholder="Product description..."/>
+                                        </div>
+ 
+                                        <div className="form-group mt-5">
+                                        <label className="font-albertsans font-bold italic text-[#595968] text-[19px]" htmlFor="addambherinventoryproductprice">Price :</label>
+                                        <input className="bg-gray-200 text-[18px]  text-gray-600 pl-3 rounded-2xl ml-2  h-10 w-70" placeholder="Enter Price..." type="number" name="addambherinventoryproductprice" id="addambherinventoryproductprice" value={addambherinventoryproductprice} onChange={(e) => setaddambherinventoryproductprice(e.target.value)} required/></div>
+                                  
+                                        <div className="form-group mt-5">
+                                        <label className="font-albertsans font-bold italic text-[#595968] text-[19px]" htmlFor="addambherinventoryproductquantity">Quantity :</label>
+                                        <input className="bg-gray-200 text-[18px]  text-gray-600 pl-3 rounded-2xl ml-2  h-10 w-70" placeholder="Enter Quantity..." type="number" name="addambherinventoryproductquantity" id="addambherinventoryproductquantity" value={addambherinventoryproductquantity} onChange={(e) => setaddambherinventoryproductquantity(e.target.value)} required/></div>
+                                  
+
+                                        <button type="submit" disabled={issubmitting} className="submit-btn mt-12 w-full" style={{ backgroundColor: "#2b2b44", fontSize: "20px", padding: "10px 20px", color: "white", borderRadius: "20px",   }}>
+                                          {issubmitting ? "Adding Product..." : "Add Product"}
+                                        </button>
+                                     
+
+                                  
+                                  
+                                        </div>
+                                
+                                  
+                                  
+                                        </div>
+
+                                  </div>
+                                </div>
+                                </form>
+                           </div>
+                         </div>
+              
+
+          )}
 
 
 
@@ -8591,10 +8922,10 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
 
           { activeinventorytable === 'bautistainventorytable' && ( <div id="bautistainventorytable" className="p-2  animate-fadeInUp flex  items-center border-t-2  border-[#909090] w-[100%] h-[83%] rounded-2xl mt-5" >
 
-          <div className="p-3 shadow-lg rounded-2xl w-[20%] h-full  mr-2 overflow-y-auto overflow-x-hidden">
+          <div className="p-3 shadow-b-lg border-b-2 rounded-2xl w-[20%] h-full  mr-2 overflow-y-auto overflow-x-hidden">
         
                 <div onClick={() => {setbautistainventorycategorynamebox(null); setshowaddbautistainventorycategorydialog(true);}}   className=" mt-1 mb-1 hover:cursor-pointer hover:scale-103 bg-[#383838] rounded-3xl flex justify-center items-center px-4 py-2 transition-all duration-300 ease-in-out"><p className="font-semibold font-albertsans text-white text-[18px] ml-2">Manage Categories</p></div>
-                <div className="flex items center w-full mt-7"><i className="bx bx-filter font-albertsans font-semibold text-[#363636] text-[25px]" /><h1 className="ml-2 text-[16px] font-albertsans font-semibold text-[#363636]">Filter by category</h1></div>
+                <div className="border-b-2 pb-3 flex items center w-full mt-7"><i className="bx bx-filter font-albertsans font-semibold text-[#363636] text-[25px]" /><h1 className="ml-2 text-[16px] font-albertsans font-semibold text-[#363636]">Filter by category</h1></div>
 
                 <div onClick={() => showbautistainventorycategory('all')}  className={`mt-3 hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 py-2 text-center flex justify-center items-center ${activebautistainventorycategorytable ==='all' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d] ${activebautistainventorycategorytable ==='all' ? 'text-white' : ''}`}>All</h1></div>
 
