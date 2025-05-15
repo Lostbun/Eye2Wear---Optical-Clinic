@@ -82,8 +82,14 @@ function PatientLandingpage(){
 
         <ul id:listcontain  className="hidden xl:flex items-center gap-12 font-semibold text-base">
           <li className="p-3 hover:bg-sky-400 hover:text-white rounded-md transition-all cursor-pointer">Home</li>
-          <li className="p-3 hover:bg-sky-400 hover:text-white rounded-md transition-all cursor-pointer">Products</li>
-          <li className="p-3 hover:bg-sky-400 hover:text-white rounded-md transition-all cursor-pointer">Explore</li>
+          {localStorage.getItem("patienttoken") && (
+            <Link to="/patientproducts"><li className="p-3 hover:bg-sky-400 hover:text-white rounded-md transition-all cursor-pointer">Products</li></Link>
+          )}
+
+          {localStorage.getItem("patienttoken") && (
+            <Link to="/patientdashboard"><li className="p-3 hover:bg-sky-400 hover:text-white rounded-md transition-all cursor-pointer">Dashboard</li></Link>
+          )}
+          
 
 
           {localStorage.getItem("patienttoken") && (

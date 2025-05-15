@@ -5507,7 +5507,7 @@ const [showaddbautistainventoryproductdialog, setshowaddbautistainventoryproduct
 
 
 
-                      <div className=" w-full h-auto flex justify-center items-center mt-5"><p className="font-albertsans font-semibold  text-[60px] text-[#5d5d5d] ">10</p></div>
+                      <div className=" w-full h-auto flex justify-center items-center mt-5"><p className="font-albertsans font-semibold  text-[30px] text-[#5d5d5d] ">*On Development*</p></div>
 
                      
                      <div id="appointmentlist" className="h-auto bg-[rgb(249,249,249)] border-t-2 border-[#909090] rounded-2xl p-2 overflow-y-auto mt-5 transition-all duration-300 ease-in-out ">
@@ -5540,7 +5540,7 @@ const [showaddbautistainventoryproductdialog, setshowaddbautistainventoryproduct
                       <div className={`border-2 b-[#909090] flex justify-center items-center w-[40%] h-full  hover:rounded-2xl  hover:cursor-pointer rounded-3xl transition-all duration-300 ease-in-out ${activestockfilter ==='filterambherstock' ? 'bg-[#2781af] rounded-2xl' : ''}`} onClick={() => activestockinventoryfilter('filterambherstock')} id="filterambherstock"><img src={ambherlogo || 'default-profile.png'} alt="Ambher Optical" className="w-8 h-4 "/><p className={`font-semibold pb-1 text-[#5d5d5d] ml-2 truncate ${activestockfilter ==='filterambherstock' ? 'text-[#fdfdfd]' : ''}`}>Ambher</p></div>
                       <div className={`border-2 b-[#909090] ml-1 flex justify-center items-center w-[40%] h-full  hover:rounded-2xl  hover:cursor-pointer rounded-3xl transition-all duration-300 ease-in-out ${activestockfilter ==='filterbautistastock' ? 'bg-[#2781af] rounded-2xl' : ''}`} onClick={() => activestockinventoryfilter('filterbautistastock')} id="filterbautistastock"><img src={bautistalogo || 'default-profile.png'} alt="" className="w-8 h-4 "/><p className={`font-semibold pb-1 text-[#5d5d5d] ml-2 truncate ${activestockfilter ==='filterbautistastock' ? 'text-[#fdfdfd]' : ''}`}>Bautista</p></div>
                        </div>
-                      <div className="mt-7 w-full h-auto flex justify-center items-center "><p className="font-albertsans font-semibold  text-[60px] text-[#5d5d5d] ">10</p></div>
+                      <div className=" w-full h-auto flex justify-center items-center mt-5"><p className="font-albertsans font-semibold  text-[30px] text-[#5d5d5d] ">*On Development*</p></div>
                       </div>
 
 
@@ -5555,7 +5555,7 @@ const [showaddbautistainventoryproductdialog, setshowaddbautistainventoryproduct
                       <div className={`border-2 b-[#909090] flex justify-center items-center w-[40%] h-full  hover:rounded-2xl  hover:cursor-pointer rounded-3xl transition-all duration-300 ease-in-out ${activeunreadfilter ==='filterambherunread' ? 'bg-[#2781af] rounded-2xl' : ''}`} onClick={() => activeunreadmessagesfilter  ('filterambherunread')} id="filterambhertoday"><img src={ambherlogo || 'default-profile.png'} alt="Ambher Optical" className="w-8 h-4 "/><p className={`font-semibold pb-1 text-[#5d5d5d] ml-2 truncate ${activeunreadfilter ==='filterambherunread' ? 'text-[#fdfdfd]' : ''}`}>Ambher</p></div>
                       <div className={`border-2 b-[#909090] ml-1 flex justify-center items-center w-[40%] h-full  hover:rounded-2xl  hover:cursor-pointer rounded-3xl transition-all duration-300 ease-in-out ${activeunreadfilter ==='filterbautistaunread' ? 'bg-[#2781af] rounded-2xl' : ''}`} onClick={() => activeunreadmessagesfilter ('filterbautistaunread')} id="filterbautistatoday"><img src={bautistalogo || 'default-profile.png'} alt="" className="w-8 h-4 "/><p className={`font-semibold pb-1 text-[#5d5d5d] ml-2 truncate ${activeunreadfilter ==='filterbautistaunread' ? 'text-[#fdfdfd]' : ''}`}>Bautista</p></div>
                        </div>
-                      <div className="mt-7 w-full h-auto flex justify-center items-center "><p className="font-albertsans font-semibold  text-[60px] text-[#5d5d5d] ">10</p></div>
+                    <div className=" w-full h-auto flex justify-center items-center mt-5"><p className="font-albertsans font-semibold  text-[30px] text-[#5d5d5d] ">*On Development*</p></div>
                       </div>
 
 
@@ -5577,7 +5577,7 @@ const [showaddbautistainventoryproductdialog, setshowaddbautistainventoryproduct
                       </div>
 
 
-                      <div className=" w-full h-auto flex justify-center items-center "><p className="font-albertsans font-semibold  text-[60px] text-[#5d5d5d]">10</p></div>
+                      <div className=" w-full h-auto flex justify-center items-center mt-5"><p className="font-albertsans font-semibold  text-[30px] text-[#5d5d5d] ">*On Development*</p></div>
 
 
 
@@ -6614,9 +6614,9 @@ const [showaddbautistainventoryproductdialog, setshowaddbautistainventoryproduct
            <div className="flex items-center"><i className="bx bxs-user-detail text-[#184d85] text-[25px] mr-2"/> <h1 className=" font-albertsans font-bold text-[#184d85] text-[25px]">Profile Information</h1></div>
            <div className="flex justify-between items-center mt-3 h-[60px]">
             <div onClick={() => showprofiletable('patientprofiletable')}  className={`hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 pb-3 pt-3 text-center flex justify-center items-center ${activeprofiletable ==='patientprofiletable' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d] ${activeprofiletable ==='patientprofiletable' ? 'text-white' : ''}`}>Patients</h1></div>
-            <div onClick={() => showprofiletable('staffprofiletable')}  className={`hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 pb-3 pt-3 text-center flex justify-center items-center ${activeprofiletable ==='staffprofiletable' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d] ${activeprofiletable ==='staffprofiletable' ? 'text-white' : ''}`}>Staff</h1></div>
-            <div onClick={() => showprofiletable('ownerprofiletable')}  className={`hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 pb-3 pt-3 text-center flex justify-center items-center ${activeprofiletable ==='ownerprofiletable' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d] ${activeprofiletable ==='ownerprofiletable' ? 'text-white' : ''}`}>Owner</h1></div>
-            <div onClick={() => showprofiletable('administratorprofiletable')}  className={`hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 pb-3 pt-3 text-center flex justify-center items-center ${activeprofiletable ==='administratorprofiletable' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d] ${activeprofiletable ==='administratorprofiletable' ? 'text-white' : ''}`}>Administrator</h1></div>
+            <div onClick={() => showprofiletable('staffprofiletable')}  className={`hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 pb-3 pt-3 text-center flex justify-center items-center ${activeprofiletable ==='staffprofiletable' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d] ${activeprofiletable ==='staffprofiletable' ? 'text-white' : ''}`}>Staff *On Development*</h1></div>
+            <div onClick={() => showprofiletable('ownerprofiletable')}  className={`hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 pb-3 pt-3 text-center flex justify-center items-center ${activeprofiletable ==='ownerprofiletable' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d] ${activeprofiletable ==='ownerprofiletable' ? 'text-white' : ''}`}>Owner *On Development*</h1></div>
+            <div onClick={() => showprofiletable('administratorprofiletable')}  className={`hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 pb-3 pt-3 text-center flex justify-center items-center ${activeprofiletable ==='administratorprofiletable' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d] ${activeprofiletable ==='administratorprofiletable' ? 'text-white' : ''}`}>Administrator *On Development*</h1></div>
            </div>
 
 

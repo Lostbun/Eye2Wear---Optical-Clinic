@@ -427,8 +427,8 @@ const submitpatientdemographic = async (e) => {
 
         <ul id="listcontain"  className="hidden xl:flex items-center gap-12 font-semibold text-base">
         <Link to="/patientlandingpage" className="text-[#000000] hover:text-white no-underline"><li className="p-3 hover:bg-sky-400 text-black hover:text-white rounded-md transition-all cursor-pointer">Home</li></Link>
-          <li className="p-3 hover:bg-sky-400 hover:text-white rounded-md transition-all cursor-pointer">Products</li>
-          <li className="p-3 hover:bg-sky-400 hover:text-white rounded-md transition-all cursor-pointer">Explore</li>
+        <Link to="/patientproducts" className="text-[#000000] hover:text-white no-underline"><li className="p-3 hover:bg-sky-400 text-black hover:text-white rounded-md transition-all cursor-pointer">Products</li></Link>
+           <Link to="/patientdashboard"><li className="p-3 hover:bg-sky-400 hover:text-white rounded-md transition-all cursor-pointer">Dashboard</li></Link>
           <li className="p-3 hover:bg-sky-400 hover:text-white rounded-md transition-all cursor-pointer">Contact</li>
         </ul>
 
@@ -494,7 +494,7 @@ const submitpatientdemographic = async (e) => {
                     <div className="flex flex-col p-5 h-max mt-10 rounded-4xl bg-[#2d2d44] shadow-lg">
                           <p className=" font-semibold text-white text-[16px]">Your Profile :</p>
                           <div className={`pl-5 w-full h-12 mt-5 flex items-center  hover:cursor-pointer hover:scale-105 transition-all  ${activeForm === `patientdemographic` ? `bg-sky-700 rounded-4xl` : ``}`}  onClick={() => setactiveForm(`patientdemographic`)} ><i className="bx bxs-user  pr-2 font-bold text-[22px] text-white"/><span className="font-semibold text-white text-[20px]">Patient Demographic</span></div>
-                          <p className="mt-8 font-semibold text-white text-[16px]">For viewing only :</p>
+                          <p className="mt-8 font-semibold text-white text-[16px]">*On Development*</p>
                           <div className={`pl-5 w-full h-12 mt-5 flex items-center hover:cursor-pointer hover:scale-105 transition-all ${activeForm === `medicalhistory` ? `bg-sky-700 rounded-4xl` : ``}`}  onClick={() => setactiveForm(`medicalhistory`)}><FontAwesomeIcon icon={faClock}  className="pr-2 font-bold text-[22px] text-white"/><span className="font-semibold text-white text-[20px]">Medical History</span></div>
                           <div className={`pl-5 w-full h-12 mt-5 flex items-center xhover:cursor-pointer hover:scale-105 transition-all ${activeForm === `ocularhistory` ? `bg-sky-700 rounded-4xl` : ``}`}  onClick={() => setactiveForm(`ocularhistory`)}><FontAwesomeIcon icon={faEye}  className="pr-2 font-bold text-[22px] text-white"/><span className="font-semibold text-white text-[20px]">Ocular History</span></div>
                           <div className={`pl-5 w-full h-12 mt-5 flex items-center hover:cursor-pointer hover:scale-105 transition-all ${activeForm === `lifestylevisual` ? `bg-sky-700 rounded-4xl` : ``}`}  onClick={() => setactiveForm(`lifestylevisual`)}><i className="bx bx-run  pr-2 font-bold text-[22px] text-white"/><span className="font-semibold text-white text-[20px]">Lifestyle & Visual</span></div>
