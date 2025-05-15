@@ -5,6 +5,7 @@ _Online Clinic Web-App for Ambher Optical and Bautista Eye Center with SMS Techn
 **Technologies: Vite, MERN Stack (MongoDB, Express, React, Node.js), JavaScript, TailwindCSS, PostCSS, ESLint**
 ![App Screenshot](src/assets/images/DevOpscover.png)
 DevOps is currently working on a projecct for the web-application "Eye2Wear: Optical Clinic"
+- We are dedicating our passions to give you the best service we have!
 
 
 
