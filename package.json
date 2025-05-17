@@ -53,6 +53,7 @@
     "multer": "^1.4.5-lts.2",
     "nodemailer": "^6.10.1",
     "nodemon": "^3.1.9",
+    "numpy": "^0.0.1",
     "react": "^19.1.0",
     "react-bootstrap": "^2.10.9",
     "react-datepicker": "^8.3.0",
