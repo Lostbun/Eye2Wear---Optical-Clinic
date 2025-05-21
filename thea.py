@@ -30,7 +30,7 @@ def txt():
     pen.down()
     pen.color('lightgreen')
 
-    pen.write("GeeksForGeeks", font=("Verdana", 12, "bold"))
+    pen.write("Gabriel Velasco", font=("Verdana", 12, "bold"))
 
 heart()
 txt()
