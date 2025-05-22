@@ -22,16 +22,3 @@ def heart():
     pen.forward(112)
     pen.end_fill()
 
-# Defining method to write text
-def txt():
-    
-    pen.up()
-    pen.setpos(-68, 95)
-    pen.down()
-    pen.color('lightgreen')
-
-    pen.write("Gabriel Velasco", font=("Verdana", 12, "bold"))
-
-heart()
-txt()
-pen.ht()
