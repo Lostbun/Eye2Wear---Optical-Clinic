@@ -24,19 +24,3 @@ colors = ['red', 'blue', 'green', 'orange']
 y_positions = [100, 70, 40, 10]
 players = []
 
-for i in range(4):
-    racer = Turtle()
-    racer.color(colors[i])
-    racer.shape('turtle')
-    racer.penup()
-    racer.goto(-160, y_positions[i])
-    racer.pendown()
-    # Little spin before race
-    for turn in range(36):
-        racer.right(10)
-    players.append(racer)
-
-# Start the race
-for move in range(100):
-    for turtle in players:
-        turtle.forward(randint(1, 5))
