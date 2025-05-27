@@ -19,8 +19,3 @@ for step in range(15):
     left(90)
     forward(20)
 
-# Create turtle racers
-colors = ['red', 'blue', 'green', 'orange']
-y_positions = [100, 70, 40, 10]
-players = []
-
