@@ -20,7 +20,4 @@ for step in range(15):
         
         forward(10)
     penup()
-    backward(160)
-    left(90)
-    forward(20)
 
