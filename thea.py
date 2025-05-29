@@ -12,11 +12,12 @@ for step in range(15):
     for dash in range(8):
         penup()
         forward(10)
-        pendown()        forward(10)
+        pendown()        
         pendown()
-        forward(10)        forward(10)
+        forward(10)        
         pendown()
         forward(10)
+        
         forward(10)
     penup()
     backward(160)
