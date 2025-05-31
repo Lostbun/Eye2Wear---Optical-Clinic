@@ -9,7 +9,3 @@ goto(-140, 140)
 for step in range(15):
     write(step, align='center')
     right(90)
-    for dash in range(8):
-        penup()
-        forward(10)
-        pendown()        
