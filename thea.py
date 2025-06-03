@@ -10,6 +10,3 @@
  pumpkin.dot(200)
  ​
  # The turtle to "carve" the pumpkin
- carver = turtle.Turtle()
- ​
- turtle.done()
