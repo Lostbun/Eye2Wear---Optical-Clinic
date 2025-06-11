@@ -34,7 +34,7 @@ while True:
             print("Invalid input. Please enter a number.")
             continue
 
-        if choice == '1':
+  
 
    
 
