@@ -32,7 +32,7 @@ while True:
             num2 = float(input("Enter second number: "))
         except ValueError:
             print("Invalid input. Please enter a number.")
-            continue
+          
 
   
 
