@@ -29,7 +29,7 @@ while True:
     if choice in ('1', '2', '3', '4'):
         try:
             num1 = float(input("Enter first number: "))
-            num2 = float(input("Enter second number: "))
+
     
 
 
