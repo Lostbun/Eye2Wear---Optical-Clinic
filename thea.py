@@ -16,5 +16,5 @@ X = df[features]
 y = df['Go']
 
 dtree = DecisionTreeClassifier()
-dtree = dtree.fit(X, y)
+
 
