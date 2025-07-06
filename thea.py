@@ -15,6 +15,6 @@ features = ['Age', 'Experience', 'Rank', 'Nationality']
 X = df[features]
 y = df['Go']
 
-dtree = DecisionTreeClassifier()
+
 
 
