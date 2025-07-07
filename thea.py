@@ -13,7 +13,7 @@ df['Go'] = df['Go'].map(d)
 features = ['Age', 'Experience', 'Rank', 'Nationality']
 
 X = df[features]
-y = df['Go']
+
 
 
 
