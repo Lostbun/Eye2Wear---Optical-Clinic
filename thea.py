@@ -10,7 +10,7 @@ df['Nationality'] = df['Nationality'].map(d)
 d = {'YES': 1, 'NO': 0}
 df['Go'] = df['Go'].map(d)
 
-features = ['Age', 'Experience', 'Rank', 'Nationality']
+
 
 
 
