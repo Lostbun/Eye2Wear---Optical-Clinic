@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 df = pandas.read_csv("data.csv")
 
 d = {'UK': 0, 'USA': 1, 'N': 2}
-df['Nationality'] = df['Nationality'].map(d)
+
 
 
 
