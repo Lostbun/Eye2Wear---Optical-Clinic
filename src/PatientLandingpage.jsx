@@ -16,7 +16,7 @@ import eyemodel2 from "../src/assets/images/eyemodel2.png";
 import Rating from '@mui/material/Rating';
 import Stack from '@mui/material/Stack';
 import usersicon from "../src/assets/images/multiuserss.png";
-
+import { NavLink } from "react-router-dom";
 import { useAuth } from "./hooks/patientuseAuth";
 
 
@@ -81,14 +81,9 @@ function PatientLandingpage(){
         </a>
 
         <ul id:listcontain  className="hidden xl:flex items-center gap-12 font-semibold text-base">
-          <li className="p-3 hover:bg-sky-400 hover:text-white rounded-md transition-all cursor-pointer">Home</li>
-          {localStorage.getItem("patienttoken") && (
-            <Link to="/patientproducts"><li className="p-3 hover:bg-sky-400 hover:text-white rounded-md transition-all cursor-pointer">Products</li></Link>
-          )}
-
-          {localStorage.getItem("patienttoken") && (
-            <Link to="/patientdashboard"><li className="p-3 hover:bg-sky-400 hover:text-white rounded-md transition-all cursor-pointer">Dashboard</li></Link>
-          )}
+        <Link to="/patientlandingpage" className="text-[#000000] hover:text-white no-underline"><li className="p-3 hover:bg-sky-400 text-black hover:text-white rounded-md transition-all cursor-pointer">Home</li></Link>
+        <Link to="/patientproducts" className="text-[#000000] hover:text-white no-underline"><li className="p-3 hover:bg-sky-400 hover:text-white rounded-md transition-all cursor-pointer">Products</li></Link>
+        <Link to="/patientdashboard"><li className="p-3 hover:bg-sky-400 hover:text-white rounded-md transition-all cursor-pointer">Dashboard</li></Link>
           
 
 
@@ -114,9 +109,8 @@ function PatientLandingpage(){
 
       
     <div id="profilecard" className="relative">
-    <div id="profile" onClick={showlogout}  className="ml-3  flex justify-center items-center p-2 bg-[#fbfbfb00] border-2 border-gray-200  shadow-lg  rounded-full hover:cursor-pointer hover:scale-105 transition-all">
-     <img src={patientprofilepicture || 'default-profile.png'} alt="Profile" className="h-10 w-10 rounded-full"></img>
-     <p className="font-albertsans font-bold ml-3 text-gray-500 text-[17px]">Hi, {patientfirstname} </p>
+    <div id="profile" onClick={showlogout}  className="ml-3  flex justify-center items-center bg-[#fbfbfb00] border-2 border-gray-200  shadow-lg  rounded-full hover:cursor-pointer hover:scale-105 transition-all">
+     <img src={patientprofilepicture || 'default-profile.png'} alt="Profile" className="h-13 w-13 rounded-full"></img>
     </div>
 
     {showlogoutbtn && (

@@ -421,41 +421,68 @@ const submitpatientdemographic = async (e) => {
      {/* NavBar */}
     <div className=" bg-white" >
       <header id="header" className="flex justify-between items-center text-black py-4 px-8 md:px-32 bg-white rounded-4xl drop-shadow-md">
-        <a id="logocontain" href="#">
+        <a id:logocontain href="#">
           <img src={navlogo} alt="" className="w-52 hover:scale-105 transition-all"></img>
         </a>
 
-        <ul id="listcontain"  className="hidden xl:flex items-center gap-12 font-semibold text-base">
+        <ul id:listcontain  className="hidden xl:flex items-center gap-12 font-semibold text-base">
         <Link to="/patientlandingpage" className="text-[#000000] hover:text-white no-underline"><li className="p-3 hover:bg-sky-400 text-black hover:text-white rounded-md transition-all cursor-pointer">Home</li></Link>
-        <Link to="/patientproducts" className="text-[#000000] hover:text-white no-underline"><li className="p-3 hover:bg-sky-400 text-black hover:text-white rounded-md transition-all cursor-pointer">Products</li></Link>
-           <Link to="/patientdashboard"><li className="p-3 hover:bg-sky-400 hover:text-white rounded-md transition-all cursor-pointer">Dashboard</li></Link>
-          <li className="p-3 hover:bg-sky-400 hover:text-white rounded-md transition-all cursor-pointer">Contact</li>
+          <Link to="/patientproducts" className="text-[#000000] hover:text-white no-underline"><li className="p-3 hover:bg-sky-400 hover:text-white rounded-md transition-all cursor-pointer">Products</li></Link>
+        <Link to="/patientdashboard"><li className="p-3 hover:bg-sky-400 hover:text-white rounded-md transition-all cursor-pointer">Dashboard</li></Link>
+          
+
+
+          {localStorage.getItem("patienttoken") && (
+             <Link to="/patientinformation"><li className="p-3 hover:bg-sky-400 hover:text-white rounded-md transition-all cursor-pointer">ProfileInfo</li></Link>
+          )}
+
         </ul>
 
-        <div className="relative">
-    <div id="profile" onClick={showlogout}  className="ml-3  flex justify-center items-center p-2 bg-[#fbfbfb00] border-2 border-gray-200  shadow-lg  rounded-full hover:cursor-pointer hover:scale-105 transition-all">
-     <img src={patientprofilepicture || defaultprofilepic} alt="Profile" className="h-10 w-10 rounded-full"></img>
-     <p className="font-albertsans font-bold ml-3 text-gray-500 text-[17px]">Hi, {patientfirstname}</p>
+      {/* Search 
+      
+              <div className="relative hidden md:flex items-center justify-center gap-3">
+          <i className="bx bx-search absolute left-3 text-2xl text-gray-500"></i>
+          <input type="text" placeholder="Search..." className="py-2 pl-10 rounded-xl border-2 border-blue-300 focus:bg-slate-100 focus:outline-sky-500"></input>
+        </div>
+        
+      */}
+
+
+
+ 
+    {localStorage.getItem ("patienttoken")? (
+
+      
+    <div id="profilecard" className="relative">
+    <div id="profile" onClick={showlogout}  className="ml-3  flex justify-center items-center bg-[#fbfbfb00] border-2 border-gray-200  shadow-lg  rounded-full hover:cursor-pointer hover:scale-105 transition-all">
+     <img src={patientprofilepicture || 'default-profile.png'} alt="Profile" className="h-13 w-13 rounded-full"></img>
     </div>
 
     {showlogoutbtn && (
-
-
-
          <div id="logoutdiv" className=" absolute left-1/2 transform -translate-x-1/2 ml-3 mt-3 w-full flex justify-center items-center p-3 bg-[#ad4e43] rounded-2xl hover:cursor-pointer hover:scale-105 transition-all" onClick={handlelogout}>
          <i className="bx bx-exit mt-1 pr-2 font-semibold text-white text-[17px]"/>
          <p className="font-semibold text-white text-[17px]">Logout</p>
        </div>    
-
-
-
+       
       )}
     </div>
 
-
+    
+       
+    ):(
+      <Link to="/userlogin">
+         <div className="ml-3  flex justify-center items-center p-3 bg-[#027bbf] rounded-2xl hover:cursor-pointer hover:scale-105 transition-all" onClick={handlelogout}>
+         <i className="bx bx-user-circle mt-1 pr-2 font-semibold text-white text-[17px]"/>
+         <p className="font-semibold text-white text-[17px]">Login</p>
+       </div>
+      </Link>
+    )
+  
+  }
+     
 
      {/* Dropdown menu 
-        <div className="bx bx-menu block  sm:opacity-100 text-5xl cursor-pointer" onClick={() => setismenuopen(!ismenuopen)}></div>
+             <div className="bx bx-menu block  sm:opacity-100 text-5xl cursor-pointer" onClick={() => setismenuopen(!ismenuopen)}></div>
         <div className={`absolute xl:hidden top-24 left-0 w-full text-white bg-sky-700 rounded-3xl mt-5 mr-5 ml-5 flex flex-col items-center gap-6 font-semibold text-lg transform transition-transform
           ${ismenuopen ? "opacity-100" : "opacity-0"}`} style={{transition: "transform 0.3s ease, opacity 0.3s ease"}}>
 
@@ -465,8 +492,7 @@ const submitpatientdemographic = async (e) => {
           <li className="list-none w-full text-center p-4 hover:bg-sky-400 hover:text-white transition-all cursor-pointer">Explore</li>
           <li className="list-none w-full text-center p-4 hover:bg-sky-400 hover:text-white transition-all cursor-pointer">Contact</li>
           </div>
-*/}
-     
+ */}
 
 
       </header>

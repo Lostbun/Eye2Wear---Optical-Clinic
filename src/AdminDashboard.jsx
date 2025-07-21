@@ -23,7 +23,7 @@ import Stack from '@mui/material/Stack';
 import defaultimageplaceholder from "../src/assets/images/defaultimageplaceholder.png";
 import { AmbherinventorycategoryBox } from "./components/AmbherinventorycategoryBox";
 import { BautistainventorycategoryBox } from "./components/BautistainventorycategoryBox";
-
+import cautionlowstockalert from "../src/assets/images/caution.png";
 function AdminDashboard(){
 
 
@@ -627,13 +627,10 @@ function AdminDashboard(){
 
     try{
 
-      
       const patientaccsubmission = {
         ...formdata,
         patientprofilepicture: previewimage || formdata.patientprofilepicture
       };
-
-
 
   //Sends all patient data to the server
       const response = await fetch("http://localhost:3000/api/patientaccounts",{
@@ -646,19 +643,14 @@ function AdminDashboard(){
       });
 
 
-
-
-        
       await axios.post('http://localhost:3000/api/accountcreation/patient', {
         email: formdata.patientemail, 
         password: formdata.patientpassword});
-  
-
 
       await response.json();
       setmessage({text:"Registration Sucessful!",type:"success"});
         
-         
+    
         //Resets the input forms except the profile picture
         setformdata({
           role: 'Patient',
@@ -4374,6 +4366,13 @@ const filteredproducts = ambherinventoryproducts.filter(product =>
 );
 
 
+const ambherinventoryproductcount = ambherinventoryproducts.filter(
+  product => product.ambherinventoryproductquantity <= 10
+);
+
+
+
+
 //PRODUCT IMAGE HANDLING
 
 const addambherinventoryproductimagehandlechange = async (e) => {
@@ -4777,6 +4776,15 @@ const [showaddbautistainventoryproductdialog, setshowaddbautistainventoryproduct
             product.bautistainventoryproductcategory === activebautistainventorycategorytable
           );
           
+const bautistainventoryproductcount = bautistainventoryproducts.filter(
+  product => product.bautistainventoryproductquantity <= 10
+);
+
+
+
+
+
+
           
           //PRODUCT IMAGE HANDLING
           
@@ -5437,7 +5445,7 @@ const [showaddbautistainventoryproductdialog, setshowaddbautistainventoryproduct
 
 
     {/* First Section */} {/* First Section */} {/* First Section */} {/* First Section */}
-        <section className="h-full bg-gray-100 min-w-[99vw] flex justify-center align-center mt-3"   >
+        <section className="h-full  min-w-[99vw] flex justify-center align-center mt-3"   >
 
     
         
@@ -9048,7 +9056,7 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
               {/*Start of Inventory Management*/}{/*Start of Inventory Management*/}{/*Start of Inventory Management*/}{/*Start of Inventory Management*/}{/*Start of Inventory Management*/}{/*Start of Inventory Management*/}
               {/*Start of Inventory Management*/}{/*Start of Inventory Management*/}{/*Start of Inventory Management*/}{/*Start of Inventory Management*/}{/*Start of Inventory Management*/}{/*Start of Inventory Management*/}
 
-              { activedashboard === 'inventorymanagement' && ( <div id="inventorymanagement" className="pl-5 pr-5 pb-4 pt-4 transition-all duration-300  ease-in-out border-1 bg-white border-gray-200 shadow-lg w-[100%] h-[100%] rounded-2xl" >   
+              { activedashboard === 'inventorymanagement' && ( <div id="inventorymanagement" className="pl-5 pr-5 pb-26 pt-4 transition-all duration-300  ease-in-out border-1 bg-white border-gray-200 shadow-lg w-[100%] h-auto rounded-2xl" >   
 
               <div className="flex items-center"><i className="bx bxs-package text-[#184d85] text-[25px] mr-2"/> <h1 className=" font-albertsans font-bold text-[#184d85] text-[25px]">Inventory Management</h1></div>
 
@@ -9057,10 +9065,11 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
   <div onClick={() => showinventorytable('ambherinventorytable')}  className={`mr-3 hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 pb-3 pt-3 text-center flex justify-center items-center ${activeinventorytable ==='ambherinventorytable' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d] ${activeinventorytable ==='ambherinventorytable' ? 'text-white' : ''}`}>Ambher Optical</h1></div>
   <div onClick={() => showinventorytable('bautistainventorytable')}  className={`ml-3 hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 pb-3 pt-3 text-center flex justify-center items-center ${activeinventorytable ==='bautistainventorytable' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d] ${activeinventorytable ==='bautistainventorytable' ? 'text-white' : ''}`}>Bautista Eye Center</h1></div>
   
+  
   </div>
 
 
-          { activeinventorytable === 'allinventorytable' && ( <div id="allinventorytable" className="animate-fadeInUp flex flex-col items-center border-t-2  border-[#909090] w-[100%] h-[90%] rounded-2xl mt-5" >   
+          { activeinventorytable === 'allinventorytable' && ( <div id="allinventorytable" className="animate-fadeInUp flex flex-col items-center border-[#909090] w-[100%] h-[90%] rounded-2xl mt-5" >   
 
           </div>)}
                 
@@ -9073,10 +9082,31 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
 
 
 
-          { activeinventorytable === 'ambherinventorytable' && ( <div id="ambherinventorytable" className="p-2  animate-fadeInUp flex  items-start border-t-2  border-[#909090] w-[100%] h-[83%] rounded-2xl mt-5" >
+          { activeinventorytable === 'ambherinventorytable' && ( <div id="ambherinventorytable" className="p-2  animate-fadeInUp  border-[#909090] w-[100%] h-[83%] rounded-2xl mt-5" >
 
-          <div className="p-3 shadow-b-lg border-b-2  rounded-2xl w-[20%] h-full  mr-2 overflow-y-auto overflow-x-hidden">
+
+
+        {ambherinventoryproductcount.length > 0 && (
+        <div className="flexitems-center p-5 w-full h-auto bg-yellow-100 rounded-2xl border-1 border-yellow-600 ">
+         <div className="flex items-center">
+           <img src={cautionlowstockalert} className="w-8 h-8"></img>
+           <h1 className="ml-1 font-albertsans font-semibold text-yellow-900 text-[18px]">Low Stock Alert</h1>
+         </div>
+
+         <div className="ml-1">
+           <p className="font-semibold text-orange-900 text-[14px]">  {ambherinventoryproductcount.length} Item(s) need attention.</p>
+         </div>
+         </div>
+         )}
+
+
+
+
+         <div className="flex  items-start mt-5">
+
+          <div className="p-3   rounded-2xl w-[20%] h-full  mr-2 overflow-y-auto overflow-x-hidden">
         
+          
                 <div onClick={() => {setambherinventorycategorynamebox(null); setshowaddambherinventorycategorydialog(true);}}   className=" mt-1 mb-1 hover:cursor-pointer hover:scale-103 bg-[#383838] rounded-3xl flex justify-center items-center px-4 py-2 transition-all duration-300 ease-in-out"><p className="font-semibold font-albertsans text-white text-[18px] ml-2">Manage Categories</p></div>
                 <div className="border-b-2 pb-3 flex items center w-full mt-7"><i className="bx bx-filter font-albertsans font-semibold text-[#363636] text-[25px]" /><h1 className="ml-2 text-[16px] font-albertsans font-semibold text-[#363636]">Filter by category</h1></div>
 
@@ -9097,10 +9127,10 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
             {/*<div className=""> <AmbherinventorycategoryBox value={ambherinventorycategorynamebox} loading={loadingambherinventorycategorylist} onChange={(e) => setambherinventorycategorynamebox(e.target.value)} categories={ambherinventorycategorylist}/></div>*/}
 
           </div>
-          <div className=" flex flex-col justify-start  ml-2 rounded-2xl w-[90%]  h-[540px] shadow-b-lg ">
-              <div className="flex justify-end items-center w-full h-[9%] rounded-2xl mb-2"> <div onClick={() => setshowaddambherinventoryproductdialog(true)}  className="w-50 p-2 hover:cursor-pointer hover:scale-103 bg-[#4ca22b] rounded-3xl flex justify-center items-center pl-3 pr-3 transition-all duration-300 ease-in-out"><i className="bx  bx-plus text-white font-bold text-[30px]"/><p className="font-bold font-albertsans text-white text-[18px] ml-2">Add Product</p></div> </div>
+          <div className=" flex flex-col justify-start  ml-2 rounded-2xl w-[90%]  h-auto shadow-b-lg ">
+              <div className="flex justify-end items-center w-full h-[9%] rounded-2xl mb-2 mt-3"> <div onClick={() => setshowaddambherinventoryproductdialog(true)}  className="w-50 p-2 hover:cursor-pointer hover:scale-103 bg-[#4ca22b] rounded-3xl flex justify-center items-center pl-3 pr-3 transition-all duration-300 ease-in-out"><i className="bx  bx-plus text-white font-bold text-[30px]"/><p className="font-bold font-albertsans text-white text-[18px] ml-2">Add Product</p></div> </div>
 
-              <div className="overflow-y-auto w-[100%] rounded-2xl h-full flex flex-wrap content-start gap-3 pl-2 pt-2 bg-[#fafafa]">
+              <div className=" w-[100%] rounded-2xl h-full flex flex-wrap content-start gap-3 pl-2 pt-2 bg-[#ffffff]">
                 
 
               <div className="flex flex-wrap p-4">
@@ -9109,7 +9139,12 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
                 ): ambherinventoryproducts.length === 0 ? (
                   <div>No Products Found...</div> 
                 ):(
-                  filteredproducts.map((product) => (
+                  [...filteredproducts]
+                  .sort((a, b) => {
+                    const aquant = a.ambherinventoryproductquantity || 0;
+                    const bquant = b.ambherinventoryproductquantity || 0;
+                    return aquant <= 10 ? (bquant <= 10 ? 0 : -1) : 1;
+                  }).map((product) => (
               <div key={product.ambherinventoryproductid} onClick={() => {setshowaddambherinventoryproductdialog(true);
                                                                            setselectedambherproduct(product);
                                                                            setcurrentimageindex(0);
@@ -9121,12 +9156,12 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
                                                                            setaddambherinventoryproductprice(product?.ambherinventoryproductprice || 0);
                                                                            setaddambherinventoryproductquantity(product?.ambherinventoryproductquantity || 0);
                                                                            setaddambherinventoryproductimagepreviewimages(product?.ambherinventoryproductimagepreviewimages || []);
-              }} className="mr-3 mb-3 flex flex-col items-start justify-start w-[220px] h-auto shadow-md bg-white rounded-2xl">
-                <img src={product.ambherinventoryproductimagepreviewimages[0] || defaultimageplaceholder}  alt={product.ambherinventoryproductname} className="w-full h-45"/>
-                <div className="mx-1  w-fit rounded-md py-1 px-2  bg-[#0d708f] rounded-1xl h-fit  mt-2 break-words min-w-0"><h1 className="font-medium italic text-white text-[16px] min-w-0 break-words">{product.ambherinventoryproductcategory}</h1></div>
-                <div className="w-full h-auto ml-2 mt-2 "><h1 className="font-albertsans font-medium text-[#4e4f4f] text-[14px] min-w-0 break-words">{product.ambherinventoryproductname}</h1></div>
-                <div className="w-fit h-auto ml-2 mt-1 "><h1 className="font-albertsans font-bold text-[#4e4f4f] text-[18px] min-w-0 break-words">₱ {product.ambherinventoryproductprice?.toLocaleString()}</h1></div>
-                <div className="w-full h-auto ml-2 mt-5 mb-5 "><h1 className="font-albertsans font-medium text-[#4e4f4f] text-[15px] min-w-0 break-words">Stock Quantity: {product.ambherinventoryproductquantity}</h1></div>
+              }} className={`mr-3 mb-3 flex flex-col items-start justify-start w-[220px] h-auto shadow-md bg-white rounded-2xl ${product.ambherinventoryproductquantity <=10 ? 'border-2 border-yellow-600' : ''}`}>
+                <img src={product.ambherinventoryproductimagepreviewimages[0] || defaultimageplaceholder}  alt={product.ambherinventoryproductname} className="rounded-tr-2xl  rounded-tl-2xl w-full h-45"/>
+                <div className={` mx-1  w-fit rounded-md py-1 px-2  rounded-1xl h-fit  mt-2 break-words min-w-0 ${product.ambherinventoryproductquantity <=10 ? 'bg-yellow-700' : ' bg-[#F0F6FF]'}`}><h1 className={`font-medium   text-[13px] min-w-0 break-words ${product.ambherinventoryproductquantity <=10 ? 'text-white' : 'text-[#0d0d0d]'}`}>{product.ambherinventoryproductcategory}</h1></div>
+                <div className="w-full h-auto ml-2 mt-2 "><h1 className={` font-semibold  text-[15px] min-w-0 break-words ${product.ambherinventoryproductquantity <=10 ? 'text-yellow-600' : 'text-[#0d0d0d]'}`}>{product.ambherinventoryproductname}</h1></div>
+                <div className="w-fit h-auto ml-2 mt-1 "><h1 className={`font-albertsans font-bold text-[18px] min-w-0 break-words ${product.ambherinventoryproductquantity <=10 ? 'text-yellow-600' : 'text-[#0d0d0d]'}`}>₱ {product.ambherinventoryproductprice?.toLocaleString()}</h1></div>
+                <div className="w-full h-auto ml-2 mt-5 mb-5 "><h1 className={`font-albertsans font-medium  text-[15px] min-w-0 break-words ${product.ambherinventoryproductquantity <=10 ? 'text-yellow-600' : 'text-[#4e4f4f]'}`}>In Stock: {product.ambherinventoryproductquantity}     {product.ambherinventoryproductquantity <= 10 && '(Low)'} </h1></div>
               </div>
                   ))
                 )}
@@ -9137,7 +9172,7 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
 
               </div>
           </div>
-
+        </div>
           </div>)}
 
 
@@ -9531,9 +9566,25 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
 
 
 
-          { activeinventorytable === 'bautistainventorytable' && ( <div id="bautistainventorytable" className="p-2  animate-fadeInUp flex  items-start border-t-2  border-[#909090] w-[100%] h-[83%] rounded-2xl mt-5" >
+          { activeinventorytable === 'bautistainventorytable' && ( <div id="bautistainventorytable" className="p-2  animate-fadeInUp  border-[#909090] w-[100%] h-[83%] rounded-2xl mt-5" >
 
-          <div className="p-3 shadow-b-lg border-b-2  rounded-2xl w-[20%] h-full  mr-2 overflow-y-auto overflow-x-hidden">
+
+         {bautistainventoryproductcount.length > 0 && (
+        <div className="flexitems-center p-5 w-full h-auto bg-yellow-100 rounded-2xl border-1 border-yellow-600 ">
+         <div className="flex items-center">
+           <img src={cautionlowstockalert} className="w-8 h-8"></img>
+           <h1 className="ml-1 font-albertsans font-semibold text-yellow-900 text-[18px]">Low Stock Alert</h1>
+         </div>
+
+         <div className="ml-1">
+           <p className="font-semibold text-orange-900 text-[14px]">  {bautistainventoryproductcount.length} Item(s) need attention.</p>
+         </div>
+         </div>
+         )}
+
+
+         <div className="flex  items-start mt-5">
+          <div className="p-3 shadow-b-lg  rounded-2xl w-[20%] h-full  mr-2 overflow-y-auto overflow-x-hidden">
         
                 <div onClick={() => {setbautistainventorycategorynamebox(null); setshowaddbautistainventorycategorydialog(true);}}   className=" mt-1 mb-1 hover:cursor-pointer hover:scale-103 bg-[#383838] rounded-3xl flex justify-center items-center px-4 py-2 transition-all duration-300 ease-in-out"><p className="font-semibold font-albertsans text-white text-[18px] ml-2">Manage Categories</p></div>
                 <div className="border-b-2 pb-3 flex items center w-full mt-7"><i className="bx bx-filter font-albertsans font-semibold text-[#363636] text-[25px]" /><h1 className="ml-2 text-[16px] font-albertsans font-semibold text-[#363636]">Filter by category</h1></div>
@@ -9555,10 +9606,10 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
             {/*<div className=""> <AmbherinventorycategoryBox value={bautistainventorycategorynamebox} loading={loadingbautistainventorycategorylist} onChange={(e) => setbautistainventorycategorynamebox(e.target.value)} categories={bautistainventorycategorylist}/></div>*/}
 
           </div>
-          <div className=" flex flex-col justify-start  ml-2 rounded-2xl w-[90%]  h-[540px] shadow-b-lg ">
-              <div className="flex justify-end items-center w-full h-[9%] rounded-2xl mb-2"> <div onClick={() => setshowaddbautistainventoryproductdialog(true)}  className="w-50 p-2 hover:cursor-pointer hover:scale-103 bg-[#4ca22b] rounded-3xl flex justify-center items-center pl-3 pr-3 transition-all duration-300 ease-in-out"><i className="bx  bx-plus text-white font-bold text-[30px]"/><p className="font-bold font-albertsans text-white text-[18px] ml-2">Add Product</p></div> </div>
+          <div className=" flex flex-col justify-start  ml-2 rounded-2xl w-[90%]  h-auto shadow-b-lg ">
+              <div className="flex justify-end items-center w-full h-[9%] rounded-2xl mb-2 mt-3"> <div onClick={() => setshowaddbautistainventoryproductdialog(true)}  className="w-50 p-2 hover:cursor-pointer hover:scale-103 bg-[#4ca22b] rounded-3xl flex justify-center items-center pl-3 pr-3 transition-all duration-300 ease-in-out"><i className="bx  bx-plus text-white font-bold text-[30px]"/><p className="font-bold font-albertsans text-white text-[18px] ml-2">Add Product</p></div> </div>
 
-              <div className="overflow-y-auto w-[100%] rounded-2xl h-full flex flex-wrap content-start gap-3 pl-2 pt-2 bg-[#fafafa]">
+              <div className="overflow-y-auto w-[100%] rounded-2xl h-full flex flex-wrap content-start gap-3 pl-2 pt-2 bg-[#ffffff]">
                 
 
               <div className="flex flex-wrap p-4">
@@ -9567,7 +9618,12 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
                 ): bautistainventoryproducts.length === 0 ? (
                   <div>No Products Found...</div> 
                 ):(
-                  bautistafilteredproducts.map((product) => (
+                  [...bautistafilteredproducts]
+                  .sort((a, b) => {
+                    const aquant = a.bautistainventoryproductquantity || 0;
+                    const bquant = b.bautistainventoryproductquantity || 0;
+                    return aquant <= 10 ? (bquant <= 10 ? 0 : -1) : 1;
+                  }).map((product) => (
               <div key={product.bautistainventoryproductid} onClick={() => {setshowaddbautistainventoryproductdialog(true);
                                                                            setselectedbautistaproduct(product);
                                                                            setbautistacurrentimageindex(0);
@@ -9579,12 +9635,12 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
                                                                            setaddbautistainventoryproductprice(product?.bautistainventoryproductprice || 0);
                                                                            setaddbautistainventoryproductquantity(product?.bautistainventoryproductquantity || 0);
                                                                            setaddbautistainventoryproductimagepreviewimages(product?.bautistainventoryproductimagepreviewimages || []);
-              }} className="mr-3 mb-3 flex flex-col items-start justify-start w-[220px] h-auto shadow-md bg-white rounded-2xl">
-                <img src={product.bautistainventoryproductimagepreviewimages[0] || defaultimageplaceholder}  alt={product.bautistainventoryproductname} className="w-full h-45"/>
-                <div className="mx-1  w-fit rounded-md py-1 px-2  bg-[#0d708f] rounded-1xl h-fit  mt-2 break-words min-w-0"><h1 className="font-medium italic text-white text-[16px] min-w-0 break-words">{product.bautistainventoryproductcategory}</h1></div>
-                <div className="w-full h-auto ml-2 mt-2 "><h1 className="font-albertsans font-medium text-[#4e4f4f] text-[14px] min-w-0 break-words">{product.bautistainventoryproductname}</h1></div>
-                <div className="w-fit h-auto ml-2 mt-1 "><h1 className="font-albertsans font-bold text-[#4e4f4f] text-[18px] min-w-0 break-words">₱ {product.bautistainventoryproductprice?.toLocaleString()}</h1></div>
-                <div className="w-full h-auto ml-2 mt-5 mb-5 "><h1 className="font-albertsans font-medium text-[#4e4f4f] text-[15px] min-w-0 break-words">Stock Quantity: {product.bautistainventoryproductquantity}</h1></div>
+              }} className={`mr-3 mb-3 flex flex-col items-start justify-start w-[220px] h-auto shadow-md bg-white rounded-2xl ${product.bautistainventoryproductquantity <=10 ? 'border-2 border-yellow-600' : ''}`}>
+                <img src={product.bautistainventoryproductimagepreviewimages[0] || defaultimageplaceholder}  alt={product.bautistainventoryproductname} className="rounded-tr-2xl  rounded-tl-2xl w-full h-45"/>
+                <div className={` mx-1  w-fit rounded-md py-1 px-2  rounded-1xl h-fit  mt-2 break-words min-w-0 ${product.bautistainventoryproductquantity <=10 ? 'bg-yellow-700' : ' bg-[#F0F6FF]'}`}><h1 className={`font-medium   text-[13px] min-w-0 break-words ${product.bautistainventoryproductquantity <=10 ? 'text-white' : 'text-[#0d0d0d]'}`}>{product.bautistainventoryproductcategory}</h1></div>
+                <div className="w-full h-auto ml-2 mt-2 "><h1 className={` font-semibold  text-[15px] min-w-0 break-words ${product.bautistainventoryproductquantity <=10 ? 'text-yellow-600' : 'text-[#0d0d0d]'}`}>{product.bautistainventoryproductname}</h1></div>
+                <div className="w-fit h-auto ml-2 mt-1 "><h1 className={`font-albertsans font-bold text-[18px] min-w-0 break-words ${product.bautistainventoryproductquantity <=10 ? 'text-yellow-600' : 'text-[#0d0d0d]'}`}>₱ {product.bautistainventoryproductprice?.toLocaleString()}</h1></div>
+                <div className="w-full h-auto ml-2 mt-5 mb-5 "><h1 className={`font-albertsans font-medium  text-[15px] min-w-0 break-words ${product.bautistainventoryproductquantity <=10 ? 'text-yellow-600' : 'text-[#4e4f4f]'}`}>In Stock: {product.bautistainventoryproductquantity}     {product.bautistainventoryproductquantity <= 10 && '(Low)'} </h1></div>
               </div>
                   ))
                 )}
@@ -9595,6 +9651,7 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
 
               </div>
           </div>
+   </div>
 
           </div>)}
 
