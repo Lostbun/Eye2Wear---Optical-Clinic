@@ -3,7 +3,7 @@
 
 @tailwind utilities;
 
-
+@plugin "tailwindcss-motion";
 @custom-variant dark (&:is(.dark *));
 
 @font-face {

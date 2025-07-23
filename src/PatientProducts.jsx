@@ -5,9 +5,9 @@ import landingbg2 from "../src/assets/images/landingbg2.png";
 import { useAuth } from "./hooks/patientuseAuth";
 
 import defaultimageplaceholder from "../src/assets/images/defaultimageplaceholder.png";
-import darklogo from "../src/assets/images/darklogo.png";
-
-
+import heartblack from "../src/assets/images/heartblack.png";
+import heartwhite from "../src/assets/images/heartwhite.png";
+import heartfilled from "../src/assets/images/heartfilled.png";
 import { AmbherinventorycategoryBox } from "./components/AmbherinventorycategoryBox";
 import { BautistainventorycategoryBox } from "./components/BautistainventorycategoryBox";
 
@@ -411,8 +411,38 @@ useEffect(() => {
 
 
 
+    
 
+  //PRODUCT ORDERING
+    const [ambhercount, setambherCount] = useState(1)
+    const [ambherheartisHovered, setambherheartisHovered] =useState(false);
+    const [ambherheartisClicked, setambherheartisClicked] =useState(false);     
+    const [ambhershowheartToast, setambhershowheartToast] = useState(false);
+    const [ambhershowtoastMessage, setambhershowtoastMessage] = useState("");
+    const [ambhershowtoastmessageClosing, setambhershowtoastmessageClosing] = useState(false);
 
+  const ambherhearthandleClick = () => {
+    const ambherheartnewState = !ambherheartisClicked;
+    setambherheartisClicked(ambherheartnewState);
+    setambhershowtoastMessage(ambherheartnewState ? "Added to Wishlist!" : "Removed from Wishlist"); 
+    setambhershowheartToast(true);
+    setambhershowtoastmessageClosing(false);
+  };
+
+  const getambherHeartImage = () => {
+    if (ambherheartisClicked) return heartfilled;
+    return ambherheartisHovered ? heartwhite : heartblack;
+  };
+
+useEffect(() => {
+  if(ambhershowheartToast){
+    const ambherhearttoasttimer = setTimeout(() => {
+      setambhershowtoastmessageClosing(true); //
+      setTimeout(() => setambhershowheartToast(false), 300);}, 4000);
+  
+    return () => clearTimeout(ambherhearttoasttimer);
+  }
+}, [ambhershowheartToast]);
 
 
 
@@ -556,17 +586,17 @@ useEffect(() => {
 
 
     {/* First Section */} {/* First Section */} {/* First Section */} {/* First Section */}
-    <section className="bg-cover bg-center h-[100vh] w-[99vw] flex justify-center align-center" style={{ backgroundImage: `url(${landingbg2})` }}>
-    <div className="bg-cover bg-center h-[100%] w-[99.1vw] flex items-center justify-center " >
+    <section className="bg-cover bg-center h-auto w-[99vw] flex justify-center align-center" style={{ backgroundImage: `url(${landingbg2})` }}>
+    <div className="bg-cover bg-center h-auto w-[99.1vw] flex items-center justify-center " >
 
-      <div className="w-full h-full flex flex-col justify-start items-start pt-3 p-3">
-
-
+      <div className="w-full h-auto flex flex-col justify-start items-start pt-3 p-3">
 
 
 
 
-              <div id="inventorymanagement" className="pl-5 pr-5 pb-4 pt-4 transition-all duration-300  ease-in-out border-1 bg-white border-gray-200 shadow-lg w-[100%] h-[100%] rounded-2xl" >   
+
+
+              <div id="inventorymanagement" className="pl-5 pr-5 pb-4 pt-4 transition-all duration-300  ease-in-out border-1  border-gray-200 shadow-lg w-[100%] h-full bg-white rounded-2xl" >   
 
               <div className="flex items-center"><i className="bx bxs-package text-[#184d85] text-[25px] mr-2"/> <h1 className=" font-albertsans font-bold text-[#184d85] text-[25px]">Explore our Products</h1></div>
 
@@ -585,11 +615,11 @@ useEffect(() => {
 
 
 
-          { activeinventorytable === 'ambherinventorytable' && ( <div id="ambherinventorytable" className="p-2  animate-fadeInUp flex  items-start border-t-2  border-[#909090] w-[100%] h-[83%] rounded-2xl mt-5" >
+          { activeinventorytable === 'ambherinventorytable' && ( <div id="ambherinventorytable" className="p-2  animate-fadeInUp flex  items-start  w-[100%] h-[83%] rounded-2xl mt-5" >
 
-          <div className="p-3 shadow-b-lg border-b-2  rounded-2xl w-[20%] h-full  mr-2 overflow-y-auto overflow-x-hidden">
+          <div className="p-3  rounded-2xl w-[20%] h-auto  mr-2 overflow-y-auto overflow-x-hidden">
         
-                <div className="border-b-2 pb-3 flex items center w-full mt-7"><i className="bx bx-filter font-albertsans font-semibold text-[#363636] text-[25px]" /><h1 className="ml-2 text-[16px] font-albertsans font-semibold text-[#363636]">Filter by category</h1></div>
+                <div className=" pb-3 flex items center w-full mt-7"><i className="bx bx-filter font-albertsans font-semibold text-[#363636] text-[25px]" /><h1 className="ml-2 text-[16px] font-albertsans font-semibold text-[#363636]">Filter by category</h1></div>
 
                 <div onClick={() => showambherinventorycategory('all')}  className={`mt-3 hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 py-2 text-center flex justify-center items-center ${activeambherinventorycategorytable ==='all' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d] ${activeambherinventorycategorytable ==='all' ? 'text-white' : ''}`}>All</h1><span className="bg-gray-200 text-gray-500 font-semibold px-2 rounded-full ml-2 text-sm">{ambherinventoryproducts.length}</span></div>
 
@@ -608,9 +638,9 @@ useEffect(() => {
             {/*<div className=""> <AmbherinventorycategoryBox value={ambherinventorycategorynamebox} loading={loadingambherinventorycategorylist} onChange={(e) => setambherinventorycategorynamebox(e.target.value)} categories={ambherinventorycategorylist}/></div>*/}
 
           </div>
-          <div className=" flex flex-col justify-start  ml-2 rounded-2xl w-[90%]  h-[540px] shadow-b-lg ">
+          <div className=" flex flex-col justify-start  ml-2 rounded-2xl w-[90%]  min-h-[540px] max-h-auto h-auto shadow-b-lg ">
 
-              <div className="overflow-y-auto w-[100%] rounded-2xl h-full flex flex-wrap content-start gap-3 pl-2 pt-2 bg-[#fafafa]">
+              <div className=" w-[100%] rounded-2xl h-auto  flex flex-wrap content-start gap-3 pl-2 pt-2 ">
                 
 
               <div className="flex flex-wrap p-4">
@@ -632,10 +662,10 @@ useEffect(() => {
                                                                            setaddambherinventoryproductimagepreviewimages(product?.ambherinventoryproductimagepreviewimages || []);
               }} className="mr-3 mb-3 flex flex-col items-start justify-start w-[220px] h-auto shadow-md bg-white rounded-2xl">
                 <img src={product.ambherinventoryproductimagepreviewimages[0] || defaultimageplaceholder}  alt={product.ambherinventoryproductname} className="w-full h-45"/>
-                <div className="mx-1  w-fit rounded-md py-1 px-2  bg-[#0d708f] rounded-1xl h-fit  mt-2 break-words min-w-0"><h1 className="font-medium italic text-white text-[16px] min-w-0 break-words">{product.ambherinventoryproductcategory}</h1></div>
-                <div className="w-full h-auto ml-2 mt-2 "><h1 className="font-albertsans font-medium text-[#4e4f4f] text-[14px] min-w-0 break-words">{product.ambherinventoryproductname}</h1></div>
-                <div className="w-fit h-auto ml-2 mt-1 "><h1 className="font-albertsans font-bold text-[#4e4f4f] text-[18px] min-w-0 break-words">₱ {product.ambherinventoryproductprice?.toLocaleString()}</h1></div>
-                <div className="w-full h-auto ml-2 mt-5 mb-5 "><h1 className="font-albertsans font-medium text-[#4e4f4f] text-[15px] min-w-0 break-words">Stock Quantity: {product.ambherinventoryproductquantity}</h1></div>
+                <div className=" mx-1  w-fit rounded-md py-1 px-2  rounded-1xl h-fit  mt-2 break-words min-w-0 bg-[#F0F6FF]"><h1 className="font-medium   text-[#0d0d0d] text-[13px] min-w-0 break-words ">{product.ambherinventoryproductcategory}</h1></div>
+                    <div className="w-full h-auto ml-2 mt-2 "><h1 className="font-semibold  text-[15px] min-w-0 break-words ">{product.ambherinventoryproductname}</h1></div>
+                    <div className="w-fit h-auto ml-2 mt-1 "><h1 className="font-albertsans font-bold text-[18px] min-w-0 break-words ">₱ {product.ambherinventoryproductprice?.toLocaleString()}</h1></div>
+                <div className="w-full h-auto ml-2 mt-5 mb-5 "><h1 className="font-albertsans font-medium text-[#4e4f4f] text-[15px] min-w-0 break-words">0 Sold</h1></div>
               </div>
                   ))
                 )}
@@ -650,34 +680,54 @@ useEffect(() => {
           </div>)}
 
 
+      {/*Toast Message when wishlist button is clicked*/}
+          {ambhershowheartToast && (
+            <div className="top-4  -translate-x-1/2  z-100   left-1/2 transform fixed " >
+                  <div key={ambherheartisClicked ? 'added' : 'removed'}  className={` ${ambhershowtoastmessageClosing ? 'motion-opacity-out-0' : 'motion-preset-bounce'}  flex items-center bg-white   rounded-md shadow-lg text-gray-900 font-semibold px-6 py-3`} >
+                    {ambherheartisClicked ? (          
+                       <span className="text-green-800 font-semibold text-[20px]"><i className="mr-2 bx bx-check-circle "></i></span>
+                    ) : (
+                      <span className="text-red-800 font-semibold text-[20px]"><i className="mr-2 bx bx-x-circle "></i></span>
+                    )}
+                    {ambhershowtoastMessage}
+                  </div>
+            </div>
+          )}
+
+
+
 
           {showpatientambherviewproduct && (
 
                          <div className="overflow-y-auto h-auto  bg-opacity-0 flex justify-center items-start z-50 fixed inset-0 bg-[#000000af] bg-opacity-50">
                            <div className="mt-10 pl-5 pr-5 bg-white rounded-2xl w-[1300px] h-auto mb-10 animate-fadeInUp ">
-                                <div className=" mt-5 border-3 flex justify-between items-center border-[#2d2d4400] w-full h-[70px]">
-                                  <div className="flex justify-center items-center"><img src={darklogo} alt="Eye2Wear: Optical Clinic" className="w-15 hover:scale-105 transition-all   p-1"></img><h1 className="text-[#184d85] font-albertsans font-bold ml-3 text-[30px]">View Product</h1></div>
-                                  <div onClick={() => setshowpatientambherviewproduct(false)} className="bg-[#333232] px-10 rounded-2xl hover:cursor-pointer hover:scale-105 transition-all duration-300 ease-in-out"><i className="bx bx-x text-white text-[40px] "/></div>
+                                <div className=" mt-5  flex justify-end items-center left-0 w-[100%] h-[70px]">
+                   
+                                  <div onClick={() => {setambherCount(1); setshowpatientambherviewproduct(false)}} className="bg-[#333232] px-10 rounded-2xl hover:cursor-pointer hover:scale-105 transition-all duration-300 ease-in-out"><i className="bx bx-x text-white text-[40px] "/></div>
                                 </div>
 
+
                           <form className="flex flex-col  ml-15 mr-15 mt-5   w-fullx" >
-                                <div className="flex justify-center items-start bg-[#fcfcfc] rounded-2xl w-full h-auto">
-                                  <div className="pb-10 w-full h-full mr-15 rounded-2xl flex justify-center mt-5">
+                                <div className=" flex justify-center items-start rounded-2xl w-full h-auto">
+                                  <div className=" pb-10 w-full h-full mr-15 rounded-2xl flex justify-center mb-20">
 
 
 
-                                      <div className="h-fit w-fit flex-none">
+                                      <div className=" h-fit w-fit flex-none">
   
-                                <div className="relative">
-                                <img  className="w-120 object-cover rounded-2xl h-120" src={(selectedambherproduct?.ambherinventoryproductimagepreviewimages?.[ambhercurrentimageindex]) || (addambherinventoryproductimagepreviewimages?.[ambhercurrentimageindex]) || defaultimageplaceholder}/>
+                                <div className=" relative">
+                                  
+                                 <img  src={getambherHeartImage()} onClick={ambherhearthandleClick} onMouseEnter={() => !ambherheartisClicked && setambherheartisHovered(true)} onMouseLeave={() => !ambherheartisClicked && setambherheartisHovered(false)}  className={` ease-in-out duration-300 transition-all right-0 absolute border-1  w-10 h-10 p-2 rounded-2xl cursor-pointer ${ambherheartisClicked ? "bg-red-400" : "hover:bg-red-400"}`}/>
+  
 
+                                <img  className="w-120 object-cover rounded-2xl h-120" src={(selectedambherproduct?.ambherinventoryproductimagepreviewimages?.[ambhercurrentimageindex]) || (addambherinventoryproductimagepreviewimages?.[ambhercurrentimageindex]) || defaultimageplaceholder}/>
 
                                      {((selectedambherproduct?.ambherinventoryproductimagepreviewimages?.length || 0) > 1 || 
                                        addambherinventoryproductimagepreviewimages?.length > 1) && (
                                          <>
-                                           <button type="button" onClick={ambherhandlepreviousimage}  className="bg-opacity-50 hover:bg-opacity-75 rounded-full text-white p-2 absolute left-2 top-1/2 transform -translate-y-1/2 bg-black"><i className="bx bx-chevron-left text-2xl" /></button>
+                                           <div type="button" onClick={ambherhandlepreviousimage}  className="bg-opacity-50 hover:bg-opacity-75 rounded-2xl text-white p-2 absolute left-2 top-1/2 transform -translate-y-1/2 bg-gray-500"><i className="bx bx-chevron-left text-2xl" /></div>
 
-                                           <button type="button" onClick={ambherhandlenextimage}  className="rounded-full absolute bg-opacity-50 text-white p-2 transform -translate-y-1/2 bg-black hover:bg-opacity-75 right-2 top-1/2">  <i className="bx bx-chevron-right text-2xl" /></button>
+                                           <div type="button" onClick={ambherhandlenextimage}  className="rounded-2xl absolute bg-opacity-50 text-white p-2 transform -translate-y-1/2 bg-gray-500 hover:bg-opacity-75 right-2 top-1/2">  <i className="bx bx-chevron-right text-2xl" /></div>
 
                                          </>
                                        )}
@@ -691,26 +741,39 @@ useEffect(() => {
 
                                   </div>
 
-                                  <div className="w-full h-auto flex items-start mb-10 rounded-2xl min-w-0">
+                                  <div className=" w-full h-auto flex items-start mb-10 rounded-2xl min-w-0">
                                         <div className=" w-[100%] h-auto  rounded-4xl">
                                   
                                   
               
                                         <div className=" w-[100%] registration-container">
                                      
-                                        <h1 className=" font-matimo text-white px-4 py-1 w-max rounded-2xl bg-[#3da9d1] text-[23px] ">{ambherinventorycategorynamebox}</h1>
+                                        <h1 className="font-semibold text-[#0d0d0d] px-4 py-1 w-max rounded-2xl bg-[#F0F6FF] text-[23px] ">{ambherinventorycategorynamebox}</h1>
                                         <p className="font-albertsans font-semibold text-[#616161] text-[14px]">{addambherinventoryproductbrand}</p>
                                         <h1 className="min-w-0 break-words h-fit w-full font-albertsans font-bold text-[#212121] text-[29px]">{addambherinventoryproductname}</h1>
-                                        <p className="font-albertsans font-semibold text-[#616161] text-[14px]">Available in Stock: {addambherinventoryproductquantity}</p>
+                        
                                   
                                         <p className="mt-3 font-albertsans font-semibold text-[#478d12] text-[40px]">₱{addambherinventoryproductprice}</p>
                                   
-                                        <p className="mt-12 font-albertsans font-bold text-[#343434] text-[20px]">Description</p>
+                                        <p className="mt-10 font-albertsans font-bold text-[#343434] text-[20px]">Description</p>
                                         <p className="font-semibold text-[#4b4b4b]">- {addambherinventoryproductdescription}</p>
-
+                                      
+                                       
+                                        <div className="gap-4 mt-10 flex items-center">
+                                          <p className="font-semibold ">Quantity:</p>
+                                        <div className="w-auto h-10  flex items-center justify-between border-1 rounded-2xl">
+                                          <div   className={`font-bold h-full w-10 bg-gray-100 rounded-l-2xl flex items-center justify-center cursor-pointer select-none ${ambhercount <= 1 ? "opacity-50 cursor-not-allowed" : "active:bg-gray-200"}`} style={{ WebkitTapHighlightColor: 'transparent' }} type="button" onClick={() => setambherCount (c => Math.max(1, c - 1))}>-</div>
+                                          <span className="px-6 font-semibold">{ambhercount}</span>
+                                          <div  className={`font-bold h-full w-10 bg-gray-100 rounded-r-2xl flex items-center justify-center cursor-pointer select-none  ${ambhercount >= addambherinventoryproductquantity ? "opacity-50 cursor-not-allowed" : "active:bg-gray-200"}`} style={{ WebkitTapHighlightColor: 'transparent' }}  type="button" onClick={() => setambherCount ((c) => Math.min(c + 1, addambherinventoryproductquantity))}>+</div>
+                                         </div>
+                                               <p className="font-albertsans font-semibold text-[#616161] text-[14px]">{addambherinventoryproductquantity} pieces available </p>
+                                       </div>
+                                  
+                                        <div  className="mt-3 hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 py-2 text-center flex justify-center items-center ">Buy Now</div>
+                                   
                                         </div>
                                 
-                                  
+                                   
                                   
                                         </div>
 
@@ -729,11 +792,11 @@ useEffect(() => {
 
 
 
-          { activeinventorytable === 'bautistainventorytable' && ( <div id="bautistainventorytable" className="p-2  animate-fadeInUp flex  items-start border-t-2  border-[#909090] w-[100%] h-[83%] rounded-2xl mt-5" >
+          { activeinventorytable === 'bautistainventorytable' && ( <div id="bautistainventorytable" className="p-2  animate-fadeInUp flex  items-start  w-[100%] h-[83%] rounded-2xl mt-5" >
 
-          <div className="p-3 shadow-b-lg border-b-2  rounded-2xl w-[20%] h-full  mr-2 overflow-y-auto overflow-x-hidden">
+          <div className="p-3   rounded-2xl w-[20%] h-full  mr-2 overflow-y-auto overflow-x-hidden">
         
-                <div className="border-b-2 pb-3 flex items center w-full mt-7"><i className="bx bx-filter font-albertsans font-semibold text-[#363636] text-[25px]" /><h1 className="ml-2 text-[16px] font-albertsans font-semibold text-[#363636]">Filter by category</h1></div>
+                <div className=" pb-3 flex items center w-full mt-7"><i className="bx bx-filter font-albertsans font-semibold text-[#363636] text-[25px]" /><h1 className="ml-2 text-[16px] font-albertsans font-semibold text-[#363636]">Filter by category</h1></div>
 
                 <div onClick={() => showbautistainventorycategory('all')}  className={`mt-3 hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 py-2 text-center flex justify-center items-center ${activebautistainventorycategorytable ==='all' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d] ${activebautistainventorycategorytable ==='all' ? 'text-white' : ''}`}>All</h1><span className="bg-gray-200 text-gray-500 font-semibold px-2 rounded-full ml-2 text-sm">{bautistainventoryproducts.length}</span></div>
 
@@ -752,9 +815,9 @@ useEffect(() => {
             {/*<div className=""> <AmbherinventorycategoryBox value={bautistainventorycategorynamebox} loading={loadingbautistainventorycategorylist} onChange={(e) => setbautistainventorycategorynamebox(e.target.value)} categories={bautistainventorycategorylist}/></div>*/}
 
           </div>
-          <div className=" flex flex-col justify-start  ml-2 rounded-2xl w-[90%]  h-[540px] shadow-b-lg ">
+          <div className=" flex flex-col justify-start  ml-2 rounded-2xl w-[90%]  min-h-[540px] max-h-auto h-auto shadow-b-lg ">
 
-              <div className="overflow-y-auto w-[100%] rounded-2xl h-full flex flex-wrap content-start gap-3 pl-2 pt-2 bg-[#fafafa]">
+              <div className="h-auto w-[100%] rounded-2xl  flex flex-wrap content-start gap-3 pl-2 pt-2 ">
                 
 
               <div className="flex flex-wrap p-4">
@@ -776,10 +839,10 @@ useEffect(() => {
                                                                            setaddbautistainventoryproductimagepreviewimages(product?.bautistainventoryproductimagepreviewimages || []);
               }} className="mr-3 mb-3 flex flex-col items-start justify-start w-[220px] h-auto shadow-md bg-white rounded-2xl">
                 <img src={product.bautistainventoryproductimagepreviewimages[0] || defaultimageplaceholder}  alt={product.bautistainventoryproductname} className="w-full h-45"/>
-                <div className="mx-1  w-fit rounded-md py-1 px-2  bg-[#0d708f] rounded-1xl h-fit  mt-2 break-words min-w-0"><h1 className="font-medium italic text-white text-[16px] min-w-0 break-words">{product.bautistainventoryproductcategory}</h1></div>
-                <div className="w-full h-auto ml-2 mt-2 "><h1 className="font-albertsans font-medium text-[#4e4f4f] text-[14px] min-w-0 break-words">{product.bautistainventoryproductname}</h1></div>
-                <div className="w-fit h-auto ml-2 mt-1 "><h1 className="font-albertsans font-bold text-[#4e4f4f] text-[18px] min-w-0 break-words">₱ {product.bautistainventoryproductprice?.toLocaleString()}</h1></div>
-                <div className="w-full h-auto ml-2 mt-5 mb-5 "><h1 className="font-albertsans font-medium text-[#4e4f4f] text-[15px] min-w-0 break-words">Stock Quantity: {product.bautistainventoryproductquantity}</h1></div>
+                <div className=" mx-1  w-fit rounded-md py-1 px-2  rounded-1xl h-fit  mt-2 break-words min-w-0 bg-[#F0F6FF]"><h1 className="font-medium   text-[#0d0d0d] text-[13px] min-w-0 break-words ">{product.bautistainventoryproductcategory}</h1></div>
+                    <div className="w-full h-auto ml-2 mt-2 "><h1 className="font-semibold  text-[15px] min-w-0 break-words ">{product.bautistainventoryproductname}</h1></div>
+                    <div className="w-fit h-auto ml-2 mt-1 "><h1 className="font-albertsans font-bold text-[18px] min-w-0 break-words ">₱ {product.bautistainventoryproductprice?.toLocaleString()}</h1></div>
+                <div className="w-full h-auto ml-2 mt-5 mb-5 "><h1 className="font-albertsans font-medium text-[#4e4f4f] text-[15px] min-w-0 break-words">0 Sold</h1></div>
               </div>
                   ))
                 )}
@@ -799,13 +862,13 @@ useEffect(() => {
 
                          <div className="overflow-y-auto h-auto  bg-opacity-0 flex justify-center items-start z-50 fixed inset-0 bg-[#000000af] bg-opacity-50">
                            <div className="mt-10 pl-5 pr-5 bg-white rounded-2xl w-[1300px] h-auto mb-10 animate-fadeInUp ">
-                                <div className=" mt-5 border-3 flex justify-between items-center border-[#2d2d4400] w-full h-[70px]">
-                                  <div className="flex justify-center items-center"><img src={darklogo} alt="Eye2Wear: Optical Clinic" className="w-15 hover:scale-105 transition-all   p-1"></img><h1 className="text-[#184d85] font-albertsans font-bold ml-3 text-[30px]">View Product</h1></div>
+                                <div className=" mt-5  flex justify-end items-center left-0 w-[100%] h-[70px]">
+                   
                                   <div onClick={() => setshowpatientbautistaviewproduct(false)} className="bg-[#333232] px-10 rounded-2xl hover:cursor-pointer hover:scale-105 transition-all duration-300 ease-in-out"><i className="bx bx-x text-white text-[40px] "/></div>
                                 </div>
 
                           <form className="flex flex-col  ml-15 mr-15 mt-5   w-fullx" >
-                                <div className="flex justify-center items-start bg-[#fcfcfc] rounded-2xl w-full h-auto">
+                                <div className="flex justify-center items-start rounded-2xl w-full h-auto">
                                   <div className="pb-10 w-full h-full mr-15 rounded-2xl flex justify-center mt-5">
 
 
@@ -842,19 +905,19 @@ useEffect(() => {
               
                                         <div className=" w-[100%] registration-container">
                                      
-                                        <h1 className=" font-matimo text-white px-4 py-1 w-max rounded-2xl bg-[#3da9d1] text-[23px] ">{bautistainventorycategorynamebox}</h1>
+                                        <h1 className=" font-semibold text-[#0d0d0d] px-4 py-1 w-max rounded-2xl bg-[#F0F6FF] text-[23px] ">{bautistainventorycategorynamebox}</h1>
                                         <p className="font-albertsans font-semibold text-[#616161] text-[14px]">{addbautistainventoryproductbrand}</p>
                                         <h1 className="min-w-0 break-words h-fit w-full font-albertsans font-bold text-[#212121] text-[29px]">{addbautistainventoryproductname}</h1>
-                                        <p className="font-albertsans font-semibold text-[#616161] text-[14px]">Available in Stock: {addbautistainventoryproductquantity}</p>
+                                
                                   
                                         <p className="mt-3 font-albertsans font-semibold text-[#478d12] text-[40px]">₱{addbautistainventoryproductprice}</p>
                                   
-                                        <p className="mt-12 font-albertsans font-bold text-[#343434] text-[20px]">Description</p>
+                                        <p className="mt-10 font-albertsans font-bold text-[#343434] text-[20px]">Description</p>
                                         <p className="font-semibold text-[#4b4b4b]">- {addbautistainventoryproductdescription}</p>
-
+                                          <p className="font-albertsans font-semibold text-[#616161] text-[14px]">Available in Stock: {addbautistainventoryproductquantity}</p>
                                         </div>
-                                
-                                  
+                                 
+                             
                                   
                                         </div>
 
