@@ -9156,7 +9156,7 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
                                                                            setaddambherinventoryproductprice(product?.ambherinventoryproductprice || 0);
                                                                            setaddambherinventoryproductquantity(product?.ambherinventoryproductquantity || 0);
                                                                            setaddambherinventoryproductimagepreviewimages(product?.ambherinventoryproductimagepreviewimages || []);
-              }} className={`mr-3 mb-3 flex flex-col items-start justify-start w-[220px] h-auto shadow-md bg-white rounded-2xl ${product.ambherinventoryproductquantity <=10 ? 'border-2 border-yellow-600' : ''}`}>
+              }} className={` motion-preset-slide-up mr-3 mb-3 flex flex-col items-start justify-start w-[220px] h-auto shadow-md bg-white rounded-2xl ${product.ambherinventoryproductquantity <=10 ? 'border-2 border-yellow-600' : ''}`}>
                 <img src={product.ambherinventoryproductimagepreviewimages[0] || defaultimageplaceholder}  alt={product.ambherinventoryproductname} className="rounded-tr-2xl  rounded-tl-2xl w-full h-45"/>
                 <div className={` mx-1  w-fit rounded-md py-1 px-2  rounded-1xl h-fit  mt-2 break-words min-w-0 ${product.ambherinventoryproductquantity <=10 ? 'bg-yellow-700' : ' bg-[#F0F6FF]'}`}><h1 className={`font-medium   text-[13px] min-w-0 break-words ${product.ambherinventoryproductquantity <=10 ? 'text-white' : 'text-[#0d0d0d]'}`}>{product.ambherinventoryproductcategory}</h1></div>
                 <div className="w-full h-auto ml-2 mt-2 "><h1 className={` font-semibold  text-[15px] min-w-0 break-words ${product.ambherinventoryproductquantity <=10 ? 'text-yellow-600' : 'text-[#0d0d0d]'}`}>{product.ambherinventoryproductname}</h1></div>
@@ -9355,7 +9355,7 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
           {showaddambherinventoryproductdialog && (
 
                          <div className="overflow-y-auto h-auto  bg-opacity-0 flex justify-center items-start z-50 fixed inset-0 bg-[#000000af] bg-opacity-50">
-                           <div className="mt-10 pl-5 pr-5 bg-white rounded-2xl w-[1300px] h-auto mb-10 animate-fadeInUp ">
+                           <div className="motion-preset-fade  mt-10 pl-5 pr-5 bg-white rounded-2xl w-[1300px] h-auto mb-10 animate-fadeInUp ">
                                 <div className=" mt-5 border-3 flex justify-between items-center border-[#2d2d4400] w-full h-[70px]">
                                   <div className="flex justify-center items-center"><img src={darklogo} alt="Eye2Wear: Optical Clinic" className="w-15 hover:scale-105 transition-all   p-1"></img><h1 className="text-[#184d85] font-albertsans font-bold ml-3 text-[30px]">{selectedambherproduct ?  "Edit Product" : "Add Product"}</h1></div>
                                   <div onClick={() => {setshowaddambherinventoryproductdialog(false);  resetaddambherinventoryproductdialog(); }} className="bg-[#333232] px-10 rounded-2xl hover:cursor-pointer hover:scale-105 transition-all duration-300 ease-in-out"><i className="bx bx-x text-white text-[40px] "/></div>
@@ -9635,7 +9635,7 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
                                                                            setaddbautistainventoryproductprice(product?.bautistainventoryproductprice || 0);
                                                                            setaddbautistainventoryproductquantity(product?.bautistainventoryproductquantity || 0);
                                                                            setaddbautistainventoryproductimagepreviewimages(product?.bautistainventoryproductimagepreviewimages || []);
-              }} className={`mr-3 mb-3 flex flex-col items-start justify-start w-[220px] h-auto shadow-md bg-white rounded-2xl ${product.bautistainventoryproductquantity <=10 ? 'border-2 border-yellow-600' : ''}`}>
+              }} className={`motion-preset-slide-up mr-3 mb-3 flex flex-col items-start justify-start w-[220px] h-auto shadow-md bg-white rounded-2xl ${product.bautistainventoryproductquantity <=10 ? 'border-2 border-yellow-600' : ''}`}>
                 <img src={product.bautistainventoryproductimagepreviewimages[0] || defaultimageplaceholder}  alt={product.bautistainventoryproductname} className="rounded-tr-2xl  rounded-tl-2xl w-full h-45"/>
                 <div className={` mx-1  w-fit rounded-md py-1 px-2  rounded-1xl h-fit  mt-2 break-words min-w-0 ${product.bautistainventoryproductquantity <=10 ? 'bg-yellow-700' : ' bg-[#F0F6FF]'}`}><h1 className={`font-medium   text-[13px] min-w-0 break-words ${product.bautistainventoryproductquantity <=10 ? 'text-white' : 'text-[#0d0d0d]'}`}>{product.bautistainventoryproductcategory}</h1></div>
                 <div className="w-full h-auto ml-2 mt-2 "><h1 className={` font-semibold  text-[15px] min-w-0 break-words ${product.bautistainventoryproductquantity <=10 ? 'text-yellow-600' : 'text-[#0d0d0d]'}`}>{product.bautistainventoryproductname}</h1></div>
@@ -9831,7 +9831,7 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
           {showaddbautistainventoryproductdialog && (
 
                          <div className="overflow-y-auto h-auto  bg-opacity-0 flex justify-center items-start z-50 fixed inset-0 bg-[#000000af] bg-opacity-50">
-                           <div className="mt-10 pl-5 pr-5 bg-white rounded-2xl w-[1300px] h-auto mb-10 animate-fadeInUp ">
+                           <div className="motion-preset-fade  mt-10 pl-5 pr-5 bg-white rounded-2xl w-[1300px] h-auto mb-10 animate-fadeInUp ">
                                 <div className=" mt-5 border-3 flex justify-between items-center border-[#2d2d4400] w-full h-[70px]">
                                   <div className="flex justify-center items-center"><img src={darklogo} alt="Eye2Wear: Optical Clinic" className="w-15 hover:scale-105 transition-all   p-1"></img><h1 className="text-[#184d85] font-albertsans font-bold ml-3 text-[30px]">{selectedbautistaproduct ?  "Edit Product" : "Add Product"}</h1></div>
                                   <div onClick={() => {setshowaddbautistainventoryproductdialog(false);  resetaddbautistainventoryproductdialog(); }} className="bg-[#333232] px-10 rounded-2xl hover:cursor-pointer hover:scale-105 transition-all duration-300 ease-in-out"><i className="bx bx-x text-white text-[40px] "/></div>
