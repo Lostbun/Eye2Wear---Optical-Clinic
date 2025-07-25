@@ -12,6 +12,8 @@ import imageCompression from "browser-image-compression";
 import Rating from '@mui/material/Rating';
 import Stack from '@mui/material/Stack';
 
+import profileuser from "../src/assets/images/profile-user.png";
+import logout from "../src/assets/images/logout.png";
 function PatientDashboard(){
 
 
@@ -785,22 +787,24 @@ const handledeleteappointment = async (appointmentId) => {
 
   return (
     <>
+
      {/* NavBar */}
-    <div className=" bg-white">
-      <header id="header" className="flex justify-between items-center text-black py-4 px-8 md:px-32 bg-white rounded-4xl drop-shadow-md">
+    <div className=" bg-white w-[100vw]">
+      <header id="header" className="flex justify-between items-center text-black  md:px-32 bg-white w-full drop-shadow-md">
         <a id:logocontain href="#">
-          <img src={navlogo} alt="" className="w-52 hover:scale-105 transition-all"></img>
+          <img src={navlogo} alt="" className="w-33  hover:scale-105 transition-all"></img>
         </a>
 
         <ul id:listcontain  className="hidden xl:flex items-center gap-12 font-semibold text-base">
-        <Link to="/patientlandingpage" className="text-[#000000] hover:text-white no-underline"><li className="p-3 hover:bg-sky-400 text-black hover:text-white rounded-md transition-all cursor-pointer">Home</li></Link>
-        <Link to="/patientproducts" className="text-[#000000] hover:text-white no-underline"><li className="p-3 hover:bg-sky-400 text-black hover:text-white rounded-md transition-all cursor-pointer">Products</li></Link>
-           <Link to="/patientdashboard"><li className="p-3 hover:bg-sky-400 hover:text-white rounded-md transition-all cursor-pointer">Dashboard</li></Link>
+        <Link to="/patientlandingpage" className="text-[#000000] hover:text-white no-underline"><li className="text-[15px] p-3 hover:bg-[#2781af] hover:text-white text-black  rounded-md transition-all cursor-pointer">Home</li></Link>
+        <Link to="/patientdashboard"><li className="text-[15px] p-3 hover:bg-[#2781af] hover:text-white rounded-md transition-all cursor-pointer">Appointments</li></Link>
+        <Link to="/patientproducts"><li className="text-[15px] p-3 hover:bg-[#2781af] hover:text-white rounded-md transition-all cursor-pointer">Store</li></Link>
+        <Link to="/patientproducts"><li className="text-[15px] p-3 hover:bg-[#2781af] hover:text-white rounded-md transition-all cursor-pointer">Wishlist</li></Link>
+        <Link to="/patientproducts"><li className="text-[15px] p-3 hover:bg-[#2781af] hover:text-white rounded-md transition-all cursor-pointer">Orders</li></Link>
 
 
-          {localStorage.getItem("patienttoken") && (
-             <Link to="/patientinformation"><li className="p-3 hover:bg-sky-400 hover:text-white rounded-md transition-all cursor-pointer">ProfileInfo</li></Link>
-          )}
+
+
 
         </ul>
 
@@ -819,18 +823,38 @@ const handledeleteappointment = async (appointmentId) => {
     {localStorage.getItem ("patienttoken")? (
 
       
-    <div id="profilecard" className="relative">
+    <div id="profilecard" className="relative items-center justify-center flex">
     <div id="profile" onClick={showlogout}  className="ml-3  flex justify-center items-center bg-[#fbfbfb00] border-2 border-gray-200  shadow-lg  rounded-full hover:cursor-pointer hover:scale-105 transition-all">
      <img src={patientprofilepicture || 'default-profile.png'} alt="Profile" className="h-13 w-13 rounded-full"></img>
     </div>
 
-    {showlogoutbtn && (
-         <div id="logoutdiv" className=" absolute left-1/2 transform -translate-x-1/2 ml-3 mt-3 w-full flex justify-center items-center p-3 bg-[#ad4e43] rounded-2xl hover:cursor-pointer hover:scale-105 transition-all" onClick={handlelogout}>
-         <i className="bx bx-exit mt-1 pr-2 font-semibold text-white text-[17px]"/>
-         <p className="font-semibold text-white text-[17px]">Logout</p>
-       </div>    
-       
-      )}
+{showlogoutbtn && (
+    <div className="w-75 flex-col  p-5  motion-preset-fade absolute top-full mt-2  flex justify-center items-start bg-[#ffffff] rounded-2xl hover:cursor-pointer  transition-all" >
+
+
+      <div className="hover:bg-[#f7f7f7] transition-all duration-300 ease-in-out py-2 px-1 rounded-2xl  gap-3 flex items-center h-auto w-full ">
+        <img src={patientprofilepicture}  className="w-12 rounded-full"/>
+        <h1 className="font-albertsans font-semibold text-[19px]">{patientfirstname}</h1>
+      </div>
+      <div className="border-b-2 rounded-full border-[#747474] h-1 w-full my-1">
+
+      </div>
+
+     {localStorage.getItem("patienttoken") && (
+      <Link to="/patientinformation" className="w-full"><div className="gap-2 flex items-center py-2 px-1 hover:bg-[#f7f7f7]  duration-300 ease-in-out  hover:text-[#000000] rounded-2xl transition-all cursor-pointer"> <img src={profileuser} className="w-9 h-9"/><h1 className="text-[16px] text-[#202020]">Demographic Profile</h1></div></Link>
+     )}
+
+
+     <div 
+       id="logoutdiv" 
+       className="mt-2 px-1 py-2 hover:bg-[#f7f7f7]   flex items-center gap-2 w-full  rounded-2xl hover:cursor-pointer transition-all" 
+       onClick={handlelogout}
+     >
+    <img src={logout} className="w-9 h-9"/>
+    <p className="font-semibold text-[#E04F5F] text-[16px]">Logout</p>
+  </div> 
+  </div>   
+)}
     </div>
 
     
@@ -875,7 +899,7 @@ const handledeleteappointment = async (appointmentId) => {
 
 
     {/* First Section */} {/* First Section */} {/* First Section */} {/* First Section */}
-    <section className="bg-cover bg-center h-full w-[99.1vw] flex justify-center align-center" style={{ backgroundImage: `url(${landingbg2})` }}>
+    <section className="bg-cover bg-center h-full w-[99.1vw] flex justify-center align-center" >
     <div className="bg-cover bg-center h-full w-[99.1vw] flex items-center justify-center " >
 
       <div className="w-full h-full flex justify-start items-start pt-3 ">
@@ -883,30 +907,13 @@ const handledeleteappointment = async (appointmentId) => {
 
 
 
-<div className={`transition-all duration-100 ease-in-out flex flex-col justify-between items-start pl-3 bg-[#272828]  rounded-2xl   mt-4 ml-3 mb-3 pt-3 pb-3 ${sidebarexpanded ? 'w-[365px]' : 'w-[85px]'}`} id="patientsidebar">
-
-<div className="group relative " id="expandbtn" onClick={togglepatientsidebar} ><div className="hover:bg-[#454545] hover:rounded-2xl  hover:cursor-pointer rounded-3xl  transition-all duration-100 ease-in-out flex items-center justify-center w-fit overflow-hidden">{sidebarexpanded &&(<i className='bx bx-collapse-horizontal  p-2 hover:text-white text-white text-[40px] ' ></i>)}   {!sidebarexpanded &&(<i className='bx bx-expand-horizontal  p-2 hover:text-white text-white text-[40px] ' ></i>)}<span className={`text-[16px] text-white font-semibold font-albertsans transition-all duration-100 ease-in-out whitespace-nowrap overflow-hidden ${sidebarexpanded ? 'opacity-100 w-auto ml-2 mr-2 animate-slideIn' : 'opacity-0 w-0 animate-slideOut'}`}>{sidebarexpanded ? 'Collapse Sidebar' : ''}</span></div></div>
-
-<div className="group relative mt-5" onClick={() => showdashboard('appointment')}><div className={`hover:bg-[#454545] hover:rounded-2xl  hover:cursor-pointer rounded-3xl mr-2 transition-all duration-100 ease-in-out flex items-center justify-center w-fit overflow-hidden ${activedashboard ==='appointment' ? 'bg-[#454545] rounded-2xl' :''}`}><i className={`bx bxs-calendar   p-3.5    text-[#cacacf] hover:text-white text-[27px]${activedashboard ==='appointment' ? 'bg-[#454545] rounded-2xl text-white text-[27px]' :''}`}></i>   <span className={`text-[16px] text-white font-semibold font-albertsans transition-all duration-100 ease-in-out whitespace-nowrap overflow-hidden ${sidebarexpanded ? 'opacity-100 w-auto ml-2 mr-2 animate-slideIn' : 'opacity-0 w-0 animate-slideOut'}`}>Appointment</span>  {!sidebarexpanded && (<span className="pointer-events-none absolute  p-4 rounded-2xl ml-4 left-full text-white font-albertsans font-semibold text-[16px] top-1/2 transform -translate-y-1/2  bg-[#2b2a2a]   whitespace-nowrap  group-hover:opacity-100 group-hover:translate-x-0  transition-all duration-100 ease-in-out opacity-0 -translate-x-2 ">Appointment</span>)}  </div></div>
-{/* <div className="group relative" onClick={() => showdashboard('accountmanagement')}><div className={`hover:bg-[#454545] hover:rounded-2xl  hover:cursor-pointer rounded-3xl transition-all duration-100 ease-in-out flex items-center justify-center w-fit overflow-hidden ${activedashboard ==='accountmanagement' ? 'bg-[#454545] rounded-2xl' :''}`}><i className={`bx bxs-user-account  p-3.5    text-[#cacacf] hover:text-white text-[27px]${activedashboard ==='accountmanagement' ? 'bg-[#454545] rounded-2xl text-white text-[27px]' :''}`}></i>  <span className={`text-[16px] text-white font-semibold font-albertsans transition-all duration-100 ease-in-out whitespace-nowrap overflow-hidden ${sidebarexpanded ? 'opacity-100 w-auto ml-2 mr-2 animate-slideIn' : 'opacity-0 w-0 animate-slideOut'}`}>Account Management</span>  {!sidebarexpanded && (<span className="pointer-events-none absolute p-4 rounded-2xl ml-4 left-full text-white font-albertsans font-semibold text-[16px] top-1/2 transform -translate-y-1/2  bg-[#2b2a2a]   whitespace-nowrap  group-hover:opacity-100 group-hover:translate-x-0  transition-all duration-100 ease-in-out opacity-0 -translate-x-2 ">Account Management</span>)}  </div></div>
-<div className="group relative" onClick={() => showdashboard('profileinformation')}><div className={`hover:bg-[#454545] hover:rounded-2xl  hover:cursor-pointer rounded-3xl transition-all duration-100 ease-in-out flex items-center justify-center w-fit overflow-hidden  ${activedashboard ==='profileinformation' ? 'bg-[#454545] rounded-2xl' :''}`}><i className={`bx bxs-user-detail  p-3.5    text-[#cacacf] hover:text-white text-[27px]${activedashboard ==='profileinformation' ? 'bg-[#454545] rounded-2xl text-white text-[27px]' :''}`}></i>  <span className={`text-[16px] text-white font-semibold font-albertsans transition-all duration-100 ease-in-out whitespace-nowrap overflow-hidden ${sidebarexpanded ? 'opacity-100 w-auto ml-2 mr-2 animate-slideIn' : 'opacity-0 w-0 animate-slideOut'}`}>Profile Information</span>  {!sidebarexpanded && (<span className=" pointer-events-none absolute p-4 rounded-2xl ml-4 left-full text-white font-albertsans font-semibold text-[16px] top-1/2 transform -translate-y-1/2  bg-[#2b2a2a]   whitespace-nowrap  group-hover:opacity-100 group-hover:translate-x-0  transition-all duration-100 ease-in-out opacity-0 -translate-x-2 ">Profile Information</span>)}  </div></div>*/}
-
-
-</div>                            
-          
           
 
-       <div  className=" rounded-2xl   ml-3  h-auto  w-[100%] flex flex-col items-center justify-center mr-3 mb-3" >
-                
-                <div className="flex flex-col items-start w-full h-[12%] rounded-2xl mb-3" id="greet">
-      
-                  <h1 className="ml-5 mt-1 font-albertsans font-bold text-[40px] text-[#212134]">Good Day, {patientfirstname}!</h1>
-                  <p className="ml-5 font-geistsemibold text-[15px] text-[#23232a]">Stay on top of your tasks, monitor progress, and track status.</p>
-    
-                </div>
+       <div  className="  ml-3  h-auto  w-[100%] flex flex-col items-center justify-center mr-3 mb-3" >
+
 
       
-           { activedashboard === 'appointment' && ( <div id="appointment" className="border-1 bg-white border-gray-200 shadow-lg w-[100%] h-[100%] p-4 rounded-2xl" >  
+           { activedashboard === 'appointment' && ( <div id="appointment" className=" bg-white w-[100%] h-[100%] p-4 rounded-2xl" >  
           
                 <div className="flex items-center"><i className="bx bxs-calendar text-[#184d85] text-[25px] mr-2"/> <h1 className=" font-albertsans font-bold text-[#184d85] text-[25px]">Appointments</h1></div>
                 <div className="flex justify-between  items-center mt-8 h-[60px]">
@@ -936,7 +943,7 @@ const handledeleteappointment = async (appointmentId) => {
   {/*Patient Appointment Booking*/} {/*Patient Appointment Booking*/} {/*Patient Appointment Booking*/} {/*Patient Appointment Booking*/} {/*Patient Appointment Booking*/} {/*Patient Appointment Booking*/}
   {/*Patient Appointment Booking*/} {/*Patient Appointment Booking*/} {/*Patient Appointment Booking*/} {/*Patient Appointment Booking*/} {/*Patient Appointment Booking*/} {/*Patient Appointment Booking*/}
   {/*Patient Appointment Booking*/} {/*Patient Appointment Booking*/} {/*Patient Appointment Booking*/} {/*Patient Appointment Booking*/} {/*Patient Appointment Booking*/} {/*Patient Appointment Booking*/}
-                 { activeappointmenttable === 'bookappointment' && ( <div id="bookappointment" className="animate-fadeInUp flex flex-col items-center  border-t-2  border-[#909090] w-max h-[83%] rounded-2xl mt-6" >
+                 { activeappointmenttable === 'bookappointment' && ( <div id="bookappointment" className="animate-fadeInUp flex flex-col items-center   w-max h-[83%] rounded-2xl mt-6" >
                   <form onSubmit={handlesubmitpatientappointment}>      
 
                   {patientappointmentformerror && (

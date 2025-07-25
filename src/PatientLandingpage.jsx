@@ -15,7 +15,8 @@ import Typewriter from "typewriter-effect";
 import eyemodel2 from "../src/assets/images/eyemodel2.png";
 import Rating from '@mui/material/Rating';
 import Stack from '@mui/material/Stack';
-
+import profileuser from "../src/assets/images/profile-user.png";
+import logout from "../src/assets/images/logout.png";
 import usersicon from "../src/assets/images/multiuserss.png";
 import { NavLink } from "react-router-dom";
 import { useAuth } from "./hooks/patientuseAuth";
@@ -75,22 +76,22 @@ function PatientLandingpage(){
     <>
 
      {/* NavBar */}
-    <div className=" bg-white">
-      <header id="header" className="flex justify-between items-center text-black py-4 px-8 md:px-32 bg-white rounded-4xl drop-shadow-md">
+    <div className=" bg-white w-[100vw]">
+      <header id="header" className="flex justify-between items-center text-black  md:px-32 bg-white w-full drop-shadow-md">
         <a id:logocontain href="#">
-          <img src={navlogo} alt="" className="w-52 hover:scale-105 transition-all"></img>
+          <img src={navlogo} alt="" className="w-33  hover:scale-105 transition-all"></img>
         </a>
 
         <ul id:listcontain  className="hidden xl:flex items-center gap-12 font-semibold text-base">
-        <Link to="/patientlandingpage" className="text-[#000000] hover:text-white no-underline"><li className="p-3 hover:bg-sky-400 text-black hover:text-white rounded-md transition-all cursor-pointer">Home</li></Link>
-        <Link to="/patientproducts" className="text-[#000000] hover:text-white no-underline"><li className="p-3 hover:bg-sky-400 hover:text-white rounded-md transition-all cursor-pointer">Products</li></Link>
-        <Link to="/patientdashboard"><li className="p-3 hover:bg-sky-400 hover:text-white rounded-md transition-all cursor-pointer">Dashboard</li></Link>
-          
+        <Link to="/patientlandingpage" className="text-[#000000] hover:text-white no-underline"><li className="text-[15px] p-3 hover:bg-[#2781af] hover:text-white text-black  rounded-md transition-all cursor-pointer">Home</li></Link>
+        <Link to="/patientdashboard"><li className="text-[15px] p-3 hover:bg-[#2781af] hover:text-white rounded-md transition-all cursor-pointer">Appointments</li></Link>
+        <Link to="/patientproducts"><li className="text-[15px] p-3 hover:bg-[#2781af] hover:text-white rounded-md transition-all cursor-pointer">Store</li></Link>
+        <Link to="/patientproducts"><li className="text-[15px] p-3 hover:bg-[#2781af] hover:text-white rounded-md transition-all cursor-pointer">Wishlist</li></Link>
+        <Link to="/patientproducts"><li className="text-[15px] p-3 hover:bg-[#2781af] hover:text-white rounded-md transition-all cursor-pointer">Orders</li></Link>
 
 
-          {localStorage.getItem("patienttoken") && (
-             <Link to="/patientinformation"><li className="p-3 hover:bg-sky-400 hover:text-white rounded-md transition-all cursor-pointer">ProfileInfo</li></Link>
-          )}
+
+
 
         </ul>
 
@@ -109,18 +110,38 @@ function PatientLandingpage(){
     {localStorage.getItem ("patienttoken")? (
 
       
-    <div id="profilecard" className="relative">
+    <div id="profilecard" className="relative items-center justify-center flex">
     <div id="profile" onClick={showlogout}  className="ml-3  flex justify-center items-center bg-[#fbfbfb00] border-2 border-gray-200  shadow-lg  rounded-full hover:cursor-pointer hover:scale-105 transition-all">
      <img src={patientprofilepicture || 'default-profile.png'} alt="Profile" className="h-13 w-13 rounded-full"></img>
     </div>
 
-    {showlogoutbtn && (
-         <div id="logoutdiv" className=" absolute left-1/2 transform -translate-x-1/2 ml-3 mt-3 w-full flex justify-center items-center p-3 bg-[#ad4e43] rounded-2xl hover:cursor-pointer hover:scale-105 transition-all" onClick={handlelogout}>
-         <i className="bx bx-exit mt-1 pr-2 font-semibold text-white text-[17px]"/>
-         <p className="font-semibold text-white text-[17px]">Logout</p>
-       </div>    
-       
-      )}
+{showlogoutbtn && (
+    <div className="w-75 flex-col  p-5  motion-preset-fade absolute top-full mt-2  flex justify-center items-start bg-[#ffffff] rounded-2xl hover:cursor-pointer  transition-all" >
+
+
+      <div className="hover:bg-[#f7f7f7] transition-all duration-300 ease-in-out py-2 px-1 rounded-2xl  gap-3 flex items-center h-auto w-full ">
+        <img src={patientprofilepicture}  className="w-12 rounded-full"/>
+        <h1 className="font-albertsans font-semibold text-[19px]">{patientfirstname}</h1>
+      </div>
+      <div className="border-b-2 rounded-full border-[#747474] h-1 w-full my-1">
+
+      </div>
+
+     {localStorage.getItem("patienttoken") && (
+      <Link to="/patientinformation" className="w-full"><div className="gap-2 flex items-center py-2 px-1 hover:bg-[#f7f7f7]  duration-300 ease-in-out  hover:text-[#000000] rounded-2xl transition-all cursor-pointer"> <img src={profileuser} className="w-9 h-9"/><h1 className="text-[16px] text-[#202020]">Demographic Profile</h1></div></Link>
+     )}
+
+
+     <div 
+       id="logoutdiv" 
+       className="mt-2 px-1 py-2 hover:bg-[#f7f7f7]   flex items-center gap-2 w-full  rounded-2xl hover:cursor-pointer transition-all" 
+       onClick={handlelogout}
+     >
+    <img src={logout} className="w-9 h-9"/>
+    <p className="font-semibold text-[#E04F5F] text-[16px]">Logout</p>
+  </div> 
+  </div>   
+)}
     </div>
 
     
@@ -153,7 +174,6 @@ function PatientLandingpage(){
 
       </header>
     </div>
-
 
 
 
