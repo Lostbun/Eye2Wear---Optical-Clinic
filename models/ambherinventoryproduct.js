@@ -33,6 +33,10 @@ ambherinventoryproductaddedbyemail: {type: String, required: true},
 
 
 
+ambherinventoryproductwishlistcount: {type: Number, default: 0},
+
+
+
 
 
 

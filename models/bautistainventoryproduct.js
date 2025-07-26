@@ -32,7 +32,7 @@ bautistainventoryproductaddedbytype: String,
 bautistainventoryproductaddedbyemail: {type: String, required: true},
 
 
-
+bautistainventoryproductwishlistcount: {type: Number, default: 0},
 
 
 

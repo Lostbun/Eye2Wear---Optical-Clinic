@@ -4651,7 +4651,7 @@ const handleupdateambherinventoryproduct = async (e) => {
       ambherinventoryproductaddedbymiddlename: currentuserdata.middlename || '',
       ambherinventoryproductaddedbytype: currentuserdata.type || '',
       ambherinventoryproductaddedbyemail: currentuserdata.email || '',
-
+      ambherinventoryproductwishlistcount: 0 ,
 
 
     }
@@ -4993,7 +4993,8 @@ const bautistainventoryproductcount = bautistainventoryproducts.filter(
                 bautistainventoryproductaddedbymiddlename: currentuserdata.middlename || '',
                 bautistainventoryproductaddedbytype: currentuserdata.type || '',
                 bautistainventoryproductaddedbyemail: currentuserdata.email || '',
-          
+                bautistainventoryproductwishlistcount: 0 ,
+
           
           
               }

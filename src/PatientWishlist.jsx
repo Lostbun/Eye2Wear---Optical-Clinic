@@ -1,7 +1,7 @@
 import React, {useState, useEffect} from "react";
 import {Link} from "react-router-dom";
 import navlogo from  "../src/assets/images/navlogo.png";
-import landingbg2 from "../src/assets/images/landingbg2.png";
+import heart from "../src/assets/images/heart.png";
 import { useAuth } from "./hooks/patientuseAuth";
 import starimage from "../src/assets/images/star.png"
 import defaultimageplaceholder from "../src/assets/images/defaultimageplaceholder.png";
@@ -19,7 +19,6 @@ import { AmbherinventorycategoryBox } from "./components/Ambherinventorycategory
 import { BautistainventorycategoryBox } from "./components/BautistainventorycategoryBox";
 import Rating from '@mui/material/Rating';
 import Stack from '@mui/material/Stack';
-function PatientProducts(){
 
 
 
@@ -27,13 +26,10 @@ function PatientProducts(){
 
 
 
+function PatientWishlist(){
 
 
 
-
-
-
-  
  const [patientfirstname, setpatientfirstname] = useState('');
   const [patientprofilepicture, setpatientprofilepicture] = useState('');
   const [showlogoutbtn, setshowlogoutbtn] = useState(false);
@@ -540,6 +536,22 @@ useEffect(() => {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   return (
     <>
 
@@ -554,7 +566,7 @@ useEffect(() => {
         <Link to="/patientlandingpage" className="text-[#000000] hover:text-white no-underline"><li className="text-[15px] p-3 hover:bg-[#2781af] hover:text-white text-black  rounded-md transition-all cursor-pointer">Home</li></Link>
         <Link to="/patientdashboard"><li className="text-[15px] p-3 hover:bg-[#2781af] hover:text-white rounded-md transition-all cursor-pointer">Appointments</li></Link>
         <Link to="/patientproducts"><li className="text-[15px] p-3 hover:bg-[#2781af] hover:text-white rounded-md transition-all cursor-pointer">Store</li></Link>
-         <Link to="/patientwishlist"><li className="text-[15px] p-3 hover:bg-[#2781af] hover:text-white rounded-md transition-all cursor-pointer">Wishlist</li></Link>
+        <Link to="/patientproducts"><li className="text-[15px] p-3 hover:bg-[#2781af] hover:text-white rounded-md transition-all cursor-pointer">Wishlist</li></Link>
         <Link to="/patientproducts"><li className="text-[15px] p-3 hover:bg-[#2781af] hover:text-white rounded-md transition-all cursor-pointer">Orders</li></Link>
 
 
@@ -666,12 +678,12 @@ useEffect(() => {
 
               <div id="inventorymanagement" className="pl-5 pr-5 pb-4 pt-4  transition-all duration-300  ease-in-out  w-[100%] h-full bg-white " >   
 
-              <div className=" flex items-center mt-8"><i className="bx bxs-package text-[#184d85] text-[25px] mr-2"/> <h1 className=" font-albertsans font-bold text-[#184d85] text-[25px]">Browse our Products</h1></div>
+              <div className=" flex items-center mt-8"><img src={heart} className="w-7 mr-2"/><h1 className=" font-albertsans font-bold text-[#184d85] text-[25px]">My Wishlist</h1></div>
 
   <div className="flex justify-start items-center mt-3 h-[60px]">
  {/*<div onClick={() => showinventorytable('allinventorytable')}  className={`hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 pb-3 pt-3 text-center flex justify-center items-center ${activeinventorytable ==='allinventorytable' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d] ${activeinventorytable ==='allinventorytable' ? 'text-white' : ''}`}>All</h1></div>*/}
-  <div onClick={() => showinventorytable('ambherinventorytable')}  className={`mr-3 hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 pb-3 pt-3 text-center flex justify-center items-center ${activeinventorytable ==='ambherinventorytable' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d] ${activeinventorytable ==='ambherinventorytable' ? 'text-white' : ''}`}>Ambher Optical</h1></div>
-  <div onClick={() => showinventorytable('bautistainventorytable')}  className={`ml-3 hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 pb-3 pt-3 text-center flex justify-center items-center ${activeinventorytable ==='bautistainventorytable' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d] ${activeinventorytable ==='bautistainventorytable' ? 'text-white' : ''}`}>Bautista Eye Center</h1></div>
+  <div onClick={() => showinventorytable('ambherinventorytable')}  className={`mr-3 hover:rounded-2xl hover:cursor-pointer transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 pb-3 pt-3 text-center flex justify-center items-center ${activeinventorytable ==='ambherinventorytable' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d] ${activeinventorytable ==='ambherinventorytable' ? 'text-white' : ''}`}>Ambher Optical</h1></div>
+  <div onClick={() => showinventorytable('bautistainventorytable')}  className={`ml-3 hover:rounded-2xl hover:cursor-pointer transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 pb-3 pt-3 text-center flex justify-center items-center ${activeinventorytable ==='bautistainventorytable' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans  font-semibold text-[#5d5d5d] ${activeinventorytable ==='bautistainventorytable' ? 'text-white' : ''}`}>Bautista Eye Center</h1></div>
   
   </div>
 
@@ -685,27 +697,6 @@ useEffect(() => {
 
           { activeinventorytable === 'ambherinventorytable' && ( <div id="ambherinventorytable" className="p-2  animate-fadeInUp flex  items-start  w-[100%] h-[83%] rounded-2xl mt-5" >
 
-          <div className="p-3  rounded-2xl w-[20%] h-auto  mr-2 overflow-y-auto overflow-x-hidden">
-        
-                <div className=" pb-3 flex items center w-full mt-7"><i className="bx bx-filter font-albertsans font-semibold text-[#363636] text-[25px]" /><h1 className="ml-2 text-[16px] font-albertsans font-semibold text-[#363636]">Filter by category</h1></div>
-
-                <div onClick={() => showambherinventorycategory('all')}  className={`mt-3 hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 py-2 text-center flex justify-center items-center ${activeambherinventorycategorytable ==='all' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d] ${activeambherinventorycategorytable ==='all' ? 'text-white' : ''}`}>All</h1><span className="bg-gray-200 text-gray-500 font-semibold px-2 rounded-full ml-2 text-sm">{ambherinventoryproducts.length}</span></div>
-
-
-                {ambherinventorycategorylist.map(category => {
-                  const productcount = ambherinventoryproducts.filter(product =>
-                    product.ambherinventoryproductcategory === category.ambherinventorycategoryname).length;
-                  return(
-                  <div key={category._id} onClick={() => setactiveambherinventorycategorytable(category.ambherinventorycategoryname)}  className={`mt-3 hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 py-2 text-center flex justify-center items-center ${activeambherinventorycategorytable ===category.ambherinventorycategoryname ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d] ${activeambherinventorycategorytable ===category.ambherinventorycategoryname ? 'text-white' : 'text-[#5d5d5d]'}`}>{category.ambherinventorycategoryname}</h1><span className="bg-gray-200 text-gray-500 font-semibold px-2 rounded-full ml-2 text-sm">{productcount}</span></div>
-                  )
-                })}
-
-
-
-            
-            {/*<div className=""> <AmbherinventorycategoryBox value={ambherinventorycategorynamebox} loading={loadingambherinventorycategorylist} onChange={(e) => setambherinventorycategorynamebox(e.target.value)} categories={ambherinventorycategorylist}/></div>*/}
-
-          </div>
           <div className=" flex flex-col justify-start  ml-2 rounded-2xl w-[90%]  min-h-[540px] max-h-auto h-auto shadow-b-lg ">
 
               <div className=" w-[100%] rounded-2xl h-auto  flex flex-wrap content-start gap-3 pl-2 pt-2 ">
@@ -787,6 +778,7 @@ useEffect(() => {
                                 <div className=" relative">
                                 
                                 <div className="flex items-center justify-end">
+                                
                                  <img  src={getambherHeartImage()} onClick={ambherhearthandleClick} onMouseEnter={() => !ambherheartisClicked && setambherheartisHovered(true)} onMouseLeave={() => !ambherheartisClicked && setambherheartisHovered(false)}  className={` ease-in-out duration-300 transition-all  border-1  w-10 h-10 p-2 rounded-2xl cursor-pointer ${ambherheartisClicked ? "bg-red-400" : "hover:bg-red-400"}`}/>
                                   <h1 className="ml-2 text-[17px] font-semibold text-[#383838]">Wishlist (100)</h1>     
                                 </div>
@@ -862,7 +854,7 @@ useEffect(() => {
                                                <p className="font-albertsans font-semibold text-[#616161] text-[14px]">{addambherinventoryproductquantity} pieces available </p>
                                        </div>
 
-                                           <div  className="mt-10 hover:cursor-pointer hover:scale-102  font-albertsans bg-[#117db0]  hover:rounded-2xl transition-all duration-300 ease-in-out rounded-2xl px-25 py-2.5 text-center flex justify-center items-center "><span className="font-albertsans font-bold text-white text-[17px]">Order Now</span></div>
+                                           <div  className="mt-10 hover:cursor-pointer hover:scale-102  font-albertsans bg-[#117db0]  hover:rounded-2xl transition-all duration-300 ease-in-out rounded-2xl px-25 py-2.5 text-center flex justify-center items-center "><span className="font-albertsans font-bold text-white text-[17px]">Buy Now</span></div>
 
                                            <div className="flex items-center justify-between mt-10 h-22 w-full bg-[#fbfbfb] rounded-2xl">
                                               <div className="gap-2 h-full w-40 flex items-center flex-col justify-center"><img src={packageimage} className="w-8 h-8"/><p className="font-albertsans text-[13px] font-medium">Prepare Order</p></div>
@@ -945,27 +937,6 @@ useEffect(() => {
 
           { activeinventorytable === 'bautistainventorytable' && ( <div id="bautistainventorytable" className="p-2  animate-fadeInUp flex  items-start  w-[100%] h-[83%] rounded-2xl mt-5" >
 
-          <div className="p-3  rounded-2xl w-[20%] h-auto  mr-2 overflow-y-auto overflow-x-hidden">
-        
-                <div className=" pb-3 flex items center w-full mt-7"><i className="bx bx-filter font-albertsans font-semibold text-[#363636] text-[25px]" /><h1 className="ml-2 text-[16px] font-albertsans font-semibold text-[#363636]">Filter by category</h1></div>
-
-                <div onClick={() => showbautistainventorycategory('all')}  className={`mt-3 hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 py-2 text-center flex justify-center items-center ${activebautistainventorycategorytable ==='all' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d] ${activebautistainventorycategorytable ==='all' ? 'text-white' : ''}`}>All</h1><span className="bg-gray-200 text-gray-500 font-semibold px-2 rounded-full ml-2 text-sm">{bautistainventoryproducts.length}</span></div>
-
-
-                {bautistainventorycategorylist.map(category => {
-                  const productcount = bautistainventoryproducts.filter(product =>
-                    product.bautistainventoryproductcategory === category.bautistainventorycategoryname).length;
-                  return(
-                  <div key={category._id} onClick={() => setactivebautistainventorycategorytable(category.bautistainventorycategoryname)}  className={`mt-3 hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 py-2 text-center flex justify-center items-center ${activebautistainventorycategorytable ===category.bautistainventorycategoryname ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d] ${activebautistainventorycategorytable ===category.bautistainventorycategoryname ? 'text-white' : 'text-[#5d5d5d]'}`}>{category.bautistainventorycategoryname}</h1><span className="bg-gray-200 text-gray-500 font-semibold px-2 rounded-full ml-2 text-sm">{productcount}</span></div>
-                  )
-                })}
-
-
-
-            
-            {/*<div className=""> <bautistainventorycategoryBox value={bautistainventorycategorynamebox} loading={loadingbautistainventorycategorylist} onChange={(e) => setbautistainventorycategorynamebox(e.target.value)} categories={bautistainventorycategorylist}/></div>*/}
-
-          </div>
           <div className=" flex flex-col justify-start  ml-2 rounded-2xl w-[90%]  min-h-[540px] max-h-auto h-auto shadow-b-lg ">
 
               <div className=" w-[100%] rounded-2xl h-auto  flex flex-wrap content-start gap-3 pl-2 pt-2 ">
@@ -1122,7 +1093,7 @@ useEffect(() => {
                                                <p className="font-albertsans font-semibold text-[#616161] text-[14px]">{addbautistainventoryproductquantity} pieces available </p>
                                        </div>
 
-                                           <div  className="mt-10 hover:cursor-pointer hover:scale-102  font-albertsans bg-[#117db0]  hover:rounded-2xl transition-all duration-300 ease-in-out rounded-2xl px-25 py-2.5 text-center flex justify-center items-center "><span className="font-albertsans font-bold text-white text-[17px]">Order Now</span></div>
+                                           <div  className="mt-10 hover:cursor-pointer hover:scale-102  font-albertsans bg-[#117db0]  hover:rounded-2xl transition-all duration-300 ease-in-out rounded-2xl px-25 py-2.5 text-center flex justify-center items-center "><span className="font-albertsans font-bold text-white text-[17px]">Buy Now</span></div>
 
                                            <div className="flex items-center justify-between mt-10 h-22 w-full bg-[#fbfbfb] rounded-2xl">
                                               <div className="gap-2 h-full w-40 flex items-center flex-col justify-center"><img src={packageimage} className="w-8 h-8"/><p className="font-albertsans text-[13px] font-medium">Prepare Order</p></div>
@@ -1236,4 +1207,4 @@ useEffect(() => {
    )
   }
         
-export default PatientProducts
+export default PatientWishlist

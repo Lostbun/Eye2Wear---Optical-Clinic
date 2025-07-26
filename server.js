@@ -17,6 +17,7 @@ import ambherinventorycategoryrouter from "./routes/ambherinventorycategory.rout
 import ambherinventoryproductrouter from "./routes/ambherinventoryproduct.route.js"
 import bautistainventorycategoryrouter from "./routes/bautistainventorycategory.route.js";
 import bautistainventoryproductrouter from "./routes/bautistainventoryproduct.route.js";
+import patientwishlistinventoryproductrouter from "./routes/patientwishlist.route.js";
 
 const {Connection} = mongoose;
 
@@ -84,6 +85,8 @@ app.use("/api/ambherinventoryproduct", ambherinventoryproductrouter);
 app.use("/api/bautistainventorycategory", bautistainventorycategoryrouter);
 //Routes
 app.use("/api/bautistainventoryproduct", bautistainventoryproductrouter);
+//Routes
+app.use("/api/patientwishlistinventoryproduct", patientwishlistinventoryproductrouter);
 
 
 

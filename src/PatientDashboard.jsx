@@ -1,7 +1,7 @@
 import React, {useState, useEffect, useRef} from "react";
 import {Link} from "react-router-dom";
 import navlogo from  "../src/assets/images/navlogo.png";
-import landingbg2 from "../src/assets/images/landingbg2.png";
+
 import defaultprofilepic from '../src/assets/images/defaulticon.png';
 import ambherlogo from '../src/assets/images/ambherlogo.png';
 import bautistalogo from '../src/assets/images/bautistalogo.png';
@@ -19,15 +19,9 @@ function PatientDashboard(){
 
 
   
-    const [sidebarexpanded, setsidebarexpanded] = useState(false);
-    const togglepatientsidebar = () => {
-      setsidebarexpanded(!sidebarexpanded);
-    }
 
-  const [activedashboard, setactivedashboard] = useState('appointment');
-  const showdashboard = (dashboardid) => {
-     setactivedashboard(dashboardid);
-  };
+
+
 
   const [activeappointmenttable, setactiveappointmenttable] = useState('bookappointment');
   const showappointmenttable = (appointmenttableid) => {
@@ -790,7 +784,7 @@ const handledeleteappointment = async (appointmentId) => {
 
      {/* NavBar */}
     <div className=" bg-white w-[100vw]">
-      <header id="header" className="flex justify-between items-center text-black  md:px-32 bg-white w-full drop-shadow-md">
+      <header id="header" className="top-0 absolute flex justify-between items-center text-black  md:px-32 bg-white w-full drop-shadow-md">
         <a id:logocontain href="#">
           <img src={navlogo} alt="" className="w-33  hover:scale-105 transition-all"></img>
         </a>
@@ -799,7 +793,7 @@ const handledeleteappointment = async (appointmentId) => {
         <Link to="/patientlandingpage" className="text-[#000000] hover:text-white no-underline"><li className="text-[15px] p-3 hover:bg-[#2781af] hover:text-white text-black  rounded-md transition-all cursor-pointer">Home</li></Link>
         <Link to="/patientdashboard"><li className="text-[15px] p-3 hover:bg-[#2781af] hover:text-white rounded-md transition-all cursor-pointer">Appointments</li></Link>
         <Link to="/patientproducts"><li className="text-[15px] p-3 hover:bg-[#2781af] hover:text-white rounded-md transition-all cursor-pointer">Store</li></Link>
-        <Link to="/patientproducts"><li className="text-[15px] p-3 hover:bg-[#2781af] hover:text-white rounded-md transition-all cursor-pointer">Wishlist</li></Link>
+        <Link to="/patientwishlist"><li className="text-[15px] p-3 hover:bg-[#2781af] hover:text-white rounded-md transition-all cursor-pointer">Wishlist</li></Link>
         <Link to="/patientproducts"><li className="text-[15px] p-3 hover:bg-[#2781af] hover:text-white rounded-md transition-all cursor-pointer">Orders</li></Link>
 
 
@@ -899,8 +893,8 @@ const handledeleteappointment = async (appointmentId) => {
 
 
     {/* First Section */} {/* First Section */} {/* First Section */} {/* First Section */}
-    <section className="bg-cover bg-center h-full w-[99.1vw] flex justify-center align-center" >
-    <div className="bg-cover bg-center h-full w-[99.1vw] flex items-center justify-center " >
+    <section className="bg-cover bg-center h-full w-full flex justify-center align-center" >
+    <div className="bg-cover bg-center h-full w-full flex items-center justify-center " >
 
       <div className="w-full h-full flex justify-start items-start pt-3 ">
 
@@ -909,14 +903,15 @@ const handledeleteappointment = async (appointmentId) => {
 
           
 
-       <div  className="  ml-3  h-auto  w-[100%] flex flex-col items-center justify-center mr-3 mb-3" >
+       <div  className="  ml-3  h-auto  w-full flex flex-col items-center justify-center mr-3 mb-3" >
 
 
       
-           { activedashboard === 'appointment' && ( <div id="appointment" className=" bg-white w-[100%] h-[100%] p-4 rounded-2xl" >  
+      <div id="appointment" className=" bg-white w-full h-[100%] p-4 mt-12 rounded-2xl" >  
           
                 <div className="flex items-center"><i className="bx bxs-calendar text-[#184d85] text-[25px] mr-2"/> <h1 className=" font-albertsans font-bold text-[#184d85] text-[25px]">Appointments</h1></div>
-                <div className="flex justify-between  items-center mt-8 h-[60px]">
+
+                                 <div className="flex justify-between items-center mt-8 h-[60px]">
                 <Link to="/patientinformation"><div id="patientcard"  className=" flex justify-center items-start border-1 hover:scale-105 hover:cursor-pointer bg-white transition-all duration-100 ease-in-out  rounded-2xl shadow-md w-[290px] h-[80px]">
                         <div className="w-[125px] h-full  rounded-2xl flex justify-center items-center">
                         <img  src={patientdemographics?.patientprofilepicture || defaultprofilepic}  alt="Profile" className="h-18 w-18 rounded-full object-cover"></img>
@@ -932,7 +927,6 @@ const handledeleteappointment = async (appointmentId) => {
                   <div onClick={() => showappointmenttable('appointmentlist')}  className={`hover:cursor-pointer hover:rounded-2xl ml-5 transition-all duration-100 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 pb-3 pt-3 text-center flex justify-center items-center ${activeappointmenttable ==='appointmentlist' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d] ${activeappointmenttable ==='appointmentlist' ? 'text-white' : ''}`}>Appointment List</h1></div>
                  </div> 
                  </div> 
-                 
                                  
                 
                 <div className="flex justify-center items-start" id="overview">
@@ -1305,7 +1299,7 @@ const handledeleteappointment = async (appointmentId) => {
            
                  </div>
 
-                )}
+     
   
 
 
@@ -1733,20 +1727,6 @@ const handledeleteappointment = async (appointmentId) => {
 
 
 
-
-
-
-
-                    { activedashboard === 'medicalrecords' && ( <div id="medicalrecords" className="border-2 border-yellow-500 w-[100%] h-[100%] rounded-2xl" >   </div> )}
-                    { activedashboard === 'inventorymanagement' && ( <div id="inventorymanagement" className="border-2 border-orange-500 w-[100%] h-[100%] rounded-2xl" > sadasd8 </div> )}
-                    { activedashboard === 'billingsandorders' && ( <div id="billingsandorders" className="border-2 border-red-500 w-[100%] h-[100%] rounded-2xl" > asdas7  </div> )}
-                    { activedashboard === 'communicationcenter' && ( <div id="communicationcenter" className="border-2 border-red-500 w-[100%] h-[100%] rounded-2xl" > sadasd6  </div> )}
-                    { activedashboard === 'reportingandanalytics' && ( <div id="reportingandanalytics" className="border-2 border-red-500 w-[100%] h-[100%] rounded-2xl" >  asdasd5 </div> )}
-                    { activedashboard === 'clinicmanagement' && ( <div id="clinicmanagement" className="border-2 border-red-500 w-[100%] h-[100%] rounded-2xl" > asdsad4  </div> )}
-                    { activedashboard === 'sytemadministration' && ( <div id="sytemadministration" className=" w-[100%] h-[100%] rounded-2xl p" ></div> )}
-                    { activedashboard === 'wishlistandproductfeatures' && ( <div id="wishlistandproductfeatures" className="border-2 border-red-500 w-[100%] h-[100%] rounded-2xl" >  sadasd2  </div> )}
-                    { activedashboard === 'mappingintegration' && ( <div id="mappingintegration" className="border-2 border-red-500 w-[100%] h-[100%] rounded-2xl" >  sadsad1  </div> )}
-      
                  </div>
                  </div>
       
