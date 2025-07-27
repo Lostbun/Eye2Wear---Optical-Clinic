@@ -191,6 +191,12 @@ useEffect(() => {
                 const data = await response.json();
                 setambherinventoryproducts(data);
                  setambherloadingproducts(false);
+                
+              //Fetch product wishlist counts
+                const productIds = data.map(p => p.ambherinventoryproductid).join(',');
+                const count = await fetchWishlistCounts(productIds, 'ambher');
+                setWishlistCounts(prev => ({...prev, [selectedambherproduct?.ambherinventoryproductid]:count}));
+
               }catch(error){
                 console.error("Failed fetching products: ", error);
                 setambherloadingproducts(false);
@@ -368,6 +374,13 @@ useEffect(() => {
                 const data = await response.json();
                 setbautistainventoryproducts(data);
                  setbautistaloadingproducts(false);
+
+                 //Fetch product wishlist counts
+                const productIds = data.map(p => p.bautistainventoryproductid).join(',');
+                const count = await fetchWishlistCounts(productIds, 'bautista');
+                setWishlistCounts(prev => ({...prev, [selectedbautistaproduct?.bautistainventoryproductid]:count}));
+
+
               }catch(error){
                 console.error("Failed fetching products: ", error);
                 setbautistaloadingproducts(false);
@@ -525,6 +538,7 @@ useEffect(() => {
 
 
 const [wishlistItems, setWishlistItems] = useState([]);
+const [wishlistCounts, setWishlistCounts] = useState({});
 
 
 //INSERTING AMBHER WISHLIST TO DATABASEEEE
@@ -685,94 +699,163 @@ useEffect(() => {
 
 
 
-
+//AI CODE
 //HANDLES ADD AND DELETE BUTTON FOR WISHLIST
-
-
 const toggleWishlist = async (e) => {
   e.preventDefault();
   
-  try{
+  try {
     let productId;
     let isAmbher = false;
+    let productData;
 
-    if(selectedambherproduct){
+    if(selectedambherproduct) {
       productId = selectedambherproduct.ambherinventoryproductid;
       isAmbher = true;
-    }else if (selectedbautistaproduct) {
+      productData = {
+        patientaccount: patientemail,
+        patientwishlistprofilepicture: patientprofilepicture,
+        patientwishlistlastname: patientlastname || "No Last Name",
+        patientwishlistfirstname: patientfirstname || "No First Name",
+        patientwishlistmiddlename: patientmiddlename || "No Middle Name",
+        patientwishlistemail: patientemail || "No Email",
+        clinicproduct: selectedambherproduct.ambherinventoryproductid,
+        clinicproductmodel: selectedambherproduct.ambherinventoryproductmodelnumber,
+        patientwishlistinventoryproductid: selectedambherproduct.ambherinventoryproductid,
+        patientwishlistinventoryproductcategory: ambherinventorycategorynamebox || "No Category Name",
+        patientwishlistinventoryproductname: addambherinventoryproductname || "No Product Name",
+        patientwishlistinventoryproductbrand: addambherinventoryproductbrand || "No Brand",
+        patientwishlistinventoryproductmodelnumber: addambherinventoryproductmodelnumber || "No Model",
+        patientwishlistinventoryproductdescription: addambherinventoryproductdescription || "No Description",
+        patientwishlistinventoryproductprice: addambherinventoryproductprice || 0,
+        patientwishlistinventoryproductquantity: addambherinventoryproductquantity || 0,
+        patientwishlistinventoryproductimagepreviewimages: addambherinventoryproductimagepreviewimages || [],
+        clinicType: "ambher",
+      };
+    } else if (selectedbautistaproduct) {
       productId = selectedbautistaproduct.bautistainventoryproductid;
       isAmbher = false;
-    }else{
+      productData = {
+        patientaccount: patientemail,
+        patientwishlistprofilepicture: patientprofilepicture,
+        patientwishlistlastname: patientlastname || "No Last Name",
+        patientwishlistfirstname: patientfirstname || "No First Name",
+        patientwishlistmiddlename: patientmiddlename || "No Middle Name",
+        patientwishlistemail: patientemail || "No Email",
+        clinicproduct: selectedbautistaproduct.bautistainventoryproductid,
+        clinicproductmodel: selectedbautistaproduct.bautistainventoryproductmodel || "No Model",
+        patientwishlistinventoryproductid: selectedbautistaproduct.bautistainventoryproductid,
+        patientwishlistinventoryproductcategory: bautistainventorycategorynamebox || "No Category Name",
+        patientwishlistinventoryproductname: addbautistainventoryproductname || "No Product Name",
+        patientwishlistinventoryproductbrand: addbautistainventoryproductbrand || "No Brand",
+        patientwishlistinventoryproductmodelnumber: selectedbautistaproduct.bautistainventoryproductmodel || "No Model",
+        patientwishlistinventoryproductdescription: addbautistainventoryproductdescription || "No Description",
+        patientwishlistinventoryproductprice: addbautistainventoryproductprice || 0,
+        patientwishlistinventoryproductquantity: addbautistainventoryproductquantity || 0,
+        patientwishlistinventoryproductimagepreviewimages: addbautistainventoryproductimagepreviewimages || [],
+        clinicType: "bautista",
+      };
+    } else {
       throw new Error("No product selected");
     }
 
+    const isInWishlist = wishlistItems.some(item => 
+      item.patientwishlistinventoryproductid === productId && 
+      item.clinicType === (isAmbher ? 'ambher' : 'bautista')
+    );
 
-    const isInWishlist = wishlistItems.some(item => item.patientwishlistinventoryproductid === productId);
-    
-    if(isInWishlist){
-      const response = await fetch(`http://localhost:3000/api/patientwishlistinventoryproduct/${productId}`,{
+    if(isInWishlist) {
+      // Find the wishlist item to get its _id
+      const wishlistItem = wishlistItems.find(item => 
+        item.patientwishlistinventoryproductid === productId && 
+        item.clinicType === (isAmbher ? 'ambher' : 'bautista')
+      );
+
+      if (!wishlistItem) {
+        throw new Error("Wishlist item not found");
+      }
+
+      const response = await fetch(`http://localhost:3000/api/patientwishlistinventoryproduct/${wishlistItem._id}`, {
         method: 'DELETE',
         headers: {
-          'Authorization' : `Bearer ${localStorage.getItem('patienttoken')}`
+          'Authorization': `Bearer ${localStorage.getItem('patienttoken')}`
         }
       });
 
-
-      if(!response.ok){
+      if(!response.ok) {
         const errordata = await response.json();
         throw new Error(errordata.message || "Failed to delete wishlist product");
       }
 
-      setWishlistItems(prev => prev.filter(item => item.patientwishlistinventoryproductid !== productId));
-
-      if(isAmbher){
+      // Update local state
+      setWishlistItems(prev => prev.filter(item => item._id !== wishlistItem._id));
+      
+      // Update heart state and show toast
+      if (isAmbher) {
         setambherheartisClicked(false);
         setambhershowtoastMessage("Removed from Wishlist");
         setambhershowheartToast(true);
-      }else{
+        setambhershowtoastmessageClosing(false);
+      } else {
         setbautistaheartisClicked(false);
         setbautistashowtoastMessage("Removed from Wishlist");
         setbautistashowheartToast(true);
-      }
-    }else{
-      //Add to wishlist
-      if (isAmbher) {
-        await handlesubmitaddpatientwishlistambherinventoryproduct(e);
-      } else {
-        await handlesubmitaddpatientwishlistbautistainventoryproduct(e);
+        setbautistashowtoastmessageClosing(false);
       }
 
+      // Update wishlist count
+      const newCount = await fetchWishlistCounts(productId, isAmbher ? 'ambher' : 'bautista');
+      setWishlistCounts(prev => ({...prev, [productId]: newCount}));
+
+    } else {
+      // Add to wishlist
+      const response = await fetch('http://localhost:3000/api/patientwishlistinventoryproduct', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('patienttoken')}`
+        },
+        body: JSON.stringify(productData)
+      });
+
+      if(!response.ok) {
+        const errordata = await response.json();
+        throw new Error(errordata.message || "Failed to add to wishlist");
+      }
+
+      // Refresh wishlist items
       const updatedResponse = await fetch('http://localhost:3000/api/patientwishlistinventoryproduct', {
-                headers:{
-                  'Authorization': `Bearer ${localStorage.getItem('patienttoken')}`
-                }});
-
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('patienttoken')}`
+        }
+      });
       
-      if(updatedResponse.ok){
-          const updatedData = await updatedResponse.json();
-          setWishlistItems(updatedData);
+      if(updatedResponse.ok) {
+        const updatedData = await updatedResponse.json();
+        setWishlistItems(updatedData);
+      }
 
-       if(isAmbher){
+      // Update heart state and show toast
+      if (isAmbher) {
         setambherheartisClicked(true);
         setambhershowtoastMessage("Added to Wishlist");
         setambhershowheartToast(true);
-      }else{
+        setambhershowtoastmessageClosing(false);
+      } else {
         setbautistaheartisClicked(true);
         setbautistashowtoastMessage("Added to Wishlist");
         setbautistashowheartToast(true);
-      }
+        setbautistashowtoastmessageClosing(false);
       }
 
-    }
-    if (isAmbher) {
-      setambhershowtoastmessageClosing(false);
-    } else {
-      setbautistashowtoastmessageClosing(false);
+      // Update wishlist count
+      const newCount = await fetchWishlistCounts(productId, isAmbher ? 'ambher' : 'bautista');
+      setWishlistCounts(prev => ({...prev, [productId]: newCount}));
     }
 
-  }catch(error){
-     console.error("Error toggle wishlist: ", error);
-     const errormessage = error.message || "Wishlist toggle error";
+  } catch(error) {
+    console.error("Error toggle wishlist: ", error);
+    const errorMessage = error.message || "Wishlist toggle error";
 
     if (selectedambherproduct) {
       setambhershowtoastMessage(errorMessage);
@@ -785,6 +868,86 @@ const toggleWishlist = async (e) => {
     }
   }
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+const fetchWishlistCounts = async (productIds, clinicType) => {
+  try {
+    // Convert to string if it's an array
+    const idsParam = Array.isArray(productIds) ? productIds.join(',') : productIds;
+    
+    const response = await fetch(
+      `http://localhost:3000/api/patientwishlistinventoryproduct/wishlist-count/${idsParam}/${clinicType}`,
+      {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('patienttoken')}`
+        }
+      }
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || "Failed to fetch wishlist counts");
+    }
+
+    const data = await response.json();
+    return data.count || 0;
+  } catch(error) {
+    console.error("Error fetching wishlist counts:", error);
+    return 0;
+  }
+};
+
+
+
+//Automatically counts the wishlisted count per product in Ambher Optical
+useEffect(() => {
+  if(selectedambherproduct) {
+    const fetchCount = async () => {
+      const count = await fetchWishlistCounts(selectedambherproduct.ambherinventoryproductid, 'ambher');
+      setWishlistCounts(prev => ({...prev, [selectedambherproduct.ambherinventoryproductid]: count}));
+    };
+    fetchCount();
+  }
+}, [selectedambherproduct]);
+
+//Automatically counts the wishlisted count per product in Bautista Eye Center
+useEffect(() => {
+  if(selectedbautistaproduct) {
+    const fetchCount = async () => {
+      const count = await fetchWishlistCounts(selectedbautistaproduct.bautistainventoryproductid, 'bautista');
+      setWishlistCounts(prev => ({...prev, [selectedbautistaproduct.bautistainventoryproductid]: count}));
+    };
+    fetchCount();
+  }
+}, [selectedbautistaproduct]);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -934,7 +1097,7 @@ const toggleWishlist = async (e) => {
 
               <div id="inventorymanagement" className="pl-5 pr-5 pb-4 pt-4  transition-all duration-300  ease-in-out  w-[100%] h-full bg-white " >   
 
-              <div className=" flex items-center mt-8"><i className="bx bxs-package text-[#184d85] text-[25px] mr-2"/> <h1 className=" font-albertsans font-bold text-[#184d85] text-[25px]">Browse our Products</h1></div>
+              <div className=" flex items-center mt-8"><i className="bx bxs-shopping-bag text-[#184d85] text-[25px] mr-2"/> <h1 className=" font-albertsans font-bold text-[#184d85] text-[25px]">Browse our Products</h1></div>
 
   <div className="flex justify-start items-center mt-3 h-[60px]">
  {/*<div onClick={() => showinventorytable('allinventorytable')}  className={`hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 pb-3 pt-3 text-center flex justify-center items-center ${activeinventorytable ==='allinventorytable' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d] ${activeinventorytable ==='allinventorytable' ? 'text-white' : ''}`}>All</h1></div>*/}
@@ -1060,12 +1223,12 @@ const toggleWishlist = async (e) => {
                                 <div className=" relative">
                                 
                                 <div className="flex items-center justify-end">
-                                  {/*AI CODE*/}
+                         
                                 
                                  <img  src={getambherHeartImage()} onClick={ambherhearthandleClick} onMouseEnter={() => !ambherheartisClicked && setambherheartisHovered(true)} onMouseLeave={() => !ambherheartisClicked && setambherheartisHovered(false)}  className={` ease-in-out duration-300 transition-all  border-1  w-10 h-10 p-2 rounded-2xl cursor-pointer ${ambherheartisClicked ? "bg-red-400" : "hover:bg-red-400"}`}/>
+                                 <h1 className="ml-2 text-[17px] font-semibold text-[#383838]">Wishlist ({wishlistCounts[selectedambherproduct?.ambherinventoryproductid] || 0})</h1>     
 
-
-                                <h1 className="ml-2 text-[17px] font-semibold text-[#383838]">Wishlist (100)</h1>     
+                                 
                                 </div>
                                 <img  className="mt-2 w-120 object-cover rounded-2xl h-120" src={(selectedambherproduct?.ambherinventoryproductimagepreviewimages?.[ambhercurrentimageindex]) || (addambherinventoryproductimagepreviewimages?.[ambhercurrentimageindex]) || defaultimageplaceholder}/>
 
@@ -1115,7 +1278,7 @@ const toggleWishlist = async (e) => {
                                      
 
                                         <h1 className="font-albertsans mt-3 min-w-0 break-words h-fit w-full font-albertsans font-bold text-[#212121] text-[29px]">{addambherinventoryproductname}</h1>
-                                        <h1 className="font-albertsans mt-3 min-w-0 break-words h-fit w-full font-albertsans font-bold text-[#212121] text-[29px]">{addambherinventoryproductname}</h1>
+                         
                                         <div className="mt-1 flex items-center">
                                           <img src={starimage} className="w-5 h-5"/>
                                           <p className="font-albertsans ml-2 mt-1 text-[15px] font-semibold">4.8</p><span className="mt-1 text-[13px] pr-3 ml-2">(89 reviews)</span>
@@ -1327,7 +1490,7 @@ const toggleWishlist = async (e) => {
                                 <div className="flex items-center justify-end">
                                 
                                  <img  src={getbautistaHeartImage()} onClick={bautistahearthandleClick} onMouseEnter={() => !bautistaheartisClicked && setbautistaheartisHovered(true)} onMouseLeave={() => !bautistaheartisClicked && setbautistaheartisHovered(false)}  className={` ease-in-out duration-300 transition-all  border-1  w-10 h-10 p-2 rounded-2xl cursor-pointer ${bautistaheartisClicked ? "bg-red-400" : "hover:bg-red-400"}`}/>
-                                  <h1 className="ml-2 text-[17px] font-semibold text-[#383838]">Wishlist (100)</h1>     
+                                   <h1 className="ml-2 text-[17px] font-semibold text-[#383838]">Wishlist ({wishlistCounts[selectedbautistaproduct?.bautistainventoryproductid] || 0})</h1>         
                                 </div>
                                 <img  className="mt-2 w-120 object-cover rounded-2xl h-120" src={(selectedbautistaproduct?.bautistainventoryproductimagepreviewimages?.[bautistacurrentimageindex]) || (addbautistainventoryproductimagepreviewimages?.[bautistacurrentimageindex]) || defaultimageplaceholder}/>
 
@@ -1401,7 +1564,7 @@ const toggleWishlist = async (e) => {
                                                <p className="font-albertsans font-semibold text-[#616161] text-[14px]">{addbautistainventoryproductquantity} pieces available </p>
                                        </div>
 
-                                           <div  className="mt-10 hover:cursor-pointer hover:scale-102  font-albertsans bg-[#117db0]  hover:rounded-2xl transition-all duration-300 ease-in-out rounded-2xl px-25 py-2.5 text-center flex justify-center items-center "><span className="font-albertsans font-bold text-white text-[17px]">Buy Now</span></div>
+                                           <div  className="mt-10 hover:cursor-pointer hover:scale-102  font-albertsans bg-[#117db0]  hover:rounded-2xl transition-all duration-300 ease-in-out rounded-2xl px-25 py-2.5 text-center flex justify-center items-center "><span className="font-albertsans font-bold text-white text-[17px]">Order Now</span></div>
 
                                            <div className="flex items-center justify-between mt-10 h-22 w-full bg-[#fbfbfb] rounded-2xl">
                                               <div className="gap-2 h-full w-40 flex items-center flex-col justify-center"><img src={packageimage} className="w-8 h-8"/><p className="font-albertsans text-[13px] font-medium">Prepare Order</p></div>

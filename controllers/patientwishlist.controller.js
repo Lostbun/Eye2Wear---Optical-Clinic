@@ -112,32 +112,87 @@ export const updatepatientwishlistinventoryproductbyid = async (req, res) => {
 
 
 
-
+//AI CODE
 //Delete patientwishlistinventoryproductId Details
 export const deletepatientwishlistinventoryproductbyid = async (req, res) => {
-    try{
+    try {
         const token = req.headers.authorization?.split(' ')[1];
-        if(!token){
+        if(!token) {
             return res.status(401).json({message: "No token provided"});
         }
 
+        // Verify token
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         const patientEmail = decoded.email;
 
-        const deletepatientwishlistinventoryproduct = await Patientwishlist.findOneAndDelete({
-            patientwishlistinventoryproductid: req.params.id,
+        // First find the item to ensure it exists and belongs to the patient
+        const wishlistItem = await Patientwishlist.findOne({
+            _id: req.params.id,  // Using _id instead of patientwishlistinventoryproductid
             patientwishlistemail: patientEmail
         });
 
-        if(!deletepatientwishlistinventoryproduct){
-            return res.status(404).json({message: "Patient Wishlist Inventory Product not found"});
+        if(!wishlistItem) {
+            return res.status(404).json({ 
+                message: "Wishlist item not found or doesn't belong to this patient" 
+            });
         }
 
-        res.json({message: "Patient Wishlist Inventory Product deleted successfully"});
-    }catch(error){
-        console.error("Delete wishlist product failed: ",error);
-        res.status(500).json({message: error.message});
+        // Delete the item
+        await Patientwishlist.findByIdAndDelete(req.params.id);
+
+        res.json({ 
+            success: true,
+            message: "Wishlist item deleted successfully" 
+        });
+
+    } catch(error) {
+        console.error("Delete wishlist product failed: ", error);
+        
+        // Handle specific errors
+        if (error.name === 'JsonWebTokenError') {
+            return res.status(401).json({ message: "Invalid token" });
+        }
+        if (error.name === 'CastError') {
+            return res.status(400).json({ message: "Invalid wishlist item ID" });
+        }
+        
+        res.status(500).json({ 
+            success: false,
+            message: error.message || "Internal server error" 
+        });
     }
 };
 
 
+
+
+//Get wishlist count per product
+export const getwishlistcount = async (req, res) => {
+    try {
+        const { productIds, clinicType } = req.params;
+        const idsArray = productIds.split(',');
+        
+        // Count for multiple products
+        if (idsArray.length > 1) {
+            const counts = {};
+            for (const id of idsArray) {
+                const count = await Patientwishlist.countDocuments({
+                    patientwishlistinventoryproductid: Number(id),
+                    clinicType: clinicType
+                });
+                counts[id] = count;
+            }
+            return res.json(counts);
+        } 
+        // Count for single product
+        else {
+            const count = await Patientwishlist.countDocuments({
+                patientwishlistinventoryproductid: Number(productIds),
+                clinicType: clinicType
+            });
+            res.json({ count });
+        }
+    } catch(error) {
+        res.status(500).json({message: error.message});
+    }
+}

@@ -417,8 +417,7 @@ useEffect(() => {
 
     
 
-  //PRODUCT ORDERING  //PRODUCT ORDERING  //PRODUCT ORDERING  //PRODUCT ORDERING  //PRODUCT ORDERING
-
+//WISHLIST
 
   //AMBHER OPTICAL
     const [ambhercount, setambherCount] = useState(1)
@@ -490,6 +489,147 @@ useEffect(() => {
     return () => clearTimeout(bautistahearttoasttimer);
   }
 }, [bautistashowheartToast]);
+
+
+
+
+
+
+
+
+
+
+
+  const [wishlistCounts, setWishlistCounts] = useState({});
+const [ambherWishlist, setAmbherWishlist] = useState([]);
+const [bautistaWishlist, setBautistaWishlist] = useState([]);
+const [loadingWishlist, setLoadingWishlist] = useState(true);
+
+
+
+
+const fetchWishlistCounts = async (productIds, clinicType) => {
+  try {
+    // Convert to string if it's an array
+    const idsParam = Array.isArray(productIds) ? productIds.join(',') : productIds;
+    
+    const response = await fetch(
+      `http://localhost:3000/api/patientwishlistinventoryproduct/wishlist-count/${idsParam}/${clinicType}`,
+      {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('patienttoken')}`
+        }
+      }
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || "Failed to fetch wishlist counts");
+    }
+
+    const data = await response.json();
+    return data.count || 0;
+  } catch(error) {
+    console.error("Error fetching wishlist counts:", error);
+    return 0;
+  }
+};
+
+
+
+//Automatically counts the wishlisted count per product in Ambher Optical
+useEffect(() => {
+  if(selectedambherproduct) {
+    const fetchCount = async () => {
+      const count = await fetchWishlistCounts(selectedambherproduct.ambherinventoryproductid, 'ambher');
+      setWishlistCounts(prev => ({...prev, [selectedambherproduct.ambherinventoryproductid]: count}));
+    };
+    fetchCount();
+  }
+}, [selectedambherproduct]);
+
+//Automatically counts the wishlisted count per product in Bautista Eye Center
+useEffect(() => {
+  if(selectedbautistaproduct) {
+    const fetchCount = async () => {
+      const count = await fetchWishlistCounts(selectedbautistaproduct.bautistainventoryproductid, 'bautista');
+      setWishlistCounts(prev => ({...prev, [selectedbautistaproduct.bautistainventoryproductid]: count}));
+    };
+    fetchCount();
+  }
+}, [selectedbautistaproduct]);
+
+
+
+
+
+
+
+
+
+useEffect(() => {
+const fetchWishlist = async () => {
+  try {
+    const response = await fetch('http://localhost:3000/api/patientwishlistinventoryproduct', {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('patienttoken')}`
+      }
+    });
+
+    if(response.ok) {
+      const data = await response.json();
+      // Filter the data directly into separate state variables
+      setAmbherWishlist(data.filter(item => item.clinicType === "ambher"));
+      setBautistaWishlist(data.filter(item => item.clinicType === "bautista"));
+    }
+  } catch (error) {
+    console.error("Error fetching wishlist items: ", error);
+  } finally {
+    setLoadingWishlist(false);
+  }
+};
+  fetchWishlist();
+}, []);
+
+
+
+
+
+
+
+const handleRemoveFromWishlist = async (wishlistItemId, clinicType) => {
+  try {
+    const response = await fetch(`http://localhost:3000/api/patientwishlistinventoryproduct/${wishlistItemId}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('patienttoken')}`
+      }
+    });
+
+    const data = await response.json(); // Always parse the response
+    
+    if (!response.ok) {
+      throw new Error(data.message || "Failed to remove from wishlist");
+    }
+
+    // Update the correct wishlist based on clinicType
+    if (clinicType === 'ambher') {
+      setAmbherWishlist(prev => prev.filter(item => item._id !== wishlistItemId));
+    } else {
+      setBautistaWishlist(prev => prev.filter(item => item._id !== wishlistItemId));
+    }
+    
+    // Show success toast
+    setambhershowtoastMessage("Removed from Wishlist");
+    setambhershowheartToast(true);
+    
+  } catch (error) {
+    console.error("Error removing from wishlist:", error);
+    // Show error toast
+    setambhershowtoastMessage(error.message || "Failed to remove item");
+    setambhershowheartToast(true);
+  }
+};
 
 
 
@@ -682,8 +822,8 @@ useEffect(() => {
 
   <div className="flex justify-start items-center mt-3 h-[60px]">
  {/*<div onClick={() => showinventorytable('allinventorytable')}  className={`hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 pb-3 pt-3 text-center flex justify-center items-center ${activeinventorytable ==='allinventorytable' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d] ${activeinventorytable ==='allinventorytable' ? 'text-white' : ''}`}>All</h1></div>*/}
-  <div onClick={() => showinventorytable('ambherinventorytable')}  className={`mr-3 hover:rounded-2xl hover:cursor-pointer transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 pb-3 pt-3 text-center flex justify-center items-center ${activeinventorytable ==='ambherinventorytable' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d] ${activeinventorytable ==='ambherinventorytable' ? 'text-white' : ''}`}>Ambher Optical</h1></div>
-  <div onClick={() => showinventorytable('bautistainventorytable')}  className={`ml-3 hover:rounded-2xl hover:cursor-pointer transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 pb-3 pt-3 text-center flex justify-center items-center ${activeinventorytable ==='bautistainventorytable' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans  font-semibold text-[#5d5d5d] ${activeinventorytable ==='bautistainventorytable' ? 'text-white' : ''}`}>Bautista Eye Center</h1></div>
+  <div onClick={() => showinventorytable('ambherinventorytable')}  className={`mr-3 hover:rounded-2xl hover:cursor-pointer transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 pb-3 pt-3 text-center flex justify-center items-center ${activeinventorytable ==='ambherinventorytable' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d] ${activeinventorytable ==='ambherinventorytable' ? 'text-white' : ''}`}>Ambher Optical   <span className="rounded-full text-sm px-2 bg-gray-200 text-gray-500 font-semibold   ml-2 ">{ambherWishlist.length}</span></h1></div>
+  <div onClick={() => showinventorytable('bautistainventorytable')}  className={`ml-3 hover:rounded-2xl hover:cursor-pointer transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 pb-3 pt-3 text-center flex justify-center items-center ${activeinventorytable ==='bautistainventorytable' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans  font-semibold text-[#5d5d5d] ${activeinventorytable ==='bautistainventorytable' ? 'text-white' : ''}`}>Bautista Eye Center <span className="rounded-full text-sm px-2 bg-gray-200 text-gray-500 font-semibold   ml-2 ">{bautistaWishlist.length}</span></h1></div>
   
   </div>
 
@@ -703,27 +843,28 @@ useEffect(() => {
                 
 
               <div className="flex flex-wrap p-4">
-                {ambherloadingproducts ? (
-                  <div>Loading Ambher Products...</div> 
-                ): ambherinventoryproducts.length === 0 ? (
-                  <div>No Products Found...</div> 
-                ):(
-                  ambherfilteredproducts.map((product) => (
-              <div key={product.ambherinventoryproductid} onClick={() => {setshowpatientambherviewproduct(true);
-                                                                           setselectedambherproduct(product);
+        {loadingWishlist ? (
+          <div>Loading Ambher Optical Wishlists...</div>
+        ) : ambherWishlist.length === 0 ? (
+          <div>No Ambher Wishlist Items Found</div>
+        ) : (
+          ambherWishlist.map((item) => (
+              <div key={item._id}  onClick={() => {                        setshowpatientambherviewproduct(true);
+                                                                           setselectedambherproduct(item);
                                                                            setambhercurrentimageindex(0);
-                                                                           setambherinventorycategorynamebox(product?.ambherinventoryproductcategory || '');
-                                                                           setaddambherinventoryproductname(product?.ambherinventoryproductname || '');
-                                                                           setaddambherinventoryproductbrand(product?.ambherinventoryproductbrand || '');
-                                                                           setaddambherinventoryproductdescription(product?.ambherinventoryproductdescription || '');
-                                                                           setaddambherinventoryproductprice(product?.ambherinventoryproductprice || 0);
-                                                                           setaddambherinventoryproductquantity(product?.ambherinventoryproductquantity || 0);
-                                                                           setaddambherinventoryproductimagepreviewimages(product?.ambherinventoryproductimagepreviewimages || []);
+                                                                           setambherinventorycategorynamebox(item.patientwishlistinventoryproductcategory || '');
+                                                                           setaddambherinventoryproductname(item.patientwishlistinventoryproductname || '');
+                                                                           setaddambherinventoryproductbrand(item.patientwishlistinventoryproductbrand || '');
+                                                                           setaddambherinventoryproductdescription(item.patientwishlistinventoryproductdescription || '');
+                                                                           setaddambherinventoryproductprice(item.patientwishlistinventoryproductprice || 0);
+                                                                           setaddambherinventoryproductquantity(item.patientwishlistinventoryproductquantity || 0);
+                                                                           setaddambherinventoryproductimagepreviewimages(item.patientwishlistinventoryproductimagepreviewimages || []);
               }} className="motion-preset-slide-up mr-3 mb-3 flex flex-col items-start justify-start w-[220px] h-auto shadow-md bg-white rounded-2xl">
-                <img src={product.ambherinventoryproductimagepreviewimages[0] || defaultimageplaceholder}  alt={product.ambherinventoryproductname} className="w-full h-45"/>
-                <div className=" mx-1  w-fit rounded-md py-1 px-2  rounded-1xl h-fit  mt-2 break-words min-w-0 bg-[#F0F6FF]"><h1 className="font-medium   text-[#0d0d0d] text-[13px] min-w-0 break-words ">{product.ambherinventoryproductcategory}</h1></div>
-                    <div className="w-full h-auto ml-2 mt-2 "><h1 className="font-semibold  text-[15px] min-w-0 break-words ">{product.ambherinventoryproductname}</h1></div>
-                    <div className="w-fit h-auto ml-2 mt-1 "><h1 className="font-albertsans font-bold text-[18px] min-w-0 break-words ">₱ {product.ambherinventoryproductprice?.toLocaleString()}</h1></div>
+                <img  src={heartfilled} onClick={(e) =>  { e.stopPropagation(); handleRemoveFromWishlist(item._id, 'ambher');  }} onMouseEnter={() => !ambherheartisClicked && setambherheartisHovered(true)} onMouseLeave={() => !ambherheartisClicked && setambherheartisHovered(false)}  className={`absolute right-0 ease-in-out duration-300 transition-all  border-1  w-10 h-10 p-2 rounded-2xl cursor-pointer  bg-red-400 hover:bg-red-500`}/>
+                <img src={item.patientwishlistinventoryproductimagepreviewimages[0] || defaultimageplaceholder}  alt={item.patientwishlistinventoryproductname} className="w-full h-45"/>
+                <div className=" mx-1  w-fit rounded-md py-1 px-2  rounded-1xl h-fit  mt-2 break-words min-w-0 bg-[#F0F6FF]"><h1 className="font-medium   text-[#0d0d0d] text-[13px] min-w-0 break-words ">{item.patientwishlistinventoryproductcategory}</h1></div>
+                    <div className="w-full h-auto ml-2 mt-2 "><h1 className="font-semibold  text-[15px] min-w-0 break-words ">{item.patientwishlistinventoryproductname}</h1></div>
+                    <div className="w-fit h-auto ml-2 mt-1 "><h1 className="font-albertsans font-bold text-[18px] min-w-0 break-words ">₱ {item.patientwishlistinventoryproductprice?.toLocaleString()}</h1></div>
                 <div className="w-full h-auto ml-2 mt-5 mb-5 "><h1 className="font-albertsans font-medium text-[#4e4f4f] text-[15px] min-w-0 break-words">0 Sold</h1></div>
               </div>
                   ))
@@ -756,14 +897,13 @@ useEffect(() => {
 
 
 
-
-          {showpatientambherviewproduct && (
+{showpatientambherviewproduct && (
 
                          <div className="overflow-y-auto h-auto  bg-opacity-0 flex justify-center items-start z-50 fixed inset-0 bg-[#000000af] bg-opacity-50">
                            <div className="motion-opacity-in-0 mt-10 pl-5 pr-5 bg-[#fefefe] rounded-2xl w-[1300px] h-auto mb-10 animate-fadeInUp ">
                                 <div className=" mt-5  flex justify-end items-center left-0 w-[100%] h-[70px]">
                    
-                                  <div onClick={() => {setambherCount(1); setshowpatientambherviewproduct(false)}} className="bg-[#333232] px-10 rounded-2xl hover:cursor-pointer hover:scale-105 transition-all duration-300 ease-in-out"><i className="bx bx-x text-white text-[40px] "/></div>
+                                  <div onClick={() => {setambherCount(1); setselectedambherproduct(null); setshowpatientambherviewproduct(false)}} className="bg-[#333232] px-10 rounded-2xl hover:cursor-pointer hover:scale-105 transition-all duration-300 ease-in-out"><i className="bx bx-x text-white text-[40px] "/></div>
                                 </div>
 
 
@@ -778,9 +918,10 @@ useEffect(() => {
                                 <div className=" relative">
                                 
                                 <div className="flex items-center justify-end">
+                      
                                 
-                                 <img  src={getambherHeartImage()} onClick={ambherhearthandleClick} onMouseEnter={() => !ambherheartisClicked && setambherheartisHovered(true)} onMouseLeave={() => !ambherheartisClicked && setambherheartisHovered(false)}  className={` ease-in-out duration-300 transition-all  border-1  w-10 h-10 p-2 rounded-2xl cursor-pointer ${ambherheartisClicked ? "bg-red-400" : "hover:bg-red-400"}`}/>
-                                  <h1 className="ml-2 text-[17px] font-semibold text-[#383838]">Wishlist (100)</h1>     
+
+                                 
                                 </div>
                                 <img  className="mt-2 w-120 object-cover rounded-2xl h-120" src={(selectedambherproduct?.ambherinventoryproductimagepreviewimages?.[ambhercurrentimageindex]) || (addambherinventoryproductimagepreviewimages?.[ambhercurrentimageindex]) || defaultimageplaceholder}/>
 
@@ -830,6 +971,7 @@ useEffect(() => {
                                      
 
                                         <h1 className="font-albertsans mt-3 min-w-0 break-words h-fit w-full font-albertsans font-bold text-[#212121] text-[29px]">{addambherinventoryproductname}</h1>
+                                        
                                         <div className="mt-1 flex items-center">
                                           <img src={starimage} className="w-5 h-5"/>
                                           <p className="font-albertsans ml-2 mt-1 text-[15px] font-semibold">4.8</p><span className="mt-1 text-[13px] pr-3 ml-2">(89 reviews)</span>
@@ -854,7 +996,7 @@ useEffect(() => {
                                                <p className="font-albertsans font-semibold text-[#616161] text-[14px]">{addambherinventoryproductquantity} pieces available </p>
                                        </div>
 
-                                           <div  className="mt-10 hover:cursor-pointer hover:scale-102  font-albertsans bg-[#117db0]  hover:rounded-2xl transition-all duration-300 ease-in-out rounded-2xl px-25 py-2.5 text-center flex justify-center items-center "><span className="font-albertsans font-bold text-white text-[17px]">Buy Now</span></div>
+                                           <div  className="mt-10 hover:cursor-pointer hover:scale-102  font-albertsans bg-[#117db0]  hover:rounded-2xl transition-all duration-300 ease-in-out rounded-2xl px-25 py-2.5 text-center flex justify-center items-center "><span className="font-albertsans font-bold text-white text-[17px]">Order Now</span></div>
 
                                            <div className="flex items-center justify-between mt-10 h-22 w-full bg-[#fbfbfb] rounded-2xl">
                                               <div className="gap-2 h-full w-40 flex items-center flex-col justify-center"><img src={packageimage} className="w-8 h-8"/><p className="font-albertsans text-[13px] font-medium">Prepare Order</p></div>
@@ -935,7 +1077,7 @@ useEffect(() => {
 
 
 
-          { activeinventorytable === 'bautistainventorytable' && ( <div id="bautistainventorytable" className="p-2  animate-fadeInUp flex  items-start  w-[100%] h-[83%] rounded-2xl mt-5" >
+        { activeinventorytable === 'bautistainventorytable' && ( <div id="bautistainventorytable" className="p-2  animate-fadeInUp flex  items-start  w-[100%] h-[83%] rounded-2xl mt-5" >
 
           <div className=" flex flex-col justify-start  ml-2 rounded-2xl w-[90%]  min-h-[540px] max-h-auto h-auto shadow-b-lg ">
 
@@ -943,27 +1085,28 @@ useEffect(() => {
                 
 
               <div className="flex flex-wrap p-4">
-                {bautistaloadingproducts ? (
-                  <div>Loading bautista Products...</div> 
-                ): bautistainventoryproducts.length === 0 ? (
-                  <div>No Products Found...</div> 
-                ):(
-                  bautistafilteredproducts.map((product) => (
-              <div key={product.bautistainventoryproductid} onClick={() => {setshowpatientbautistaviewproduct(true);
-                                                                           setselectedbautistaproduct(product);
+        {loadingWishlist ? (
+          <div>Loading Bautista Eye Center Wishlists...</div>
+        ) : bautistaWishlist.length === 0 ? (
+          <div>No Bautista Eye Center Wishlist Items Found</div>
+        ) : (
+          bautistaWishlist.map((item) => (
+              <div key={item._id}  onClick={() => {                        setshowpatientbautistaviewproduct(true);
+                                                                           setselectedbautistaproduct(item);
                                                                            setbautistacurrentimageindex(0);
-                                                                           setbautistainventorycategorynamebox(product?.bautistainventoryproductcategory || '');
-                                                                           setaddbautistainventoryproductname(product?.bautistainventoryproductname || '');
-                                                                           setaddbautistainventoryproductbrand(product?.bautistainventoryproductbrand || '');
-                                                                           setaddbautistainventoryproductdescription(product?.bautistainventoryproductdescription || '');
-                                                                           setaddbautistainventoryproductprice(product?.bautistainventoryproductprice || 0);
-                                                                           setaddbautistainventoryproductquantity(product?.bautistainventoryproductquantity || 0);
-                                                                           setaddbautistainventoryproductimagepreviewimages(product?.bautistainventoryproductimagepreviewimages || []);
+                                                                           setbautistainventorycategorynamebox(item.patientwishlistinventoryproductcategory || '');
+                                                                           setaddbautistainventoryproductname(item.patientwishlistinventoryproductname || '');
+                                                                           setaddbautistainventoryproductbrand(item.patientwishlistinventoryproductbrand || '');
+                                                                           setaddbautistainventoryproductdescription(item.patientwishlistinventoryproductdescription || '');
+                                                                           setaddbautistainventoryproductprice(item.patientwishlistinventoryproductprice || 0);
+                                                                           setaddbautistainventoryproductquantity(item.patientwishlistinventoryproductquantity || 0);
+                                                                           setaddbautistainventoryproductimagepreviewimages(item.patientwishlistinventoryproductimagepreviewimages || []);
               }} className="motion-preset-slide-up mr-3 mb-3 flex flex-col items-start justify-start w-[220px] h-auto shadow-md bg-white rounded-2xl">
-                <img src={product.bautistainventoryproductimagepreviewimages[0] || defaultimageplaceholder}  alt={product.bautistainventoryproductname} className="w-full h-45"/>
-                <div className=" mx-1  w-fit rounded-md py-1 px-2  rounded-1xl h-fit  mt-2 break-words min-w-0 bg-[#F0F6FF]"><h1 className="font-medium   text-[#0d0d0d] text-[13px] min-w-0 break-words ">{product.bautistainventoryproductcategory}</h1></div>
-                    <div className="w-full h-auto ml-2 mt-2 "><h1 className="font-semibold  text-[15px] min-w-0 break-words ">{product.bautistainventoryproductname}</h1></div>
-                    <div className="w-fit h-auto ml-2 mt-1 "><h1 className="font-albertsans font-bold text-[18px] min-w-0 break-words ">₱ {product.bautistainventoryproductprice?.toLocaleString()}</h1></div>
+                <img  src={heartfilled} onClick={(e) =>  { e.stopPropagation(); handleRemoveFromWishlist(item._id, 'bautista');  }} onMouseEnter={() => !bautistaheartisClicked && setbautistaheartisHovered(true)} onMouseLeave={() => !bautistaheartisClicked && setbautistaheartisHovered(false)}  className={`absolute right-0 ease-in-out duration-300 transition-all  border-1  w-10 h-10 p-2 rounded-2xl cursor-pointer  bg-red-400 hover:bg-red-500`}/>
+                <img src={item.patientwishlistinventoryproductimagepreviewimages[0] || defaultimageplaceholder}  alt={item.patientwishlistinventoryproductname} className="w-full h-45"/>
+                <div className=" mx-1  w-fit rounded-md py-1 px-2  rounded-1xl h-fit  mt-2 break-words min-w-0 bg-[#F0F6FF]"><h1 className="font-medium   text-[#0d0d0d] text-[13px] min-w-0 break-words ">{item.patientwishlistinventoryproductcategory}</h1></div>
+                    <div className="w-full h-auto ml-2 mt-2 "><h1 className="font-semibold  text-[15px] min-w-0 break-words ">{item.patientwishlistinventoryproductname}</h1></div>
+                    <div className="w-fit h-auto ml-2 mt-1 "><h1 className="font-albertsans font-bold text-[18px] min-w-0 break-words ">₱ {item.patientwishlistinventoryproductprice?.toLocaleString()}</h1></div>
                 <div className="w-full h-auto ml-2 mt-5 mb-5 "><h1 className="font-albertsans font-medium text-[#4e4f4f] text-[15px] min-w-0 break-words">0 Sold</h1></div>
               </div>
                   ))
@@ -1018,8 +1161,7 @@ useEffect(() => {
                                 <div className=" relative">
                                 
                                 <div className="flex items-center justify-end">
-                                 <img  src={getbautistaHeartImage()} onClick={bautistahearthandleClick} onMouseEnter={() => !bautistaheartisClicked && setbautistaheartisHovered(true)} onMouseLeave={() => !bautistaheartisClicked && setbautistaheartisHovered(false)}  className={` ease-in-out duration-300 transition-all  border-1  w-10 h-10 p-2 rounded-2xl cursor-pointer ${bautistaheartisClicked ? "bg-red-400" : "hover:bg-red-400"}`}/>
-                                  <h1 className="ml-2 text-[17px] font-semibold text-[#383838]">Wishlist (100)</h1>     
+
                                 </div>
                                 <img  className="mt-2 w-120 object-cover rounded-2xl h-120" src={(selectedbautistaproduct?.bautistainventoryproductimagepreviewimages?.[bautistacurrentimageindex]) || (addbautistainventoryproductimagepreviewimages?.[bautistacurrentimageindex]) || defaultimageplaceholder}/>
 
