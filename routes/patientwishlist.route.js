@@ -3,6 +3,7 @@ import express from "express";
 import {
 
     createpatientwishlistinventoryproduct,
+    checkpatientwishlistitem,
     getallpatientwishlistinventoryproduct,
     updatepatientwishlistinventoryproductbyid,
     deletepatientwishlistinventoryproductbyid,
@@ -19,7 +20,7 @@ const patientwishlistinventoryproductrouter = express.Router();
 
 
 patientwishlistinventoryproductrouter.get("/", getallpatientwishlistinventoryproduct);
-
+patientwishlistinventoryproductrouter.get("/check", checkpatientwishlistitem);
 patientwishlistinventoryproductrouter.post("/", createpatientwishlistinventoryproduct);
 patientwishlistinventoryproductrouter.put("/:id", updatepatientwishlistinventoryproductbyid);
 patientwishlistinventoryproductrouter.delete("/:id", deletepatientwishlistinventoryproductbyid);

@@ -1,7 +1,7 @@
 import React, {useState, useEffect} from "react";
 import {Link} from "react-router-dom";
 import navlogo from  "../src/assets/images/navlogo.png";
-import landingbg2 from "../src/assets/images/landingbg2.png";
+
 import { useAuth } from "./hooks/patientuseAuth";
 import starimage from "../src/assets/images/star.png"
 import defaultimageplaceholder from "../src/assets/images/defaultimageplaceholder.png";
@@ -34,7 +34,10 @@ function PatientProducts(){
 
 
   
- const [patientfirstname, setpatientfirstname] = useState('');
+  const [patientfirstname, setpatientfirstname] = useState('');
+  const [patientlastname, setpatientlastname] = useState('');
+  const [patientmiddlename, setpatientmiddlename] = useState('');
+  const [patientemail, setpatientemail] = useState('');
   const [patientprofilepicture, setpatientprofilepicture] = useState('');
   const [showlogoutbtn, setshowlogoutbtn] = useState(false);
   const showlogout = () => {
@@ -53,7 +56,10 @@ function PatientProducts(){
 
       const data = await fetchpatientdetails();
       if(data){
-       setpatientfirstname(data.patientfirstname || '');
+        setpatientfirstname(data.patientfirstname || '');
+        setpatientmiddlename(data.patientmiddlename || '');
+        setpatientlastname(data.patientlastname || '');
+        setpatientemail(data.patientemail || '');
         setpatientprofilepicture(data.patientprofilepicture || '');
         localStorage.setItem("patientemail", data.patientemail);
       }
@@ -207,6 +213,7 @@ useEffect(() => {
           const[showpatientambherviewproduct, setshowpatientambherviewproduct] = useState(false);
           const [ambherinventorycategorynamebox, setambherinventorycategorynamebox] = useState("");
           const [addambherinventoryproductname, setaddambherinventoryproductname] = useState("");
+          const [addambherinventoryproductmodelnumber, setaddambherinventoryproductmodelnumber] = useState("");
           const [addambherinventoryproductbrand, setaddambherinventoryproductbrand] = useState("");
           const [addambherinventoryproductdescription, setaddambherinventoryproductdescription] = useState("");
           const [addambherinventoryproductprice, setaddambherinventoryproductprice] = useState();
@@ -432,18 +439,19 @@ useEffect(() => {
     const [ambhershowtoastMessage, setambhershowtoastMessage] = useState("");
     const [ambhershowtoastmessageClosing, setambhershowtoastmessageClosing] = useState(false);
 
-  const ambherhearthandleClick = () => {
-    const ambherheartnewState = !ambherheartisClicked;
-    setambherheartisClicked(ambherheartnewState);
-    setambhershowtoastMessage(ambherheartnewState ? "Added to Wishlist!" : "Removed from Wishlist"); 
-    setambhershowheartToast(true);
-    setambhershowtoastmessageClosing(false);
-  };
 
-  const getambherHeartImage = () => {
-    if (ambherheartisClicked) return heartfilled;
-    return ambherheartisHovered ? heartwhite : heartblack;
-  };
+const ambherhearthandleClick = (e) => {
+  e.preventDefault();
+  toggleWishlist(e);
+};
+
+const getambherHeartImage = () => {
+  const productId = selectedambherproduct?.ambherinventoryproductid;
+  const isInWishList = wishlistItems.some(item => item.patientwishlistinventoryproductid === productId);
+
+  return isInWishList ? heartfilled : (ambherheartisHovered ? heartwhite : heartblack);
+}
+
 
 useEffect(() => {
   if(ambhershowheartToast){
@@ -463,8 +471,6 @@ useEffect(() => {
 
   //BAUTISTA EYE CENTER 
 
-
-
     const [bautistacount, setbautistaCount] = useState(1)
     const [bautistaheartisHovered, setbautistaheartisHovered] =useState(false);
     const [bautistaheartisClicked, setbautistaheartisClicked] =useState(false);     
@@ -472,18 +478,18 @@ useEffect(() => {
     const [bautistashowtoastMessage, setbautistashowtoastMessage] = useState("");
     const [bautistashowtoastmessageClosing, setbautistashowtoastmessageClosing] = useState(false);
 
-  const bautistahearthandleClick = () => {
-    const bautistaheartnewState = !bautistaheartisClicked;
-    setbautistaheartisClicked(bautistaheartnewState);
-    setbautistashowtoastMessage(bautistaheartnewState ? "Added to Wishlist!" : "Removed from Wishlist"); 
-    setbautistashowheartToast(true);
-    setbautistashowtoastmessageClosing(false);
-  };
+const bautistahearthandleClick = (e) => {
+  e.preventDefault();
+  toggleWishlist(e); // Use the unified toggle function
+};
 
-  const getbautistaHeartImage = () => {
-    if (bautistaheartisClicked) return heartfilled;
-    return bautistaheartisHovered ? heartwhite : heartblack;
-  };
+const getbautistaHeartImage = () => {
+  const productId = selectedbautistaproduct?.bautistainventoryproductid;
+  const isInWishList = wishlistItems.some(item => item.patientwishlistinventoryproductid === productId);
+
+  return isInWishList ? heartfilled : (bautistaheartisHovered ? heartwhite : heartblack);
+}
+
 
 useEffect(() => {
   if(bautistashowheartToast){
@@ -506,6 +512,173 @@ useEffect(() => {
 
 
 
+//WISHLIST VARIABLESSSS //WISHLIST VARIABLESSSS //WISHLIST VARIABLESSSS //WISHLIST VARIABLESSSS //WISHLIST VARIABLESSSS //WISHLIST VARIABLESSSS //WISHLIST VARIABLESSSS 
+//WISHLIST VARIABLESSSS //WISHLIST VARIABLESSSS //WISHLIST VARIABLESSSS //WISHLIST VARIABLESSSS //WISHLIST VARIABLESSSS //WISHLIST VARIABLESSSS //WISHLIST VARIABLESSSS 
+//WISHLIST VARIABLESSSS //WISHLIST VARIABLESSSS //WISHLIST VARIABLESSSS //WISHLIST VARIABLESSSS //WISHLIST VARIABLESSSS //WISHLIST VARIABLESSSS //WISHLIST VARIABLESSSS 
+//WISHLIST VARIABLESSSS //WISHLIST VARIABLESSSS //WISHLIST VARIABLESSSS //WISHLIST VARIABLESSSS //WISHLIST VARIABLESSSS //WISHLIST VARIABLESSSS //WISHLIST VARIABLESSSS 
+//WISHLIST VARIABLESSSS //WISHLIST VARIABLESSSS //WISHLIST VARIABLESSSS //WISHLIST VARIABLESSSS //WISHLIST VARIABLESSSS //WISHLIST VARIABLESSSS //WISHLIST VARIABLESSSS 
+//WISHLIST VARIABLESSSS //WISHLIST VARIABLESSSS //WISHLIST VARIABLESSSS //WISHLIST VARIABLESSSS //WISHLIST VARIABLESSSS //WISHLIST VARIABLESSSS //WISHLIST VARIABLESSSS 
+//WISHLIST VARIABLESSSS //WISHLIST VARIABLESSSS //WISHLIST VARIABLESSSS //WISHLIST VARIABLESSSS //WISHLIST VARIABLESSSS //WISHLIST VARIABLESSSS //WISHLIST VARIABLESSSS 
+//WISHLIST VARIABLESSSS //WISHLIST VARIABLESSSS //WISHLIST VARIABLESSSS //WISHLIST VARIABLESSSS //WISHLIST VARIABLESSSS //WISHLIST VARIABLESSSS //WISHLIST VARIABLESSSS 
+//WISHLIST VARIABLESSSS //WISHLIST VARIABLESSSS //WISHLIST VARIABLESSSS //WISHLIST VARIABLESSSS //WISHLIST VARIABLESSSS //WISHLIST VARIABLESSSS //WISHLIST VARIABLESSSS 
+//WISHLIST VARIABLESSSS //WISHLIST VARIABLESSSS //WISHLIST VARIABLESSSS //WISHLIST VARIABLESSSS //WISHLIST VARIABLESSSS //WISHLIST VARIABLESSSS //WISHLIST VARIABLESSSS 
+
+
+const [wishlistItems, setWishlistItems] = useState([]);
+
+
+//INSERTING AMBHER WISHLIST TO DATABASEEEE
+const handlesubmitaddpatientwishlistambherinventoryproduct = async (e) => {
+  e.preventDefault();
+
+  try {
+    if (!selectedambherproduct){
+      alert("No ambher product selected");
+      return;
+    }
+
+    const ambherinventoryproductdata = {
+      patientaccount: patientemail,
+      patientwishlistprofilepicture: patientprofilepicture,
+      patientwishlistlastname: patientlastname || "No Last Name",
+      patientwishlistfirstname: patientfirstname || "No First Name",
+      patientwishlistmiddlename: patientmiddlename || "No Middle Name",
+      patientwishlistemail: patientemail || "No Email",
+
+      clinicproduct: selectedambherproduct.ambherinventoryproductid,
+      clinicproductmodel: selectedambherproduct.ambherinventoryproductmodelnumber,
+      patientwishlistinventoryproductid: selectedambherproduct.ambherinventoryproductid,
+      patientwishlistinventoryproductcategory: ambherinventorycategorynamebox || "No Category Name",
+      patientwishlistinventoryproductname: addambherinventoryproductname || "No Product Name",
+      patientwishlistinventoryproductbrand: addambherinventoryproductbrand || "No Brand",
+      patientwishlistinventoryproductmodelnumber: addambherinventoryproductmodelnumber || "No Model",
+      patientwishlistinventoryproductdescription: addambherinventoryproductdescription || "No Description",
+      patientwishlistinventoryproductprice: addambherinventoryproductprice || 0,
+      patientwishlistinventoryproductquantity: addambherinventoryproductquantity || 0,
+      patientwishlistinventoryproductimagepreviewimages: addambherinventoryproductimagepreviewimages || [],
+      clinicType: "ambher",
+    };
+
+
+    const response = await fetch('http://localhost:3000/api/patientwishlistinventoryproduct', {
+      method: 'POST',
+      headers:{
+        'Content-Type' : 'application/json',
+        'Authorization' : `Bearer ${localStorage.getItem('patienttoken')}`
+      },
+      body: JSON.stringify(ambherinventoryproductdata)
+    });
+
+    if(!response.ok) {
+      const errordata = await response.json();
+      throw new Error(`Error: ${response.status}. ${JSON.stringify(errordata)}`);
+    }
+
+    const data = await response.json();
+    console.log("Ambher Product added to wishlist: ", data);
+    return data;
+
+  }catch(error){
+    console.log("Error adding to wishlist: ", error);
+    throw error;
+  }
+}
+
+
+
+//INSERTING BAUTISTA WISHLIST TO DATABASEEEE
+const handlesubmitaddpatientwishlistbautistainventoryproduct = async (e) => {
+  e.preventDefault();
+
+  try {
+    if (!selectedbautistaproduct) {
+      alert("No product selected");
+      return;
+    }
+
+    const bautistainventoryproductdata = {
+      // Patient Information
+      patientaccount: patientemail,
+      patientwishlistprofilepicture: patientprofilepicture,
+      patientwishlistlastname: patientlastname || "No Last Name",
+      patientwishlistfirstname: patientfirstname || "No First Name",
+      patientwishlistmiddlename: patientmiddlename || "No Middle Name",
+      patientwishlistemail: patientemail || "No Email",
+
+      // Product Information
+      clinicproduct: selectedbautistaproduct.bautistainventoryproductid,
+      clinicproductmodel: selectedbautistaproduct.bautistainventoryproductmodel || "No Model", // Use appropriate field
+      patientwishlistinventoryproductid: selectedbautistaproduct.bautistainventoryproductid,
+      patientwishlistinventoryproductcategory: bautistainventorycategorynamebox || "No Category Name",
+      patientwishlistinventoryproductname: addbautistainventoryproductname || "No Product Name",
+      patientwishlistinventoryproductbrand: addbautistainventoryproductbrand || "No Brand",
+      patientwishlistinventoryproductmodelnumber: selectedbautistaproduct.bautistainventoryproductmodel || "No Model",
+      patientwishlistinventoryproductdescription: addbautistainventoryproductdescription || "No Description",
+      patientwishlistinventoryproductprice: addbautistainventoryproductprice || 0,
+      patientwishlistinventoryproductquantity: addbautistainventoryproductquantity || 0,
+      patientwishlistinventoryproductimagepreviewimages: addbautistainventoryproductimagepreviewimages || [],
+      clinicType: "bautista",
+    };
+
+    const response = await fetch('http://localhost:3000/api/patientwishlistinventoryproduct', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('patienttoken')}`
+      },
+      body: JSON.stringify(bautistainventoryproductdata)
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(`Error: ${response.status} - ${JSON.stringify(errorData)}`);
+    }
+
+    const data = await response.json();
+    console.log("Successfully added to wishlist:", data);
+    return data;
+
+  } catch (error) {
+    console.log("Error details:", error);
+    throw error;
+  }
+};
+
+
+
+
+
+//FETCHING WISHLISTED ITEMSSS //FETCHING WISHLISTED ITEMSSS //FETCHING WISHLISTED ITEMSSS //FETCHING WISHLISTED ITEMSSS //FETCHING WISHLISTED ITEMSSS //FETCHING WISHLISTED ITEMSSS
+useEffect(() => {
+  const fetchWishlistItems = async () => {
+    try{
+      const response = await fetch('http://localhost:3000/api/patientwishlistinventoryproduct', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('patienttoken')}`
+        }
+      });
+
+      if(response.ok) {
+        const data = await response.json();
+        setWishlistItems(data);
+
+
+        if(selectedambherproduct){
+          const isInWishlist = data.some(item => item.patientwishlistinventoryproductid === selectedambherproduct.ambherinventoryproductid);
+          setambherheartisClicked(isInWishlist);
+        }
+
+        if(selectedbautistaproduct){
+          const isInWishlist = data.some(item => item.patientwishlistinventoryproductid === selectedbautistaproduct.bautistainventoryproductid);
+          setbautistaheartisClicked(isInWishlist);
+        }
+
+      }
+    }catch(error){
+      console.error("Error fetching wishlist products:", error);
+    }
+  }; fetchWishlistItems();
+}, [showpatientambherviewproduct, showpatientbautistaviewproduct]);
 
 
 
@@ -513,10 +686,105 @@ useEffect(() => {
 
 
 
+//HANDLES ADD AND DELETE BUTTON FOR WISHLIST
 
 
+const toggleWishlist = async (e) => {
+  e.preventDefault();
+  
+  try{
+    let productId;
+    let isAmbher = false;
+
+    if(selectedambherproduct){
+      productId = selectedambherproduct.ambherinventoryproductid;
+      isAmbher = true;
+    }else if (selectedbautistaproduct) {
+      productId = selectedbautistaproduct.bautistainventoryproductid;
+      isAmbher = false;
+    }else{
+      throw new Error("No product selected");
+    }
 
 
+    const isInWishlist = wishlistItems.some(item => item.patientwishlistinventoryproductid === productId);
+    
+    if(isInWishlist){
+      const response = await fetch(`http://localhost:3000/api/patientwishlistinventoryproduct/${productId}`,{
+        method: 'DELETE',
+        headers: {
+          'Authorization' : `Bearer ${localStorage.getItem('patienttoken')}`
+        }
+      });
+
+
+      if(!response.ok){
+        const errordata = await response.json();
+        throw new Error(errordata.message || "Failed to delete wishlist product");
+      }
+
+      setWishlistItems(prev => prev.filter(item => item.patientwishlistinventoryproductid !== productId));
+
+      if(isAmbher){
+        setambherheartisClicked(false);
+        setambhershowtoastMessage("Removed from Wishlist");
+        setambhershowheartToast(true);
+      }else{
+        setbautistaheartisClicked(false);
+        setbautistashowtoastMessage("Removed from Wishlist");
+        setbautistashowheartToast(true);
+      }
+    }else{
+      //Add to wishlist
+      if (isAmbher) {
+        await handlesubmitaddpatientwishlistambherinventoryproduct(e);
+      } else {
+        await handlesubmitaddpatientwishlistbautistainventoryproduct(e);
+      }
+
+      const updatedResponse = await fetch('http://localhost:3000/api/patientwishlistinventoryproduct', {
+                headers:{
+                  'Authorization': `Bearer ${localStorage.getItem('patienttoken')}`
+                }});
+
+      
+      if(updatedResponse.ok){
+          const updatedData = await updatedResponse.json();
+          setWishlistItems(updatedData);
+
+       if(isAmbher){
+        setambherheartisClicked(true);
+        setambhershowtoastMessage("Added to Wishlist");
+        setambhershowheartToast(true);
+      }else{
+        setbautistaheartisClicked(true);
+        setbautistashowtoastMessage("Added to Wishlist");
+        setbautistashowheartToast(true);
+      }
+      }
+
+    }
+    if (isAmbher) {
+      setambhershowtoastmessageClosing(false);
+    } else {
+      setbautistashowtoastmessageClosing(false);
+    }
+
+  }catch(error){
+     console.error("Error toggle wishlist: ", error);
+     const errormessage = error.message || "Wishlist toggle error";
+
+    if (selectedambherproduct) {
+      setambhershowtoastMessage(errorMessage);
+      setambhershowheartToast(true);
+      setambhershowtoastmessageClosing(false);
+    } else if (selectedbautistaproduct) {
+      setbautistashowtoastMessage(errorMessage);
+      setbautistashowheartToast(true);
+      setbautistashowtoastmessageClosing(false);
+    }
+  }
+};
 
 
 
@@ -703,7 +971,6 @@ useEffect(() => {
 
 
             
-            {/*<div className=""> <AmbherinventorycategoryBox value={ambherinventorycategorynamebox} loading={loadingambherinventorycategorylist} onChange={(e) => setambherinventorycategorynamebox(e.target.value)} categories={ambherinventorycategorylist}/></div>*/}
 
           </div>
           <div className=" flex flex-col justify-start  ml-2 rounded-2xl w-[90%]  min-h-[540px] max-h-auto h-auto shadow-b-lg ">
@@ -723,12 +990,18 @@ useEffect(() => {
                                                                            setambhercurrentimageindex(0);
                                                                            setambherinventorycategorynamebox(product?.ambherinventoryproductcategory || '');
                                                                            setaddambherinventoryproductname(product?.ambherinventoryproductname || '');
+                                                                           setaddambherinventoryproductmodelnumber(product?.ambherinventoryproductmodelnumber || '');
                                                                            setaddambherinventoryproductbrand(product?.ambherinventoryproductbrand || '');
                                                                            setaddambherinventoryproductdescription(product?.ambherinventoryproductdescription || '');
                                                                            setaddambherinventoryproductprice(product?.ambherinventoryproductprice || 0);
                                                                            setaddambherinventoryproductquantity(product?.ambherinventoryproductquantity || 0);
+                
                                                                            setaddambherinventoryproductimagepreviewimages(product?.ambherinventoryproductimagepreviewimages || []);
-              }} className="motion-preset-slide-up mr-3 mb-3 flex flex-col items-start justify-start w-[220px] h-auto shadow-md bg-white rounded-2xl">
+       
+              const isInWishList = wishlistItems.some(item => item.patientwishlistinventoryproductid === product.ambherinventoryproductid);
+              setambherheartisClicked(isInWishList);    
+
+                 }}  className="motion-preset-slide-up mr-3 mb-3 flex flex-col items-start justify-start w-[220px] h-auto shadow-md bg-white rounded-2xl">
                 <img src={product.ambherinventoryproductimagepreviewimages[0] || defaultimageplaceholder}  alt={product.ambherinventoryproductname} className="w-full h-45"/>
                 <div className=" mx-1  w-fit rounded-md py-1 px-2  rounded-1xl h-fit  mt-2 break-words min-w-0 bg-[#F0F6FF]"><h1 className="font-medium   text-[#0d0d0d] text-[13px] min-w-0 break-words ">{product.ambherinventoryproductcategory}</h1></div>
                     <div className="w-full h-auto ml-2 mt-2 "><h1 className="font-semibold  text-[15px] min-w-0 break-words ">{product.ambherinventoryproductname}</h1></div>
@@ -772,7 +1045,7 @@ useEffect(() => {
                            <div className="motion-opacity-in-0 mt-10 pl-5 pr-5 bg-[#fefefe] rounded-2xl w-[1300px] h-auto mb-10 animate-fadeInUp ">
                                 <div className=" mt-5  flex justify-end items-center left-0 w-[100%] h-[70px]">
                    
-                                  <div onClick={() => {setambherCount(1); setshowpatientambherviewproduct(false)}} className="bg-[#333232] px-10 rounded-2xl hover:cursor-pointer hover:scale-105 transition-all duration-300 ease-in-out"><i className="bx bx-x text-white text-[40px] "/></div>
+                                  <div onClick={() => {setambherCount(1); setselectedambherproduct(null); setshowpatientambherviewproduct(false)}} className="bg-[#333232] px-10 rounded-2xl hover:cursor-pointer hover:scale-105 transition-all duration-300 ease-in-out"><i className="bx bx-x text-white text-[40px] "/></div>
                                 </div>
 
 
@@ -787,8 +1060,12 @@ useEffect(() => {
                                 <div className=" relative">
                                 
                                 <div className="flex items-center justify-end">
+                                  {/*AI CODE*/}
+                                
                                  <img  src={getambherHeartImage()} onClick={ambherhearthandleClick} onMouseEnter={() => !ambherheartisClicked && setambherheartisHovered(true)} onMouseLeave={() => !ambherheartisClicked && setambherheartisHovered(false)}  className={` ease-in-out duration-300 transition-all  border-1  w-10 h-10 p-2 rounded-2xl cursor-pointer ${ambherheartisClicked ? "bg-red-400" : "hover:bg-red-400"}`}/>
-                                  <h1 className="ml-2 text-[17px] font-semibold text-[#383838]">Wishlist (100)</h1>     
+
+
+                                <h1 className="ml-2 text-[17px] font-semibold text-[#383838]">Wishlist (100)</h1>     
                                 </div>
                                 <img  className="mt-2 w-120 object-cover rounded-2xl h-120" src={(selectedambherproduct?.ambherinventoryproductimagepreviewimages?.[ambhercurrentimageindex]) || (addambherinventoryproductimagepreviewimages?.[ambhercurrentimageindex]) || defaultimageplaceholder}/>
 
@@ -837,6 +1114,7 @@ useEffect(() => {
                                         
                                      
 
+                                        <h1 className="font-albertsans mt-3 min-w-0 break-words h-fit w-full font-albertsans font-bold text-[#212121] text-[29px]">{addambherinventoryproductname}</h1>
                                         <h1 className="font-albertsans mt-3 min-w-0 break-words h-fit w-full font-albertsans font-bold text-[#212121] text-[29px]">{addambherinventoryproductname}</h1>
                                         <div className="mt-1 flex items-center">
                                           <img src={starimage} className="w-5 h-5"/>
@@ -1032,7 +1310,7 @@ useEffect(() => {
                            <div className="motion-opacity-in-0 mt-10 pl-5 pr-5 bg-[#fefefe] rounded-2xl w-[1300px] h-auto mb-10 animate-fadeInUp ">
                                 <div className=" mt-5  flex justify-end items-center left-0 w-[100%] h-[70px]">
                    
-                                  <div onClick={() => {setbautistaCount(1); setshowpatientbautistaviewproduct(false)}} className="bg-[#333232] px-10 rounded-2xl hover:cursor-pointer hover:scale-105 transition-all duration-300 ease-in-out"><i className="bx bx-x text-white text-[40px] "/></div>
+                                  <div onClick={() => {setbautistaCount(1); setselectedbautistaproduct(null);setshowpatientbautistaviewproduct(false)}} className="bg-[#333232] px-10 rounded-2xl hover:cursor-pointer hover:scale-105 transition-all duration-300 ease-in-out"><i className="bx bx-x text-white text-[40px] "/></div>
                                 </div>
 
 
@@ -1047,6 +1325,7 @@ useEffect(() => {
                                 <div className=" relative">
                                 
                                 <div className="flex items-center justify-end">
+                                
                                  <img  src={getbautistaHeartImage()} onClick={bautistahearthandleClick} onMouseEnter={() => !bautistaheartisClicked && setbautistaheartisHovered(true)} onMouseLeave={() => !bautistaheartisClicked && setbautistaheartisHovered(false)}  className={` ease-in-out duration-300 transition-all  border-1  w-10 h-10 p-2 rounded-2xl cursor-pointer ${bautistaheartisClicked ? "bg-red-400" : "hover:bg-red-400"}`}/>
                                   <h1 className="ml-2 text-[17px] font-semibold text-[#383838]">Wishlist (100)</h1>     
                                 </div>
@@ -1122,7 +1401,7 @@ useEffect(() => {
                                                <p className="font-albertsans font-semibold text-[#616161] text-[14px]">{addbautistainventoryproductquantity} pieces available </p>
                                        </div>
 
-                                           <div  className="mt-10 hover:cursor-pointer hover:scale-102  font-albertsans bg-[#117db0]  hover:rounded-2xl transition-all duration-300 ease-in-out rounded-2xl px-25 py-2.5 text-center flex justify-center items-center "><span className="font-albertsans font-bold text-white text-[17px]">Order Now</span></div>
+                                           <div  className="mt-10 hover:cursor-pointer hover:scale-102  font-albertsans bg-[#117db0]  hover:rounded-2xl transition-all duration-300 ease-in-out rounded-2xl px-25 py-2.5 text-center flex justify-center items-center "><span className="font-albertsans font-bold text-white text-[17px]">Buy Now</span></div>
 
                                            <div className="flex items-center justify-between mt-10 h-22 w-full bg-[#fbfbfb] rounded-2xl">
                                               <div className="gap-2 h-full w-40 flex items-center flex-col justify-center"><img src={packageimage} className="w-8 h-8"/><p className="font-albertsans text-[13px] font-medium">Prepare Order</p></div>

@@ -7,8 +7,13 @@ import AutoIncrement from "mongoose-sequence";
 
 
 const PatientWishlistSchema = new mongoose.Schema({
+
+
   wishlistid: { type: Number, unique: true },
-  
+  patientaccount: { type: String, required: true },
+  clinicproduct: { type: String, required: true },
+  clinicproductmodel: { type: String, required: true },
+
   // Patient Information
   patientwishlistprofilepicture: String,
   patientwishlistlastname: { type: String, required: true },
@@ -28,7 +33,7 @@ const PatientWishlistSchema = new mongoose.Schema({
   patientwishlistinventoryproductimagepreviewimages: { type: [String], required: true },
   
   // Clinic type (ambher or bautista)
-  clinicType: { type: String, required: true, enum: ['ambher', 'bautista'] },
+  clinicType: { type: String, required: true, enum: ['ambher', 'bautista'], default: "empty", },
 
   patientwishlistinventoryproductaddedat: {
     type: Date,
@@ -48,11 +53,8 @@ PatientWishlistSchema.plugin(AutoIncrement(mongoose),{
 });
 
 PatientWishlistSchema.index(
-  { 
-    patientwishlistemail: 1, 
-    patientwishlistinventoryproductid: 1 
-  }, 
-  { unique: true }
+  { patientaccount: 1, clinicproduct: 1, clinicproductmodel: 1 },
+  { unique: true, sparse: true }
 );
 
 export default mongoose.model("Patientwishlist", PatientWishlistSchema);
