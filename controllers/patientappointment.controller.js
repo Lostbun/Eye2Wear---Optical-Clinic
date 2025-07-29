@@ -81,26 +81,20 @@
 
 
 
-
-    //AICODE//AICODE//AICODE//AICODE//AICODE
     //Update Appointment Details
-    // ... existing code ...
 
-    export const updateappointmentbyid = async (req, res) => {
-        try {
+    export const updateappointmentbyid = async (req,res) => {
+        try{
             const { id } = req.params;
             const updateData = req.body;
-        
-            // Find the appointment using patientappointmentid instead of _id
-            const appointment = await PatientAppointment.findOne({ patientappointmentid: id });
-            if (!appointment) {
-                return res.status(404).json({ message: "Appointment not found" });
+
+            const appointment = await PatientAppointment.findOne({patientappointmentid: id});
+            if(!appointment) {
+                return res.status(404).json({message: "Appointment not found"});
             }
-        
-            // Handle Ambher appointment status update
-            if (updateData.patientambherappointmentstatus) {
-                // Add status change to Ambher appointment history
-                if (!appointment.patientambherappointmentstatushistory) {
+
+            if(updateData.patientambherappointmentstatus) {
+                if(!appointment.patientambherappointmentstatushistory) {
                     appointment.patientambherappointmentstatushistory = [];
                 }
                 appointment.patientambherappointmentstatushistory.push({
@@ -108,45 +102,39 @@
                     changedAt: new Date(),
                     changedBy: updateData.patientambherappointmentstatushistory.changedBy
                 });
+
             }
-        
-            // Update the appointment with new data
+
+
             const updatedAppointment = await PatientAppointment.findOneAndUpdate(
-                { patientappointmentid: id },
+                { patientappointmentid: id},
                 updateData,
-                { new: true }
+                { new: true}
             );
-        
             res.status(200).json(updatedAppointment);
-        } catch (error) {
-            console.error("Error updating appointment:", error);
-            res.status(500).json({ message: error.message });
-        }
-    };
-
-    // ... existing code ...
-
-
-
-
-
-    //AI CODE
-    //Delete AppointmentId Details
-    export const deleteappointmentbyid = async (req, res) => {
-        try {
-            const deleteappointment = await PatientAppointment.findOneAndDelete({ 
-                patientappointmentid: req.params.id 
-            });
-    
-            if (!deleteappointment) return res.status(404).json({message: "Appointment not found"});
-            res.json({message: "Appointment deleted successfully"});    
-    
-        } catch (error) {
+        } catch(error){
+            console.error("Error updating appointment: ", error);
             res.status(500).json({message: error.message});
         }
-    };
+    }
+
+  
 
 
 
+    //Delete AppointmentId Details
+    export const deleteappointmentbyid = async (req,res) => {
+        try{
+            const deleteappointment = await PatientAppointment.findOneAndDelete({
+                patientappointmentid: req.params.id
+            });
+
+            if(!deleteappointment) return res.status(404).json({message: "Appointment not found"});
+            res.json({message: "Appointment deleted successfully"});
+
+        }catch(error){
+            res.status(500).json({message: error.message});
+        }
+    }
 
 
