@@ -952,17 +952,13 @@ const [searchProducts, setsearchProducts] = useState('');
 
 // Add these functions to handle price sorting
 const sortproductsbyPrice = (products, sortOrder, productType) => {
-  if (sortOrder === 'none') return products;
-  
-  return [...products].sort((a, b) => {
-    const priceA = productType === 'ambher' ? a.ambherinventoryproductprice : b.bautistainventoryproductprice;
-    const priceB = productType === 'ambher' ? b.ambherinventoryproductprice : a.bautistainventoryproductprice;
+  if(sortOrder === 'none') return products;
+
+  return [...products].sort((a,b) =>{
+    const priceA = productType === 'ambher' ? a.ambherinventoryproductprice : a.bautistainventoryproductprice;
+    const priceB = productType === 'ambher' ? b.ambherinventoryproductprice : b.bautistainventoryproductprice;
     
-    if (sortOrder === 'Highesttolowest') {
-      return priceB - priceA;
-    } else {
-      return priceA - priceB;
-    }
+    return sortOrder === 'Highesttolowest' ? priceB - priceA : priceA - priceB;
   });
 };
 
@@ -970,43 +966,32 @@ const sortproductsbyPrice = (products, sortOrder, productType) => {
 //Ambher filtering products
 const ambherfilteredproducts = () => {
   let filtered = ambherinventoryproducts.filter(product =>
-    (activeambherinventorycategorytable === 'all' ||
-      product.ambherinventoryproductcategory === activeambherinventorycategorytable) &&
-      (product.ambherinventoryproductname.toLowerCase().includes(searchProducts.toLowerCase()) ||
-    product.ambherinventoryproductbrand.toLowerCase().includes(searchProducts.toLowerCase()) ||
-    product.ambherinventoryproductdescription.toLowerCase().includes(searchProducts.toLowerCase()))
- 
-    );
-
-    if(pricesortingProducts === 'Highesttolowest') {
-      return sortproductsbyPrice(filtered, 'highesttolowest', 'ambher');
-    } else if (pricesortingProducts === 'Lowesttohighest') {
-      return sortproductsbyPrice(filtered, 'lowesttohighest', 'ambher');
-    }
-    return filtered;
+  (activeambherinventorycategorytable === 'all' ||
+    product.ambherinventoryproductcategory === activeambherinventorycategorytable) &&
+  (product.ambherinventoryproductname.toLowerCase().includes(searchProducts.toLowerCase()) ||
+   product.ambherinventoryproductbrand.toLowerCase().includes(searchProducts.toLowerCase())||
+   product.ambherinventoryproductdescription.toLowerCase().includes(searchProducts.toLowerCase()))
+  );
+  
+  return sortproductsbyPrice(filtered, pricesortingProducts, 'ambher');
 };
+
+
+
 
 
 //Bautista filtering products
 const bautistafilteredproducts = () => {
   let filtered = bautistainventoryproducts.filter(product =>
-    (activebautistainventorycategorytable === 'all' ||
-      product.bautistainventoryproductcategory === activebautistainventorycategorytable) &&
-      (product.bautistainventoryproductname.toLowerCase().includes(searchProducts.toLowerCase()) ||
-    product.bautistainventoryproductbrand.toLowerCase().includes(searchProducts.toLowerCase()) ||
-    product.bautistainventoryproductdescription.toLowerCase().includes(searchProducts.toLowerCase()))
- 
-    );
-
-    if(pricesortingProducts === 'Highesttolowest') {
-      return sortproductsbyPrice(filtered, 'highesttolowest', 'bautista');
-    } else if (pricesortingProducts === 'Lowesttohighest') {
-      return sortproductsbyPrice(filtered, 'lowesttohighest', 'bautista');
-    }
-    return filtered;
+  (activebautistainventorycategorytable === 'all' ||
+    product.bautistainventoryproductcategory === activebautistainventorycategorytable) &&
+  (product.bautistainventoryproductname.toLowerCase().includes(searchProducts.toLowerCase()) ||
+   product.bautistainventoryproductbrand.toLowerCase().includes(searchProducts.toLowerCase())||
+   product.bautistainventoryproductdescription.toLowerCase().includes(searchProducts.toLowerCase()))
+  );
+  
+  return sortproductsbyPrice(filtered, pricesortingProducts, 'bautista');
 };
-
-
 
 
 
@@ -1206,9 +1191,9 @@ const bautistafilteredproducts = () => {
                 })}
 
                 <div className=" pb-3 flex items center w-full mt-7"><i className="bx bx-filter font-albertsans font-semibold text-[#363636] text-[25px]" /><h1 className="ml-2 text-[16px] font-albertsans font-semibold text-[#363636]">Filter by price</h1></div>
-                <div onClick={() => setpricesortingProducts(pricesortingProducts === 'Highesttolowest' ? 'none' : 'Highesttolowest')}   className={`mt-3 hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl   py-2 text-center flex justify-center items-center ${pricesortingProducts === 'Highesttolowest' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#1f1f1f] ${pricesortingProducts === 'Highesttolowest' ? 'text-white' : 'text-[#1f1f1f]'}`}>Highest to Lowest</h1></div>
-                <div onClick={() => setpricesortingProducts(pricesortingProducts === 'Lowesttohighest' ? 'none' : 'Lowesttohighest')}  className={`mt-3 hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl   py-2 text-center flex justify-center items-center ${pricesortingProducts === 'Lowesttohighest' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#1f1f1f] ${pricesortingProducts === 'Lowesttohighest' ? 'bg-[#2781af] rounded-2xl text-white ' : 'text-[#1f1f1f]'}`}>Lowest to Highest</h1></div>
-
+                <div onClick={() => setpricesortingProducts('Highesttolowest')}    className={`mt-3 hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl   py-2 text-center flex justify-center items-center ${pricesortingProducts === 'Highesttolowest' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#1f1f1f] ${pricesortingProducts === 'Highesttolowest' ? 'text-white' : 'text-[#1f1f1f]'}`}>Highest to Lowest</h1></div>
+                <div onClick={() => setpricesortingProducts('Lowesttohighest')}     className={`mt-3 hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl   py-2 text-center flex justify-center items-center ${pricesortingProducts === 'Lowesttohighest' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#1f1f1f] ${pricesortingProducts === 'Lowesttohighest' ? 'bg-[#2781af] rounded-2xl text-white ' : 'text-[#1f1f1f]'}`}>Lowest to Highest</h1></div>
+ 
             
 
           </div>
@@ -1477,8 +1462,9 @@ const bautistafilteredproducts = () => {
 
 
                 <div className=" pb-3 flex items center w-full mt-7"><i className="bx bx-filter font-albertsans font-semibold text-[#363636] text-[25px]" /><h1 className="ml-2 text-[16px] font-albertsans font-semibold text-[#363636]">Filter by price</h1></div>
-                <div onClick={() => setpricesortingProducts(pricesortingProducts === 'Highesttolowest' ? 'none' : 'Highesttolowest')}   className={`mt-3 hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl   py-2 text-center flex justify-center items-center ${pricesortingProducts === 'Highesttolowest' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#1f1f1f] ${pricesortingProducts === 'Highesttolowest' ? 'text-white' : 'text-[#1f1f1f]'}`}>Highest to Lowest</h1></div>
-                <div onClick={() => setpricesortingProducts(pricesortingProducts === 'Lowesttohighest' ? 'none' : 'Lowesttohighest')}  className={`mt-3 hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl   py-2 text-center flex justify-center items-center ${pricesortingProducts === 'Lowesttohighest' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#1f1f1f] ${pricesortingProducts === 'Lowesttohighest' ? 'bg-[#2781af] rounded-2xl text-white ' : 'text-[#1f1f1f]'}`}>Lowest to Highest</h1></div>
+                <div onClick={() => setpricesortingProducts('Highesttolowest')}    className={`mt-3 hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl   py-2 text-center flex justify-center items-center ${pricesortingProducts === 'Highesttolowest' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#1f1f1f] ${pricesortingProducts === 'Highesttolowest' ? 'text-white' : 'text-[#1f1f1f]'}`}>Highest to Lowest</h1></div>
+                <div onClick={() => setpricesortingProducts('Lowesttohighest')}   className={`mt-3 hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl   py-2 text-center flex justify-center items-center ${pricesortingProducts === 'Lowesttohighest' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#1f1f1f] ${pricesortingProducts === 'Lowesttohighest' ? 'bg-[#2781af] rounded-2xl text-white ' : 'text-[#1f1f1f]'}`}>Lowest to Highest</h1></div>
+
 
 
 
