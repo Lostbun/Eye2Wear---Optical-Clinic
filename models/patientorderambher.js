@@ -40,8 +40,8 @@ const PatientOrderAmbherSchema = new mongoose.Schema({
     patientorderambherproductpaymenttransactionid: String,
 
     //PICKUP INFORMATION
-    patientorderambherproductpickupdate: Date,
-    patientorderambherproductpickuptime: String,
+    patientorderambherproductchosenpickupdate: Date,
+    patientorderambherproductchosenpickuptime: String,
 
     //AUTHORIZED PERSON
     patientorderambherproducauthorizedname: String,

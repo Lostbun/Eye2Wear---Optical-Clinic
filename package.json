@@ -57,7 +57,7 @@
     "numpy": "^0.0.1",
     "react": "^19.1.0",
     "react-bootstrap": "^2.10.9",
-    "react-datepicker": "^8.3.0",
+    "react-datepicker": "^8.4.0",
     "react-day-picker": "^8.10.1",
     "react-dom": "^19.1.0",
     "react-rating": "^2.0.5",
