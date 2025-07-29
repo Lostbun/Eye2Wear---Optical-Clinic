@@ -5153,11 +5153,34 @@ const bautistainventoryproductcount = bautistainventoryproducts.filter(
 
 
 
+// Add these states near your other state declarations
+const [cliniclowstockProducts, setcliniclowstockProducts] = useState([]);
+const [clinicoutofstockProducts, setclinicoutofstockProducts] = useState([]);
 
-
-
-
-
+// Add this useEffect to check stock levels when inventory changes
+useEffect(() => {
+  if (activeinventorytable === 'ambherinventorytable') {
+    const lowStock = ambherinventoryproducts.filter(
+      product => product.ambherinventoryproductquantity > 0 && 
+                product.ambherinventoryproductquantity <= 10
+    );
+    const outOfStock = ambherinventoryproducts.filter(
+      product => product.ambherinventoryproductquantity === 0
+    );
+    setcliniclowstockProducts(lowStock);
+    setclinicoutofstockProducts(outOfStock);
+  } else if (activeinventorytable === 'bautistainventorytable') {
+    const lowStock = bautistainventoryproducts.filter(
+      product => product.bautistainventoryproductquantity > 0 && 
+                product.bautistainventoryproductquantity <= 10
+    );
+    const outOfStock = bautistainventoryproducts.filter(
+      product => product.bautistainventoryproductquantity === 0
+    );
+    setcliniclowstockProducts(lowStock);
+    setclinicoutofstockProducts(outOfStock);
+  }
+}, [ambherinventoryproducts, bautistainventoryproducts, activeinventorytable]);
 
 
 
@@ -9087,20 +9110,34 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
           { activeinventorytable === 'ambherinventorytable' && ( <div id="ambherinventorytable" className="p-2  animate-fadeInUp  border-[#909090] w-[100%] h-[83%] rounded-2xl mt-5" >
 
 
-
-        {ambherinventoryproductcount.length > 0 && (
-        <div className="flexitems-center p-5 w-full h-auto bg-yellow-100 rounded-2xl border-1 border-yellow-600 ">
+{(cliniclowstockProducts.length > 0 || clinicoutofstockProducts.length > 0) && (
+  <div >
+         {cliniclowstockProducts.length > 0 && (
+        <div className="flexitems-center p-5 w-full h-auto bg-yellow-100 rounded-2xl border-1 border-yellow-600 mb-2">
          <div className="flex items-center">
            <img src={cautionlowstockalert} className="w-8 h-8"></img>
            <h1 className="ml-1 font-albertsans font-semibold text-yellow-900 text-[18px]">Low Stock Alert</h1>
          </div>
 
          <div className="ml-1">
-           <p className="font-semibold text-orange-900 text-[14px]">  {ambherinventoryproductcount.length} Item(s) need attention.</p>
+           <p className="font-semibold text-orange-900 text-[14px]">  {cliniclowstockProducts.length} Item(s) need attention.</p>
          </div>
          </div>
          )}
 
+        {clinicoutofstockProducts.length > 0 && (
+        <div className=" border-red-600   flexitems-center p-5 w-full h-auto bg-red-100 rounded-2xl border-1 mb-2 ">
+         <div className="flex items-center">
+           <i className="bx bx-error text-red-700 text-2xl"></i>
+           <h1 className="ml-1 font-albertsans font-semibold text-yellow-900 text-[18px]">Out of Stock Alert</h1>
+         </div>
+
+         <div className="ml-1">
+           <p className="font-semibold text-orange-900 text-[14px]"> {clinicoutofstockProducts.length} Item(s) are currently out of stock.</p>
+         </div>
+         </div>
+         )}</div>
+)}
 
 
 
@@ -9158,12 +9195,18 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
                                                                            setaddambherinventoryproductprice(product?.ambherinventoryproductprice || 0);
                                                                            setaddambherinventoryproductquantity(product?.ambherinventoryproductquantity || 0);
                                                                            setaddambherinventoryproductimagepreviewimages(product?.ambherinventoryproductimagepreviewimages || []);
-              }} className={` motion-preset-slide-up mr-3 mb-3 flex flex-col items-start justify-start w-[220px] h-auto shadow-md bg-white rounded-2xl ${product.ambherinventoryproductquantity <=10 ? 'border-2 border-yellow-600' : ''}`}>
+              }} className="motion-preset-slide-up mr-3 mb-3 flex flex-col items-start justify-start w-[220px] h-auto shadow-md bg-white rounded-2xl ">
                 <img src={product.ambherinventoryproductimagepreviewimages[0] || defaultimageplaceholder}  alt={product.ambherinventoryproductname} className="rounded-tr-2xl  rounded-tl-2xl w-full h-45"/>
-                <div className={` mx-1  w-fit rounded-md py-1 px-2  rounded-1xl h-fit  mt-2 break-words min-w-0 ${product.ambherinventoryproductquantity <=10 ? 'bg-yellow-700' : ' bg-[#F0F6FF]'}`}><h1 className={`font-medium   text-[13px] min-w-0 break-words ${product.ambherinventoryproductquantity <=10 ? 'text-white' : 'text-[#0d0d0d]'}`}>{product.ambherinventoryproductcategory}</h1></div>
-                <div className="w-full h-auto ml-2 mt-2 "><h1 className={` font-semibold  text-[15px] min-w-0 break-words ${product.ambherinventoryproductquantity <=10 ? 'text-yellow-600' : 'text-[#0d0d0d]'}`}>{product.ambherinventoryproductname}</h1></div>
-                <div className="w-fit h-auto ml-2 mt-1 "><h1 className={`font-albertsans font-bold text-[18px] min-w-0 break-words ${product.ambherinventoryproductquantity <=10 ? 'text-yellow-600' : 'text-[#0d0d0d]'}`}>₱ {product.ambherinventoryproductprice?.toLocaleString()}</h1></div>
-                <div className="w-full h-auto ml-2 mt-5 mb-5 "><h1 className={`font-albertsans font-medium  text-[15px] min-w-0 break-words ${product.ambherinventoryproductquantity <=10 ? 'text-yellow-600' : 'text-[#4e4f4f]'}`}>In Stock: {product.ambherinventoryproductquantity}     {product.ambherinventoryproductquantity <= 10 && '(Low)'} </h1></div>
+                
+                
+                {product.ambherinventoryproductquantity === 0 ? (<div className="top-2 right-2 absolute px-2 py-1 rounded-md text-xs font-semibold bg-red-500"><h1 className="text-white">Out of Stock</h1></div>): 
+                 product.ambherinventoryproductquantity <= 10 ? (<div className="top-2 right-2 absolute px-2 py-1 rounded-md text-xs font-semibold bg-yellow-500"><h1 className="text-white">Low Stock</h1></div>): null}
+
+
+                <div className="mx-1  w-fit rounded-md py-1 px-2  rounded-1xl h-fit  bg-[#F0F6FF] mt-2 break-words min-w-0 "><h1 className={`font-medium   text-[13px] min-w-0 break-words text-[#0d0d0d] ${product.ambherinventoryproductquantity === 0 ? 'text-gray-400': ''}`} >{product.ambherinventoryproductcategory}</h1></div>
+                <div className="w-full h-auto ml-2 mt-2 "><h1 className={`font-semibold  text-[15px] min-w-0 break-words text-[#0d0d0d] ${product.ambherinventoryproductquantity === 0 ? 'text-gray-400': ''}`}>{product.ambherinventoryproductname}</h1></div>
+                <div className="w-fit h-auto ml-2 mt-1 "><h1 className={`font-albertsans font-bold text-[18px] min-w-0 break-words ${product.ambherinventoryproductquantity === 0 ? 'text-gray-400': ''}`}>{product.ambherinventoryproductprice}</h1></div>
+                <div className="w-full h-auto ml-2 mt-5 mb-5 "><h1 className={`font-albertsans font-medium  text-[15px] min-w-0 break-words ${product.ambherinventoryproductquantity === 0 ? 'text-red-600' : product.ambherinventoryproductquantity <= 10 ? 'text-yellow-700' : 'text-[#4e4f4f]'}`}>{product.ambherinventoryproductquantity === 0 ? ('Out Of Stock'):(`In Stock: ${product.ambherinventoryproductquantity}${product.ambherinventoryproductquantity <= 10 ? ' (Low)': ''}`)}</h1></div>   
               </div>
                   ))
                 )}
@@ -9570,19 +9613,35 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
 
           { activeinventorytable === 'bautistainventorytable' && ( <div id="bautistainventorytable" className="p-2  animate-fadeInUp  border-[#909090] w-[100%] h-[83%] rounded-2xl mt-5" >
 
-
-         {bautistainventoryproductcount.length > 0 && (
-        <div className="flexitems-center p-5 w-full h-auto bg-yellow-100 rounded-2xl border-1 border-yellow-600 ">
+{(cliniclowstockProducts.length > 0 || clinicoutofstockProducts.length > 0) && (
+  <div >
+         {cliniclowstockProducts.length > 0 && (
+        <div className="flexitems-center p-5 w-full h-auto bg-yellow-100 rounded-2xl border-1 border-yellow-600 mb-2">
          <div className="flex items-center">
            <img src={cautionlowstockalert} className="w-8 h-8"></img>
            <h1 className="ml-1 font-albertsans font-semibold text-yellow-900 text-[18px]">Low Stock Alert</h1>
          </div>
 
          <div className="ml-1">
-           <p className="font-semibold text-orange-900 text-[14px]">  {bautistainventoryproductcount.length} Item(s) need attention.</p>
+           <p className="font-semibold text-orange-900 text-[14px]">  {cliniclowstockProducts.length} Item(s) need attention.</p>
          </div>
          </div>
          )}
+
+        {clinicoutofstockProducts.length > 0 && (
+        <div className=" border-red-600   flexitems-center p-5 w-full h-auto bg-red-100 rounded-2xl border-1 mb-2 ">
+         <div className="flex items-center">
+           <i className="bx bx-error text-red-700 text-2xl"></i>
+           <h1 className="ml-1 font-albertsans font-semibold text-yellow-900 text-[18px]">Out of Stock Alert</h1>
+         </div>
+
+         <div className="ml-1">
+           <p className="font-semibold text-orange-900 text-[14px]"> {clinicoutofstockProducts.length} Item(s) are currently out of stock.</p>
+         </div>
+         </div>
+         )}</div>
+)}
+
 
 
          <div className="flex  items-start mt-5">
@@ -9637,14 +9696,21 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
                                                                            setaddbautistainventoryproductprice(product?.bautistainventoryproductprice || 0);
                                                                            setaddbautistainventoryproductquantity(product?.bautistainventoryproductquantity || 0);
                                                                            setaddbautistainventoryproductimagepreviewimages(product?.bautistainventoryproductimagepreviewimages || []);
-              }} className={`motion-preset-slide-up mr-3 mb-3 flex flex-col items-start justify-start w-[220px] h-auto shadow-md bg-white rounded-2xl ${product.bautistainventoryproductquantity <=10 ? 'border-2 border-yellow-600' : ''}`}>
+              }} className="motion-preset-slide-up mr-3 mb-3 flex flex-col items-start justify-start w-[220px] h-auto shadow-md bg-white rounded-2xl ">
                 <img src={product.bautistainventoryproductimagepreviewimages[0] || defaultimageplaceholder}  alt={product.bautistainventoryproductname} className="rounded-tr-2xl  rounded-tl-2xl w-full h-45"/>
-                <div className={` mx-1  w-fit rounded-md py-1 px-2  rounded-1xl h-fit  mt-2 break-words min-w-0 ${product.bautistainventoryproductquantity <=10 ? 'bg-yellow-700' : ' bg-[#F0F6FF]'}`}><h1 className={`font-medium   text-[13px] min-w-0 break-words ${product.bautistainventoryproductquantity <=10 ? 'text-white' : 'text-[#0d0d0d]'}`}>{product.bautistainventoryproductcategory}</h1></div>
-                <div className="w-full h-auto ml-2 mt-2 "><h1 className={` font-semibold  text-[15px] min-w-0 break-words ${product.bautistainventoryproductquantity <=10 ? 'text-yellow-600' : 'text-[#0d0d0d]'}`}>{product.bautistainventoryproductname}</h1></div>
-                <div className="w-fit h-auto ml-2 mt-1 "><h1 className={`font-albertsans font-bold text-[18px] min-w-0 break-words ${product.bautistainventoryproductquantity <=10 ? 'text-yellow-600' : 'text-[#0d0d0d]'}`}>₱ {product.bautistainventoryproductprice?.toLocaleString()}</h1></div>
-                <div className="w-full h-auto ml-2 mt-5 mb-5 "><h1 className={`font-albertsans font-medium  text-[15px] min-w-0 break-words ${product.bautistainventoryproductquantity <=10 ? 'text-yellow-600' : 'text-[#4e4f4f]'}`}>In Stock: {product.bautistainventoryproductquantity}     {product.bautistainventoryproductquantity <= 10 && '(Low)'} </h1></div>
+                
+                
+                {product.bautistainventoryproductquantity === 0 ? (<div className="top-2 right-2 absolute px-2 py-1 rounded-md text-xs font-semibold bg-red-500"><h1 className="text-white">Out of Stock</h1></div>): 
+                 product.bautistainventoryproductquantity <= 10 ? (<div className="top-2 right-2 absolute px-2 py-1 rounded-md text-xs font-semibold bg-yellow-500"><h1 className="text-white">Low Stock</h1></div>): null}
+
+
+                <div className="mx-1  w-fit rounded-md py-1 px-2  rounded-1xl h-fit  bg-[#F0F6FF] mt-2 break-words min-w-0 "><h1 className={`font-medium   text-[13px] min-w-0 break-words text-[#0d0d0d] ${product.bautistainventoryproductquantity === 0 ? 'text-gray-400': ''}`} >{product.bautistainventoryproductcategory}</h1></div>
+                <div className="w-full h-auto ml-2 mt-2 "><h1 className={`font-semibold  text-[15px] min-w-0 break-words text-[#0d0d0d] ${product.bautistainventoryproductquantity === 0 ? 'text-gray-400': ''}`}>{product.bautistainventoryproductname}</h1></div>
+                <div className="w-fit h-auto ml-2 mt-1 "><h1 className={`font-albertsans font-bold text-[18px] min-w-0 break-words ${product.bautistainventoryproductquantity === 0 ? 'text-gray-400': ''}`}>{product.bautistainventoryproductprice}</h1></div>
+                <div className="w-full h-auto ml-2 mt-5 mb-5 "><h1 className={`font-albertsans font-medium  text-[15px] min-w-0 break-words ${product.bautistainventoryproductquantity === 0 ? 'text-red-600' : product.bautistainventoryproductquantity <= 10 ? 'text-yellow-700' : 'text-[#4e4f4f]'}`}>{product.bautistainventoryproductquantity === 0 ? ('Out Of Stock'):(`In Stock: ${product.bautistainventoryproductquantity}${product.bautistainventoryproductquantity <= 10 ? ' (Low)': ''}`)}</h1></div>   
+             
               </div>
-                  ))
+                  ))  
                 )}
               </div>
 

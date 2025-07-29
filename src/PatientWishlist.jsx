@@ -12,7 +12,7 @@ import packageimage from "../src/assets/images/shopping-bag.png";
 import storeimage from "../src/assets/images/store.png";
 import profileuser from "../src/assets/images/profile-user.png";
 import logout from "../src/assets/images/logout.png";
-
+import heartempty from "../src/assets/images/heartempty.png"
 import nextimage from "../src/assets/images/next.png";
 import paymentimage from "../src/assets/images/card-payment.png";
 import { AmbherinventorycategoryBox } from "./components/AmbherinventorycategoryBox";
@@ -846,7 +846,7 @@ const handleRemoveFromWishlist = async (wishlistItemId, clinicType) => {
         {loadingWishlist ? (
           <div>Loading Ambher Optical Wishlists...</div>
         ) : ambherWishlist.length === 0 ? (
-          <div>No Ambher Wishlist Items Found</div>
+          <div className="w-[90vw] h-[50vh] flex justify-center flex-col items-center "><img src={heartempty} className="w-17 h-17 mb-3"/><h1 className="font-semibold text-[25px]">Your wishlist is empty</h1><p className="text-[#4e4e4e] mb-5">Start adding items you love to keep track of them</p><Link to="/patientproducts"><div className="text-[15px] p-3 bg-[#2781af] text-white  hover:scale-105 rounded-md transition-all cursor-pointer">Continue Shopping</div></Link></div>
         ) : (
           ambherWishlist.map((item) => (
               <div key={item._id}  onClick={() => {                        setshowpatientambherviewproduct(true);
@@ -1088,7 +1088,7 @@ const handleRemoveFromWishlist = async (wishlistItemId, clinicType) => {
         {loadingWishlist ? (
           <div>Loading Bautista Eye Center Wishlists...</div>
         ) : bautistaWishlist.length === 0 ? (
-          <div>No Bautista Eye Center Wishlist Items Found</div>
+           <div className="w-[90vw] h-[50vh] flex justify-center flex-col items-center "><img src={heartempty} className="w-17 h-17 mb-3"/><h1 className="font-semibold text-[25px]">Your wishlist is empty</h1><p className="text-[#4e4e4e] mb-5">Start adding items you love to keep track of them</p><Link to="/patientproducts"><div className="text-[15px] p-3 bg-[#2781af] text-white  hover:scale-105 rounded-md transition-all cursor-pointer">Continue Shopping</div></Link></div>
         ) : (
           bautistaWishlist.map((item) => (
               <div key={item._id}  onClick={() => {                        setshowpatientbautistaviewproduct(true);
