@@ -1,22 +1,22 @@
 import express from 'express';
 import {
-    createpatientappointment,
-    getallpatientappointments,
-    getpatientappointmentbyid,
-    getappointmentsbyemail,
-    updateappointmentbyid,
-    deleteappointmentbyid,
-} from '../controllers/patientappointment.controller.js';
+     createpatientorderambher,
+     getallpatientorderambhers,
+     getpatientorderambherbyid,
+     getorderambhersbyemail,
+     updateorderambherbyid,
+     deleteorderambherbyid,
+} from '../controllers/patientorderambher.controller.js';
 
 
-const patientappointmentrouter = express.Router();
+const patientorderambherrouter = express.Router();
 
-patientappointmentrouter.post('/appointments', createpatientappointment);
-patientappointmentrouter.get('/appointments', getallpatientappointments);
-patientappointmentrouter.get('/appointments/email/:email', getappointmentsbyemail);
-patientappointmentrouter.get('/appointments/:id', getpatientappointmentbyid);
-patientappointmentrouter.put('/appointments/:id', updateappointmentbyid);
-patientappointmentrouter.delete('/appointments/:id', deleteappointmentbyid);
+patientorderambherrouter.post('/patientorderambher', createpatientorderambher);
+patientorderambherrouter.get('/patientorderambher', getallpatientorderambhers);
+patientorderambherrouter.get('/patientorderambher/email/:email', getorderambhersbyemail);
+patientorderambherrouter.get('/patientorderambher/:id', getpatientorderambherbyid);
+patientorderambherrouter.put('/patientorderambher/:id', updateorderambherbyid);
+patientorderambherrouter.delete('/patientorderambher/:id', deleteorderambherbyid);
 
 
-export default patientappointmentrouter;
+export default patientorderambherrouter;
