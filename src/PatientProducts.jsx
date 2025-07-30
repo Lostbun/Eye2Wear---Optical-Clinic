@@ -292,6 +292,7 @@ const [bautistainventorycategorylist, setbautistainventorycategorylist] = useSta
           const[showpatientorderbautistascheduleandreview, setshowpatientorderbautistascheduleandreview] = useState(false);
           const [bautistainventorycategorynamebox, setbautistainventorycategorynamebox] = useState("");
           const [addbautistainventoryproductname, setaddbautistainventoryproductname] = useState("");
+          const [addbautistainventoryproductmodelnumber, setaddbautistainventoryproductmodelnumber] = useState("");
           const [addbautistainventoryproductbrand, setaddbautistainventoryproductbrand] = useState("");
           const [addbautistainventoryproductdescription, setaddbautistainventoryproductdescription] = useState("");
           const [addbautistainventoryproductprice, setaddbautistainventoryproductprice] = useState();
@@ -927,8 +928,29 @@ useEffect(() => {
       clearTimeout(progresstimer);
       clearTimeout(toasttimer);
     }
+  }else if(patientorderbautistaproductToast){
+    setProgressWidth('0%');
+    setpatientorderbautistaproductToastClosing(false);
+
+    const progresstimer = setTimeout(() => {
+      setProgressWidth('100%');
+    }, 50);
+
+    // Close toast after 4 seconds
+    const toasttimer = setTimeout(() => {
+      setpatientorderbautistaproductToastClosing(true);
+      setTimeout(() => {
+        setpatientorderbautistaproductToast(false);
+        setProgressWidth('0%');
+      }, 300);
+    }, 4000);
+
+    return () => {
+      clearTimeout(progresstimer);
+      clearTimeout(toasttimer);
+    }
   }
-}, [patientorderambherproductToast]);
+}, [patientorderambherproductToast, patientorderbautistaproductToast]);
 
 
 
@@ -1461,17 +1483,15 @@ const submitpatientorderbautista = async (e) => {
                     )}
                     {patientorderambherproductToastMessage}
 
-<div 
-  className={`absolute bottom-0 left-0 h-1 bg-green-500 rounded-b-2xl`}
-  style={{
-    width: progressWidth,
-    transition: 'width 4s linear'
-  }}
-/>
+                    <div  className={`rounded-b-2xl absolute bottom-0 left-0 h-1 bg-green-500 `}  style={{width: progressWidth,transition: 'width 4s linear' }}/>
+
                   </div>
            
             </div>  
           )}
+
+
+
 
           {showpatientambherviewproduct && (
 
@@ -1733,6 +1753,7 @@ const submitpatientorderbautista = async (e) => {
                                                                            setbautistainventorycategorynamebox(product?.bautistainventoryproductcategory || '');
                                                                            setaddbautistainventoryproductname(product?.bautistainventoryproductname || '');
                                                                            setaddbautistainventoryproductbrand(product?.bautistainventoryproductbrand || '');
+                                                                           setaddbautistainventoryproductmodelnumber(product?.bautistainventoryproductmodelnumber || ''); 
                                                                            setaddbautistainventoryproductdescription(product?.bautistainventoryproductdescription || '');
                                                                            setaddbautistainventoryproductprice(product?.bautistainventoryproductprice || 0);
                                                                            setaddbautistainventoryproductquantity(product?.bautistainventoryproductquantity || 0);
@@ -1975,7 +1996,22 @@ const submitpatientorderbautista = async (e) => {
 
           )}
 
+          {patientorderbautistaproductToast && (
+            <div className=" bottom-4 right-8  z-101   transform fixed " >
+                  <div key={patientorderbautistaproductisClicked ? 'added' : 'removed'}  className={` ${patientorderbautistaproductToastClosing ? 'motion-translate-x-out-100 motion-duration-[3s]  motion-ease-spring-smooth' : 'motion-preset-slide-left'}  flex items-center bg-white   rounded-md shadow-lg text-gray-900 font-semibold px-6 py-3`} >
+                    {patientorderbautistaproductisClicked ? (          
+                       <span className="text-green-800 font-semibold text-[20px]"><i className="mr-2 bx bx-check-circle "></i></span>
+                    ) : (
+                      <span className="text-red-800 font-semibold text-[20px]"><i className="mr-2 bx bx-x-circle "></i></span>
+                    )}
+                    {patientorderbautistaproductToastMessage}
 
+                    <div  className={`rounded-b-2xl absolute bottom-0 left-0 h-1 bg-green-500 `}  style={{width: progressWidth,transition: 'width 4s linear' }}/>
+
+                  </div>
+           
+            </div>  
+          )}
 
 
 
