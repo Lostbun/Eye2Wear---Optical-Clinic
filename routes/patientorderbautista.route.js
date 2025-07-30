@@ -11,12 +11,12 @@ import {
 
 const patientorderbautistarouter = express.Router();
 
-patientorderbautistarouter.post('/patientorderbautista', createpatientorderbautista);
-patientorderbautistarouter.get('/patientorderbautista', getallpatientorderbautistas);
-patientorderbautistarouter.get('/patientorderbautista/email/:email', getorderbautistasbyemail);
-patientorderbautistarouter.get('/patientorderbautista/:id', getpatientorderbautistabyid);
-patientorderbautistarouter.put('/patientorderbautista/:id', updateorderbautistabyid);
-patientorderbautistarouter.delete('/patientorderbautista/:id', deleteorderbautistabyid);
+patientorderbautistarouter.post('/', createpatientorderbautista);
+patientorderbautistarouter.get('/', getallpatientorderbautistas);
+patientorderbautistarouter.get('/email/:email', getorderbautistasbyemail);
+patientorderbautistarouter.get('/:id', getpatientorderbautistabyid);
+patientorderbautistarouter.put('/:id', updateorderbautistabyid);
+patientorderbautistarouter.delete('/:id', deleteorderbautistabyid);
 
 
 export default patientorderbautistarouter;

@@ -1,62 +1,93 @@
-          {showpatientorderbautistascheduleandreview && (
+const submitpatientorderbautista = async (e) => {
+  e.preventDefault();
+  
 
-                 <div className="overflow-y-auto h-auto  bg-opacity-0 flex justify-center items-center z-50 fixed inset-0 bg-[#000000af] bg-opacity-50">
-                   <div className="flex items-center motion-opacity-in-0 w-auto gap-10 p-10 py-8.6 bg-[#fefefe] rounded-2xl h-auto mb-10 animate-fadeInUp ">
-                    
-                    <img  className="mt-2 w-120 object-cover rounded-2xl h-120" src={(selectedbautistaproduct?.bautistainventoryproductimagepreviewimages?.[bautistacurrentimageindex]) || (addbautistainventoryproductimagepreviewimages?.[bautistacurrentimageindex]) || defaultimageplaceholder}/>
-                     <div className=" w-150  registration-container">
+  try {
+    // Fetch patient demographic data
+    const demographicResponse = await fetch(
+      `http://localhost:3000/api/patientdemographics/patientemail/${patientemail}`,
+      {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('patienttoken')}`
+        }
+      }
+    );
 
-                                    
-                                        <div className="flex items-center mx-1  w-fit  h-fit  mt-2 break-words min-w-0 "><h1 className="font-albertsans rounded-md py-1 px-2  rounded-1xl bg-[#F0F6FF] font-medium   text-[#0d0d0d]  min-w-0 break-words ">{bautistainventorycategorynamebox}</h1>
-                                        <p className="font-albertsans ml-1">by</p>
-                                        <p className="font-albertsans ml-1 font-semibold  ">{addbautistainventoryproductbrand}</p>
-                                        </div>
-                                        
-                                     
+    if (!demographicResponse.ok) {
+      const errorText = await demographicResponse.text();
+      throw new Error(errorText || 'Failed to fetch patient data');
+    }
 
-                                        <h1 className="font-albertsans mt-3 min-w-0 break-words h-fit w-full font-albertsans font-bold text-[#212121] text-[29px]">{addbautistainventoryproductname}</h1>
-                         
+    const demographicData = await demographicResponse.json();
+    
+    if (!demographicData.patientcontactnumber) {
+      throw new Error('Patient contact number not found');
+    }
 
-                        
-                                  
-                                        <p className="mt-5 font-albertsans font-semibold text-[#478d12] text-[40px]">₱{addbautistainventoryproductprice}</p>
-                                  
-                                        <p className="font-albertsans mt-6  font-medium text-[#020202] text-[18px]">Description</p>
-                                        <p className="font-albertsans font-semibold text-[#4b4b4b] mt-1">{addbautistainventoryproductdescription}</p>
-                                      
-                                       
-                                        <div className="gap-4 mt-5 flex items-center">
-                                          <p className="font-albertsans font-semibold ">Quantity: <span className="ml-3">{bautistacount}</span></p>
-                                         </div>
-                                         
-                                       <div className="flex items-center mt-3">
-                                        
-                                      <p className="font-albertsans font-semibold ">Select Pickup Date:</p>   
-                                      <input   className="w-38 justify-center border-b-2 border-[#272727] ml-3 text-[16px] font-semibold [&::-webkit-calendar-picker-indicator]:filter [&::-webkit-calendar-picker-indicator]:invert-[70%]"
-                                               value={patientorderbautistaproductchosenpickupdate}  
-                                               onChange={(e) => {const selecteddate = new Date(e.target.value);
-                                                                  if (selecteddate < dateinphtomorrow) {
-                                                                    e.preventDefault();
-                                                                    return;
-                                                                  }
-                                                                  setpatientorderbautistaproductchosenpickupdate(e.target.value);  }}  
-                                                                  type="date"
-                                                                  name="patientorderbautistaproductchosenpickupdate"
-                                                                  id="patientorderbautistaproductchosenpickupdate"
-                                                                  min={dateinphtomorrow.toISOString().split('T')[0]}
-                                                                  max={dateinphmaxdate.toISOString().split('T')[0]}
-                                                                  placeholder=""/> </div>
+    // Prepare order data
+    const orderData = {
+      patientprofilepicture: patientprofilepicture,
+      patientlastname: patientlastname,
+      patientfirstname: patientfirstname,
+      patientmiddlename: patientmiddlename,
+      patientemail: patientemail,
+      patientcontactnumber: demographicData.patientcontactnumber,
+      patientorderbautistaproductid: selectedbautistaproduct?.bautistainventoryproductid,
+      patientorderbautistaproductname: addbautistainventoryproductname,
+      patientorderbautistaproductbrand: addbautistainventoryproductbrand,
+      patientorderbautistaproductmodelnumber: addbautistainventoryproductmodelnumber,
+      patientorderbautistaproductprice: addbautistainventoryproductprice,
+      patientorderbautistaproductquantity: bautistacount,
+      patientorderbautistaproductsubtotal: addbautistainventoryproductprice * bautistacount,
+      patientorderbautistaproducttotal: addbautistainventoryproductprice * bautistacount,
+      patientorderbautistaproductpaymentmethod: 'Cash on Pickup',
+      patientorderbautistaproductchosenpickupdate: patientorderbautistaproductchosenpickupdate,
+      patientorderbautistaproductchosenpickuptime: 'Default',
+      patientorderbautistastatus: 'Pending',
+      patientorderbautistahistory: [{
+        status: 'Pending',
+        changedAt: new Date(),
+        changedBy: `${patientfirstname} ${patientlastname}`
+      }]
+    };
 
+    console.log('Submitting order:', orderData);
 
-                                      {patientorderbautistaproductchosenpickupdate &&(
-                                          <div  className="mt-10 hover:cursor-pointer hover:scale-102  font-albertsans bg-[#117db0]  hover:rounded-2xl transition-all duration-300 ease-in-out rounded-2xl px-25 py-2.5 text-center flex justify-center items-center "><span className="font-albertsans font-bold text-white text-[17px]">Submit Order</span></div>
-                                      )}
-                                          
+    // Submit order
+    const response = await fetch('http://localhost:3000/api/patientorderbautista', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('patienttoken')}`
+      },
+      body: JSON.stringify(orderData)
+    });
 
-                                        </div>
-                    
-                    </div>
-                  </div>
-              
+    // Handle response
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Server response:', errorText);
+      throw new Error(errorText || `Server error: ${response.status}`);
+    }
 
-          )}
+    const result = await response.json();
+        setpatientorderbautistaproductisClicked(true);
+        setpatientorderbautistaproductToastMessage("Order Submitted Successfully!");
+        
+        setpatientorderbautistaproductToast(true);
+        setpatientorderbautistaproductToastClosing(false);
+    console.log('Order successful:', result);
+
+    
+    setpatientorderbautistaproductchosenpickupdate("");
+    setshowpatientorderbautistascheduleandreview(false);
+    setbautistaCount(1);
+    
+
+  } catch (error) {
+    console.error('Submission error:', error);
+      setpatientorderbautistaproductToastMessage(error.message);
+      setpatientorderbautistaproductToast(true);
+      setpatientorderbautistaproductToastClosing(false);
+  }
+};  

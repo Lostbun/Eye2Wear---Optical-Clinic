@@ -1,4 +1,4 @@
-    import PatientOrderAmbher from "../models/patientorderambher.js";
+import PatientOrderAmbher from "../models/patientorderambher.js";
 
 
 
@@ -7,17 +7,36 @@
 
 
 
-    //Create Patient Order Ambher
-    export const createpatientorderambher = async (req, res) => {
-        try{
-            const newpatientorderambher = new PatientOrderAmbher(req.body);
-            const savedpatientorderambher = await newpatientorderambher.save();
-            res.status(201).json(savedpatientorderambher);
+//Create Patient Order Ambher
+export const createpatientorderambher = async (req, res) => {
+    try{
+        const requiredpatientorderfields = [
+      'patientprofilepicture', 'patientlastname', 'patientfirstname',
+      'patientemail', 'patientcontactnumber', 'patientorderambherproductid',
+      'patientorderambherproductname', 'patientorderambherproductprice',
+      'patientorderambherproductquantity', 'patientorderambherproductchosenpickupdate'
+      ];
 
-        }catch(error){
-            res.status(400).json({message: error.message});
-        }
-    };
+      const missingrequiredpatientorderfields = requiredpatientorderfields.filter(field => !req.body[field]);
+      if(missingrequiredpatientorderfields.length > 0) {
+        return res.status(400).json({
+            succes: false,
+            message: `Missing required fields: ${missingrequiredpatientorderfields.join(', ')}`
+        });
+ }
+
+        const neworder = new PatientOrderAmbher(req.body);
+        const savedorder = await neworder.save();
+
+        res.status(201).json({
+            succes: true,
+            data: savedorder
+        });
+     
+    }catch(error){
+        console.error('Order submission error: ', error);
+    }
+};
 
 
 

@@ -11,12 +11,11 @@ import {
 
 const patientorderambherrouter = express.Router();
 
-patientorderambherrouter.post('/patientorderambher', createpatientorderambher);
-patientorderambherrouter.get('/patientorderambher', getallpatientorderambhers);
-patientorderambherrouter.get('/patientorderambher/email/:email', getorderambhersbyemail);
-patientorderambherrouter.get('/patientorderambher/:id', getpatientorderambherbyid);
-patientorderambherrouter.put('/patientorderambher/:id', updateorderambherbyid);
-patientorderambherrouter.delete('/patientorderambher/:id', deleteorderambherbyid);
-
+patientorderambherrouter.post('/', createpatientorderambher);
+patientorderambherrouter.get('/', getallpatientorderambhers);
+patientorderambherrouter.get('/email/:email', getorderambhersbyemail);
+patientorderambherrouter.get('/:id', getpatientorderambherbyid);
+patientorderambherrouter.put('/:id', updateorderambherbyid);
+patientorderambherrouter.delete('/:id', deleteorderambherbyid);
 
 export default patientorderambherrouter;
