@@ -794,7 +794,7 @@ const handledeleteappointment = async (appointmentId) => {
         <Link to="/patientdashboard"><li className="text-[15px] p-3 hover:bg-[#2781af] hover:text-white rounded-md transition-all cursor-pointer">Appointments</li></Link>
         <Link to="/patientproducts"><li className="text-[15px] p-3 hover:bg-[#2781af] hover:text-white rounded-md transition-all cursor-pointer">Store</li></Link>
         <Link to="/patientwishlist"><li className="text-[15px] p-3 hover:bg-[#2781af] hover:text-white rounded-md transition-all cursor-pointer">Wishlist</li></Link>
-        <Link to="/patientproducts"><li className="text-[15px] p-3 hover:bg-[#2781af] hover:text-white rounded-md transition-all cursor-pointer">Orders</li></Link>
+        <Link to="/patientorders"><li className="text-[15px] p-3 hover:bg-[#2781af] hover:text-white rounded-md transition-all cursor-pointer">Orders</li></Link>
 
 
 
@@ -893,7 +893,7 @@ const handledeleteappointment = async (appointmentId) => {
 
 
     {/* First Section */} {/* First Section */} {/* First Section */} {/* First Section */}
-    <section className="bg-cover bg-center h-full w-full flex justify-center align-center" >
+    <section className="bg-cover bg-center min-h-[100vh]  w-[98vw] flex justify-center align-center" >
     <div className="bg-cover bg-center h-full w-full flex items-center justify-center " >
 
       <div className="w-full h-full flex justify-start items-start pt-3 ">

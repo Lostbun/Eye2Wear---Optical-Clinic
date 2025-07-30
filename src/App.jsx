@@ -9,7 +9,7 @@ import ResetPassword from './ResetPassword'
 import PatientDashboard from './PatientDashboard'
 import PatientProducts from './PatientProducts'
 import PatientWishlist from './PatientWishlist'
-
+import PatientOrders from './PatientOrders'
 
 function App() {
 
@@ -28,6 +28,7 @@ function App() {
             <Route path='/patientdashboard' element={<PatientDashboard/>}></Route>
             <Route path='/patientproducts' element={<PatientProducts/>}></Route>
             <Route path='/patientwishlist' element={<PatientWishlist/>}></Route>
+            <Route path='/patientorders' element={<PatientOrders/>}></Route>
           </Routes>
         </BrowserRouter>
 

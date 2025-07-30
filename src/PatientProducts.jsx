@@ -1248,8 +1248,8 @@ const submitpatientorderbautista = async (e) => {
     <>
 
      {/* NavBar */}
-    <div className=" bg-white w-[100vw]">
-      <header id="header" className="top-0 absolute flex justify-between items-center text-black  md:px-32 bg-white w-full drop-shadow-md">
+<div className="bg-white w-[100vw] relative z-10">
+  <header id="header" className="top-0 absolute flex justify-between items-center text-black md:px-32 bg-white w-full drop-shadow-md z-50">
         <a id:logocontain href="#">
           <img src={navlogo} alt="" className="w-33  hover:scale-105 transition-all"></img>
         </a>
@@ -1259,7 +1259,7 @@ const submitpatientorderbautista = async (e) => {
         <Link to="/patientdashboard"><li className="text-[15px] p-3 hover:bg-[#2781af] hover:text-white rounded-md transition-all cursor-pointer">Appointments</li></Link>
         <Link to="/patientproducts"><li className="text-[15px] p-3 hover:bg-[#2781af] hover:text-white rounded-md transition-all cursor-pointer">Store</li></Link>
          <Link to="/patientwishlist"><li className="text-[15px] p-3 hover:bg-[#2781af] hover:text-white rounded-md transition-all cursor-pointer">Wishlist</li></Link>
-        <Link to="/patientproducts"><li className="text-[15px] p-3 hover:bg-[#2781af] hover:text-white rounded-md transition-all cursor-pointer">Orders</li></Link>
+        <Link to="/patientorders"><li className="text-[15px] p-3 hover:bg-[#2781af] hover:text-white rounded-md transition-all cursor-pointer">Orders</li></Link>
 
 
 
@@ -1279,46 +1279,38 @@ const submitpatientorderbautista = async (e) => {
 
 
  
-    {localStorage.getItem ("patienttoken")? (
+    {localStorage.getItem("patienttoken") ? (
+      <div id="profilecard" className="relative items-center justify-center flex">
+        <div id="profile" onClick={showlogout} className="ml-3 flex justify-center items-center bg-[#fbfbfb00] border-2 border-gray-200 shadow-lg rounded-full hover:cursor-pointer hover:scale-105 transition-all">
+          <img src={patientprofilepicture || 'default-profile.png'} alt="Profile" className="h-13 w-13 rounded-full"/>
+        </div>
 
-      
-    <div id="profilecard" className="relative items-center justify-center flex">
-    <div id="profile" onClick={showlogout}  className="ml-3  flex justify-center items-center bg-[#fbfbfb00] border-2 border-gray-200  shadow-lg  rounded-full hover:cursor-pointer hover:scale-105 transition-all">
-     <img src={patientprofilepicture || 'default-profile.png'} alt="Profile" className="h-13 w-13 rounded-full"></img>
-    </div>
+        {showlogoutbtn && (
+          <div className="w-75 flex-col p-5 motion-preset-fade absolute top-full mt-2 z-[9999] flex justify-center items-start bg-[#ffffff] rounded-2xl hover:cursor-pointer transition-all shadow-lg">
+            <div className="hover:bg-[#f7f7f7] transition-all duration-300 ease-in-out py-2 px-1 rounded-2xl gap-3 flex items-center h-auto w-full">
+              <img src={patientprofilepicture} className="w-12 rounded-full"/>
+              <h1 className="font-albertsans font-semibold text-[19px]">{patientfirstname}</h1>
+            </div>
+            <div className="border-b-2 rounded-full border-[#747474] h-1 w-full my-1"></div>
 
-{showlogoutbtn && (
-    <div className="w-75 flex-col  p-5  motion-preset-fade absolute top-full mt-2  flex justify-center items-start bg-[#ffffff] rounded-2xl hover:cursor-pointer  transition-all" >
+            {localStorage.getItem("patienttoken") && (
+              <Link to="/patientinformation" className="w-full">
+                <div className="gap-2 flex items-center py-2 px-1 hover:bg-[#f7f7f7] duration-300 ease-in-out hover:text-[#000000] rounded-2xl transition-all cursor-pointer">
+                  <img src={profileuser} className="w-9 h-9"/>
+                  <h1 className="text-[16px] text-[#202020]">Demographic Profile</h1>
+                </div>
+              </Link>
+            )}
 
-
-      <div className="hover:bg-[#f7f7f7] transition-all duration-300 ease-in-out py-2 px-1 rounded-2xl  gap-3 flex items-center h-auto w-full ">
-        <img src={patientprofilepicture}  className="w-12 rounded-full"/>
-        <h1 className="font-albertsans font-semibold text-[19px]">{patientfirstname}</h1>
+            <div id="logoutdiv" className="mt-2 px-1 py-2 hover:bg-[#f7f7f7] flex items-center gap-2 w-full rounded-2xl hover:cursor-pointer transition-all" onClick={handlelogout}>
+              <img src={logout} className="w-9 h-9"/>
+              <p className="font-semibold text-[#E04F5F] text-[16px]">Logout</p>
+            </div>
+          </div>
+        )}
       </div>
-      <div className="border-b-2 rounded-full border-[#747474] h-1 w-full my-1">
+    ) : (
 
-      </div>
-
-     {localStorage.getItem("patienttoken") && (
-      <Link to="/patientinformation" className="w-full"><div className="gap-2 flex items-center py-2 px-1 hover:bg-[#f7f7f7]  duration-300 ease-in-out  hover:text-[#000000] rounded-2xl transition-all cursor-pointer"> <img src={profileuser} className="w-9 h-9"/><h1 className="text-[16px] text-[#202020]">Demographic Profile</h1></div></Link>
-     )}
-
-
-     <div 
-       id="logoutdiv" 
-       className="mt-2 px-1 py-2 hover:bg-[#f7f7f7]   flex items-center gap-2 w-full  rounded-2xl hover:cursor-pointer transition-all" 
-       onClick={handlelogout}
-     >
-    <img src={logout} className="w-9 h-9"/>
-    <p className="font-semibold text-[#E04F5F] text-[16px]">Logout</p>
-  </div> 
-  </div>   
-)}
-    </div>
-
-    
-       
-    ):(
       <Link to="/userlogin">
          <div className="ml-3  flex justify-center items-center p-3 bg-[#027bbf] rounded-2xl hover:cursor-pointer hover:scale-105 transition-all" onClick={handlelogout}>
          <i className="bx bx-user-circle mt-1 pr-2 font-semibold text-white text-[17px]"/>
@@ -1358,7 +1350,7 @@ const submitpatientorderbautista = async (e) => {
 
 
     {/* First Section */} {/* First Section */} {/* First Section */} {/* First Section */}
-    <section className="bg-cover bg-center h-auto w-[100vw] flex justify-center align-center" >
+    <section className="bg-cover bg-center min-h-[100vh] w-[100vw] flex justify-center align-center" >
     <div className="bg-cover bg-center h-auto w-full flex items-center justify-center " >
 
       <div className="w-full h-auto flex flex-col justify-start items-start pt-3 p-3">
@@ -1399,7 +1391,7 @@ const submitpatientorderbautista = async (e) => {
                   const productcount = ambherinventoryproducts.filter(product =>
                     product.ambherinventoryproductcategory === category.ambherinventorycategoryname).length;
                   return(
-                  <div key={category._id} onClick={() => setactiveambherinventorycategorytable(category.ambherinventorycategoryname)}  className={`mt-3 hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 py-2 text-center flex justify-center items-center ${activeambherinventorycategorytable ===category.ambherinventorycategoryname ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#1f1f1f] ${activeambherinventorycategorytable ===category.ambherinventorycategoryname ? 'text-white' : 'text-[#1f1f1f]'}`}>{category.ambherinventorycategoryname}</h1><span className="bg-gray-200 text-gray-500 font-semibold px-2 rounded-full ml-2 text-sm">{productcount}</span></div>
+                  <div key={category._id} onClick={() => setactiveambherinventorycategorytable(category.ambherinventorycategoryname)}  className={`mt-3 hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl  py-2 text-center flex justify-center items-center ${activeambherinventorycategorytable ===category.ambherinventorycategoryname ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#1f1f1f] ${activeambherinventorycategorytable ===category.ambherinventorycategoryname ? 'text-white' : 'text-[#1f1f1f]'}`}>{category.ambherinventorycategoryname}</h1><span className="bg-gray-200 text-gray-500 font-semibold px-2 rounded-full ml-2 text-sm">{productcount}</span></div>
                   )
                 })}
 
@@ -1718,7 +1710,7 @@ const submitpatientorderbautista = async (e) => {
                   const productcount = bautistainventoryproducts.filter(product =>
                     product.bautistainventoryproductcategory === category.bautistainventorycategoryname).length;
                   return(
-                  <div key={category._id} onClick={() => setactivebautistainventorycategorytable(category.bautistainventorycategoryname)}  className={`mt-3 hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 py-2 text-center flex justify-center items-center ${activebautistainventorycategorytable ===category.bautistainventorycategoryname ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#1f1f1f] ${activebautistainventorycategorytable ===category.bautistainventorycategoryname ? 'text-white' : 'text-[#1f1f1f]'}`}>{category.bautistainventorycategoryname}</h1><span className="bg-gray-200 text-gray-500 font-semibold px-2 rounded-full ml-2 text-sm">{productcount}</span></div>
+                  <div key={category._id} onClick={() => setactivebautistainventorycategorytable(category.bautistainventorycategoryname)}  className={`mt-3 hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl    py-2 text-center flex justify-center items-center ${activebautistainventorycategorytable ===category.bautistainventorycategoryname ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#1f1f1f] ${activebautistainventorycategorytable ===category.bautistainventorycategoryname ? 'text-white' : 'text-[#1f1f1f]'}`}>{category.bautistainventorycategoryname}</h1><span className="bg-gray-200 text-gray-500 font-semibold px-2 rounded-full ml-2 text-sm">{productcount}</span></div>
                   )
                 })}
 

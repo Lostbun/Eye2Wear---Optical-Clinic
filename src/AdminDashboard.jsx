@@ -5385,7 +5385,7 @@ useEffect(() => {
     <>
 
      {/* NavBar */}
-    <div className="  bg-gradient-to-tr from-[#0592d4]  to-[#1c1c34] rounded-full mt-2 ml-3 mr-3">
+    <div className="  bg-[#003366] rounded-full mt-2 ml-3 mr-3">
       <header id="header" className="flex justify-between items-center text-black py-4 px-8 md:px-20  ">
         <a id:logocontain href="#" >
           <img src={landinglogo} alt="Eye2Wear: Optical Clinic" className="w-60 hover:scale-105 transition-all   p-1"></img>
@@ -5506,7 +5506,7 @@ useEffect(() => {
           <div className="flex flex-col items-start w-full h-[12%] rounded-2xl" id="greet">
 
             <h1 className="ml-5 mt-1 font-albertsans font-bold text-[40px] text-[#212134]">Good Day, {adminfirstname}!</h1>
-            <p className="ml-5 font-geistsemibold text-[15px] text-[#23232a]">Stay on top of your tasks, monitor progress, and track status.  </p>
+            <p className="ml-5 font-geistsemibold text-[16px] text-[#23232a]">Stay on top of your tasks, monitor progress, and track status.  </p>
 
           </div>
 
