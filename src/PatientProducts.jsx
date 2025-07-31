@@ -1016,6 +1016,7 @@ const submitpatientorderambher = async (e) => {
       patientorderambherproductname: addambherinventoryproductname,
       patientorderambherproductbrand: addambherinventoryproductbrand,
       patientorderambherproductmodelnumber: addambherinventoryproductmodelnumber,
+      patientorderambherproductimage:addambherinventoryproductimagepreviewimages,
       patientorderambherproductprice: addambherinventoryproductprice,
       patientorderambherproductquantity: ambhercount,
       patientorderambherproductsubtotal: addambherinventoryproductprice * ambhercount,
@@ -1111,6 +1112,7 @@ const submitpatientorderbautista = async (e) => {
       patientorderbautistaproductname: addbautistainventoryproductname,
       patientorderbautistaproductbrand: addbautistainventoryproductbrand,
       patientorderbautistaproductmodelnumber: addbautistainventoryproductmodelnumber,
+      patientorderbautistaproductimage:addbautistainventoryproductimagepreviewimages,
       patientorderbautistaproductprice: addbautistainventoryproductprice,
       patientorderbautistaproductquantity: bautistacount,
       patientorderbautistaproductsubtotal: addbautistainventoryproductprice * bautistacount,
@@ -1118,7 +1120,6 @@ const submitpatientorderbautista = async (e) => {
       patientorderbautistaproductpaymentmethod: 'Cash on Pickup',
       patientorderbautistaproductchosenpickupdate: patientorderbautistaproductchosenpickupdate,
       patientorderbautistaproductchosenpickuptime: 'Default',
-      patientorderbautistastatus: 'Pending',
       patientorderbautistahistory: [{
         status: 'Pending',
         changedAt: new Date(),

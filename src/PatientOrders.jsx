@@ -105,17 +105,142 @@ function PatientOrders(){
  //CATEGORIES MANAGEMENT //CATEGORIES MANAGEMENT //CATEGORIES MANAGEMENT //CATEGORIES MANAGEMENT //CATEGORIES MANAGEMENT //CATEGORIES MANAGEMENT //CATEGORIES MANAGEMENT //CATEGORIES MANAGEMENT
 
 const [activeorderstable, setactiveorderstable] = useState('ambherorderstable');
+const [ambherOrders, setAmbherOrders] = useState([]);
+const [bautistaOrders, setBautistaOrders] = useState([]);
+const [loading, setLoading] = useState(true);
+const [filterambherorderedproductsStatus, setfilterambherorderedproductsStatus] = useState('All');
+const [filterbautistaorderedproductsStatus, setfilterbautistaorderedproductsStatus] = useState('All');
+const [filteredambherOrders, setfilteredambherOrders] = useState([]);
+const [filteredbautistaOrders, setfilteredbautistaOrders] = useState([]);
+const [searchpatientorderedProducts, setsearchpatientorderedProducts] = useState('');
+
+
 const showorderstable = (orderstableid) => {
       setactiveorderstable(orderstableid);
+      setsearchpatientorderedProducts('');
 };
 
           
-     
-          
-          
+
+
+//SEARCH ORDERED PRODUCT 
+useEffect(() => {
+  const filterpatientOrders = (orders, statusFilter, isAmbher) => {
+
+
+    let filtered = [...orders];
+    
+
+    if (statusFilter !== 'All') {
+      const statusField = isAmbher ? 'patientorderambherstatus' : 'patientorderbautistastatus';
+      filtered = filtered.filter(order => order[statusField] === statusFilter);
+    }
+    
+    if (searchpatientorderedProducts) {
+      const productNameField = isAmbher ? 'patientorderambherproductname' : 'patientorderbautistaproductname';
+      filtered = filtered.filter(order => 
+        order[productNameField].toLowerCase().includes(searchpatientorderedProducts.toLowerCase())
+      );
+    }
+
+    return filtered;
+    
+  };
+
+  if (activeorderstable === 'ambherorderstable') {
+    const filtered = filterpatientOrders(ambherOrders, filterambherorderedproductsStatus, true);
+    setfilteredambherOrders(filtered);
+  } else {
+    const filtered = filterpatientOrders(bautistaOrders, filterbautistaorderedproductsStatus, false);
+    setfilteredbautistaOrders(filtered);
+  }
+}, [ambherOrders, bautistaOrders, filterambherorderedproductsStatus, filterbautistaorderedproductsStatus, activeorderstable, searchpatientorderedProducts]);
+    
 
 
 
+
+
+const handleSearch = (term) => {
+  setsearchpatientorderedProducts(term);
+};
+
+
+
+
+//FETCHING PATIENT ORDERS 
+useEffect(() => {
+    if (patientemail) {
+      fetchpatientorders();
+    }
+  }, [patientemail, activeorderstable]);
+
+
+ const fetchpatientorders = async () => {
+
+  try {
+    setLoading(true);
+
+    if (activeorderstable === 'ambherorderstable') {
+      const response = await fetch(`http://localhost:3000/api/patientorderambher/email/${patientemail}`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('patienttoken')}`
+        }
+      });
+
+
+      if (response.ok) {
+        const data = await response.json();
+        setAmbherOrders(data);
+        setfilteredambherOrders(data); 
+      }
+
+    } else {
+      const response = await fetch(`http://localhost:3000/api/patientorderbautista/email/${patientemail}`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('patienttoken')}`
+        }
+      });
+      const data = await response.json();
+      setBautistaOrders(data);
+      setfilteredbautistaOrders(data); 
+    }
+
+
+
+  } catch (error) {
+    console.error('Error fetching orders:', error);
+
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+
+
+  const formatorderDates = (formattednewdate) => {
+    const datedata = { year: 'numeric', month: 'long', day: 'numeric' };
+    return new Date(formattednewdate).toLocaleDateString(undefined, datedata);
+  };
+
+
+
+
+  const formatorderstatusColor = (status) => {
+    switch(status) {
+      case 'Pending':
+        return 'bg-yellow-100 text-yellow-900';
+      case 'Ready for Pickup':
+        return 'bg-blue-100 text-blue-900';
+      case 'Completed':
+        return 'bg-green-100 text-green-900';
+      case 'Cancelled':
+        return 'bg-red-100 text-red-900';
+      default:
+        return 'bg-gray-100 text-gray-900';
+    }
+  };
 
 
 
@@ -343,8 +468,8 @@ const showorderstable = (orderstableid) => {
               <div className=" flex items-center mt-8"><i className="bx bxs-package text-[#184d85] text-[25px] mr-2"/> <h1 className=" font-albertsans font-bold text-[#184d85] text-[25px]">My Orders</h1></div>
 
   <div className="flex justify-start items-center mt-3 h-[60px]">
-  <div onClick={() => showorderstable('ambherorderstable')}  className={`mr-3 hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 pb-3 pt-3 text-center flex justify-center items-center ${activeorderstable ==='ambherorderstable' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#1f1f1f] ${activeorderstable ==='ambherorderstable' ? 'text-white' : ''}`}>Ambher Optical</h1></div>
-  <div onClick={() => showorderstable('bautistaorderstable')}  className={`ml-3 hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 pb-3 pt-3 text-center flex justify-center items-center ${activeorderstable ==='bautistaorderstable' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#1f1f1f] ${activeorderstable ==='bautistaorderstable' ? 'text-white' : ''}`}>Bautista Eye Center</h1></div>
+  <div onClick={() => showorderstable('ambherorderstable')}  className={`mr-3 hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 pb-3 pt-3 text-center flex justify-center items-center ${activeorderstable ==='ambherorderstable' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#1f1f1f] ${activeorderstable ==='ambherorderstable' ? 'text-white' : ''}`}>Ambher Optical <span className="bg-gray-200 text-gray-500 font-semibold px-2 rounded-full ml-2 text-sm"> {ambherOrders.length} </span></h1></div>
+  <div onClick={() => showorderstable('bautistaorderstable')}  className={`ml-3 hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 pb-3 pt-3 text-center flex justify-center items-center ${activeorderstable ==='bautistaorderstable' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#1f1f1f] ${activeorderstable ==='bautistaorderstable' ? 'text-white' : ''}`}>Bautista Eye Center <span className="bg-gray-200 text-gray-500 font-semibold px-2 rounded-full ml-2 text-sm"> {bautistaOrders.length} </span></h1></div>
   
   </div>
 
@@ -358,27 +483,48 @@ const showorderstable = (orderstableid) => {
                 <div className="p-3  rounded-2xl w-[20%] h-auto  mr-2 overflow-y-auto overflow-x-hidden">
                 <div className=" pb-3 flex items center w-full mt-7"><i className="bx bx-filter font-albertsans font-semibold text-[#363636] text-[25px]" /><h1 className="ml-2 text-[16px] font-albertsans font-semibold text-[#363636]">Filter by status</h1></div>
 
-                <div   className="mt-3 hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 py-2 text-center flex justify-center items-center "><h1 className= "font-albertsans font-semibold text-[#1f1f1f] ">All</h1></div>
-                <div   className="mt-3 hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl py-2 text-center flex justify-center items-center "><h1 className= "font-albertsans font-semibold text-[#1f1f1f] ">Pending</h1></div>
-                <div   className="mt-3 hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl  py-2 text-center flex justify-center items-center "><h1 className= "font-albertsans font-semibold text-[#1f1f1f] ">Ready for Pickup</h1></div>
-                <div   className="mt-3 hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl  py-2 text-center flex justify-center items-center "><h1 className= "font-albertsans font-semibold text-[#1f1f1f] ">Completed</h1></div>
-                <div   className="mt-3 hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl  py-2 text-center flex justify-center items-center "><h1 className= "font-albertsans font-semibold text-[#1f1f1f] ">Cancelled</h1></div>
+                {['All', 'Pending', 'Ready for Pickup', 'Completed', 'Cancelled'].map(status => {
+                    const patientorderedstatusCount = status === 'All'  ? ambherOrders.length : ambherOrders.filter(order => order.patientorderambherstatus === status).length; 
+  
+                    return (
+                       <div key={status} onClick={() => {setfilterambherorderedproductsStatus(status); setsearchpatientorderedProducts('');}}  className={`mt-3 hover:rounded-2xl transition-all duration-300 ease-in-out border-2 b-[#909090] rounded-3xl py-2 text-center flex justify-center items-center ${filterambherorderedproductsStatus === status ? 'bg-[#2781af] rounded-2xl text-white' : ''}`} >
+                        <h1 className={`font-albertsans font-semibold ${filterambherorderedproductsStatus === status ? 'text-white' : 'text-[#1f1f1f]'}`}>{status} <span className="bg-gray-200 text-gray-500 font-semibold px-2 rounded-full ml-2 text-sm"> {patientorderedstatusCount} </span> </h1>  </div>
+                        );})}
 
+                      
+        
 
           </div>
           <div className=" flex flex-col justify-start items-start  ml-2 rounded-2xl w-[90%]  min-h-[540px] max-h-auto h-auto shadow-b-lg ">
-              <div className="ml-2 flex justify-center items-center"><h2 className="font-albertsans font-bold text-[18px] text-[#383838] mr-3 ">Search: </h2><div className="relative flex items-center justify-center gap-3"><i className="bx bx-search absolute left-3 text-2xl text-gray-500"></i><input  type="text" placeholder="Enter product name here..."   className="transition-all duration-300 ease-in-out py-2 pl-10 w-250 rounded-2xl  bg-[#e4e4e4] focus:bg-slate-100 focus:outline-sky-500"></input></div></div>
+              <div className="ml-2 flex justify-center items-center"><h2 className="font-albertsans font-bold text-[18px] text-[#383838] mr-3 ">Search: </h2><div className="relative flex items-center justify-center gap-3"><i className="bx bx-search absolute left-3 text-2xl text-gray-500"></i><input value={searchpatientorderedProducts}  onChange={(e) => handleSearch(e.target.value)} type="text" placeholder="Enter ordered product name here..."   className="transition-all duration-300 ease-in-out py-2 pl-10 w-250 rounded-2xl  bg-[#e4e4e4] focus:bg-slate-100 focus:outline-sky-500"></input></div></div>
               <div className="mt-5 w-[100%] rounded-2xl h-auto  flex flex-wrap content-start gap-3 pl-2 pt-2 pr-30">
+                      
+                      
+                      {loading ? (
+                        <div>Loading orders...</div>
+                      ) : filteredambherOrders.length === 0 ? (
+                        <div>No orders found</div>
+                      ) : (
+                        filteredambherOrders.map(order => (
 
-
-                  <div className="shadow-md rounded-2xl py-3.25 px-3.25 flex items-center motion-preset-slide-up w-full h-40 ">
-                    <img src={patientprofilepicture} className="w-35 h-35 rounded-2xl"/>
-                    <div className="h-full w-full flex flex-col items-start">
-                        <h1 className="">Tom Ford TF5841-B 028 Eyeglasses</h1>
-
+                  <div key={order.patientorderambherid} className="shadow-md rounded-2xl py-3.25 px-3.25 mb-3 border-1 flex items-center motion-preset-slide-up w-full h-auto ">
+                   <img src={order.patientorderambherproductimage?.[0] || 'default-image-url'} alt={order.patientorderambherproductname} className="mr-5 w-35 h-35 rounded-2xl"/>
+                    <div className="mt-2 h-auto w-full flex flex-col items-start">
+                        <div className="flex justify-between w-full"><h1 className="font-semibold font-albertsans text-[20px] text-[#1f1f1f]">{order.patientorderambherproductname}</h1> <span className={`${formatorderstatusColor(order.patientorderambherstatus)} ml-3 font-albertsans font-semibold rounded-full text-[15px] leading-5 px-4 py-2 inline-flex`}>{order.patientorderambherstatus}</span> </div>
+                        <div className=" mt-5 justify-between w-full flex items-center text-[#323232]  font-semibold text-[13px]">
+                          <div className="flex items-center gap-1"><i className="text-[#565656] bx bxs-calendar mt-0.5  font-semibold text-[22px]"/><div><p className="text-[#565656]  font-semibold text-[13px]">Date Ordered</p><p className="text-[#303030]  font-semibold text-[15px]">{formatorderDates(order.createdAt)}</p></div></div>
+                          <div className="flex items-center gap-1"><i className="text-[#565656] bx bxs-calendar mt-0.5  font-semibold text-[22px]"/><div><p className="text-[#565656]  font-semibold text-[13px]">Pickup at Ambher Optical</p><p className="text-[#303030]  font-semibold text-[15px]">{formatorderDates(order.patientorderambherproductchosenpickupdate)}</p></div></div>
+                          <div className="flex items-center gap-1"><i className="text-[#565656] bx bxs-package mt-0.5  font-semibold text-[22px]"/><div><p className="text-[#565656]  font-semibold text-[13px]">Quantity</p><p className="text-[#303030]  font-semibold text-[15px]">x{order.patientorderambherproductquantity}</p></div></div>
+                          <div className="flex items-center gap-1"><p className="font-semibold text-[22px] text-[#565656]">₱</p><div><p className="text-[#565656]  font-semibold text-[13px]">Unit Price</p><p className="text-[#303030]  font-semibold text-[15px]">{order.patientorderambherproductprice?.toLocaleString()}</p></div></div>
+                        </div>
+                        <div className="flex items-center justify-between border-t-2 w-full h-10 mt-5">
+                          <div></div>
+                          <div className="flex items-center gap-3 mt-5 h-auto"><h1 className="font-semibold font-albertsans text-[#343434] text-[17px]">Total Price: </h1><p className="font-semibold font-albertsans text-[25px] text-[#549013]">₱{(order.patientorderambherproductprice * order.patientorderambherproductquantity)?.toLocaleString()}</p></div>
+                        </div>
                     </div>
                   </div>
-
+                        ))
+                      )}
                   
               
 
@@ -395,25 +541,50 @@ const showorderstable = (orderstableid) => {
                           <div className="p-3  rounded-2xl w-[20%] h-auto  mr-2 overflow-y-auto overflow-x-hidden">
                 <div className=" pb-3 flex items center w-full mt-7"><i className="bx bx-filter font-albertsans font-semibold text-[#363636] text-[25px]" /><h1 className="ml-2 text-[16px] font-albertsans font-semibold text-[#363636]">Filter by status</h1></div>
 
-                <div   className="mt-3 hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 py-2 text-center flex justify-center items-center "><h1 className= "font-albertsans font-semibold text-[#1f1f1f] ">All</h1></div>
-                <div   className="mt-3 hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl py-2 text-center flex justify-center items-center "><h1 className= "font-albertsans font-semibold text-[#1f1f1f] ">Pending</h1></div>
-                <div   className="mt-3 hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl  py-2 text-center flex justify-center items-center "><h1 className= "font-albertsans font-semibold text-[#1f1f1f] ">Ready for Pickup</h1></div>
-                <div   className="mt-3 hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl  py-2 text-center flex justify-center items-center "><h1 className= "font-albertsans font-semibold text-[#1f1f1f] ">Completed</h1></div>
-                <div   className="mt-3 hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl  py-2 text-center flex justify-center items-center "><h1 className= "font-albertsans font-semibold text-[#1f1f1f] ">Cancelled</h1></div>
-
+                {['All', 'Pending', 'Ready for Pickup', 'Completed', 'Cancelled'].map(status => {
+                    const patientorderedstatusCount = status === 'All'  ? bautistaOrders.length : bautistaOrders.filter(order => order.patientorderbautistastatus === status).length; 
+  
+                    return (
+                       <div key={status} onClick={() => {setfilterbautistaorderedproductsStatus(status); setsearchpatientorderedProducts('');}} className={`mt-3 hover:rounded-2xl transition-all duration-300 ease-in-out border-2 b-[#909090] rounded-3xl py-2 text-center flex justify-center items-center ${filterbautistaorderedproductsStatus === status ? 'bg-[#2781af] rounded-2xl text-white' : ''}`} >
+                        <h1 className={`font-albertsans font-semibold ${filterbautistaorderedproductsStatus === status ? 'text-white' : 'text-[#1f1f1f]'}`}>{status} <span className="bg-gray-200 text-gray-500 font-semibold px-2 rounded-full ml-2 text-sm"> {patientorderedstatusCount} </span> </h1>  </div>
+                        );})}
 
           </div>
           <div className=" flex flex-col justify-start items-start  ml-2 rounded-2xl w-[90%]  min-h-[540px] max-h-auto h-auto shadow-b-lg ">
-              <div className="ml-6 flex justify-center items-center"><h2 className="font-albertsans font-bold text-[18px] text-[#383838] mr-3 ">Search: </h2><div className="relative flex items-center justify-center gap-3"><i className="bx bx-search absolute left-3 text-2xl text-gray-500"></i><input  type="text" placeholder="Enter product name here..."   className="transition-all duration-300 ease-in-out py-2 pl-10 w-250 rounded-2xl  bg-[#e4e4e4] focus:bg-slate-100 focus:outline-sky-500"></input></div></div>
-              <div className=" w-[100%] rounded-2xl h-auto  flex flex-wrap content-start gap-3 pl-2 pt-2 ">
+              <div className="ml-2 flex justify-center items-center"><h2 className="font-albertsans font-bold text-[18px] text-[#383838] mr-3 ">Search: </h2><div className="relative flex items-center justify-center gap-3"><i className="bx bx-search absolute left-3 text-2xl text-gray-500"></i><input value={searchpatientorderedProducts}  onChange={(e) => handleSearch(e.target.value)}  type="text" placeholder="Enter ordered product name here..."   className="transition-all duration-300 ease-in-out py-2 pl-10 w-250 rounded-2xl  bg-[#e4e4e4] focus:bg-slate-100 focus:outline-sky-500"></input></div></div>
+              <div className="mt-5 w-[100%] rounded-2xl h-auto  flex flex-wrap content-start gap-3 pl-2 pt-2 pr-30">
+                      
+                      
+                      {loading ? (
+                        <div>Loading orders...</div>
+                      ) : filteredbautistaOrders.length === 0 ? (
+                        <div>No orders found</div>
+                      ) : (
+                        filteredbautistaOrders.map(order => (
 
-
-              
+                  <div key={order.patientorderbautistaid} className="shadow-md rounded-2xl py-3.25 px-3.25 flex items-center motion-preset-slide-up w-full h-auto ">
+                    <img src={order.patientorderbautistaproductimage?.[0] || 'default-image-url'} alt={order.patientorderbautistaproductname} className="mr-5 w-35 h-35 rounded-2xl"/>
+                    <div className="mt-2 h-auto w-full flex flex-col items-start">
+                        <div className="flex justify-between w-full"><h1 className="font-semibold font-albertsans text-[20px] text-[#1f1f1f]">{order.patientorderbautistaproductname}</h1> <span className={`${formatorderstatusColor(order.patientorderbautistastatus)} ml-3 font-albertsans font-semibold rounded-full text-[15px] leading-5 px-4 py-2 inline-flex`}>{order.patientorderbautistastatus}</span> </div>
+                        <div className=" mt-5 justify-between w-full flex items-center text-[#323232]  font-semibold text-[13px]">
+                          <div className="flex items-center gap-1"><i className="text-[#565656] bx bxs-calendar mt-0.5  font-semibold text-[22px]"/><div><p className="text-[#565656]  font-semibold text-[13px]">Date Ordered</p><p className="text-[#303030]  font-semibold text-[15px]">{formatorderDates(order.createdAt)}</p></div></div>
+                          <div className="flex items-center gap-1"><i className="text-[#565656] bx bxs-calendar mt-0.5  font-semibold text-[22px]"/><div><p className="text-[#565656]  font-semibold text-[13px]">Pickup at Bautista Eye Center</p><p className="text-[#303030]  font-semibold text-[15px]">{formatorderDates(order.patientorderbautistaproductchosenpickupdate)}</p></div></div>
+                          <div className="flex items-center gap-1"><i className="text-[#565656] bx bxs-package mt-0.5  font-semibold text-[22px]"/><div><p className="text-[#565656]  font-semibold text-[13px]">Quantity</p><p className="text-[#303030]  font-semibold text-[15px]">x{order.patientorderbautistaproductquantity}</p></div></div>
+                          <div className="flex items-center gap-1"><p className="font-semibold text-[22px] text-[#565656]">₱</p><div><p className="text-[#565656]  font-semibold text-[13px]">Unit Price</p><p className="text-[#303030]  font-semibold text-[15px]">{order.patientorderbautistaproductprice?.toLocaleString()}</p></div></div>
+                        </div>
+                        <div className="flex items-center justify-between border-t-2 w-full h-10 mt-5">
+                          <div></div>
+                          <div className="flex items-center gap-3 mt-5 h-auto"><h1 className="font-semibold font-albertsans text-[#343434] text-[17px]">Total Price: </h1><p className="font-semibold font-albertsans text-[25px] text-[#549013]">₱{(order.patientorderbautistaproductprice * order.patientorderbautistaproductquantity)?.toLocaleString()}</p></div>
+                        </div>
+                    </div>
+                  </div>
+                        ))
+                      )}
+                  
               
 
               </div>
           </div>
-
 
           </div>)}
 

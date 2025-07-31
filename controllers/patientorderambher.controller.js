@@ -77,7 +77,7 @@ export const createpatientorderambher = async (req, res) => {
     export const getorderambhersbyemail = async (req, res) => {
         try{
             const patientorderambhersbyemail = await PatientOrderAmbher.find({
-                patientorderambheremail: req.params.email
+                patientemail: req.params.email
             }).sort({patientorderambherid: -1});
 
 
