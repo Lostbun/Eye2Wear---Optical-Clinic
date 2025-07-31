@@ -30,7 +30,10 @@ function PatientWishlist(){
 
 
 
- const [patientfirstname, setpatientfirstname] = useState('');
+  const [patientfirstname, setpatientfirstname] = useState('');
+  const [patientlastname, setpatientlastname] = useState('');
+  const [patientmiddlename, setpatientmiddlename] = useState('');
+  const [patientemail, setpatientemail] = useState('');
   const [patientprofilepicture, setpatientprofilepicture] = useState('');
   const [showlogoutbtn, setshowlogoutbtn] = useState(false);
   const showlogout = () => {
@@ -49,7 +52,10 @@ function PatientWishlist(){
 
       const data = await fetchpatientdetails();
       if(data){
-       setpatientfirstname(data.patientfirstname || '');
+        setpatientfirstname(data.patientfirstname || '');
+        setpatientmiddlename(data.patientmiddlename || '');
+        setpatientlastname(data.patientlastname || '');
+        setpatientemail(data.patientemail || '');
         setpatientprofilepicture(data.patientprofilepicture || '');
         localStorage.setItem("patientemail", data.patientemail);
       }
@@ -204,6 +210,7 @@ useEffect(() => {
           const [ambherinventorycategorynamebox, setambherinventorycategorynamebox] = useState("");
           const [addambherinventoryproductname, setaddambherinventoryproductname] = useState("");
           const [addambherinventoryproductbrand, setaddambherinventoryproductbrand] = useState("");
+          const [addambherinventoryproductmodelnumber, setaddambherinventoryproductmodelnumber] = useState("");
           const [addambherinventoryproductdescription, setaddambherinventoryproductdescription] = useState("");
           const [addambherinventoryproductprice, setaddambherinventoryproductprice] = useState();
           const [addambherinventoryproductquantity, setaddambherinventoryproductquantity] = useState();
@@ -267,17 +274,12 @@ useEffect(() => {
 //BAUTISTA EYE CENTER //BAUTISTA EYE CENTER //BAUTISTA EYE CENTER //BAUTISTA EYE CENTER //BAUTISTA EYE CENTER //BAUTISTA EYE CENTER
 //BAUTISTA EYE CENTER //BAUTISTA EYE CENTER //BAUTISTA EYE CENTER //BAUTISTA EYE CENTER //BAUTISTA EYE CENTER //BAUTISTA EYE CENTER
 
-const [activebautistainventorycategorytable, setactivebautistainventorycategorytable] = useState('all');
-const showbautistainventorycategory = (bautistainventorycategorytableid) => {
-      setactivebautistainventorycategorytable(bautistainventorycategorytableid);
-};
-
-const [bautistainventorycategorylist, setbautistainventorycategorylist] = useState([]);
 
           const[showpatientbautistaviewproduct, setshowpatientbautistaviewproduct] = useState(false);
           const [bautistainventorycategorynamebox, setbautistainventorycategorynamebox] = useState("");
           const [addbautistainventoryproductname, setaddbautistainventoryproductname] = useState("");
           const [addbautistainventoryproductbrand, setaddbautistainventoryproductbrand] = useState("");
+          const [addbautistainventoryproductmodelnumber, setaddbautistainventoryproductmodelnumber] = useState("");
           const [addbautistainventoryproductdescription, setaddbautistainventoryproductdescription] = useState("");
           const [addbautistainventoryproductprice, setaddbautistainventoryproductprice] = useState();
           const [addbautistainventoryproductquantity, setaddbautistainventoryproductquantity] = useState();
@@ -285,91 +287,14 @@ const [bautistainventorycategorylist, setbautistainventorycategorylist] = useSta
           const [bautistacurrentimageindex, setbautistacurrentimageindex] = useState(0);
           const [selectedbautistaproduct, setselectedbautistaproduct] = useState(null);
   
-  const [bautistainventoryproducts, setbautistainventoryproducts] = useState([]);
-  const [bautistaloadingproducts, setbautistaloadingproducts] = useState(true);
+
 
           
- const bautistafilteredproducts = bautistainventoryproducts.filter(product => 
-               activebautistainventorycategorytable === 'all' || 
-               product.bautistainventoryproductcategory === activebautistainventorycategorytable
 
-            );
           
           
 
 
-//Fetching Bautista Inventory Categories
-useEffect(() => {
-  const fetchbautistacategories = async () => {
-    try{
-      const response = await fetch('http://localhost:3000/api/bautistainventorycategory');
-      if(!response.ok) throw new Error("Failed to fetch Bautista Inevntory Categories");
-
-
-
-      const data = await response.json();
-      setbautistainventorycategorylist(data);
-    
-      console.log("Bautista categories", data);
-
-    }catch(error){
-      console.error("Error fetching bautista categories: ", error);
-    }
-  };
-  fetchbautistacategories();
-}, []);
-
-
-
-const fetchbautistainventorycategories = async () => {
-  try{
-    const response = await fetch('http://localhost:3000/api/bautistainventorycategory');
-    if(!response.ok) throw new Error("Failed to retrieve bautista inventory categories");
-
-    const data = await response.json();
-    setbautistainventorycategorylist(data);
-  }catch(error){
-    console.error("Fetching bautistainventorycategory failed", error);
-  }
-};
-
-useEffect(() => {
-  fetchbautistainventorycategories();
-}, []);
-
-
-
-
-       
-          
-          //FETCHING PRODUCTS
-          
-            const fetchbautistaproducts = async () => {
-              try{
-                const response = await fetch('http://localhost:3000/api/bautistainventoryproduct', {
-                  headers:{
-                    'Authorization' : `Bearer ${localStorage.getItem("patienttoken")}`
-                  }
-                });
-                
-                if(!response.ok) throw new Error("Failed to fetch products");
-          
-                const data = await response.json();
-                setbautistainventoryproducts(data);
-                 setbautistaloadingproducts(false);
-              }catch(error){
-                console.error("Failed fetching products: ", error);
-                setbautistaloadingproducts(false);
-              }
-            };
-          
-          
-            useEffect(() => {
-              fetchbautistaproducts();
-            }, []);
-          
-          
-          
         
 
 
@@ -420,6 +345,7 @@ useEffect(() => {
 //WISHLIST
 
   //AMBHER OPTICAL
+
     const [ambhercount, setambherCount] = useState(1)
     const [ambherheartisHovered, setambherheartisHovered] =useState(false);
     const [ambherheartisClicked, setambherheartisClicked] =useState(false);     
@@ -427,18 +353,6 @@ useEffect(() => {
     const [ambhershowtoastMessage, setambhershowtoastMessage] = useState("");
     const [ambhershowtoastmessageClosing, setambhershowtoastmessageClosing] = useState(false);
 
-  const ambherhearthandleClick = () => {
-    const ambherheartnewState = !ambherheartisClicked;
-    setambherheartisClicked(ambherheartnewState);
-    setambhershowtoastMessage(ambherheartnewState ? "Added to Wishlist!" : "Removed from Wishlist"); 
-    setambhershowheartToast(true);
-    setambhershowtoastmessageClosing(false);
-  };
-
-  const getambherHeartImage = () => {
-    if (ambherheartisClicked) return heartfilled;
-    return ambherheartisHovered ? heartwhite : heartblack;
-  };
 
 useEffect(() => {
   if(ambhershowheartToast){
@@ -644,6 +558,120 @@ const handleRemoveFromWishlist = async (wishlistItemId, clinicType) => {
 
 
 
+//ORDERING
+const [patientorderambherproductchosenpickupdate, setpatientorderambherproductchosenpickupdate] = useState("");
+const [patientorderbautistaproductchosenpickupdate, setpatientorderbautistaproductchosenpickupdate] = useState("");
+const [patientorderambherproductisClicked, setpatientorderambherproductisClicked] = useState(false);
+const [patientorderambherproductToast, setpatientorderambherproductToast] = useState(false);
+const [patientorderambherproductToastMessage, setpatientorderambherproductToastMessage] = useState("");
+const [patientorderambherproductToastClosing, setpatientorderambherproductToastClosing] = useState(false);
+const [patientorderbautistaproductisClicked, setpatientorderbautistaproductisClicked] = useState(false);
+const [patientorderbautistaproductToast, setpatientorderbautistaproductToast] = useState(false);
+const [patientorderbautistaproductToastMessage, setpatientorderbautistaproductToastMessage] = useState("");
+const [patientorderbautistaproductToastClosing, setpatientorderbautistaproductToastClosing] = useState(false);
+const [progressWidth, setProgressWidth] = useState('0%');   
+
+
+
+// UseEffect for Product Orddering Toast
+useEffect(() => {
+  if (patientorderambherproductToast) {
+    setProgressWidth('0%');
+    setpatientorderambherproductToastClosing(false);
+
+    const progresstimer = setTimeout(() => {
+      setProgressWidth('100%');
+    }, 50);
+
+    // Close toast after 4 seconds
+    const toasttimer = setTimeout(() => {
+      setpatientorderambherproductToastClosing(true);
+      setTimeout(() => {
+        setpatientorderambherproductToast(false);
+        setProgressWidth('0%');
+      }, 300);
+    }, 4000);
+
+    return () => {
+      clearTimeout(progresstimer);
+      clearTimeout(toasttimer);
+    }
+  }else if(patientorderbautistaproductToast){
+    setProgressWidth('0%');
+    setpatientorderbautistaproductToastClosing(false);
+
+    const progresstimer = setTimeout(() => {
+      setProgressWidth('100%');
+    }, 50);
+
+    // Close toast after 4 seconds
+    const toasttimer = setTimeout(() => {
+      setpatientorderbautistaproductToastClosing(true);
+      setTimeout(() => {
+        setpatientorderbautistaproductToast(false);
+        setProgressWidth('0%');
+      }, 300);
+    }, 4000);
+
+    return () => {
+      clearTimeout(progresstimer);
+      clearTimeout(toasttimer);
+    }
+  }
+}, [patientorderambherproductToast, patientorderbautistaproductToast]);
+
+
+
+
+
+const getphilippineDate = () => {
+  const now = new Date();
+  return new Date(now.getTime() + (8 * 60 * 60 * 1000));
+};
+const dateinphNow = getphilippineDate();
+const dateinphtomorrow = new Date(dateinphNow);
+dateinphtomorrow.setDate(dateinphNow.getDate() + 1);
+dateinphtomorrow.setHours(0,0,0,0);
+
+// Calculate dates
+const dateinphmaxdate = new Date(dateinphNow);
+dateinphmaxdate.setDate(dateinphNow.getDate() + 30);
+dateinphmaxdate.setHours(23,59,59,999);
+
+
+
+
+
+//Deletes the product from the wishlist after order and automatic refresh
+const patientwishlistproductremovefromWishlist = async (wishlistItemId, clinicType) => {
+
+  try {
+
+
+
+    const response = await fetch(`http://localhost:3000/api/patientwishlistinventoryproduct/${wishlistItemId}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('patienttoken')}`
+      }});
+  
+
+    if (!response.ok) {
+      throw new Error("Failed to remove from wishlist");
+    }
+
+    if (clinicType === 'ambher') {
+      setAmbherWishlist(prev => prev.filter(item => item._id !== wishlistItemId));
+    } else {
+      setBautistaWishlist(prev => prev.filter(item => item._id !== wishlistItemId));
+    }
+    
+
+
+  } catch (error) {
+    console.error("Error removing from wishlist:", error);
+  }
+};
 
 
 
@@ -651,7 +679,204 @@ const handleRemoveFromWishlist = async (wishlistItemId, clinicType) => {
 
 
 
+//Submitting ambher patient order
+const submitpatientorderambher = async (e) => {
+  e.preventDefault();
+  
 
+  try {
+    // Fetch patient demographic data
+    const demographicResponse = await fetch(
+      `http://localhost:3000/api/patientdemographics/patientemail/${patientemail}`,
+      {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('patienttoken')}`
+        }
+      }
+    );
+
+    if (!demographicResponse.ok) {
+      const errorText = await demographicResponse.text();
+      throw new Error(errorText || 'Failed to fetch patient data');
+    }
+
+    const demographicData = await demographicResponse.json();
+    
+    if (!demographicData.patientcontactnumber) {
+      throw new Error('Patient contact number not found');
+    }
+
+    // Prepare order data
+    const orderData = {
+      patientprofilepicture: patientprofilepicture,
+      patientlastname: patientlastname,
+      patientfirstname: patientfirstname,
+      patientmiddlename: patientmiddlename,
+      patientemail: patientemail,
+      patientcontactnumber: demographicData.patientcontactnumber,
+      patientorderambherproductid: selectedambherproduct?.clinicproduct,
+      patientorderambherproductname: addambherinventoryproductname,
+      patientorderambherproductbrand: addambherinventoryproductbrand,
+      patientorderambherproductmodelnumber: addambherinventoryproductmodelnumber,
+      patientorderambherproductimage:addambherinventoryproductimagepreviewimages,
+      patientorderambherproductprice: addambherinventoryproductprice,
+      patientorderambherproductquantity: ambhercount,
+      patientorderambherproductsubtotal: addambherinventoryproductprice * ambhercount,
+      patientorderambherproducttotal: addambherinventoryproductprice * ambhercount,
+      patientorderambherproductpaymentmethod: 'Cash on Pickup',
+      patientorderambherproductchosenpickupdate: patientorderambherproductchosenpickupdate,
+      patientorderambherproductchosenpickuptime: 'Default',
+      patientorderambherstatus: 'Pending',
+      patientorderambherhistory: [{
+        status: 'Pending',
+        changedAt: new Date(),
+        changedBy: `${patientfirstname} ${patientlastname}`
+      }]
+    };
+
+    console.log('Submitting order:', orderData);
+
+    // Submit order
+    const response = await fetch('http://localhost:3000/api/patientorderambher', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('patienttoken')}`
+      },
+      body: JSON.stringify(orderData)
+    });
+
+    // Handle response
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Server response:', errorText);
+      throw new Error(errorText || `Server error: ${response.status}`);
+    }
+
+    const result = await response.json();
+
+    if (selectedambherproduct?._id) {
+      patientwishlistproductremovefromWishlist(selectedambherproduct._id, 'ambher');
+    }
+
+        setpatientorderambherproductisClicked(true);
+        setpatientorderambherproductToastMessage("Order Submitted Successfully!");
+        setpatientorderambherproductToast(true);
+        setpatientorderambherproductToastClosing(false);
+    console.log('Order successful:', result);
+
+    
+    setpatientorderambherproductchosenpickupdate("");
+    setambherCount(1);
+    setshowpatientambherviewproduct(false);
+    
+
+  } catch (error) {
+    console.error('Submission error:', error);
+      setpatientorderambherproductToastMessage(error.message);
+      setpatientorderambherproductToast(true);
+      setpatientorderambherproductToastClosing(false);
+  }
+};  
+
+
+const submitpatientorderbautista = async (e) => {
+  e.preventDefault();
+  
+
+  try {
+    // Fetch patient demographic data
+    const demographicResponse = await fetch(
+      `http://localhost:3000/api/patientdemographics/patientemail/${patientemail}`,
+      {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('patienttoken')}`
+        }
+      }
+    );
+
+    if (!demographicResponse.ok) {
+      const errorText = await demographicResponse.text();
+      throw new Error(errorText || 'Failed to fetch patient data');
+    }
+
+    const demographicData = await demographicResponse.json();
+    
+    if (!demographicData.patientcontactnumber) {
+      throw new Error('Patient contact number not found');
+    }
+
+    // Prepare order data
+    const orderData = {
+      patientprofilepicture: patientprofilepicture,
+      patientlastname: patientlastname,
+      patientfirstname: patientfirstname,
+      patientmiddlename: patientmiddlename,
+      patientemail: patientemail,
+      patientcontactnumber: demographicData.patientcontactnumber,
+      patientorderbautistaproductid: selectedbautistaproduct?.clinicproduct,
+      patientorderbautistaproductname: addbautistainventoryproductname,
+      patientorderbautistaproductbrand: addbautistainventoryproductbrand,
+      patientorderbautistaproductmodelnumber: addbautistainventoryproductmodelnumber,
+      patientorderbautistaproductimage:addbautistainventoryproductimagepreviewimages,
+      patientorderbautistaproductprice: addbautistainventoryproductprice,
+      patientorderbautistaproductquantity: bautistacount,
+      patientorderbautistaproductsubtotal: addbautistainventoryproductprice * bautistacount,
+      patientorderbautistaproducttotal: addbautistainventoryproductprice * bautistacount,
+      patientorderbautistaproductpaymentmethod: 'Cash on Pickup',
+      patientorderbautistaproductchosenpickupdate: patientorderbautistaproductchosenpickupdate,
+      patientorderbautistaproductchosenpickuptime: 'Default',
+      patientorderbautistahistory: [{
+        status: 'Pending',
+        changedAt: new Date(),
+        changedBy: `${patientfirstname} ${patientlastname}`
+      }]
+    };
+
+    console.log('Submitting order:', orderData);
+
+    // Submit order
+    const response = await fetch('http://localhost:3000/api/patientorderbautista', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('patienttoken')}`
+      },
+      body: JSON.stringify(orderData)
+    });
+
+    // Handle response
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Server response:', errorText);
+      throw new Error(errorText || `Server error: ${response.status}`);
+    }
+
+    const result = await response.json();
+
+    if (selectedbautistaproduct?._id) {
+      patientwishlistproductremovefromWishlist(selectedbautistaproduct._id, 'bautista');
+    }
+
+        setpatientorderbautistaproductisClicked(true);
+        setpatientorderbautistaproductToastMessage("Order Submitted Successfully!");
+        setpatientorderbautistaproductToast(true);
+        setpatientorderbautistaproductToastClosing(false);
+    console.log('Order successful:', result);
+
+    
+    setpatientorderbautistaproductchosenpickupdate("");
+    setbautistaCount(1);
+    setshowpatientbautistaviewproduct(false);
+    
+
+  } catch (error) {
+    console.error('Submission error:', error);
+      setpatientorderbautistaproductToastMessage(error.message);
+      setpatientorderbautistaproductToast(true);
+      setpatientorderbautistaproductToastClosing(false);
+  }
+};  
 
 
 
@@ -848,24 +1073,35 @@ const handleRemoveFromWishlist = async (wishlistItemId, clinicType) => {
         ) : ambherWishlist.length === 0 ? (
           <div className="w-[90vw] h-[50vh] flex justify-center flex-col items-center "><img src={heartempty} className="w-17 h-17 mb-3"/><h1 className="font-semibold text-[25px]">Your wishlist is empty</h1><p className="text-[#4e4e4e] mb-5">Start adding items you love to keep track of them</p><Link to="/patientproducts"><div className="text-[15px] p-3 bg-[#2781af] text-white  hover:scale-105 rounded-md transition-all cursor-pointer">Continue Shopping</div></Link></div>
         ) : (
-          ambherWishlist.map((item) => (
+               [...ambherWishlist]
+               .sort((a, b) => {
+                 if (a.patientwishlistinventoryproductquantity === 0 && b.patientwishlistinventoryproductquantity !== 0) return 1;
+                 if (a.patientwishlistinventoryproductquantity !== 0 && b.patientwishlistinventoryproductquantity === 0) return -1;
+                 return 0;}) .map((item) => (
               <div key={item._id}  onClick={() => {                        setshowpatientambherviewproduct(true);
                                                                            setselectedambherproduct(item);
                                                                            setambhercurrentimageindex(0);
                                                                            setambherinventorycategorynamebox(item.patientwishlistinventoryproductcategory || '');
                                                                            setaddambherinventoryproductname(item.patientwishlistinventoryproductname || '');
                                                                            setaddambherinventoryproductbrand(item.patientwishlistinventoryproductbrand || '');
+                                                                           setaddambherinventoryproductmodelnumber(item.patientwishlistinventoryproductmodelnumber || '');
                                                                            setaddambherinventoryproductdescription(item.patientwishlistinventoryproductdescription || '');
                                                                            setaddambherinventoryproductprice(item.patientwishlistinventoryproductprice || 0);
                                                                            setaddambherinventoryproductquantity(item.patientwishlistinventoryproductquantity || 0);
                                                                            setaddambherinventoryproductimagepreviewimages(item.patientwishlistinventoryproductimagepreviewimages || []);
               }} className="motion-preset-slide-up mr-3 mb-3 flex flex-col items-start justify-start w-[220px] h-auto shadow-md bg-white rounded-2xl">
+                 <img src={item.patientwishlistinventoryproductimagepreviewimages[0] || defaultimageplaceholder}  alt={item.patientwishlistinventoryproductname} className={`w-full h-45 ${item.patientwishlistinventoryproductquantity === 0 ? 'opacity-50': ''}`}/>
                 <img  src={heartfilled} onClick={(e) =>  { e.stopPropagation(); handleRemoveFromWishlist(item._id, 'ambher');  }} onMouseEnter={() => !ambherheartisClicked && setambherheartisHovered(true)} onMouseLeave={() => !ambherheartisClicked && setambherheartisHovered(false)}  className={`absolute right-0 ease-in-out duration-300 transition-all  border-1  w-10 h-10 p-2 rounded-2xl cursor-pointer  bg-red-400 hover:bg-red-500`}/>
-                <img src={item.patientwishlistinventoryproductimagepreviewimages[0] || defaultimageplaceholder}  alt={item.patientwishlistinventoryproductname} className="w-full h-45"/>
-                <div className=" mx-1  w-fit rounded-md py-1 px-2  rounded-1xl h-fit  mt-2 break-words min-w-0 bg-[#F0F6FF]"><h1 className="font-medium   text-[#0d0d0d] text-[13px] min-w-0 break-words ">{item.patientwishlistinventoryproductcategory}</h1></div>
-                    <div className="w-full h-auto ml-2 mt-2 "><h1 className="font-semibold  text-[15px] min-w-0 break-words ">{item.patientwishlistinventoryproductname}</h1></div>
-                    <div className="w-fit h-auto ml-2 mt-1 "><h1 className="font-albertsans font-bold text-[18px] min-w-0 break-words ">₱ {item.patientwishlistinventoryproductprice?.toLocaleString()}</h1></div>
-                <div className="w-full h-auto ml-2 mt-5 mb-5 "><h1 className="font-albertsans font-medium text-[#4e4f4f] text-[15px] min-w-0 break-words">0 Sold</h1></div>
+                <div className=" mx-1  w-fit rounded-md py-1 px-2  rounded-1xl h-fit  mt-2 break-words min-w-0 bg-[#F0F6FF]"><h1 className= {`font-medium   text-[#0d0d0d] text-[13px] min-w-0 break-words ${item.patientwishlistinventoryproductquantity === 0 ? 'text-gray-400': ''}`}>{item.patientwishlistinventoryproductcategory}</h1></div>
+                    <div className="w-full h-auto ml-2 mt-2 "><h1 className={` font-semibold  text-[15px] min-w-0 break-words ${item.patientwishlistinventoryproductquantity === 0 ? 'text-gray-400': ''}`}>{item.patientwishlistinventoryproductname}</h1></div>
+                    <div className="w-fit h-auto ml-2 mt-1 "><h1 className={`font-albertsans font-bold text-[18px] min-w-0 break-words ${item.patientwishlistinventoryproductquantity === 0 ? 'text-gray-400': ''}`}>₱ {item.patientwishlistinventoryproductprice?.toLocaleString()}</h1></div>
+                <div className="w-full h-auto ml-2 mt-5 mb-5 "><h1 className={`font-albertsans font-medium text-[#4e4f4f] text-[15px] min-w-0 break-words ${item.patientwishlistinventoryproductquantity === 0 ? 'text-gray-400': ''}`}>0 Sold</h1></div>
+
+                {item.patientwishlistinventoryproductquantity === 0 ? (
+                  <div className="w-full py-1 flex justify-center items-center bg-[#b94c4c] rounded-b-2xl"><h1 className="font-semibold text-white">Out of Stock</h1></div>
+                ): null}
+
+
               </div>
                   ))
                 )}
@@ -980,13 +1216,18 @@ const handleRemoveFromWishlist = async (wishlistItemId, clinicType) => {
                                         </div>
                         
                                   
-                                        <p className="mt-5 font-albertsans font-semibold text-[#478d12] text-[40px]">₱{addambherinventoryproductprice}</p>
+                                        <p className="mt-5 font-albertsans font-semibold text-[#478d12] text-[40px]">₱{Number(addambherinventoryproductprice).toLocaleString('en-PH', {minimumFractionDigits: 2,  maximumFractionDigits: 2})}</p>
                                   
                                         <p className="font-albertsans mt-6  font-medium text-[#020202] text-[18px]">Description</p>
                                         <p className="font-albertsans font-semibold text-[#4b4b4b] mt-3">{addambherinventoryproductdescription}</p>
                                       
                                        
-                                        <div className="gap-4 mt-15 flex items-center">
+   {addambherinventoryproductquantity === 0 ? (                                        
+                         <div  className="mt-10    font-albertsans bg-[#a7a7a7]  hover:rounded-2xl transition-all duration-300 ease-in-out rounded-2xl px-25 py-2.5 text-center flex justify-center items-center "><span className="font-albertsans font-bold text-[#3f3f3f] text-[17px]">Out of Stock</span></div> 
+                         ):       
+                         addambherinventoryproductquantity >= 1 ? (
+                           <div>
+                                  <div className="gap-4 mt-15 flex items-center">
                                           <p className="font-albertsans font-semibold ">Quantity:</p>
                                         <div className="w-auto h-10  flex items-center justify-between border-1 rounded-2xl">
                                           <div   className={`font-bold h-full w-10 bg-gray-100 rounded-l-2xl flex items-center justify-center cursor-pointer select-none ${ambhercount <= 1 ? "opacity-50 cursor-not-allowed" : "active:bg-gray-200"}`} style={{ WebkitTapHighlightColor: 'transparent' }} type="button" onClick={() => setambherCount (c => Math.max(1, c - 1))}>-</div>
@@ -996,7 +1237,39 @@ const handleRemoveFromWishlist = async (wishlistItemId, clinicType) => {
                                                <p className="font-albertsans font-semibold text-[#616161] text-[14px]">{addambherinventoryproductquantity} pieces available </p>
                                        </div>
 
-                                           <div  className="mt-10 hover:cursor-pointer hover:scale-102  font-albertsans bg-[#117db0]  hover:rounded-2xl transition-all duration-300 ease-in-out rounded-2xl px-25 py-2.5 text-center flex justify-center items-center "><span className="font-albertsans font-bold text-white text-[17px]">Order Now</span></div>
+
+
+                                                <div className="flex items-center mt-5">
+                                        
+                                      <p className="font-albertsans font-semibold ">Select Pickup Date:</p>   
+                                      <input   className="w-38 justify-center border-b-2 border-[#272727] ml-3 text-[16px] font-semibold [&::-webkit-calendar-picker-indicator]:filter [&::-webkit-calendar-picker-indicator]:invert-[70%]"
+                                               value={patientorderambherproductchosenpickupdate}  
+                                               onChange={(e) => {const selecteddate = new Date(e.target.value);
+                                                                  if (selecteddate < dateinphtomorrow) {
+                                                                    e.preventDefault();
+                                                                    return;
+                                                                  }
+                                                                  setpatientorderambherproductchosenpickupdate(e.target.value);  }}  
+                                                                  type="date"
+                                                                  name="patientorderambherproductchosenpickupdate"
+                                                                  id="patientorderambherproductchosenpickupdate"
+                                                                  min={dateinphtomorrow.toISOString().split('T')[0]}
+                                                                  max={dateinphmaxdate.toISOString().split('T')[0]}
+                                                   placeholder=""/> </div>
+                                
+
+
+
+                                           {!patientorderambherproductchosenpickupdate && (                                
+                                           <div  className="mt-10    font-albertsans bg-[#a7a7a7]  hover:rounded-2xl transition-all duration-300 ease-in-out rounded-2xl px-25 py-2.5 text-center flex justify-center items-center "><span className="font-albertsans font-bold text-[#3f3f3f] text-[17px]">Select Date for Order</span></div>
+                                            )} 
+                                          
+                                           {patientorderambherproductchosenpickupdate && (
+                                            <div  onClick={(e) => submitpatientorderambher(e)} className="mt-10 hover:cursor-pointer hover:scale-102  font-albertsans bg-[#117db0]  hover:rounded-2xl transition-all duration-300 ease-in-out rounded-2xl px-25 py-2.5 text-center flex justify-center items-center "><span className="font-albertsans font-bold text-white text-[17px]">Submit Order Request</span></div>
+
+                                           )}</div>
+
+                                           ): null}
 
                                            <div className="flex items-center justify-between mt-10 h-22 w-full bg-[#fbfbfb] rounded-2xl">
                                               <div className="gap-2 h-full w-40 flex items-center flex-col justify-center"><img src={packageimage} className="w-8 h-8"/><p className="font-albertsans text-[13px] font-medium">Prepare Order</p></div>
@@ -1070,7 +1343,22 @@ const handleRemoveFromWishlist = async (wishlistItemId, clinicType) => {
 
           )}
 
+          {patientorderambherproductToast && (
+            <div className=" bottom-4 right-8  z-101   transform fixed " >
+                  <div key={patientorderambherproductisClicked ? 'added' : 'removed'}  className={` ${patientorderambherproductToastClosing ? 'motion-translate-x-out-100 motion-duration-[3s]  motion-ease-spring-smooth' : 'motion-preset-slide-left'}  flex items-center bg-white   rounded-md shadow-lg text-gray-900 font-semibold px-6 py-3`} >
+                    {patientorderambherproductisClicked ? (          
+                       <span className="text-green-800 font-semibold text-[20px]"><i className="mr-2 bx bx-check-circle "></i></span>
+                    ) : (
+                      <span className="text-red-800 font-semibold text-[20px]"><i className="mr-2 bx bx-x-circle "></i></span>
+                    )}
+                    {patientorderambherproductToastMessage}
 
+                    <div  className={`rounded-b-2xl absolute bottom-0 left-0 h-1 bg-green-500 `}  style={{width: progressWidth,transition: 'width 4s linear' }}/>
+
+                  </div>
+           
+            </div>  
+          )}
 
 
 
@@ -1090,24 +1378,35 @@ const handleRemoveFromWishlist = async (wishlistItemId, clinicType) => {
         ) : bautistaWishlist.length === 0 ? (
            <div className="w-[90vw] h-[50vh] flex justify-center flex-col items-center "><img src={heartempty} className="w-17 h-17 mb-3"/><h1 className="font-semibold text-[25px]">Your wishlist is empty</h1><p className="text-[#4e4e4e] mb-5">Start adding items you love to keep track of them</p><Link to="/patientproducts"><div className="text-[15px] p-3 bg-[#2781af] text-white  hover:scale-105 rounded-md transition-all cursor-pointer">Continue Shopping</div></Link></div>
         ) : (
-          bautistaWishlist.map((item) => (
+              [...bautistaWishlist]
+               .sort((a, b) => {
+                 if (a.patientwishlistinventoryproductquantity === 0 && b.patientwishlistinventoryproductquantity !== 0) return 1;
+                 if (a.patientwishlistinventoryproductquantity !== 0 && b.patientwishlistinventoryproductquantity === 0) return -1;
+                 return 0;}) .map((item) => (
               <div key={item._id}  onClick={() => {                        setshowpatientbautistaviewproduct(true);
                                                                            setselectedbautistaproduct(item);
                                                                            setbautistacurrentimageindex(0);
                                                                            setbautistainventorycategorynamebox(item.patientwishlistinventoryproductcategory || '');
                                                                            setaddbautistainventoryproductname(item.patientwishlistinventoryproductname || '');
                                                                            setaddbautistainventoryproductbrand(item.patientwishlistinventoryproductbrand || '');
+                                                                           setaddbautistainventoryproductmodelnumber(item.patientwishlistinventoryproductmodelnumber || '');
                                                                            setaddbautistainventoryproductdescription(item.patientwishlistinventoryproductdescription || '');
                                                                            setaddbautistainventoryproductprice(item.patientwishlistinventoryproductprice || 0);
                                                                            setaddbautistainventoryproductquantity(item.patientwishlistinventoryproductquantity || 0);
                                                                            setaddbautistainventoryproductimagepreviewimages(item.patientwishlistinventoryproductimagepreviewimages || []);
               }} className="motion-preset-slide-up mr-3 mb-3 flex flex-col items-start justify-start w-[220px] h-auto shadow-md bg-white rounded-2xl">
+                <img src={item.patientwishlistinventoryproductimagepreviewimages[0] || defaultimageplaceholder}  alt={item.patientwishlistinventoryproductname} className={`w-full h-45 ${item.patientwishlistinventoryproductquantity === 0 ? 'opacity-50': ''}`}/>
                 <img  src={heartfilled} onClick={(e) =>  { e.stopPropagation(); handleRemoveFromWishlist(item._id, 'bautista');  }} onMouseEnter={() => !bautistaheartisClicked && setbautistaheartisHovered(true)} onMouseLeave={() => !bautistaheartisClicked && setbautistaheartisHovered(false)}  className={`absolute right-0 ease-in-out duration-300 transition-all  border-1  w-10 h-10 p-2 rounded-2xl cursor-pointer  bg-red-400 hover:bg-red-500`}/>
-                <img src={item.patientwishlistinventoryproductimagepreviewimages[0] || defaultimageplaceholder}  alt={item.patientwishlistinventoryproductname} className="w-full h-45"/>
-                <div className=" mx-1  w-fit rounded-md py-1 px-2  rounded-1xl h-fit  mt-2 break-words min-w-0 bg-[#F0F6FF]"><h1 className="font-medium   text-[#0d0d0d] text-[13px] min-w-0 break-words ">{item.patientwishlistinventoryproductcategory}</h1></div>
-                    <div className="w-full h-auto ml-2 mt-2 "><h1 className="font-semibold  text-[15px] min-w-0 break-words ">{item.patientwishlistinventoryproductname}</h1></div>
-                    <div className="w-fit h-auto ml-2 mt-1 "><h1 className="font-albertsans font-bold text-[18px] min-w-0 break-words ">₱ {item.patientwishlistinventoryproductprice?.toLocaleString()}</h1></div>
-                <div className="w-full h-auto ml-2 mt-5 mb-5 "><h1 className="font-albertsans font-medium text-[#4e4f4f] text-[15px] min-w-0 break-words">0 Sold</h1></div>
+                <div className=" mx-1  w-fit rounded-md py-1 px-2  rounded-1xl h-fit  mt-2 break-words min-w-0 bg-[#F0F6FF]"><h1 className= {`font-medium   text-[#0d0d0d] text-[13px] min-w-0 break-words ${item.patientwishlistinventoryproductquantity === 0 ? 'text-gray-400': ''}`}>{item.patientwishlistinventoryproductcategory}</h1></div>
+                    <div className="w-full h-auto ml-2 mt-2 "><h1 className={` font-semibold  text-[15px] min-w-0 break-words ${item.patientwishlistinventoryproductquantity === 0 ? 'text-gray-400': ''}`}>{item.patientwishlistinventoryproductname}</h1></div>
+                    <div className="w-fit h-auto ml-2 mt-1 "><h1 className={`font-albertsans font-bold text-[18px] min-w-0 break-words ${item.patientwishlistinventoryproductquantity === 0 ? 'text-gray-400': ''}`}>₱ {item.patientwishlistinventoryproductprice?.toLocaleString()}</h1></div>
+                <div className="w-full h-auto ml-2 mt-5 mb-5 "><h1 className={`font-albertsans font-medium text-[#4e4f4f] text-[15px] min-w-0 break-words ${item.patientwishlistinventoryproductquantity === 0 ? 'text-gray-400': ''}`}>0 Sold</h1></div>
+
+                {item.patientwishlistinventoryproductquantity === 0 ? (
+                  <div className="w-full py-1 flex justify-center items-center bg-[#b94c4c] rounded-b-2xl"><h1 className="font-semibold text-white">Out of Stock</h1></div>
+                ): null}
+
+
               </div>
                   ))
                 )}
@@ -1219,13 +1518,18 @@ const handleRemoveFromWishlist = async (wishlistItemId, clinicType) => {
                                         </div>
                         
                                   
-                                        <p className="mt-5 font-albertsans font-semibold text-[#478d12] text-[40px]">₱{addbautistainventoryproductprice}</p>
+                                        <p className="mt-5 font-albertsans font-semibold text-[#478d12] text-[40px]">₱{Number(addbautistainventoryproductprice).toLocaleString('en-PH', {minimumFractionDigits: 2,  maximumFractionDigits: 2})}</p>
                                   
                                         <p className="font-albertsans mt-6  font-medium text-[#020202] text-[18px]">Description</p>
                                         <p className="font-albertsans font-semibold text-[#4b4b4b] mt-3">{addbautistainventoryproductdescription}</p>
                                       
                                        
-                                        <div className="gap-4 mt-15 flex items-center">
+                 {addbautistainventoryproductquantity === 0 ? (                                        
+                         <div  className="mt-10    font-albertsans bg-[#a7a7a7]  hover:rounded-2xl transition-all duration-300 ease-in-out rounded-2xl px-25 py-2.5 text-center flex justify-center items-center "><span className="font-albertsans font-bold text-[#3f3f3f] text-[17px]">Out of Stock</span></div> 
+                         ):       
+                         addbautistainventoryproductquantity >= 1 ? (
+                           <div>
+                                  <div className="gap-4 mt-15 flex items-center">
                                           <p className="font-albertsans font-semibold ">Quantity:</p>
                                         <div className="w-auto h-10  flex items-center justify-between border-1 rounded-2xl">
                                           <div   className={`font-bold h-full w-10 bg-gray-100 rounded-l-2xl flex items-center justify-center cursor-pointer select-none ${bautistacount <= 1 ? "opacity-50 cursor-not-allowed" : "active:bg-gray-200"}`} style={{ WebkitTapHighlightColor: 'transparent' }} type="button" onClick={() => setbautistaCount (c => Math.max(1, c - 1))}>-</div>
@@ -1235,7 +1539,39 @@ const handleRemoveFromWishlist = async (wishlistItemId, clinicType) => {
                                                <p className="font-albertsans font-semibold text-[#616161] text-[14px]">{addbautistainventoryproductquantity} pieces available </p>
                                        </div>
 
-                                           <div  className="mt-10 hover:cursor-pointer hover:scale-102  font-albertsans bg-[#117db0]  hover:rounded-2xl transition-all duration-300 ease-in-out rounded-2xl px-25 py-2.5 text-center flex justify-center items-center "><span className="font-albertsans font-bold text-white text-[17px]">Buy Now</span></div>
+
+
+                                                <div className="flex items-center mt-5">
+                                        
+                                      <p className="font-albertsans font-semibold ">Select Pickup Date:</p>   
+                                      <input   className="w-38 justify-center border-b-2 border-[#272727] ml-3 text-[16px] font-semibold [&::-webkit-calendar-picker-indicator]:filter [&::-webkit-calendar-picker-indicator]:invert-[70%]"
+                                               value={patientorderbautistaproductchosenpickupdate}  
+                                               onChange={(e) => {const selecteddate = new Date(e.target.value);
+                                                                  if (selecteddate < dateinphtomorrow) {
+                                                                    e.preventDefault();
+                                                                    return;
+                                                                  }
+                                                                  setpatientorderbautistaproductchosenpickupdate(e.target.value);  }}  
+                                                                  type="date"
+                                                                  name="patientorderbautistaproductchosenpickupdate"
+                                                                  id="patientorderbautistaproductchosenpickupdate"
+                                                                  min={dateinphtomorrow.toISOString().split('T')[0]}
+                                                                  max={dateinphmaxdate.toISOString().split('T')[0]}
+                                                   placeholder=""/> </div>
+                                
+
+
+
+                                           {!patientorderbautistaproductchosenpickupdate && (                                
+                                           <div  className="mt-10    font-albertsans bg-[#a7a7a7]  hover:rounded-2xl transition-all duration-300 ease-in-out rounded-2xl px-25 py-2.5 text-center flex justify-center items-center "><span className="font-albertsans font-bold text-[#3f3f3f] text-[17px]">Select Date for Order</span></div>
+                                            )} 
+                                          
+                                           {patientorderbautistaproductchosenpickupdate && (
+                                            <div  onClick={(e) => submitpatientorderbautista(e)} className="mt-10 hover:cursor-pointer hover:scale-102  font-albertsans bg-[#117db0]  hover:rounded-2xl transition-all duration-300 ease-in-out rounded-2xl px-25 py-2.5 text-center flex justify-center items-center "><span className="font-albertsans font-bold text-white text-[17px]">Submit Order Request</span></div>
+
+                                           )}</div>
+
+                                           ): null}
 
                                            <div className="flex items-center justify-between mt-10 h-22 w-full bg-[#fbfbfb] rounded-2xl">
                                               <div className="gap-2 h-full w-40 flex items-center flex-col justify-center"><img src={packageimage} className="w-8 h-8"/><p className="font-albertsans text-[13px] font-medium">Prepare Order</p></div>
@@ -1309,7 +1645,22 @@ const handleRemoveFromWishlist = async (wishlistItemId, clinicType) => {
 
           )}
 
+          {patientorderbautistaproductToast && (
+            <div className=" bottom-4 right-8  z-101   transform fixed " >
+                  <div key={patientorderbautistaproductisClicked ? 'added' : 'removed'}  className={` ${patientorderbautistaproductToastClosing ? 'motion-translate-x-out-100 motion-duration-[3s]  motion-ease-spring-smooth' : 'motion-preset-slide-left'}  flex items-center bg-white   rounded-md shadow-lg text-gray-900 font-semibold px-6 py-3`} >
+                    {patientorderbautistaproductisClicked ? (          
+                       <span className="text-green-800 font-semibold text-[20px]"><i className="mr-2 bx bx-check-circle "></i></span>
+                    ) : (
+                      <span className="text-red-800 font-semibold text-[20px]"><i className="mr-2 bx bx-x-circle "></i></span>
+                    )}
+                    {patientorderbautistaproductToastMessage}
 
+                    <div  className={`rounded-b-2xl absolute bottom-0 left-0 h-1 bg-green-500 `}  style={{width: progressWidth,transition: 'width 4s linear' }}/>
+
+                  </div>
+           
+            </div>  
+          )}
 
 
 

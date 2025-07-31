@@ -289,7 +289,6 @@ const showbautistainventorycategory = (bautistainventorycategorytableid) => {
 const [bautistainventorycategorylist, setbautistainventorycategorylist] = useState([]);
 
           const[showpatientbautistaviewproduct, setshowpatientbautistaviewproduct] = useState(false);
-          const[showpatientorderbautistascheduleandreview, setshowpatientorderbautistascheduleandreview] = useState(false);
           const [bautistainventorycategorynamebox, setbautistainventorycategorynamebox] = useState("");
           const [addbautistainventoryproductname, setaddbautistainventoryproductname] = useState("");
           const [addbautistainventoryproductmodelnumber, setaddbautistainventoryproductmodelnumber] = useState("");
@@ -1156,7 +1155,6 @@ const submitpatientorderbautista = async (e) => {
 
     
     setpatientorderbautistaproductchosenpickupdate("");
-    setshowpatientorderbautistascheduleandreview(false);
     setbautistaCount(1);
     
 
@@ -1412,7 +1410,10 @@ const submitpatientorderbautista = async (e) => {
                 ): ambherinventoryproducts.length === 0 ? (
                   <div>No Products Found...</div> 
                 ):(
-                  ambherfilteredproducts().map((product) => (
+                    ambherfilteredproducts().sort((a, b) => {
+                    if (a.ambherinventoryproductquantity === 0 && b.ambherinventoryproductquantity !== 0) return 1;
+                    if (a.ambherinventoryproductquantity !== 0 && b.ambherinventoryproductquantity === 0) return -1;
+                    return 0; }) .map((product) => (
               <div key={product.ambherinventoryproductid} onClick={() => {setshowpatientambherviewproduct(true);
                                                                            setselectedambherproduct(product);
                                                                            setambhercurrentimageindex(0);
@@ -1430,11 +1431,15 @@ const submitpatientorderbautista = async (e) => {
               setambherheartisClicked(isInWishList);    
 
                  }}  className="motion-preset-slide-up mr-3 mb-3 flex flex-col items-start justify-start w-[220px] h-auto shadow-md bg-white rounded-2xl">
-                <img src={product.ambherinventoryproductimagepreviewimages[0] || defaultimageplaceholder}  alt={product.ambherinventoryproductname} className="w-full h-45"/>
-                <div className=" mx-1  w-fit rounded-md py-1 px-2  rounded-1xl h-fit  mt-2 break-words min-w-0 bg-[#F0F6FF]"><h1 className="font-medium   text-[#0d0d0d] text-[13px] min-w-0 break-words ">{product.ambherinventoryproductcategory}</h1></div>
-                    <div className="w-full h-auto ml-2 mt-2 "><h1 className="font-semibold  text-[15px] min-w-0 break-words ">{product.ambherinventoryproductname}</h1></div>
-                    <div className="w-fit h-auto ml-2 mt-1 "><h1 className="font-albertsans font-bold text-[18px] min-w-0 break-words ">₱ {product.ambherinventoryproductprice?.toLocaleString()}</h1></div>
-                <div className="w-full h-auto ml-2 mt-5 mb-5 "><h1 className="font-albertsans font-medium text-[#4e4f4f] text-[15px] min-w-0 break-words">0 Sold</h1></div>
+                <img src={product.ambherinventoryproductimagepreviewimages[0] || defaultimageplaceholder}  alt={product.ambherinventoryproductname} className={`w-full h-45 ${product.ambherinventoryproductquantity === 0 ? 'opacity-50': ''}`}/>
+                
+               {product.ambherinventoryproductquantity === 0 ? (<div className="top-2 right-2 absolute px-2 py-1 rounded-md text-xs font-semibold bg-[#b94c4c]"><h1 className="text-white">Out of Stock</h1></div>): 
+                 product.ambherinventoryproductquantity <= 10 ? (<div className="top-2 right-2 absolute px-2 py-1 rounded-md text-xs font-semibold bg-yellow-500"><h1 className="text-white">Low Stock</h1></div>): null}
+                 
+                <div className=" mx-1  w-fit rounded-md py-1 px-2  rounded-1xl h-fit  mt-2 break-words min-w-0 bg-[#F0F6FF]"><h1 className={`font-medium   text-[#0d0d0d] text-[13px] min-w-0 break-words ${product.ambherinventoryproductquantity === 0 ? 'text-gray-400': ''}`}>{product.ambherinventoryproductcategory}</h1></div>
+                    <div className="w-full h-auto ml-2 mt-2 "><h1 className={`font-semibold  text-[15px] min-w-0 break-words ${product.ambherinventoryproductquantity === 0 ? 'text-gray-400': ''}`}>{product.ambherinventoryproductname}</h1></div>
+                    <div className="w-fit h-auto ml-2 mt-1 "><h1 className={`font-albertsans font-bold text-[18px] min-w-0 break-words ${product.ambherinventoryproductquantity === 0 ? 'text-gray-400': ''}`}>₱ {product.ambherinventoryproductprice?.toLocaleString()}</h1></div>
+                <div className="w-full h-auto ml-2 mt-5 mb-5 "><h1 className={`font-albertsans font-medium text-[#4e4f4f] text-[15px] min-w-0 break-words ${product.ambherinventoryproductquantity === 0 ? 'text-gray-400': ''}`}>0 Sold</h1></div>
               </div>
                   ))
                 )}
@@ -1571,13 +1576,18 @@ const submitpatientorderbautista = async (e) => {
                                         </div>
                         
                                   
-                                        <p className="mt-5 font-albertsans font-semibold text-[#478d12] text-[40px]">₱{addambherinventoryproductprice}</p>
+                                        <p className="mt-5 font-albertsans font-semibold text-[#478d12] text-[40px]">₱{Number(addambherinventoryproductprice).toLocaleString('en-PH', {minimumFractionDigits: 2,  maximumFractionDigits: 2})}</p>
                                   
                                         <p className="font-albertsans mt-6  font-medium text-[#020202] text-[18px]">Description</p>
                                         <p className="font-albertsans font-semibold text-[#4b4b4b] mt-3">{addambherinventoryproductdescription}</p>
                                       
                                        
-                                        <div className="gap-4 mt-15 flex items-center">
+                                           {addambherinventoryproductquantity === 0 ? (                                        
+                         <div  className="mt-10    font-albertsans bg-[#a7a7a7]  hover:rounded-2xl transition-all duration-300 ease-in-out rounded-2xl px-25 py-2.5 text-center flex justify-center items-center "><span className="font-albertsans font-bold text-[#3f3f3f] text-[17px]">Out of Stock</span></div> 
+                         ):       
+                         addambherinventoryproductquantity >= 1 ? (
+                           <div>
+                                  <div className="gap-4 mt-15 flex items-center">
                                           <p className="font-albertsans font-semibold ">Quantity:</p>
                                         <div className="w-auto h-10  flex items-center justify-between border-1 rounded-2xl">
                                           <div   className={`font-bold h-full w-10 bg-gray-100 rounded-l-2xl flex items-center justify-center cursor-pointer select-none ${ambhercount <= 1 ? "opacity-50 cursor-not-allowed" : "active:bg-gray-200"}`} style={{ WebkitTapHighlightColor: 'transparent' }} type="button" onClick={() => setambherCount (c => Math.max(1, c - 1))}>-</div>
@@ -1586,6 +1596,7 @@ const submitpatientorderbautista = async (e) => {
                                          </div>
                                                <p className="font-albertsans font-semibold text-[#616161] text-[14px]">{addambherinventoryproductquantity} pieces available </p>
                                        </div>
+
 
 
                                                 <div className="flex items-center mt-5">
@@ -1605,16 +1616,20 @@ const submitpatientorderbautista = async (e) => {
                                                                   min={dateinphtomorrow.toISOString().split('T')[0]}
                                                                   max={dateinphmaxdate.toISOString().split('T')[0]}
                                                    placeholder=""/> </div>
-                               
+                                
+
+
 
                                            {!patientorderambherproductchosenpickupdate && (                                
                                            <div onClick={() => setshowpatientorderambherscheduleandreview(true)} className="mt-10    font-albertsans bg-[#a7a7a7]  hover:rounded-2xl transition-all duration-300 ease-in-out rounded-2xl px-25 py-2.5 text-center flex justify-center items-center "><span className="font-albertsans font-bold text-[#3f3f3f] text-[17px]">Select Date for Order</span></div>
                                             )} 
                                           
                                            {patientorderambherproductchosenpickupdate && (
-                                            <div onClick={(e) => submitpatientorderambher(e)}  className="mt-10 hover:cursor-pointer hover:scale-102  font-albertsans bg-[#117db0]  hover:rounded-2xl transition-all duration-300 ease-in-out rounded-2xl px-25 py-2.5 text-center flex justify-center items-center "><span className="font-albertsans font-bold text-white text-[17px]">Submit Order Request</span></div>
+                                            <div  onClick={(e) => submitpatientorderambher(e)} className="mt-10 hover:cursor-pointer hover:scale-102  font-albertsans bg-[#117db0]  hover:rounded-2xl transition-all duration-300 ease-in-out rounded-2xl px-25 py-2.5 text-center flex justify-center items-center "><span className="font-albertsans font-bold text-white text-[17px]">Submit Order Request</span></div>
 
-                                           )}
+                                           )}</div>
+
+                                           ): null}
 
 
                                            <div className="flex items-center justify-between mt-10 h-22 w-full bg-[#fbfbfb] rounded-2xl">
@@ -1739,7 +1754,10 @@ const submitpatientorderbautista = async (e) => {
                 ): bautistainventoryproducts.length === 0 ? (
                   <div>No Products Found...</div> 
                 ):(
-                  bautistafilteredproducts().map((product) => (
+                    bautistafilteredproducts().sort((a, b) => {
+                    if (a.bautistainventoryproductquantity === 0 && b.bautistainventoryproductquantity !== 0) return 1;
+                    if (a.bautistainventoryproductquantity !== 0 && b.bautistainventoryproductquantity === 0) return -1;
+                    return 0; }) .map((product) => (
               <div key={product.bautistainventoryproductid} onClick={() => {setshowpatientbautistaviewproduct(true);
                                                                            setselectedbautistaproduct(product);
                                                                            setbautistacurrentimageindex(0);
@@ -1752,11 +1770,15 @@ const submitpatientorderbautista = async (e) => {
                                                                            setaddbautistainventoryproductquantity(product?.bautistainventoryproductquantity || 0);
                                                                            setaddbautistainventoryproductimagepreviewimages(product?.bautistainventoryproductimagepreviewimages || []);
               }} className="motion-preset-slide-up mr-3 mb-3 flex flex-col items-start justify-start w-[220px] h-auto shadow-md bg-white rounded-2xl">
-                <img src={product.bautistainventoryproductimagepreviewimages[0] || defaultimageplaceholder}  alt={product.bautistainventoryproductname} className="w-full h-45"/>
-                <div className=" mx-1  w-fit rounded-md py-1 px-2  rounded-1xl h-fit  mt-2 break-words min-w-0 bg-[#F0F6FF]"><h1 className="font-medium   text-[#0d0d0d] text-[13px] min-w-0 break-words ">{product.bautistainventoryproductcategory}</h1></div>
-                    <div className="w-full h-auto ml-2 mt-2 "><h1 className="font-semibold  text-[15px] min-w-0 break-words ">{product.bautistainventoryproductname}</h1></div>
-                    <div className="w-fit h-auto ml-2 mt-1 "><h1 className="font-albertsans font-bold text-[18px] min-w-0 break-words ">₱ {product.bautistainventoryproductprice?.toLocaleString()}</h1></div>
-                <div className="w-full h-auto ml-2 mt-5 mb-5 "><h1 className="font-albertsans font-medium text-[#4e4f4f] text-[15px] min-w-0 break-words">0 Sold</h1></div>
+                <img src={product.bautistainventoryproductimagepreviewimages[0] || defaultimageplaceholder}  alt={product.bautistainventoryproductname} className={`w-full h-45 ${product.bautistainventoryproductquantity === 0 ? 'opacity-50': ''}`}/>
+                
+               {product.bautistainventoryproductquantity === 0 ? (<div className="top-2 right-2 absolute px-2 py-1 rounded-md text-xs font-semibold bg-[#b94c4c]"><h1 className="text-white">Out of Stock</h1></div>): 
+                 product.bautistainventoryproductquantity <= 10 ? (<div className="top-2 right-2 absolute px-2 py-1 rounded-md text-xs font-semibold bg-yellow-500"><h1 className="text-white">Low Stock</h1></div>): null}
+                 
+                <div className=" mx-1  w-fit rounded-md py-1 px-2  rounded-1xl h-fit  mt-2 break-words min-w-0 bg-[#F0F6FF]"><h1 className={`font-medium   text-[#0d0d0d] text-[13px] min-w-0 break-words ${product.bautistainventoryproductquantity === 0 ? 'text-gray-400': ''}`}>{product.bautistainventoryproductcategory}</h1></div>
+                    <div className="w-full h-auto ml-2 mt-2 "><h1 className={`font-semibold  text-[15px] min-w-0 break-words ${product.bautistainventoryproductquantity === 0 ? 'text-gray-400': ''}`}>{product.bautistainventoryproductname}</h1></div>
+                    <div className="w-fit h-auto ml-2 mt-1 "><h1 className={`font-albertsans font-bold text-[18px] min-w-0 break-words ${product.bautistainventoryproductquantity === 0 ? 'text-gray-400': ''}`}>₱ {product.bautistainventoryproductprice?.toLocaleString()}</h1></div>
+                <div className="w-full h-auto ml-2 mt-5 mb-5 "><h1 className={`font-albertsans font-medium text-[#4e4f4f] text-[15px] min-w-0 break-words ${product.bautistainventoryproductquantity === 0 ? 'text-gray-400': ''}`}>0 Sold</h1></div>
               </div>
                   ))
                 )}
@@ -1870,13 +1892,20 @@ const submitpatientorderbautista = async (e) => {
                                         </div>
                         
                                   
-                                        <p className="mt-5 font-albertsans font-semibold text-[#478d12] text-[40px]">₱{addbautistainventoryproductprice}</p>
+                                        <p className="mt-5 font-albertsans font-semibold text-[#478d12] text-[40px]">₱{Number(addbautistainventoryproductprice).toLocaleString('en-PH', {minimumFractionDigits: 2,  maximumFractionDigits: 2})}</p>
                                   
                                         <p className="font-albertsans mt-6  font-medium text-[#020202] text-[18px]">Description</p>
                                         <p className="font-albertsans font-semibold text-[#4b4b4b] mt-3">{addbautistainventoryproductdescription}</p>
                                       
                                        
-                                        <div className="gap-4 mt-15 flex items-center">
+
+
+                        {addbautistainventoryproductquantity === 0 ? (                                        
+                         <div  className="mt-10    font-albertsans bg-[#a7a7a7]  hover:rounded-2xl transition-all duration-300 ease-in-out rounded-2xl px-25 py-2.5 text-center flex justify-center items-center "><span className="font-albertsans font-bold text-[#3f3f3f] text-[17px]">Out of Stock</span></div> 
+                         ):       
+                         addbautistainventoryproductquantity >= 1 ? (
+                           <div>
+                                  <div className="gap-4 mt-15 flex items-center">
                                           <p className="font-albertsans font-semibold ">Quantity:</p>
                                         <div className="w-auto h-10  flex items-center justify-between border-1 rounded-2xl">
                                           <div   className={`font-bold h-full w-10 bg-gray-100 rounded-l-2xl flex items-center justify-center cursor-pointer select-none ${bautistacount <= 1 ? "opacity-50 cursor-not-allowed" : "active:bg-gray-200"}`} style={{ WebkitTapHighlightColor: 'transparent' }} type="button" onClick={() => setbautistaCount (c => Math.max(1, c - 1))}>-</div>
@@ -1907,6 +1936,8 @@ const submitpatientorderbautista = async (e) => {
                                                    placeholder=""/> </div>
                                 
 
+
+
                                            {!patientorderbautistaproductchosenpickupdate && (                                
                                            <div onClick={() => setshowpatientorderbautistascheduleandreview(true)} className="mt-10    font-albertsans bg-[#a7a7a7]  hover:rounded-2xl transition-all duration-300 ease-in-out rounded-2xl px-25 py-2.5 text-center flex justify-center items-center "><span className="font-albertsans font-bold text-[#3f3f3f] text-[17px]">Select Date for Order</span></div>
                                             )} 
@@ -1914,7 +1945,16 @@ const submitpatientorderbautista = async (e) => {
                                            {patientorderbautistaproductchosenpickupdate && (
                                             <div  onClick={(e) => submitpatientorderbautista(e)} className="mt-10 hover:cursor-pointer hover:scale-102  font-albertsans bg-[#117db0]  hover:rounded-2xl transition-all duration-300 ease-in-out rounded-2xl px-25 py-2.5 text-center flex justify-center items-center "><span className="font-albertsans font-bold text-white text-[17px]">Submit Order Request</span></div>
 
-                                           )}
+                                           )}</div>
+
+                                           ): null}
+
+
+                                        
+
+
+
+
 
 
                                            <div className="flex items-center justify-between mt-10 h-22 w-full bg-[#fbfbfb] rounded-2xl">
