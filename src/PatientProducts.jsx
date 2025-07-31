@@ -289,6 +289,7 @@ const showbautistainventorycategory = (bautistainventorycategorytableid) => {
 const [bautistainventorycategorylist, setbautistainventorycategorylist] = useState([]);
 
           const[showpatientbautistaviewproduct, setshowpatientbautistaviewproduct] = useState(false);
+          const[showpatientorderbautistascheduleandreview, setshowpatientorderbautistascheduleandreview] = useState(false);
           const [bautistainventorycategorynamebox, setbautistainventorycategorynamebox] = useState("");
           const [addbautistainventoryproductname, setaddbautistainventoryproductname] = useState("");
           const [addbautistainventoryproductmodelnumber, setaddbautistainventoryproductmodelnumber] = useState("");
