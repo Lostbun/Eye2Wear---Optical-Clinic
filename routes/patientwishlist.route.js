@@ -7,6 +7,7 @@ import {
     getallpatientwishlistinventoryproduct,
     updatepatientwishlistinventoryproductbyid,
     deletepatientwishlistinventoryproductbyid,
+    getallpatientwishlistinventoryproductbyemail,
     getwishlistcount,
 
      } from "../controllers/patientwishlist.controller.js";
@@ -24,6 +25,7 @@ patientwishlistinventoryproductrouter.get("/check", checkpatientwishlistitem);
 patientwishlistinventoryproductrouter.get('/wishlist-count/:productIds/:clinicType', getwishlistcount);
 patientwishlistinventoryproductrouter.post("/", createpatientwishlistinventoryproduct);
 patientwishlistinventoryproductrouter.put("/:id", updatepatientwishlistinventoryproductbyid);
+patientwishlistinventoryproductrouter.get("/email", getallpatientwishlistinventoryproductbyemail);
 patientwishlistinventoryproductrouter.delete("/:id", deletepatientwishlistinventoryproductbyid);
 
 

@@ -475,39 +475,28 @@ useEffect(() => {
 
 
 
-
-
-
-
-
-
 useEffect(() => {
-const fetchWishlist = async () => {
-  try {
-    const response = await fetch('http://localhost:3000/api/patientwishlistinventoryproduct', {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('patienttoken')}`
-      }
-    });
+  const fetchWishlist = async () => {
+    try {
+      const response = await fetch('http://localhost:3000/api/patientwishlistinventoryproduct/email', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('patienttoken')}`
+        }
+      });
 
-    if(response.ok) {
-      const data = await response.json();
-      // Filter the data directly into separate state variables
-      setAmbherWishlist(data.filter(item => item.clinicType === "ambher"));
-      setBautistaWishlist(data.filter(item => item.clinicType === "bautista"));
+      if(response.ok) {
+        const data = await response.json();
+        setAmbherWishlist(data.filter(item => item.clinicType === "ambher"));
+        setBautistaWishlist(data.filter(item => item.clinicType === "bautista"));
+      }
+    } catch (error) {
+      console.error("Error fetching wishlist items: ", error);
+    } finally {
+      setLoadingWishlist(false);
     }
-  } catch (error) {
-    console.error("Error fetching wishlist items: ", error);
-  } finally {
-    setLoadingWishlist(false);
-  }
-};
+  };
   fetchWishlist();
 }, []);
-
-
-
-
 
 
 

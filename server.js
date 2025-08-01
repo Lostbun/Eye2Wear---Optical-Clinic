@@ -48,12 +48,12 @@ app.use(cors({
   methods:['GET','POST','PUT','DELETE'],
   allowedHeaders:['Content-Type', 'Authorization', 'X-Requested-With']
 }));
-
+/*
 app.use((req, res, next) => {
   console.log(`Incoming ${req.method} request to: ${req.originalUrl}`);
   next();
 });
-
+*/
 //app.use(express.json());
 //app.use(bodyParser.json());
 app.use(express.json({limit: '50mb'}));
