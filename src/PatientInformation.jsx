@@ -279,15 +279,24 @@ function PatientInformation(){
 
 
 
-
-  const handleinputchange = (e) => {
-    const {name, value} = e.target;
+const handleinputchange = (e) => {
+  const {name, value} = e.target;
+  
+  // If the changed field is birthdate, calculate age
+  if (name === 'patientbirthdate') {
+    const age = calculateAge(value);
     setdemographicformdata(prev => ({
       ...prev,
-      [name] : value  
+      [name]: value,
+      patientage: age
     }));
-  };
-
+  } else {
+    setdemographicformdata(prev => ({
+      ...prev,
+      [name]: value  
+    }));
+  }
+};
 
 
 
@@ -367,6 +376,29 @@ const submitpatientdemographic = async (e) => {
 
 
 
+
+
+
+
+
+
+
+const calculateAge = (birthdate) => {
+  if (!birthdate) return '';
+  
+  const birthDate = new Date(birthdate);
+  const today = new Date();
+  
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const monthDiff = today.getMonth() - birthDate.getMonth();
+  
+  // If birthday hasn't occurred yet this year, subtract 1 from age
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+    age--;
+  }
+  
+  return age.toString();
+};
 
 
 
@@ -602,21 +634,25 @@ const submitpatientdemographic = async (e) => {
 
 
                         <div className=" mt-5 flex items-center">
-                        <div className="">
-
-                        <div className=" h-fit form-group">
-                        <label className="text-[23px]  font-bold  text-[#2d2d44] "htmlFor="patientage">Age :</label>     
-                        <input className="w-32 border-b-2 border-gray-600 ml-3 text-[#2d2d44] text-[20px]  font-semibold" value={demographicformdata.patientage} onChange={handleinputchange}  type="number" name="patientage" id="patientage" placeholder="Age..."/></div>
-
-                            </div>
 
                             <div className="">
                               
-                            <div className=" h-fit form-group ml-15">
+                            <div className=" h-fit form-group ">
                            <label className="text-[23px]  font-bold  text-[#2d2d44] "htmlFor="patientbirthdate">Birthdate :</label>     
                            <input className="w-38 justify-center border-b-2 border-gray-600 ml-3 text-[#2d2d44] text-[20px]  font-semibold" value={demographicformdata.patientbirthdate} onChange={handleinputchange}  type="date" name="patientbirthdate" id="patientbirthdate" placeholder=""/> </div>
 
                             </div>
+
+                            
+                        <div className="ml-15">
+
+                        <div className=" h-fit form-group">
+                        <label className="text-[23px]  font-bold  text-[#2d2d44] "htmlFor="patientage">Age :</label>     
+                        <input className="bg-[#eeeeee]  pl-2 rounded-md w-32 border-b-2  ml-3 text-[#2d2d44] text-[20px]  font-semibold" value={demographicformdata.patientage}  readOnly onChange={handleinputchange}  type="number" name="patientage" id="patientage" placeholder="Age..."/></div>
+
+                            </div>
+
+
 
 
                         </div>

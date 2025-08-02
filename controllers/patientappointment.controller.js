@@ -79,6 +79,65 @@
 
 
 
+        // Get Ambher appointments by date and time
+        export const getambherappointmentsbydatetime = async (req, res) => {
+          try {
+            const appointments = await PatientAppointment.find({
+              patientambherappointmentdate: req.params.date,
+              patientambherappointmenttime: req.params.time,
+              patientambherappointmentstatus: { $in: ['Pending', 'Accepted'] }
+            });
+
+
+            res.json(appointments);
+
+
+          } catch (error) {
+            res.status(500).json({ message: error.message });
+          }
+        };
+
+        
+        // Get Bautista appointments by date and time
+        export const getbautistaappointmentsbydatetime = async (req, res) => {
+          try {
+            const appointments = await PatientAppointment.find({
+               patientbautistaappointmentdate: req.params.date,
+               patientbautistaappointmenttime: req.params.time,
+               patientbautistaappointmentstatus: { $in: ['Pending', 'Accepted'] }
+            });
+
+
+            res.json(appointments);
+
+
+          } catch (error) {
+            res.status(500).json({ message: error.message });
+          }
+        };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
     //Update Appointment Details
@@ -136,5 +195,22 @@
             res.status(500).json({message: error.message});
         }
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 

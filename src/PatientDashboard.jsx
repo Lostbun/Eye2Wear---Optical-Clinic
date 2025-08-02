@@ -255,6 +255,86 @@ const patientsubmitappointment = async (formData) => {
 
 
 
+
+
+
+
+
+
+//CHECKS AMBHER OPTICAL AND BAUTISTA EYE CENTER EXISTING SCHEDULED APPOINTMENTS
+const checkclinicscheduledappointments = async (formData) => {
+  try {
+    const existingappointmentambherDate = formData.get('patientambherappointmentdate');
+    const existingappointmentambherTime = formData.get('patientambherappointmenttime');
+    const existingappointmentbautistaDate = formData.get('patientbautistaappointmentdate');
+    const existingappointmentbautistaTime = formData.get('patientbautistaappointmenttime');
+
+    //Checks existing appointment schedules for Ambher Optical
+    if (existingappointmentambherDate && existingappointmentambherTime) {
+      const ambherexistingscheduleresponse = await fetch(`http://localhost:3000/api/patientappointments/appointments/ambher/${existingappointmentambherDate}/${existingappointmentambherTime}`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('patienttoken')}`
+        }
+      });
+      
+
+      if (ambherexistingscheduleresponse.ok) {
+        const existingAmbherAppointments = await ambherexistingscheduleresponse.json();
+        if (existingAmbherAppointments.length > 0) {
+          return {
+            conflict: true,
+            message: "Selected date and time for Ambher Optical is already booked by another patient."
+          };
+        }
+      }
+    }
+
+    //Checks existing appointment schedules for Bautista Eye Center
+    if (existingappointmentbautistaDate && existingappointmentbautistaTime) {
+      const bautisaexistingscheduleresponse = await fetch(`http://localhost:3000/api/patientappointments/appointments/bautista/${existingappointmentbautistaDate}/${existingappointmentbautistaTime}`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('patienttoken')}`
+        }
+      });
+      
+      if (bautisaexistingscheduleresponse.ok) {
+        const existingBautistaAppointments = await bautisaexistingscheduleresponse.json();
+        if (existingBautistaAppointments.length > 0) {
+          return {
+            conflict: true,
+            message: "Selected date and time for Bautista Eye Center is already booked by another patient."};}}
+          
+
+      }return { conflict: false };
+      
+
+
+  } catch (error) {
+    console.error("Failed to check existing appointments:", error);
+    return { conflict: false }; 
+  }
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
  //CHECKS IF THERE ARE EMPTY FIELDS IN APPOINTMENTFORM TO AVOID NULL VALUES //CHECKS IF THERE ARE EMPTY FIELDS IN APPOINTMENTFORM TO AVOID NULL VALUES //CHECKS IF THERE ARE EMPTY FIELDS IN APPOINTMENTFORM TO AVOID NULL VALUES
  //CHECKS IF THERE ARE EMPTY FIELDS IN APPOINTMENTFORM TO AVOID NULL VALUES //CHECKS IF THERE ARE EMPTY FIELDS IN APPOINTMENTFORM TO AVOID NULL VALUES //CHECKS IF THERE ARE EMPTY FIELDS IN APPOINTMENTFORM TO AVOID NULL VALUES
  //CHECKS IF THERE ARE EMPTY FIELDS IN APPOINTMENTFORM TO AVOID NULL VALUES //CHECKS IF THERE ARE EMPTY FIELDS IN APPOINTMENTFORM TO AVOID NULL VALUES //CHECKS IF THERE ARE EMPTY FIELDS IN APPOINTMENTFORM TO AVOID NULL VALUES
@@ -264,23 +344,37 @@ let ambherservicesselected;
 let bautistaservicesselected;
 
 const[patientappointmentformerror, setpatientappointmentformerror] = useState(null);
+const [showpatientappointmentformError, setshowpatientappointmentformError] = useState(false);
+const [patientappointmentformerrorClosing, setpatientappointmentformerrorClosing] = useState(false);
 
 
 
 
-
-const handlesubmitpatientappointment = (e) => {
+const handlesubmitpatientappointment = async (e) => {
   e.preventDefault();
+
+
   const appointmentformdata = new FormData(e.target);
+  
+  const { conflict, message } = await checkclinicscheduledappointments(appointmentformdata);
+  if (conflict) {
+    setpatientappointmentformerror(message);
+    setshowpatientappointmentformError(true);
+    setpatientappointmentformerrorClosing(false);
+    return;
+  }
+
+
   const patientambherappointmentdate = appointmentformdata.get('patientambherappointmentdate');
   const patientambherappointmenttime = appointmentformdata.get('patientambherappointmenttime');
   const patientbautistaappointmentdate = appointmentformdata.get('patientbautistaappointmentdate');
   const patientbautistaappointmenttime = appointmentformdata.get('patientbautistaappointmenttime');
-
-  //const currentdate = new Date().toISOString().split('T')[0];
   const tomorrow = new Date();
   tomorrow.setDate(tomorrow.getDate() + 1);
   const tomorrowdate = tomorrow.toISOString().split('T')[0];
+
+
+
 
   ambherservicesselected = [
     'patientambherappointmentcataractscreening',
@@ -291,9 +385,7 @@ const handlesubmitpatientappointment = (e) => {
     'patientambherappointmentcontactlensefitting',
     'patientambherappointmentotherservice',
     'patientambherappointmentotherservicenote'
-
   ].some(service => appointmentformdata.has(service));
-
 
   bautistaservicesselected = [
     'patientbautistaappointmentcomprehensiveeyeexam',
@@ -305,16 +397,15 @@ const handlesubmitpatientappointment = (e) => {
     'patientbautistaappointmentpterygiumsurgery',
     'patientbautistaappointmentotherservice',
     'patientbautistaappointmentotherservicenote'
-    
   ].some(service => appointmentformdata.has(service));
-
 
   let errormessage = null;
   
   if(!patientambherappointmentdate && !patientbautistaappointmentdate) {
     errormessage = "Please select at least one clinic appointment date";
   }
-  else if((patientambherappointmentdate && !patientambherappointmenttime) || (patientbautistaappointmentdate && !patientbautistaappointmenttime)){
+  else if((patientambherappointmentdate && !patientambherappointmenttime) || 
+          (patientbautistaappointmentdate && !patientbautistaappointmenttime)){
     errormessage = "Please select time for your appointment";
   }
   else if((patientambherappointmentdate || patientambherappointmenttime) && !ambherservicesselected){
@@ -332,24 +423,34 @@ const handlesubmitpatientappointment = (e) => {
   else if(patientambherappointmentdate && patientbautistaappointmentdate &&
           patientambherappointmentdate === patientbautistaappointmentdate &&
           patientambherappointmenttime === patientbautistaappointmenttime) {
-          
-          errormessage = "Appointed schedule for date and time cannot be the same for both clinics";
-          }
+    errormessage = "Appointed schedule for date and time cannot be the same for both clinics";
+  }
 
-   
-   if(errormessage){
+  if(errormessage){
     setpatientappointmentformerror(errormessage);
+    setshowpatientappointmentformError(true);
+    setpatientappointmentformerrorClosing(false);
     return;
-   }
+  }
 
-    setpatientappointmentformerror(null);
-    patientsubmitappointment(appointmentformdata);
-
-}
-
-
+  setshowpatientappointmentformError(false);
+  setpatientappointmentformerror(null);
+  patientsubmitappointment(appointmentformdata);
+};
 
 
+//TIMEOUT FOR APPOINTMENTFORM ERROR 
+useEffect(() => {
+  if (showpatientappointmentformError) {
+    const timer = setTimeout(() => {
+      setpatientappointmentformerrorClosing(true);
+      setTimeout(() => {
+        setshowpatientappointmentformError(false);
+        setpatientappointmentformerror(null); }, 300);
+     }, 4000); 
+    return () => clearTimeout(timer);
+  }
+}, [showpatientappointmentformError]);
 
 
 
@@ -438,21 +539,11 @@ const handleviewappointment = (appointment) => {
 
 
 
-//CONVERTS THE APPOINTMENT TIME INTO (ex. 10:00 P.M.)
-const formatappointmenttime = (timestring) => {
-  if(!timestring) return '';
-  const [hours, minutes] =timestring.split(':');
-  const date = new Date();
-  date.setHours(hours);
-  date.setMinutes(minutes);
-
-  return date.toLocaleTimeString('en-US',{
-    hour: 'numeric',
-    minute: '2-digit',
-    hour12: true,
-  });
+//Formats the time selected
+const formatappointmenttimes = (formattedtimestring) => {
+  if (!formattedtimestring) return ''; 
+  return formattedtimestring; 
 };
-
 
 
 
@@ -655,19 +746,62 @@ const handledeleteappointment = async (appointmentId) => {
 
 
 
+//AVAILABLE TIME FOR EACH CLINIC
+
+const ambherappointmentschedules = [
+  '10:00 AM', '11:00 AM',
+  '12:00 PM', '1:00 PM', '2:00 PM', '3:00 PM', '4:00 PM', '5:00 PM'
+  
+];
+
+const bautistaappointmentschedules = [
+  '9:00 AM', '10:00 AM', '11:00 AM', 
+  '12:00 PM', '1:00 PM', '2:00 PM',  '3:00 PM'
+ 
+];
 
 
 
+//GET TOMORROW DATE
+const getdatetomorrow = () => {
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  return tomorrow.toISOString().split('T')[0];
+};
+
+
+//GET UP TO THREE MONTHS OF APPOINTMET AVAILABILITY
+const getuptothreemonthsappointmentavailability = () => {
+  const threemonthsavailability = new Date();
+  threemonthsavailability.setMonth(threemonthsavailability.getMonth() + 3);
+  return threemonthsavailability.toISOString().split('T')[0];
+};
+
+
+//DISABLES WEEKEND APPOINTMENTS IN BAUTISTA
+const disablebautistaweekends = (dateString) => {
+  if (!dateString) return false;
+  const date = new Date(dateString);
+  const day = date.getDay();
+  return day === 0 || day === 6; 
+};
 
 
 
+//TOAST MESSAAGE WHEN SELECTED A WRONG DATEs
+ const [bautistashownotavailweekendToast, setbautistashownotavailweekendToast] = useState(false);
+ const [bautistashownotavailweekendToastClosing, setbautistashownotavailweekendToastClosing] = useState(false);
 
 
-
-
-
-
-
+useEffect(() => {
+  if(bautistashownotavailweekendToast){
+    const bautistashownotavailweekendToastTimer = setTimeout(() => {
+      setbautistashownotavailweekendToastClosing(true);
+      setTimeout(() => setbautistashownotavailweekendToast(false), 300);}, 4000);
+  
+    return () => clearTimeout(bautistashownotavailweekendToastTimer);
+  }
+}, [bautistashownotavailweekendToast]);
 
 
 
@@ -941,9 +1075,12 @@ const handledeleteappointment = async (appointmentId) => {
                   <form onSubmit={handlesubmitpatientappointment}>      
 
                   {patientappointmentformerror && (
-                    <div className="w-full h-[40px] rounded-tl-2xl rounded-tr-2xl flex justify-center items-center text-red-500 bg-red-200 font-semibold font-albertsans">
-                     {patientappointmentformerror}
-                    </div>
+                 <div className=" top-4  -translate-x-1/2  z-100   left-1/2 transform fixed " >
+                  <div  className={` ${patientappointmentformerrorClosing  ? 'motion-opacity-out-0' : 'motion-preset-bounce'}  bg-red-100 flex items-center   rounded-md shadow-lg text-gray-900 font-semibold px-6 py-3`} >
+                      <span className="text-red-800 font-semibold text-[20px]"><i className="mr-2 bx bx-x-circle "></i></span><h1 className="text-red-950">{patientappointmentformerror}</h1>
+                   </div>
+           
+                </div>
                   )}
 
 
@@ -958,11 +1095,15 @@ const handledeleteappointment = async (appointmentId) => {
                      <div className="flex justify-center items-center">           
                       <div className="mr-10 flex flex-col h-fit form-group ml-3 mt-4 ">
                              <label className="text-[18px]  font-bold  text-[#434343] "htmlFor="patientambherappointmentdate">Preferred Appointment Date: </label>     
-                             <input className="h-10 w-60 p-3 mt-2 justify-center border-b-2 border-gray-600 bg-gray-200 rounded-2xl text-[#2d2d44] text-[18px]  font-semibold"   type="date" name="patientambherappointmentdate" id="patientambherappointmentdate" placeholder="" required={!!ambherservicesselected}/> </div>
+                             <input className="[&::-webkit-calendar-picker-indicator]:filter [&::-webkit-calendar-picker-indicator]:invert-[70%] h-10 w-60 p-3 mt-2 justify-center border-b-2 border-gray-600 bg-gray-200 rounded-2xl text-[#2d2d44] text-[18px]  font-semibold"  min={getdatetomorrow()} max={getuptothreemonthsappointmentavailability()} type="date" name="patientambherappointmentdate" id="patientambherappointmentdate" placeholder="" required={!!ambherservicesselected}/> </div>
                      
                       <div className="ml-10 flex flex-col h-fit form-group mt-4 ">
                              <label className="text-[18px]  font-bold  text-[#434343] "htmlFor="patientambherappointmenttime">Preferred Appointment Time: </label>     
-                             <input className="h-10 w-60 p-3 mt-2 justify-center border-b-2 border-gray-600 bg-gray-200 rounded-2xl text-[#2d2d44] text-[18px]  font-semibold"    type="time" name="patientambherappointmenttime" id="patientambherappointmenttime" placeholder="" required={!!ambherservicesselected}/> </div>
+                             <select  name="patientambherappointmenttime" id="patientambherappointmenttime"  required={!!ambherservicesselected}  className="h-10 w-60 p-2 mt-2 justify-center border-b-2 border-gray-600 bg-gray-200 rounded-2xl text-[#2d2d44] text-[18px] font-semibold">
+                               <option value="">Select a time</option>
+                               {ambherappointmentschedules.map((time, index) => (<option key={index} value={time}>{time}</option>))}
+                             </select>
+                     </div>
                      </div>
 
                      <div className="p-4">
@@ -1036,13 +1177,36 @@ const handledeleteappointment = async (appointmentId) => {
                      <div className="flex justify-center items-center">           
                       <div className="mr-10 flex flex-col h-fit form-group ml-3 mt-4 ">
                              <label className="text-[18px]  font-bold  text-[#434343] "htmlFor="patientbautistaappointmentdate">Preferred Appointment Date: </label>     
-                             <input className="h-10 w-60 p-3 mt-2 justify-center border-b-2 border-gray-600 bg-gray-200 rounded-2xl text-[#2d2d44] text-[18px]  font-semibold"   type="date" name="patientbautistaappointmentdate" id="patientbautistaappointmentdate" placeholder="" required={!!bautistaservicesselected}/> </div>
+                             <input className="[&::-webkit-calendar-picker-indicator]:filter [&::-webkit-calendar-picker-indicator]:invert-[70%] h-10 w-60 p-3 mt-2 justify-center border-b-2 border-gray-600 bg-gray-200 rounded-2xl text-[#2d2d44] text-[18px]  font-semibold"   type="date" name="patientbautistaappointmentdate" id="patientbautistaappointmentdate" placeholder=""   min={getdatetomorrow()} 
+                               max={getuptothreemonthsappointmentavailability()}
+                               required={!!bautistaservicesselected}
+                               onChange={(e) => {
+                                 if (disablebautistaweekends(e.target.value)) {
+                                   setbautistashownotavailweekendToast(false);
+                                   setbautistashownotavailweekendToastClosing(false);
+                                   setTimeout(() => {
+                                     setbautistashownotavailweekendToast(true);
+                                     e.target.value = "";
+                                   }, 50);
+                                 }
+                               }}/> </div>
+
+          {bautistashownotavailweekendToast && (
+            <div className="top-4  -translate-x-1/2  z-100   left-1/2 transform fixed " >
+                  <div  className={` ${bautistashownotavailweekendToastClosing ? 'motion-opacity-out-0' : 'motion-preset-bounce'}  flex items-center bg-red-100   rounded-md shadow-lg text-gray-900 font-semibold px-6 py-3`} >
+                      <span className="text-red-800 font-semibold text-[20px]"><i className="mr-2 bx bx-x-circle "></i></span><h1 className="text-red-950">Bautista weekend dates are not available</h1>
+                  </div>
+           
+            </div>
+          )}
                      
                       <div className="ml-10 flex flex-col h-fit form-group mt-4 ">
                              <label className="text-[18px]  font-bold  text-[#434343] "htmlFor="patientbautistaappointmenttime">Preferred Appointment Time: </label>     
-                             <input className="h-10 w-60 p-3 mt-2 justify-center border-b-2 border-gray-600 bg-gray-200 rounded-2xl text-[#2d2d44] text-[18px]  font-semibold"    type="time" name="patientbautistaappointmenttime" id="patientbautistaappointmenttime" placeholder="" required={!!bautistaservicesselected}/> </div>
-                     </div>
-
+                             <select  name="patientbautistaappointmenttime" id="patientbautistaappointmenttime"  required={!!bautistaservicesselected}  className="h-10 w-60 p-2 mt-2 justify-center border-b-2 border-gray-600 bg-gray-200 rounded-2xl text-[#2d2d44] text-[18px] font-semibold">
+                               <option value="">Select a time</option>
+                               {bautistaappointmentschedules.map((time, index) => (<option key={index} value={time}>{time}</option>))}
+                             </select>                
+                      </div>  </div>
                      <div className="p-4">
                      <div className="flex items-center mt-5 ml-7">
                         <input className="w-7 h-7 mr-3 appearance-none border-2 border-[#2d2d44] rounded-md checked:bg-[#2d2d44] checked:border-[#2d2d44] after:text-white after:text-lg after:absolute after:left-1/2 after:top-1/2 after:content-['✓'] after:opacity-0 after:-translate-x-1/2 after:-translate-y-1/2 checked:after:opacity-100 relative cursor:pointer transition-all"  type="checkbox" name="patientbautistaappointmentcomprehensiveeyeexam" id="patientbautistaappointmentcomprehensiveeyeexam" />
@@ -1218,7 +1382,7 @@ const handledeleteappointment = async (appointmentId) => {
                 {appointment.patientambherappointmentdate && (
                   <div className="text-sm font-albertsans text-gray-900 flex  justify-center items-center">
                     <span className="font-semibold items-start">{formatappointmatedates(appointment.patientambherappointmentdate)} </span> 
-                    <span className="ml-1 font-semibold items-start">({formatappointmenttime(appointment.patientambherappointmenttime)})</span> 
+                    <span className="ml-1 font-semibold items-start">({formatappointmenttimes(appointment.patientambherappointmenttime)})</span> 
                     <span className={`ml-3 font-albertsans font-semibold rounded-full text-[15px] leading-5 px-4 py-2 inline-flex
   ${appointment.patientambherappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] text-[#421a10]':
     appointment.patientambherappointmentstatus === 'Pending' ? 'bg-yellow-100 text-yellow-800':
@@ -1236,7 +1400,7 @@ const handledeleteappointment = async (appointmentId) => {
                 {appointment.patientbautistaappointmentdate && (
                   <div className="text-sm font-albertsans text-gray-900 flex justify-center items-center">
                     <span className="font-semibold">{formatappointmatedates(appointment.patientbautistaappointmentdate)}</span> 
-                    <span className="ml-1 font-semibold">({formatappointmenttime(appointment.patientbautistaappointmenttime)})</span> 
+                    <span className="ml-1 font-semibold">({formatappointmenttimes(appointment.patientbautistaappointmenttime)})</span> 
                     
 <span className={`ml-3 font-albertsans font-semibold rounded-full text-[15px] leading-5 px-4 py-2 inline-flex
   ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] text-[#421a10]':
@@ -1344,7 +1508,7 @@ const handledeleteappointment = async (appointmentId) => {
         <h1>{selectedpatientappointment.patientambherappointmenteyespecialist}</h1>
 
     )}
-     <h1>{formatappointmatedates(selectedpatientappointment.patientambherappointmentdate)} <span className="ml-2">({formatappointmenttime(selectedpatientappointment.patientambherappointmenttime)})</span></h1>
+     <h1>{formatappointmatedates(selectedpatientappointment.patientambherappointmentdate)} <span className="ml-2">({formatappointmenttimes(selectedpatientappointment.patientambherappointmenttime)})</span></h1>
 
 
      {selectedpatientappointment.patientambherappointmentstatus === "Completed" && (
@@ -1529,7 +1693,7 @@ const handledeleteappointment = async (appointmentId) => {
         <h1>{selectedpatientappointment.patientbautistaappointmenteyespecialist}</h1>
 
     )}
-     <h1>{formatappointmatedates(selectedpatientappointment.patientbautistaappointmentdate)} <span className="ml-2">({formatappointmenttime(selectedpatientappointment.patientbautistaappointmenttime)})</span></h1>
+     <h1>{formatappointmatedates(selectedpatientappointment.patientbautistaappointmentdate)} <span className="ml-2">({formatappointmenttimes(selectedpatientappointment.patientbautistaappointmenttime)})</span></h1>
 
 
      {selectedpatientappointment.patientbautistaappointmentstatus === "Completed" && (
