@@ -1,28 +1,46 @@
-
 import mongoose from "mongoose";
-import Patientaccount from "./patientaccount.js";
-import AmbherInventoryProduct from "./ambherinventoryproduct.js";
-import BautistaInventoryProduct from "./bautistainventoryproduct.js";
 import AutoIncrement from "mongoose-sequence";
+
+
+
+
+
+
 
 
 const PatientWishlistSchema = new mongoose.Schema({
 
-
+  
+  // Auto-increment ID
   wishlistid: { type: Number, unique: true },
+  
+  // Patient Reference
   patientaccount: { type: String, required: true },
+  patientwishlistemail: { 
+    type: String, 
+    required: true,
+    index: true 
+  },
+
+
   clinicproduct: { type: String, required: true },
   clinicproductmodel: { type: String, required: true },
+  patientwishlistinventoryproductid: { 
+    type: Number, 
+    required: true,
+    index: true 
+  },
 
-  // Patient Information
-  patientwishlistprofilepicture: String,
-  patientwishlistlastname: { type: String, required: true },
-  patientwishlistfirstname: { type: String, required: true },
-  patientwishlistmiddlename: String,
-  patientwishlistemail: { type: String, required: true },
+  // Clinic Type
+  clinicType: { 
+    type: String, 
+    required: true, 
+    enum: ['ambher', 'bautista'],
+    index: true 
+    
+  },
 
-  // Product Information
-  patientwishlistinventoryproductid: { type: Number, required: true },
+  // Product Details
   patientwishlistinventoryproductcategory: { type: String, required: true },
   patientwishlistinventoryproductname: { type: String, required: true },
   patientwishlistinventoryproductbrand: { type: String, required: true },
@@ -31,30 +49,37 @@ const PatientWishlistSchema = new mongoose.Schema({
   patientwishlistinventoryproductprice: { type: Number, required: true },
   patientwishlistinventoryproductquantity: { type: Number, required: true },
   patientwishlistinventoryproductimagepreviewimages: { type: [String], required: true },
-  
-  // Clinic type (ambher or bautista)
-  clinicType: { type: String, required: true, enum: ['ambher', 'bautista'], default: "empty", },
 
+  // Patient Details
+  patientwishlistprofilepicture: String,
+  patientwishlistlastname: { type: String, required: true },
+  patientwishlistfirstname: { type: String, required: true },
+  patientwishlistmiddlename: String,
+
+  // Timestamps
   patientwishlistinventoryproductaddedat: {
     type: Date,
     default: Date.now
   }
 });
 
-
-
-
-//AUTO INCEREMENT AmbherInventoryProduct
-PatientWishlistSchema.plugin(AutoIncrement(mongoose),{
-    inc_field: "wishlistid",
-    id: "wishlistid_seq",
-    start_seq: true,
-    disable_hooks: false
+// Apply auto-increment plugin
+PatientWishlistSchema.plugin(AutoIncrement(mongoose), {
+  inc_field: "wishlistid",
+  id: "wishlistid_seq",
+  start_seq: true,
+  disable_hooks: false
 });
 
+
+
+// Ensures one product per patient per clinic
 PatientWishlistSchema.index(
-  { patientaccount: 1, clinicproduct: 1, clinicproductmodel: 1 },
-  { unique: true, sparse: true }
+  { patientwishlistemail: 1, patientwishlistinventoryproductid: 1, clinicType: 1 },
+  { unique: true }
 );
+
+
+
 
 export default mongoose.model("Patientwishlist", PatientWishlistSchema);

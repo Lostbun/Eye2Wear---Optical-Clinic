@@ -14,29 +14,62 @@ dotenv.config();
 
 
 //Create Clinic Patientwishlist
-export const createpatientwishlistinventoryproduct = async (req, res) => {
-    try{
-        if(!req.body.patientaccount || !req.body.clinicproduct || !req.body.clinicproductmodel) {
+
+  export const createpatientwishlistinventoryproduct = async (req, res) => {
+    try {
+        const token = req.headers.authorization?.split(' ')[1];
+        if (!token) {
+            return res.status(401).json({ message: "No token provided" });
+        }
+
+        const decodedpatientaccount = jwt.verify(token, process.env.JWT_SECRET);
+        const patientEmail = decodedpatientaccount.email;
+
+
+        if (!req.body.patientaccount || !req.body.clinicproduct || !req.body.clinicproductmodel) {
             return res.status(400).json({
                 message: "Missing required fields: patientaccount, clinicproduct, clinicproductmodel"
             });
         }
 
-        const newpatientwishlistinventoryproduct = new Patientwishlist(req.body);
+
+      
+        const existingproductwishlist = await Patientwishlist.findOne({
+            patientwishlistemail: patientEmail,
+            patientwishlistinventoryproductid: req.body.patientwishlistinventoryproductid,
+            clinicType: req.body.clinicType
+        });
+
+
+        if ( existingproductwishlist) {
+            return res.status(400).json({
+                message: "Wishlist product already existing",
+                error: "Duplicate wishlist item"
+            });
+        }
+
+
+        const newpatientwishlistinventoryproduct = new Patientwishlist({
+            ...req.body,
+            patientwishlistemail: patientEmail
+        });
+
+
         const savedpatientwishlistinventoryproduct = await newpatientwishlistinventoryproduct.save();
         res.status(201).json(savedpatientwishlistinventoryproduct);
-    
-    }catch(error){
+
+    } catch(error) {
         if(error.code === 11000) {
             res.status(400).json({
-                message: "This product is already added to wishlist",
+                message: "Wishlist product already existing",
                 error: error.message
             });
-        }else{
+        } else {
             res.status(400).json({message: error.message});
         }
     }
 }
+
 
 
 

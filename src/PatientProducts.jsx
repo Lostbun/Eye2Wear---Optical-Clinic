@@ -543,7 +543,7 @@ const [wishlistCounts, setWishlistCounts] = useState({});
 useEffect(() => {
   const fetchWishlistItems = async () => {
     try{
-      const response = await fetch('http://localhost:3000/api/patientwishlistinventoryproduct', {
+      const response = await fetch(`http://localhost:3000/api/patientwishlistinventoryproduct/email/${patientemail}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('patienttoken')}`
         }
@@ -686,6 +686,7 @@ const toggleWishlist = async (e) => {
 
     } else {
       // Add to wishlist
+     
       const response = await fetch('http://localhost:3000/api/patientwishlistinventoryproduct', {
         method: 'POST',
         headers: {
@@ -700,17 +701,10 @@ const toggleWishlist = async (e) => {
         throw new Error(errordata.message || "Failed to add to wishlist");
       }
 
-      // Refresh wishlist items
-      const updatedResponse = await fetch('http://localhost:3000/api/patientwishlistinventoryproduct', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('patienttoken')}`
-        }
-      });
+      const newItem = await response.json();
       
-      if(updatedResponse.ok) {
-        const updatedData = await updatedResponse.json();
-        setWishlistItems(updatedData);
-      }
+      // Add the new item to the wishlist
+      setWishlistItems(prev => [...prev, newItem]);
 
       // Update heart state and show toast
       if (isAmbher) {
@@ -745,7 +739,6 @@ const toggleWishlist = async (e) => {
     }
   }
 };
-
 
 
 
