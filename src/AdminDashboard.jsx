@@ -3273,19 +3273,12 @@ const formatappointmatedates = (datestring) => {
 
 
 //CONVERTS THE APPOINTMENT TIME INTO (ex. 10:00 P.M.)
-const formatappointmenttime = (timestring) => {
-  if(!timestring) return '';
-  const [hours, minutes] =timestring.split(':');
-  const date = new Date();
-  date.setHours(hours);
-  date.setMinutes(minutes);
-
-  return date.toLocaleTimeString('en-US',{
-    hour: 'numeric',
-    minute: '2-digit',
-    hour12: true,
-  });
+//Formats the time selected
+const formatappointmenttime = (formattedtimestring) => {
+  if (!formattedtimestring) return ''; 
+  return formattedtimestring; 
 };
+
 
 
 
