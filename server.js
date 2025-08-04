@@ -2,7 +2,8 @@ import mongoose from "mongoose";
 import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
-
+import http from "http";
+import { Server } from "socket.io";
 import patientrouter from "./routes/patientaccount.route.js";
 import adminrouter from "./routes/adminaccount.route.js";
 import staffrouter from "./routes/staffacount.route.js";
@@ -20,7 +21,8 @@ import bautistainventoryproductrouter from "./routes/bautistainventoryproduct.ro
 import patientwishlistinventoryproductrouter from "./routes/patientwishlist.route.js";
 import patientorderambherrouter from "./routes/patientorderambher.route.js";
 import patientorderbautistarouter from "./routes/patientorderbautista.route.js";
-
+import messagerouter from "./routes/message.route.js";
+import Message from "./models/message.js";
 const {Connection} = mongoose;
 
 
@@ -42,6 +44,89 @@ const mongoUri = process.env.MONGO_URI;
 
 //Middleware Configuration
 const app = express();
+const server = http.createServer(app);
+
+
+//SOCKET I.O. Configuration
+// Socket.io configuration
+const io = new Server(server, {
+  cors: {
+    origin: ['http://localhost:5173', 'https://www.getpostman.com'],
+    methods: ['GET', 'POST'],
+    credentials: true
+  },
+  transports: ['websocket', 'polling'], // Explicitly enable transports
+  allowEIO3: true // For compatibility with older clients
+});
+
+// Socket.io connection handling
+io.on('connection', (socket) => {
+  console.log('New client connected:', socket.id);
+  console.log('Handshake headers:', socket.handshake.headers);
+  console.log('Handshake query:', socket.handshake.query);
+
+  socket.onAny((event, ...args) => {
+    console.log(`Received event: ${event}`, args);
+  });
+  // Join a specific conversation room
+  socket.on('joinConversation', ({ conversationId, userId }) => {
+    socket.join(conversationId);
+    console.log(`User ${userId} joined conversation ${conversationId}`);
+  });
+
+// In server.js - Update your sendMessage handler
+// Update the sendMessage handler
+socket.on('sendMessage', async ({ conversationId, message, sender }) => {
+  try {
+    // Verify sender exists first
+    const Model = mongoose.model(sender.role.endsWith('account') ? 
+                  sender.role : `${sender.role}account`);
+    const userExists = await Model.exists({ _id: sender._id });
+    
+    if (!userExists) {
+      throw new Error('Sender does not exist');
+    }
+
+    const newMessage = await Message.create({
+      conversationId,
+      content: message,
+      sender: sender._id,
+      senderModel: sender.role.endsWith('account') ? 
+                 sender.role : `${sender.role}account`
+    });
+
+    // Manually populate
+    const senderData = await Model.findById(sender._id)
+      .select('patientfirstname patientlastname patientprofilepicture role')
+      .lean();
+
+    io.to(conversationId).emit('receiveMessage', {
+      _id: newMessage._id,
+      content: newMessage.content,
+      sender: {
+        _id: sender._id,
+        name: `${senderData.patientfirstname} ${senderData.patientlastname}`,
+        avatar: senderData.patientprofilepicture,
+        role: senderData.role
+      },
+      createdAt: newMessage.createdAt
+    });
+
+  } catch (err) {
+    console.error('Message error:', err);
+    socket.emit('messageError', { error: err.message });
+  }
+});
+
+  // Handle disconnection
+  socket.on('disconnect', () => {
+    console.log('Client disconnected:', socket.id);
+  });
+});
+
+
+
+
 app.use(cors({
   origin: 'http://localhost:5173', //The frontend URL
   credentials: true,
@@ -97,7 +182,8 @@ app.use("/api/patientwishlistinventoryproduct", patientwishlistinventoryproductr
 app.use("/api/patientorderambher", patientorderambherrouter);
 //Routes
 app.use("/api/patientorderbautista", patientorderbautistarouter);
-
+//Routes
+app.use("/api/messages", messagerouter);
 
 app.get("/", (req, res) => {
     res.send("Hello from Althea Ebora");
@@ -115,7 +201,7 @@ mongoose.set("strictQuery", false);
 mongoose
   .connect(mongoUri)
   .then(() => {
-    app.listen(3000, () => {
+    server.listen(3000, () => {
       console.log("Listening to port", mongoPort);
       console.log("Database connection success", mongoUri);
     });

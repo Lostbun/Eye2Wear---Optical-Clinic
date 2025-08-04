@@ -63,6 +63,7 @@
     "react-rating": "^2.0.5",
     "react-router-dom": "^7.4.1",
     "recharts": "^2.15.3",
+    "socket.io": "^4.8.1",
     "tailwind-merge": "^3.2.0",
     "tw-animate-css": "^1.2.5",
     "typewriter-effect": "^2.21.0",
