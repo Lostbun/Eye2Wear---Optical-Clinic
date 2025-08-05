@@ -1,6 +1,5 @@
 import React, { useState,useRef, useEffect, useCallback } from "react";
 import { Link} from "react-router-dom";
-
 import landinglogo from "../src/assets/images/landinglogo.png";
 import { useAuth as useAdminAuth} from "./hooks/adminuseAuth";
 import { useAuth as useStaffAuth} from "./hooks/staffuseAuth";
@@ -5226,8 +5225,9 @@ const showbillingsandorderstable = (billingsandorderstableid) => {
   const [searchambherTerm, setambherSearchTerm] = useState('');
   const [searchbautistaTerm, setbautistaSearchTerm] = useState('');
   const [showpatientorderambher, setshowpatientorderambher] = useState(false);
-
-
+  const [searchpatientorderambherTerm, setsearchpatientorderambherTerm] = useState('');
+  const [showpatientorderbautista, setshowpatientorderbautista] = useState(false);
+  const [searchpatientorderbautistaTerm, setsearchpatientorderbautistaTerm] = useState('');
 
 
 
@@ -10224,23 +10224,65 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
  {showpatientorderambher && (
 
                          <div className="overflow-y-auto h-auto px-10 bg-opacity-0 flex justify-center items-start z-50 fixed inset-0 bg-[#000000af] bg-opacity-50">
-                           <div className="motion-preset-fade pb-5  mt-10 pl-5 pr-5 bg-white rounded-2xl w-full h-auto mb-10 animate-fadeInUp ">
+                           <div className="motion-preset-fade  h-180  mt-7 pl-5 pr-5 bg-white rounded-2xl w-full  animate-fadeInUp ">
                                 <div className=" mt-5 border-3 flex justify-between items-center border-[#2d2d4400] w-full h-[70px]">
-                                  <div className="flex justify-center items-center"><img src={darklogo} alt="Eye2Wear: Optical Clinic" className="w-15 hover:scale-105 transition-all   p-1"></img><h1 className="text-[#184d85] font-albertsans font-bold ml-3 text-[30px]">Add Order</h1></div>
+                                  <div className="flex justify-center items-center"><img src={darklogo} alt="Eye2Wear: Optical Clinic" className="w-15 hover:scale-105 transition-all   p-1"></img><h1 className="text-[#184d85] font-albertsans font-bold ml-3 text-[30px]">Set Order</h1></div>
                                   <div onClick={() => setshowpatientorderambher(false)} className="bg-[#333232] px-10 rounded-2xl hover:cursor-pointer hover:scale-105 transition-all duration-300 ease-in-out"><i className="bx bx-x text-white text-[40px] "/></div>
                                 </div>
 
 
-                                <div className="gap-2 mt-9 w-full h-auto  flex items-start justify-center">
+                                <div className="gap-2 mt-3 w-full h-auto  flex items-start justify-center">
 
-                                <div className="p-2 w-[25%] h-auto bg-[#ffffff] ">
-                                  <div className="flex items-center p-2 h-25 rounded-2xl border-1 shadow-md">
-                                      <img src={adminprofilepicture} className="mr-2 w-18 h-18 rounded-md"/>
-                                      <h1 className="ml-2 font-albertsans font-semibold text-[19px]">{adminfirstname}</h1>
-                                  </div>
+
+
+                                <div className=" p-2 w-[25%] max-h-145  ">  
+                                  <div className="ml-2 flex justify-center items-center"><h2 className="font-albertsans font-bold text-[18px] text-[#383838] mr-3 ">Search: </h2><div className="relative flex items-center justify-center gap-3"><i className="bx bx-search absolute left-3 text-2xl text-gray-500"></i><input onChange={(e) => setsearchpatientorderambherTerm(e.target.value)} value={searchpatientorderambherTerm} type="text" placeholder="Enter product name..."   className="transition-all duration-300 ease-in-out py-2 pl-10  rounded-2xl  bg-[#e4e4e4] focus:bg-slate-100 focus:outline-sky-500"></input></div></div>
+                                <div className="mt-2 p-2 w-full max-h-138 overflow-y-auto  "> 
+                {ambherloadingproducts ? (
+                  <div>Loading Ambher Products...</div> 
+                ): ambherinventoryproducts.length === 0 ? (
+                  <div>No Products Found...</div> 
+                ):(
+                  [...filteredproducts]
+                .filter(product => 
+                  product.ambherinventoryproductname.toLowerCase().includes(searchpatientorderambherTerm.toLowerCase())
+                )
+                  .sort((a, b) => {
+                    const aquant = a.ambherinventoryproductquantity || 0;
+                    const bquant = b.ambherinventoryproductquantity || 0;
+                    return bquant - aquant;
+                  }).map((product) => (
+
+                      <div className={`${product.ambherinventoryproductquantity == 0 ? 'opacity-50 relative' : ''} mb-2  items-center p-2 min-h-25 h-auto rounded-2xl border-1 hover:shadow-md hover:cursor-pointer transition-all duration-300 ease-in-out max-w-full`}>
+                           {product.ambherinventoryproductquantity == 0 && (
+                                          
+                                <div className="absolute inset-0 flex items-center  justify-center"><h1 className="font-albertsans font-semibold bg-gray-200 text-lg  px-2 py-1 rounded-lg">Out of Stock</h1></div>
+                                  
+                            )}
+
+                                    <div className="flex items-center">
+                                      <img src={product.ambherinventoryproductimagepreviewimages[0]} className="mr-2 w-18 h-18 rounded-md shrink-0"/>
+                                      <h1 className="ml-2 font-albertsans text-[#36454F] font-semibold text-[14px] break-words max-w-[200px] overflow-hidden">
+                                        {product.ambherinventoryproductname}
+                                      </h1>
+                                      </div>
+                                       <div className="w-full flex items-end justify-end  ">
+                                        <h1 className=" ml-2 font-albertsans font-medium text-[12px] break-words max-w-[200px] overflow-hidden">
+                                        Qty: {product.ambherinventoryproductquantity}
+                                      </h1>
+                                      </div>
+                                      
+                                    </div>
+                             
+                  ))
+                )}
+
+
+                                    
+                                    
                                 </div>
 
-                                
+                                 </div>
                                 <div className="p-2 w-[75%] h-100 bg-red-400"></div>
 
 
@@ -10289,13 +10331,18 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
                 
                 { activebillingsandorderstable === 'bautistabillingsandorderstable' && ( <div id="bautistabillingsandorderstable" className="p-2  animate-fadeInUp  border-[#909090] w-[100%] h-[83%] rounded-2xl mt-5" >
                <div className="ml-2 w-full flex  items-center"><h2 className="font-albertsans font-bold text-[18px] text-[#383838] mr-3 ">Search: </h2><div className="relative w-full flex items-center justify-center gap-3"><i className="bx bx-search absolute left-3 text-2xl text-gray-500"></i><input value={searchbautistaTerm} onChange={(e) => setbautistaSearchTerm(e.target.value)} type="text" placeholder="Enter product name..."   className="transition-all duration-300 ease-in-out py-2 pl-10 w-full rounded-2xl  bg-[#e4e4e4] focus:bg-slate-100 focus:outline-sky-500"></input></div></div>
-               <div className="mt-5 ml-2 w-full flex  items-center font-semibold text-[#383838] font-albertsans "><i className="bx bx-filter mr-2 text-[20px]"/>
+               <div className="mt-5 ml-2 w-full flex justify-between items-center font-semibold text-[#383838] font-albertsans ">
+                <div className="flex items-center">
+                <i className="bx bx-filter mr-2 text-[20px]"/>
                <h1 className="text-[15px] mr-8">Filter by status </h1>
                <div className="gap-2 flex">
                {['All', 'Pending', 'Ready for Pickup', 'Completed', 'Cancelled'].map((status) => (
                <div key={status} onClick={() => setbautistaFilter(status)}  className={`border-1 cursor-pointer transition-all duration-300 ease-in-out py-2 px-5 rounded-md text-[14px] ${bautistafilter === status ? 'bg-[#2781af] text-white' : 'hover:bg-[#2781af] hover:text-white'}`}>{status}</div>
                ))}
                </div>
+               </div>
+               <div className="flex justify-end items-center w-auto h-[9%] rounded-2xl mb-2 mt-3"> <div onClick={() => setshowpatientorderbautista(true)}  className="w-50 p-2 hover:cursor-pointer hover:scale-103 bg-[#4ca22b] rounded-3xl flex justify-center  items-center pl-3 pr-3 transition-all duration-300 ease-in-out"><i className="bx  bx-plus text-white font-bold text-[30px]"/><p className="font-bold font-albertsans text-white text-[18px] ml-2">Set Order</p></div> </div>
+
                </div>
 
               
@@ -10338,6 +10385,80 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
 
 
               </div> )}
+
+
+               {showpatientorderbautista && (
+
+                         <div className="overflow-y-auto h-auto px-10 bg-opacity-0 flex justify-center items-start z-50 fixed inset-0 bg-[#000000af] bg-opacity-50">
+                           <div className="motion-preset-fade  h-180  mt-7 pl-5 pr-5 bg-white rounded-2xl w-full  animate-fadeInUp ">
+                                <div className=" mt-5 border-3 flex justify-between items-center border-[#2d2d4400] w-full h-[70px]">
+                                  <div className="flex justify-center items-center"><img src={darklogo} alt="Eye2Wear: Optical Clinic" className="w-15 hover:scale-105 transition-all   p-1"></img><h1 className="text-[#184d85] font-albertsans font-bold ml-3 text-[30px]">Set Order</h1></div>
+                                  <div onClick={() => setshowpatientorderbautista(false)} className="bg-[#333232] px-10 rounded-2xl hover:cursor-pointer hover:scale-105 transition-all duration-300 ease-in-out"><i className="bx bx-x text-white text-[40px] "/></div>
+                                </div>
+
+
+                                <div className="gap-2 mt-3 w-full h-auto  flex items-start justify-center">
+
+
+
+                                <div className=" p-2 w-[25%] max-h-145  ">  
+                                  <div className="ml-2 flex justify-center items-center"><h2 className="font-albertsans font-bold text-[18px] text-[#383838] mr-3 ">Search: </h2><div className="relative flex items-center justify-center gap-3"><i className="bx bx-search absolute left-3 text-2xl text-gray-500"></i><input onChange={(e) => setsearchpatientorderbautistaTerm(e.target.value)} value={searchpatientorderbautistaTerm} type="text" placeholder="Enter product name..."   className="transition-all duration-300 ease-in-out py-2 pl-10  rounded-2xl  bg-[#e4e4e4] focus:bg-slate-100 focus:outline-sky-500"></input></div></div>
+                                <div className="mt-2 p-2 w-full max-h-138 overflow-y-auto  "> 
+                {bautistaloadingproducts ? (
+                  <div>Loading Ambher Products...</div> 
+                ): bautistainventoryproducts.length === 0 ? (
+                  <div>No Products Found...</div> 
+                ):(
+                  [...bautistafilteredproducts]
+                .filter(product => 
+                  product.bautistainventoryproductname.toLowerCase().includes(searchpatientorderbautistaTerm.toLowerCase())
+                )
+                  .sort((a, b) => {
+                    const aquant = a.bautistainventoryproductquantity || 0;
+                    const bquant = b.bautistainventoryproductquantity || 0;
+                    return bquant - aquant;
+                  }).map((product) => (
+
+                      <div className={`${product.bautistainventoryproductquantity == 0 ? 'opacity-50 relative' : ''} mb-2  items-center p-2 min-h-25 h-auto rounded-2xl border-1 hover:shadow-md hover:cursor-pointer transition-all duration-300 ease-in-out max-w-full`}>
+                           {product.bautistainventoryproductquantity == 0 && (
+                                          
+                                <div className="absolute inset-0 flex items-center  justify-center"><h1 className="font-albertsans font-semibold bg-gray-200 text-lg  px-2 py-1 rounded-lg">Out of Stock</h1></div>
+                                  
+                            )}
+
+                                    <div className="flex items-center">
+                                      <img src={product.bautistainventoryproductimagepreviewimages[0]} className="mr-2 w-18 h-18 rounded-md shrink-0"/>
+                                      <h1 className="ml-2 font-albertsans text-[#36454F] font-semibold text-[14px] break-words max-w-[200px] overflow-hidden">
+                                        {product.bautistainventoryproductname}
+                                      </h1>
+                                      </div>
+                                       <div className="w-full flex items-end justify-end  ">
+                                        <h1 className=" ml-2 font-albertsans font-medium text-[12px] break-words max-w-[200px] overflow-hidden">
+                                        Qty: {product.bautistainventoryproductquantity}
+                                      </h1>
+                                      </div>
+                                      
+                                    </div>
+                             
+                  ))
+                )}
+
+
+                                    
+                                    
+                                </div>
+
+                                 </div>
+                                <div className="p-2 w-[75%] h-100 bg-red-400"></div>
+
+
+                                </div>
+                           </div>
+                         </div>
+              
+
+          )}
+
 
 
 
