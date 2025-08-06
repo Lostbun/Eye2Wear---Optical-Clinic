@@ -7,9 +7,9 @@ const PatientOrderAmbherSchema = new mongoose.Schema({
 
     //GENERAL ORDERING INFORMATION
     patientorderambherid: {type: Number, unique: true},
-    patientorderambherstatus: {type: String, enum: ['Cancelled', 'Pending', 'Processing', 'Ready for Pickup', 'Completed', 'Returned'], default: 'Pending'},
+    patientorderambherstatus: {type: String, enum: ['Cancelled', 'Pending', 'Ready for Pickup', 'Completed'], default: 'Pending'},
     patientorderambherhistory: [{ 
-    status: {type: String, enum: ['Cancelled', 'Pending', 'Processing', 'Ready for Pickup', 'Completed', 'Returned']},
+    status: {type: String, enum: ['Cancelled', 'Pending', 'Ready for Pickup', 'Completed']},
     changedAt: {type: Date , default: Date.now},
     changedBy: String,
 }],
@@ -34,14 +34,29 @@ const PatientOrderAmbherSchema = new mongoose.Schema({
     patientorderambherproductsubtotal: {type: Number, required: true},
 
     //PAYMENT INFORMATION
-    patientorderambherproducttotal: {type: Number, default: 0},
-    patientorderambherproductpaymentmethod: {type: String, enum: ['Cash on Pickup', 'Online Payment', 'Bank Transfer'], required: true},
+    patientorderambhercustomfee: { type: Number, default: 0 }, // Clinic customization fee
+    patientorderambheramountpaid: { type: Number, default: 0 }, // Customer total paid amount
+    patientorderambherremainingbalance: { type: Number, default: 0 }, // Computed from deducting overall total to total paid amount
+    patientorderambherproducttotal: { type: Number, default: 0 },  // Subtotal + CustomizationFee
+    patientorderambherproductpaymentmethod: {type: String, enum: ['Cash', 'Bank Transfer'], default: 'Cash'},
     patientorderambherproductpaymentreceiptimage: String,
-    //patientorderambherproductpaymentstatus: {type: String, enum: ['Unpaid', 'Paid', 'Partially Paid', 'Refunded'], default: 'Unpaid'},
+    patientorderambherproductpaymentstatus: { 
+        type: String, 
+        enum: ['Fully Paid', 'Partially Paid'], 
+        default: 'Partially Paid' 
+    },  
     patientorderambherproductpaymenttransactionid: String,
 
+
+
+
     //PICKUP INFORMATION
-    patientorderambherproductchosenpickupdate: Date,
+    patientorderambherproductpickupstatus: { 
+        type: String, 
+        enum: ['Now', 'Later'], 
+        default: 'Later' 
+    },
+    patientorderambherproductchosenpickupdate: String,
     patientorderambherproductchosenpickuptime: String,
 
     //AUTHORIZED PERSON

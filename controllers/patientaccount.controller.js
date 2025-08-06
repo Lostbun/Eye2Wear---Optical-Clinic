@@ -103,7 +103,7 @@ export const getpatientbyemail = async (req, res) => {
   try {
     const { patientemail } = req.params;
     const patient = await Patientaccount.findOne({ patientemail }).select(
-      "patientfirstname patientmiddlename patientlastname"
+      "patientprofilepicture patientfirstname patientmiddlename patientlastname"
     );
 
     if (!patient) {

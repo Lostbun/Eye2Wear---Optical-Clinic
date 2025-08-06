@@ -4,11 +4,11 @@ import AutoIncrement from "mongoose-sequence";
 
 const PatientOrderBautistaSchema = new mongoose.Schema({
 
-    //GENERAL ORDERING INFORMATION
+     //GENERAL ORDERING INFORMATION
     patientorderbautistaid: {type: Number, unique: true},
-    patientorderbautistastatus: {type: String, enum: ['Cancelled', 'Pending', 'Processing', 'Ready for Pickup', 'Completed', 'Returned'], default: 'Pending'},
+    patientorderbautistastatus: {type: String, enum: ['Cancelled', 'Pending', 'Ready for Pickup', 'Completed'], default: 'Pending'},
     patientorderbautistahistory: [{ 
-    status: {type: String, enum: ['Cancelled', 'Pending', 'Processing', 'Ready for Pickup', 'Completed', 'Returned']},
+    status: {type: String, enum: ['Cancelled', 'Pending', 'Ready for Pickup', 'Completed']},
     changedAt: {type: Date , default: Date.now},
     changedBy: String,
 }],
@@ -33,15 +33,30 @@ const PatientOrderBautistaSchema = new mongoose.Schema({
     patientorderbautistaproductsubtotal: {type: Number, required: true},
 
     //PAYMENT INFORMATION
-    patientorderbautistaproducttotal: {type: Number, default: 0},
-    patientorderbautistaproductpaymentmethod: {type: String, enum: ['Cash on Pickup', 'Online Payment', 'Bank Transfer'], required: true},
+    patientorderbautistacustomfee: { type: Number, default: 0 }, // Clinic customization fee
+    patientorderbautistaamountpaid: { type: Number, default: 0 }, // Customer total paid amount
+    patientorderbautistaremainingbalance: { type: Number, default: 0 }, // Computed from deducting overall total to total paid amount
+    patientorderbautistaproducttotal: { type: Number, default: 0 },  // Subtotal + CustomizationFee
+    patientorderbautistaproductpaymentmethod: {type: String, enum: ['Cash', 'Bank Transfer'], default: 'Cash'},
     patientorderbautistaproductpaymentreceiptimage: String,
-    //patientorderbautistaproductpaymentstatus: {type: String, enum: ['Unpaid', 'Paid', 'Partially Paid', 'Refunded'], default: 'Unpaid'},
+    patientorderbautistaproductpaymentstatus: { 
+        type: String, 
+        enum: ['Fully Paid', 'Partially Paid'], 
+        default: 'Partially Paid' 
+    },  
     patientorderbautistaproductpaymenttransactionid: String,
 
+
+
+
     //PICKUP INFORMATION
-    patientorderbautistaproductchosenpickupdate: {type: Date,required: true},
-    patientorderbautistaproductpickuptime: String,
+    patientorderbautistaproductpickupstatus: { 
+        type: String, 
+        enum: ['Now', 'Later'], 
+        default: 'Later' 
+    },
+    patientorderbautistaproductchosenpickupdate: String,
+    patientorderbautistaproductchosenpickuptime: String,
 
     //AUTHORIZED PERSON
     patientorderbautistaproducauthorizedname: String,
