@@ -23,6 +23,12 @@ import defaultimageplaceholder from "../src/assets/images/defaultimageplaceholde
 import { AmbherinventorycategoryBox } from "./components/AmbherinventorycategoryBox";
 import { BautistainventorycategoryBox } from "./components/BautistainventorycategoryBox";
 import cautionlowstockalert from "../src/assets/images/caution.png";
+import starimage from "../src/assets/images/star.png"
+
+
+
+
+
 function AdminDashboard(){
 
 
@@ -2667,8 +2673,24 @@ const [addpatientprofileissubmitting, setaddpatientprofileissubmitting] = useSta
 const [addpatientprofilepreviewimage, setaddpatientprofilepreviewimage] = useState(null);
 const addpatientprofileimageinputref= useRef(null);
 
-
-
+//AI CODE
+const calculateAge = (birthdate) => {
+  if (!birthdate) return '';
+  
+  const birthDate = new Date(birthdate);
+  const today = new Date();
+  
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const monthDiff = today.getMonth() - birthDate.getMonth();
+  
+  // Adjust age if birthday hasn't occurred yet this year
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+    age--;
+  }
+  
+  // Ensure minimum age is 1
+  return Math.max(1, age);
+};
 
 const resetpatientprofileformdata = () => {
   setdemoformdata({
@@ -5228,6 +5250,159 @@ const showbillingsandorderstable = (billingsandorderstableid) => {
   const [searchpatientorderambherTerm, setsearchpatientorderambherTerm] = useState('');
   const [showpatientorderbautista, setshowpatientorderbautista] = useState(false);
   const [searchpatientorderbautistaTerm, setsearchpatientorderbautistaTerm] = useState('');
+  const [ambhercount, setambherCount] = useState(1);
+  const [bautistacount, setbautistaCount] = useState(1);
+  const [selectedorderambherproduct, setselectedorderambherproduct] = useState(null);
+  const [selectedorderbautistaproduct, setselectedorderbautistaproduct] = useState(null);
+
+
+
+
+
+  //Order Ambher
+  const [orderambherinventorycategorynamebox , setorderambherinventorycategorynamebox ] = useState("");
+  const [orderambherinventoryproductname , setorderambherinventoryproductname ] = useState("");
+  const [orderambherinventoryproductbrand , setorderambherinventoryproductbrand ] = useState("");
+  const [orderambherinventoryproductmodelnumber, setorderambherinventoryproductmodelnumber ] = useState("");
+  const [orderambherinventoryproductdescription , setorderambherinventoryproductdescription ] = useState("");
+  const [orderambherinventoryproductprice , setorderambherinventoryproductprice ] = useState( );
+  const [orderambherinventoryproductquantity , setorderambherinventoryproductquantity ] = useState( );
+  const [orderambherinventoryproductimagepreviewimages , setorderambherinventoryproductimagepreviewimages ] = useState([]);
+  const [orderambhercurrentimageindex, setorderambhercurrentimageindex] = useState(0);
+  const [orderambherEmail, setorderambherEmail] = useState('');
+  const [orderambherfullName, setorderambherfullName] = useState('');
+  const [orderambhercontactNumber, setorderambhercontactNumber] = useState('');
+  const [orderambherdownPayment, setorderambherdownPayment] = useState('');
+  const [orderambhercustomFee, setorderambhercustomFee] = useState('');
+  const [orderambheramountPaid, setorderambheramountPaid] = useState('');
+  const [orderambherNotes, setorderambherNotes] = useState('');
+  const orderambherSubtotal = Number(orderambherinventoryproductprice) * Number(ambhercount);
+  const orderambhertotalwithFee = orderambherSubtotal + Number(orderambhercustomFee);
+  const orderambherremainingBalance = orderambhertotalwithFee - Number(orderambheramountPaid);
+  const [orderambhercheckEmail, setorderambhercheckEmail] = useState(false);
+  const [orderambheremailError, setorderambheremailError] = useState(false); 
+
+
+  
+  //Order Bautista
+  const [orderbautistainventorycategorynamebox , setorderbautistainventorycategorynamebox ] = useState("");
+  const [orderbautistainventoryproductname , setorderbautistainventoryproductname ] = useState("");
+  const [orderbautistainventoryproductbrand , setorderbautistainventoryproductbrand ] = useState("");
+  const [orderbautistainventoryproductmodelnumber, setorderbautistainventoryproductmodelnumber ] = useState("");
+  const [orderbautistainventoryproductdescription , setorderbautistainventoryproductdescription ] = useState("");
+  const [orderbautistainventoryproductprice , setorderbautistainventoryproductprice ] = useState( );
+  const [orderbautistainventoryproductquantity , setorderbautistainventoryproductquantity ] = useState( );
+  const [orderbautistainventoryproductimagepreviewimages , setorderbautistainventoryproductimagepreviewimages ] = useState([]);
+  const [orderbautistacurrentimageindex, setorderbautistacurrentimageindex] = useState(0);
+  const [orderbautistaEmail, setorderbautistaEmail] = useState('');
+  const [orderbautistafullName, setorderbautistafullName] = useState('');
+  const [orderbautistacontactNumber, setorderbautistacontactNumber] = useState('');
+  const [orderbautistadownPayment, setorderbautistadownPayment] = useState('');
+  const [orderbautistacustomFee, setorderbautistacustomFee] = useState('');
+  const [orderbautistaamountPaid, setorderbautistaamountPaid] = useState('');
+  const [orderbautistaNotes, setorderbautistaNotes] = useState('');
+  const orderbautistaSubtotal = Number(orderbautistainventoryproductprice) * Number(bautistacount);
+  const orderbautistatotalwithFee = orderbautistaSubtotal + Number(orderbautistacustomFee);
+  const orderbautistaremainingBalance = orderbautistatotalwithFee - Number(orderbautistaamountPaid);
+  const [orderbautistacheckEmail, setorderbautistacheckEmail] = useState(false);
+  const [orderbautistaemailError, setorderbautistaemailError] = useState(false); 
+
+
+
+  //CHECK EMAIL IF EXISTS IN AMBHER ORDER FORM
+useEffect(() => {
+  const checkAndFetchPatientDetails = async () => {
+    if (!orderambherEmail) {
+      setorderambheremailError(false);
+      setorderambherfullName("");
+      return;
+    }
+
+    if (!emailcharacters.test(orderambherEmail)) {
+      setorderambheremailError(true);
+      setorderambherfullName("");
+      return;
+    }
+
+    setorderambhercheckEmail(true);
+
+    try {
+      // Check if email exists
+      const checkRes = await fetch(`http://localhost:3000/api/patientaccounts/check-email/${orderambherEmail}`);
+      const checkData = await checkRes.json();
+
+      if (checkData.exists) {
+        setorderambheremailError(false);
+
+        // Get full name info
+        const patientRes = await fetch(`http://localhost:3000/api/patientaccounts/get-by-email/${orderambherEmail}`);
+        const patient = await patientRes.json();
+
+        const fullName = `${patient.patientfirstname} ${patient.patientmiddlename || ""} ${patient.patientlastname}`.trim();
+        setorderambherfullName(fullName);
+
+      } else {
+        setorderambheremailError(true);
+        setorderambherfullName("");
+      }
+    } catch (err) {
+      console.error(err);
+      setorderambheremailError(true);
+      setorderambherfullName("");
+    } finally {
+      setorderambhercheckEmail(false);
+    }
+  };
+
+  const delay = setTimeout(checkAndFetchPatientDetails, 500);
+  return () => clearTimeout(delay);
+}, [orderambherEmail]);
+
+  //CHECK EMAIL IF EXISTS IN BAUTISTA ORDER FORM
+  useEffect(() => {
+  const checkPatientEmail = async () => {
+    if (!orderbautistaEmail) {
+      setorderbautistaemailError(false);
+      return;
+    }
+
+    if (!emailcharacters.test(orderbautistaEmail)) {
+      setorderbautistaemailError(true); 
+      return;
+    }
+
+    setorderbautistacheckEmail(true);
+
+    try {
+      const res = await fetch(`http://localhost:3000/api/patientaccounts/check-email/${encodeURIComponent(orderbautistaEmail)}`);
+      const data = await res.json();
+
+      if (data.exists) {
+        setorderbautistaemailError(false);
+      } else {
+        setorderbautistaemailError(true);
+      }
+
+    } catch (err) {
+      console.error("Email validation error:", err);
+      setorderbautistaemailError(true); 
+    } finally {
+      setorderbautistacheckEmail(false);
+    }
+  };
+
+  const delay = setTimeout(checkPatientEmail, 500);
+  return () => clearTimeout(delay);
+}, [orderbautistaEmail]);
+
+
+
+
+
+
+
+
+
 
 
 
@@ -5316,11 +5491,62 @@ const showbillingsandorderstable = (billingsandorderstableid) => {
 
 
 
+  //SET ORDER AMBHER VIEWING PREVIOUS  IMAGE
+          const orderambherhandlepreviousimage = (e) => {
+            e.preventDefault(); 
+            if (selectedorderambherproduct) {
+              if (!selectedorderambherproduct.ambherinventoryproductimagepreviewimages?.length) return;
+              setorderambhercurrentimageindex(prev => prev === 0 ? selectedorderambherproduct.ambherinventoryproductimagepreviewimages.length - 1 : prev - 1 );
+          
+            } else {
+              if (!orderambherinventoryproductimagepreviewimages?.length) return;
+              setorderambhercurrentimageindex(prev => prev === 0 ? orderambherinventoryproductimagepreviewimages.length - 1 : prev - 1 );
+            }
+          };
+          
+          //NEXT IMAGE
+          const orderambherhandlenextimage = (e) => {
+            e.preventDefault();
+            if (selectedorderambherproduct) {
+              if (!selectedorderambherproduct.ambherinventoryproductimagepreviewimages?.length) return;
+              setorderambhercurrentimageindex(prev => prev === selectedorderambherproduct.ambherinventoryproductimagepreviewimages.length - 1 ? 0 : prev + 1 );
+          
+            } else {
+              if (!orderambherinventoryproductimagepreviewimages?.length) return;
+              setorderambhercurrentimageindex(prev => prev === orderambherinventoryproductimagepreviewimages.length - 1 ? 0 : prev + 1);
+          
+            }
+          };
+
+   
 
 
-
-
-
+  //SET ORDER bautista VIEWING PREVIOUS  IMAGE
+          const orderbautistahandlepreviousimage = (e) => {
+            e.preventDefault(); 
+            if (selectedorderbautistaproduct) {
+              if (!selectedorderbautistaproduct.bautistainventoryproductimagepreviewimages?.length) return;
+              setorderbautistacurrentimageindex(prev => prev === 0 ? selectedorderbautistaproduct.bautistainventoryproductimagepreviewimages.length - 1 : prev - 1 );
+          
+            } else {
+              if (!orderbautistainventoryproductimagepreviewimages?.length) return;
+              setorderbautistacurrentimageindex(prev => prev === 0 ? orderbautistainventoryproductimagepreviewimages.length - 1 : prev - 1 );
+            }
+          };
+          
+          //NEXT IMAGE
+          const orderbautistahandlenextimage = (e) => {
+            e.preventDefault();
+            if (selectedorderbautistaproduct) {
+              if (!selectedorderbautistaproduct.bautistainventoryproductimagepreviewimages?.length) return;
+              setorderbautistacurrentimageindex(prev => prev === selectedorderbautistaproduct.bautistainventoryproductimagepreviewimages.length - 1 ? 0 : prev + 1 );
+          
+            } else {
+              if (!orderbautistainventoryproductimagepreviewimages?.length) return;
+              setorderbautistacurrentimageindex(prev => prev === orderbautistainventoryproductimagepreviewimages.length - 1 ? 0 : prev + 1);
+          
+            }
+          };
 
 
 
@@ -6826,21 +7052,36 @@ const showbillingsandorderstable = (billingsandorderstableid) => {
    
    
                            <div className=" mt-5 flex items-center">
+                          <div className="">
+                                 
+                               <div className=" h-fit form-group">
+                              <label className="text-[23px]  font-bold  text-[#2d2d44] "htmlFor="patientbirthdate">Birthdate :</label>     
+                              <input className="w-38 justify-center border-b-2 border-gray-600 ml-3 text-[#2d2d44] text-[20px]  font-semibold"      value={demoformdata.patientbirthdate} 
+                                               onChange={(e) => {
+                                                 const newpatientBirthdate = e.target.value;
+                                                 setdemoformdata({
+                                                   ...demoformdata, 
+                                                   patientbirthdate: newpatientBirthdate,
+                                                   patientage: calculateAge(newpatientBirthdate)
+                                                 });
+                                               }}  
+                                               type="date" 
+                                               name="patientbirthdate" 
+                                               id="patientbirthdate" 
+                                               placeholder=""
+                                               max={new Date().toISOString().split('T')[0]}/> </div>
+                                           
+   
+                               </div>
                            <div className="">
    
-                           <div className=" h-fit form-group">
+                           <div className=" h-fit form-group ml-15">
                            <label className="text-[23px]  font-bold  text-[#2d2d44] "htmlFor="patientage">Age :</label>     
-                           <input className="w-32 border-b-2 border-gray-600 ml-3 text-[#2d2d44] text-[20px]  font-semibold"  value={demoformdata.patientage} onChange={(e) => setdemoformdata({...demoformdata, patientage: e.target.value})} type="number" name="patientage" id="patientage" placeholder="Age..."/></div>
+                           <input className="w-32 border-b-2 border-gray-600 ml-3 text-[#2d2d44] text-[20px]  font-semibold"  readOnly value={demoformdata.patientage} onChange={(e) => setdemoformdata({...demoformdata, patientage: e.target.value})} type="number" name="patientage" id="patientage" placeholder="Age..."/></div>
    
                                </div>
    
-                               <div className="">
-                                 
-                               <div className=" h-fit form-group ml-15">
-                              <label className="text-[23px]  font-bold  text-[#2d2d44] "htmlFor="patientbirthdate">Birthdate :</label>     
-                              <input className="w-38 justify-center border-b-2 border-gray-600 ml-3 text-[#2d2d44] text-[20px]  font-semibold"  value={demoformdata.patientbirthdate} onChange={(e) => setdemoformdata({...demoformdata, patientbirthdate: e.target.value})}  type="date" name="patientbirthdate" id="patientbirthdate" placeholder=""/> </div>
-   
-                               </div>
+
    
    
                            </div>
@@ -7012,21 +7253,29 @@ const showbillingsandorderstable = (billingsandorderstableid) => {
    
    
                            <div className=" mt-5 flex items-center">
+                             <div className="">
+                                 
+                               <div className=" h-fit form-group ">
+                              <label className="text-[23px]  font-bold  text-[#2d2d44] "htmlFor="patientbirthdate">Birthdate :</label>     
+                              <input className="w-38 justify-center border-b-2 border-gray-600 ml-3 text-[#2d2d44] text-[20px]  font-semibold"  value={demoformdata.patientbirthdate}     onChange={(e) => {
+      const newBirthdate = e.target.value;
+      setdemoformdata({
+        ...demoformdata, 
+        patientbirthdate: newBirthdate,
+        patientage: calculateAge(newBirthdate)
+      });
+    }} max={new Date().toISOString().split('T')[0]}  type="date" name="patientbirthdate" id="patientbirthdate" placeholder=""/> </div>
+   
+                               </div>
                            <div className="">
    
-                           <div className=" h-fit form-group">
+                           <div className=" h-fit form-group ml-15">
                            <label className="text-[23px]  font-bold  text-[#2d2d44] "htmlFor="patientage">Age :</label>     
-                           <input className="w-32 border-b-2 border-gray-600 ml-3 text-[#2d2d44] text-[20px]  font-semibold"  value={demoformdata.patientage} onChange={(e) => setdemoformdata({...demoformdata, patientage: e.target.value})} type="number" name="patientage" id="patientage" placeholder="Age..."/></div>
+                           <input className=" w-32 border-b-2 border-gray-600 ml-3 text-[#2d2d44] text-[20px]  font-semibold"  readOnly value={demoformdata.patientage} onChange={(e) => setdemoformdata({...demoformdata, patientage: e.target.value})} type="number" name="patientage" id="patientage" placeholder="Age..."/></div>
    
                                </div>
    
-                               <div className="">
-                                 
-                               <div className=" h-fit form-group ml-15">
-                              <label className="text-[23px]  font-bold  text-[#2d2d44] "htmlFor="patientbirthdate">Birthdate :</label>     
-                              <input className="w-38 justify-center border-b-2 border-gray-600 ml-3 text-[#2d2d44] text-[20px]  font-semibold"  value={demoformdata.patientbirthdate} onChange={(e) => setdemoformdata({...demoformdata, patientbirthdate: e.target.value})}  type="date" name="patientbirthdate" id="patientbirthdate" placeholder=""/> </div>
-   
-                               </div>
+
    
    
                            </div>
@@ -10164,6 +10413,11 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
                 <div onClick={() => showbillingsandorderstable('bautistabillingsandorderstable')}  className={`ml-3 hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 pb-3 pt-3 text-center flex justify-center items-center ${activebillingsandorderstable ==='bautistabillingsandorderstable' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d] ${activebillingsandorderstable ==='bautistabillingsandorderstable' ? 'text-white' : ''}`}>Bautista Eye Center</h1></div>
                 </div>
 
+
+
+
+
+
                 { activebillingsandorderstable === 'ambherbillingsandorderstable' && ( <div id="ambherbillingsandorderstable" className="p-2  animate-fadeInUp  border-[#909090] w-[100%] h-[83%] rounded-2xl mt-5" >
                <div className="ml-2 w-full flex  items-center"><h2 className="font-albertsans font-bold text-[18px] text-[#383838] mr-3 ">Search: </h2><div className="relative w-full flex items-center justify-center gap-3"><i className="bx bx-search absolute left-3 text-2xl text-gray-500"></i><input value={searchambherTerm} onChange={(e) => setambherSearchTerm(e.target.value)} type="text" placeholder="Enter product name..."   className="transition-all duration-300 ease-in-out py-2 pl-10 w-full rounded-2xl  bg-[#e4e4e4] focus:bg-slate-100 focus:outline-sky-500"></input></div></div>
                <div className="mt-5 ml-2 w-full flex justify-between items-center font-semibold text-[#383838] font-albertsans ">
@@ -10221,13 +10475,13 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
                 </div>)}
 
 
- {showpatientorderambher && (
+         {showpatientorderambher && (
 
                          <div className="overflow-y-auto h-auto px-10 bg-opacity-0 flex justify-center items-start z-50 fixed inset-0 bg-[#000000af] bg-opacity-50">
-                           <div className="motion-preset-fade  h-180  mt-7 pl-5 pr-5 bg-white rounded-2xl w-full  animate-fadeInUp ">
+                           <div className="motion-preset-fade  h-auto min-h-180  mb-7 mt-7 pl-5 pr-5 bg-white rounded-2xl w-full  animate-fadeInUp ">
                                 <div className=" mt-5 border-3 flex justify-between items-center border-[#2d2d4400] w-full h-[70px]">
                                   <div className="flex justify-center items-center"><img src={darklogo} alt="Eye2Wear: Optical Clinic" className="w-15 hover:scale-105 transition-all   p-1"></img><h1 className="text-[#184d85] font-albertsans font-bold ml-3 text-[30px]">Set Order</h1></div>
-                                  <div onClick={() => setshowpatientorderambher(false)} className="bg-[#333232] px-10 rounded-2xl hover:cursor-pointer hover:scale-105 transition-all duration-300 ease-in-out"><i className="bx bx-x text-white text-[40px] "/></div>
+                                  <div onClick={() => {setambherCount(0); setselectedorderambherproduct(null);setshowpatientorderambher(false);}} className="bg-[#333232] px-10 rounded-2xl hover:cursor-pointer hover:scale-105 transition-all duration-300 ease-in-out"><i className="bx bx-x text-white text-[40px] "/></div>
                                 </div>
 
 
@@ -10253,14 +10507,27 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
                     return bquant - aquant;
                   }).map((product) => (
 
-                      <div className={`${product.ambherinventoryproductquantity == 0 ? 'opacity-50 relative' : ''} mb-2  items-center p-2 min-h-25 h-auto rounded-2xl border-1 hover:shadow-md hover:cursor-pointer transition-all duration-300 ease-in-out max-w-full`}>
+             
+                      <div key={product.ambherinventoryproductid} onClick={() => {
+                                                                          console.log('Selecting product:', product);
+                                                                           setselectedorderambherproduct(product);
+                                                                           setorderambhercurrentimageindex(0);
+                                                                           setambherCount(1);
+                                                                           setorderambherinventorycategorynamebox(product?.ambherinventoryproductcategory || '');
+                                                                           setorderambherinventoryproductname(product?.ambherinventoryproductname || '');
+                                                                           setorderambherinventoryproductbrand(product?.ambherinventoryproductbrand || '');
+                                                                           setorderambherinventoryproductmodelnumber(product?.ambherinventoryproductmodelnumber || '');
+                                                                           setorderambherinventoryproductdescription(product?.ambherinventoryproductdescription || '');
+                                                                           setorderambherinventoryproductprice(product?.ambherinventoryproductprice || 0);
+                                                                           setorderambherinventoryproductquantity(product?.ambherinventoryproductquantity || 0);
+                                                                           setorderambherinventoryproductimagepreviewimages(product?.ambherinventoryproductimagepreviewimages || []);}}    className={`${product.ambherinventoryproductquantity == 0 ? 'opacity-50 relative' : ''} mb-2  items-center p-2 min-h-25 h-auto rounded-2xl border-1 hover:shadow-md hover:cursor-pointer transition-all duration-300 ease-in-out max-w-full`} >
                            {product.ambherinventoryproductquantity == 0 && (
                                           
                                 <div className="absolute inset-0 flex items-center  justify-center"><h1 className="font-albertsans font-semibold bg-gray-200 text-lg  px-2 py-1 rounded-lg">Out of Stock</h1></div>
                                   
                             )}
 
-                                    <div className="flex items-center">
+                                    <div  className="flex items-center">
                                       <img src={product.ambherinventoryproductimagepreviewimages[0]} className="mr-2 w-18 h-18 rounded-md shrink-0"/>
                                       <h1 className="ml-2 font-albertsans text-[#36454F] font-semibold text-[14px] break-words max-w-[200px] overflow-hidden">
                                         {product.ambherinventoryproductname}
@@ -10283,7 +10550,217 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
                                 </div>
 
                                  </div>
-                                <div className="p-2 w-[75%] h-100 bg-red-400"></div>
+                          <div className="w-[75%] min-h-100 h-auto ">
+
+                    {selectedorderambherproduct && (
+                             <div className="pb-20 motion-opacity-in-0  bg-[#fefefe] rounded-2xl w-full h-auto animate-fadeInUp ">
+
+
+
+                          <form className="flex flex-col  ml-15 mr-15 mt-5    pb-10" >
+                                <div className=" flex justify-center items-start rounded-2xl w-full h-auto">
+                                  <div className=" pb-10 w-full h-full mr-15 rounded-2xl flex justify-center ">
+
+
+
+                                      <div className=" h-fit w-fit flex-none">
+  
+                                <div className=" relative">
+                                
+
+                                <img  className="mt-2 w-100 object-cover rounded-2xl h-100" src={(selectedorderambherproduct?.ambherinventoryproductimagepreviewimages?.[orderambhercurrentimageindex]) || defaultimageplaceholder}/>
+
+                                     {((selectedorderambherproduct?.ambherinventoryproductimagepreviewimages?.length || 0) > 1 || 
+                                       addambherinventoryproductimagepreviewimages?.length > 1) && (
+                                         <>
+                                           <div type="button" onClick={orderambherhandlepreviousimage}  className="cursor-pointer bg-opacity-50 hover:bg-opacity-75 rounded-2xl text-white p-2 absolute left-2 top-1/2 transform -translate-y-1/2 bg-gray-500"><i className="bx bx-chevron-left text-2xl" /></div>
+
+                                           <div type="button" onClick={orderambherhandlenextimage}  className="cursor-pointer rounded-2xl absolute bg-opacity-50 text-white p-2 transform -translate-y-1/2 bg-gray-500 hover:bg-opacity-75 right-2 top-1/2">  <i className="bx bx-chevron-right text-2xl" /></div>
+
+                                         </>
+                                       )}
+
+                                      {orderambherinventoryproductimagepreviewimages.length > 0 && (
+                                          <div className="overflow-x-auto flex gap-2 mt-2 p-4 border-y-1 rounded-2xl bg-[#fbfbfb]  items-center ">
+                                              {orderambherinventoryproductimagepreviewimages.map((preview, index) => (
+                                                  <div key={index} className="relative">
+                                                  <img 
+                                                      onClick={() => setorderambhercurrentimageindex(index)} 
+                                                      src={preview} 
+                                                      className={`rounded-lg cursor-pointer object-cover w-20 h-20 ${orderambhercurrentimageindex === index ? 'border-2 border-[#78b0d4]' : ''}`} 
+                                                  />
+                                                  </div>
+                                              ))}
+                                          </div>
+                                        )}
+
+                                     </div>
+                                      
+                                      
+
+                                      </div>
+
+
+
+                                  </div>
+                          
+                                  <div className="  w-full h-auto flex items-start mb-10 rounded-2xl min-w-0">
+                                        <div className=" w-[100%] h-auto  rounded-4xl">
+                                  
+                                  
+              
+                                        <div className=" w-[100%] registration-container">
+
+                                    
+                                        <div className="flex items-center mx-1  w-fit  h-fit  mt-2 break-words min-w-0 "><h1 className="font-albertsans rounded-md py-1 px-2  rounded-1xl bg-[#F0F6FF] font-medium   text-[#0d0d0d]  min-w-0 break-words ">{orderambherinventorycategorynamebox}</h1>
+                                        <p className="font-albertsans ml-1">by</p>
+                                        <p className="font-albertsans ml-1 font-semibold  ">{orderambherinventoryproductbrand}</p>
+                                        </div>
+                                        
+                                     
+
+                                        <h1 className="font-albertsans mt-3 min-w-0 break-words h-fit w-full font-albertsans font-bold text-[#212121] text-[29px]">{orderambherinventoryproductname}</h1>
+                         
+                                        <div className="mt-1 flex items-center">
+                                          <img src={starimage} className="w-5 h-5"/>
+                                          <p className="font-albertsans ml-2 mt-1 text-[15px] font-semibold">4.8</p><span className="mt-1 text-[13px] pr-3 ml-2">(89 reviews)</span>
+                                          
+                                          <p className="mt-1 font-albertsans border-l-2  border-[#8c8c8c] pl-3  text-[13px]">50 sold</p>
+                                        </div>
+                        
+                                  
+                                        <p className="mt-5 font-albertsans font-semibold text-[#478d12] text-[40px]">₱{Number(orderambherinventoryproductprice).toLocaleString('en-PH', {minimumFractionDigits: 2,  maximumFractionDigits: 2})}</p>
+                                  
+                                        <p className="font-albertsans mt-6  font-medium text-[#020202] text-[18px]">Description</p>
+                                        <p className="font-albertsans font-semibold text-[#4b4b4b] mt-3">{orderambherinventoryproductdescription}</p>
+                                      
+                                    <div className="gap-4 mt-15 flex items-center">
+                                          <p className="font-albertsans font-semibold ">Quantity:</p>
+                                        <div className="w-auto h-10  flex items-center justify-between border-1 rounded-2xl">
+                                          <div   className={`font-bold h-full w-10 bg-gray-100 rounded-l-2xl flex items-center justify-center cursor-pointer select-none ${ambhercount <= 1 ? "opacity-50 cursor-not-allowed" : "active:bg-gray-200"}`} style={{ WebkitTapHighlightColor: 'transparent' }} type="button" onClick={() => setambherCount (c => Math.max(1, c - 1))}>-</div>
+
+                                              <input type="number" min="1" max={orderambherinventoryproductquantity}  value={ambhercount}
+                                                     onChange={(e) => {
+                                                       const ambhercountvalue = parseInt(e.target.value);
+                                                       if (!isNaN(ambhercountvalue)) {
+                                                         const clampedambhercountValue = Math.max(1, Math.min(orderambherinventoryproductquantity, ambhercountvalue));
+                                                         setambherCount(clampedambhercountValue);
+                                                       }
+                                                     }}
+                                                     className="w-16 text-center border-0 focus:outline-none font-semibold"/>
+                                                   
+                                          <div  className={`font-bold h-full w-10 bg-gray-100 rounded-r-2xl flex items-center justify-center cursor-pointer select-none  ${ambhercount >= orderambherinventoryproductquantity ? "opacity-50 cursor-not-allowed" : "active:bg-gray-200"}`} style={{ WebkitTapHighlightColor: 'transparent' }}  type="button" onClick={() => setambherCount ((c) => Math.min(c + 1, orderambherinventoryproductquantity))}>+</div> 
+                                         </div>
+                                               <p className="font-albertsans font-semibold text-[#616161] text-[14px]">{orderambherinventoryproductquantity} pieces available </p>
+                                       </div>
+
+
+                                   
+                                        </div>
+                                
+
+                                  
+                                        </div>
+
+
+                                  </div>
+                                </div>
+                                 <div className=" border-1 mt-10 p-5 w-full h-auto rounded-md ">
+                                 <div className="w-full  flex items-center justify-center"><h1 className=" font-albertsans text-[#184d85] text-[25px] font-bold">Product Order Form</h1> </div>
+
+                              <div className="flex items-start justify-center mt-10">                  
+                                 <div className="pb-2  w-[100%] h-[100%]">
+                                 <div className="flex items-center gap-2  ">
+                                    <h1 className=" w-35 text-[#242424] font-albertsans font-semibold text-[17px]">Customer Email : </h1>
+                                    <div><input value={orderambherEmail} onChange={(e) => setorderambherEmail(e.target.value)} type="text" placeholder="Enter customer email..."   className="transition-all duration-300 ease-in-out  px-5 py-1.5 rounded-2xl  bg-[#e4e4e4] focus:bg-slate-100 focus:outline-sky-500"></input>
+                                  {orderambhercheckEmail && ( <p className="text-gray-500 text-sm ml-1">Checking email...</p>)}
+                                    {orderambheremailError && (<p className="text-red-500 text-sm ml-1">Email does not exist</p>)}
+                                       </div>
+                                     
+                                 </div>
+
+                                 <div className="flex items-center gap-2 mt-3">
+                                    <h1 className=" w-35 text-[#242424] font-albertsans font-semibold text-[17px]">Full Name : </h1>
+                                    <input  readOnly value={orderambherfullName} onChange={(e) => setorderambherfullName(e.target.value)} type="text"   className="transition-all duration-300 ease-in-out  min-w-14 w-auto px-5 py-1.5  rounded-2xl  bg-[#e4e4e4] "></input>
+                                 </div>
+
+                                 <div className="flex items-center gap-2  mt-3">
+                                    <h1 className=" w-35 text-[#242424] font-albertsans font-semibold text-[17px]">Contact Number : </h1>
+                                    <input  value={orderambhercontactNumber} onChange={(e) => setorderambhercontactNumber(e.target.value)} type="text"   className="transition-all duration-300 ease-in-out  min-w-14 w-auto px-5 py-1.5  rounded-2xl  bg-[#e4e4e4] focus:bg-slate-100 focus:outline-sky-500"></input>
+                                 </div>
+
+
+
+                                <div className="flex items-center gap-2  mt-3">
+                                    <h1 className="w-35 text-[#242424] font-albertsans font-semibold text-[17px]">Custom Fee : </h1>
+                                    <input  value={orderambhercustomFee} onChange={(e) => setorderambhercustomFee(e.target.value)} type="text"   className=" transition-all duration-300 ease-in-out  min-w-14 w-auto px-5 py-1.5  rounded-2xl  bg-[#e4e4e4] focus:bg-slate-100 focus:outline-sky-500"></input>
+                                 </div>
+
+                                 <div className="flex items-center gap-2  mt-3">
+                                    <h1 className="w-35 text-[#242424] font-albertsans font-semibold text-[17px]">Amount Paid : </h1>
+                                    <input  value={orderambheramountPaid} onChange={(e) => setorderambheramountPaid(e.target.value)}  type="text" placeholder="10% for downpayment"  className=" transition-all duration-300 ease-in-out  min-w-14 w-auto px-5 py-1.5  rounded-2xl  bg-[#e4e4e4] focus:bg-slate-100 focus:outline-sky-500"></input>
+                                 </div>
+
+                                 <div className="flex items-center gap-2  mt-3">
+                                    <h1 className="w-35 text-[#242424] font-albertsans font-semibold text-[17px]">Order Notes : </h1>
+                                    <textarea className=" transition-all duration-300 ease-in-out  w-56 px-5 py-1.5  rounded-2xl  bg-[#e4e4e4] focus:bg-slate-100 focus:outline-sky-500" value={orderambherNotes} ref={textarearef} rows={1} style={{minHeight:'30px'}} type="text"  onChange={(e) =>  {setorderambherNotes(e.target.value); adjusttextareaheight();}} />
+                                 </div>
+
+
+                                 </div>
+
+                                 <div className="flex flex-col justify-center items-start w-[100%] h-[100%]">                
+                                 <div className="flex justify-center items-start w-[100%] h-[100%]">
+                                     <div className=" gap-2 flex flex-col h-full w-full "> 
+                                        <h1 className="text-[15px] font-albertsans font-semibold">Item Price </h1>
+                                        <h1 className="text-[15px] font-albertsans font-semibold">Quantity </h1>
+                                        <h1 className="text-[15px] font-albertsans font-semibold">Subtotal </h1>
+                                        <h1 className="text-[15px] w-full font-albertsans font-semibold">Customization Fee </h1> 
+                                        <h1 className="text-[15px] border-b-1 pb-2 w-full font-albertsans font-semibold">Discount </h1>     
+                                        <h1 className=" font-albertsans font-semibold text-[19px] mt-5">Overall Total </h1>
+                                        <h1 className=" w-full font-albertsans font-semibold">Amount Paid </h1> 
+                                        <h1 className=" w-full font-albertsans font-semibold">Remaining Balance </h1>    
+                                       
+                                     </div>
+                                     <div className=" flex flex-col items-end gap-2  justify-end h-full w-full "> 
+                                        <h1 className="font-albertsans font-medium text-[#242424]">₱ {Number(orderambherinventoryproductprice).toLocaleString('en-PH', {minimumFractionDigits: 2,  maximumFractionDigits: 2})} </h1>
+                                        <h1 className="font-albertsans font-semibold">x {ambhercount}</h1>
+                                        <h1 className="font-albertsans font-medium">₱ {Number(orderambherinventoryproductprice * ambhercount).toLocaleString('en-PH', {minimumFractionDigits: 2,  maximumFractionDigits: 2})}</h1>
+                                        <h1 className="font-albertsans font-medium">₱ {Number(orderambhercustomFee).toLocaleString('en-PH', {minimumFractionDigits: 2,  maximumFractionDigits: 2})}</h1>
+                                        <h1 className=" font-albertsans font-medium">0</h1>     
+                                        <h1 className="font-albertsans font-bold text-[#478d12] text-[25px] mt-3">₱ {Number(orderambhertotalwithFee).toLocaleString('en-PH', {minimumFractionDigits: 2,  maximumFractionDigits: 2})}</h1>
+                                        <h1 className="font-albertsans font-medium">₱ {Number(orderambheramountPaid).toLocaleString('en-PH', {minimumFractionDigits: 2,  maximumFractionDigits: 2})}</h1>
+                                        <h1 className="font-albertsans font-medium">₱ {Number(orderambherremainingBalance).toLocaleString('en-PH', {minimumFractionDigits: 2,  maximumFractionDigits: 2})}</h1>
+
+                                     </div> 
+
+
+                                 </div>
+
+                                {Number(orderambherremainingBalance) === 0 ? (
+                                  <div className="w-full mt-10 p-2 hover:cursor-pointer hover:scale-103 bg-[#4ca22b] rounded-2xl flex justify-center items-center pl-3 pr-3 transition-all duration-300 ease-in-out"><p className="font-bold font-albertsans text-white text-[18px] ml-2">Complete Order</p></div>
+                                  ) : (
+                                 Number(orderambheramountPaid) >= Number(orderambhertotalwithFee) * 0.10 ? (
+                                  <div className="w-full mt-10 p-2 hover:cursor-pointer hover:scale-103 bg-[#F08000] rounded-2xl flex justify-center items-center pl-3 pr-3 transition-all duration-300 ease-in-out"><p className="font-bold font-albertsans text-white text-[18px] ml-2">Set as Partially Paid Order</p></div>
+                              ) : null)}
+                                    
+ 
+
+
+                              </div>   
+                              </div> 
+                                 </div>
+
+                                </form>
+                           </div>
+                    )}
+                   
+
+
+
+
+                                      
+                                </div>
 
 
                                 </div>
@@ -10291,23 +10768,7 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
                          </div>
               
 
-          )}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+                )}
 
 
 
@@ -10384,16 +10845,13 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
 
 
 
-              </div> )}
-
-
-               {showpatientorderbautista && (
+                {showpatientorderbautista && (
 
                          <div className="overflow-y-auto h-auto px-10 bg-opacity-0 flex justify-center items-start z-50 fixed inset-0 bg-[#000000af] bg-opacity-50">
-                           <div className="motion-preset-fade  h-180  mt-7 pl-5 pr-5 bg-white rounded-2xl w-full  animate-fadeInUp ">
+                           <div className="motion-preset-fade  h-auto min-h-180  mt-7 pl-5 pr-5 bg-white rounded-2xl w-full  animate-fadeInUp ">
                                 <div className=" mt-5 border-3 flex justify-between items-center border-[#2d2d4400] w-full h-[70px]">
                                   <div className="flex justify-center items-center"><img src={darklogo} alt="Eye2Wear: Optical Clinic" className="w-15 hover:scale-105 transition-all   p-1"></img><h1 className="text-[#184d85] font-albertsans font-bold ml-3 text-[30px]">Set Order</h1></div>
-                                  <div onClick={() => setshowpatientorderbautista(false)} className="bg-[#333232] px-10 rounded-2xl hover:cursor-pointer hover:scale-105 transition-all duration-300 ease-in-out"><i className="bx bx-x text-white text-[40px] "/></div>
+                                  <div onClick={() => {setbautistaCount(0); setselectedorderbautistaproduct(null);setshowpatientorderbautista(false);}} className="bg-[#333232] px-10 rounded-2xl hover:cursor-pointer hover:scale-105 transition-all duration-300 ease-in-out"><i className="bx bx-x text-white text-[40px] "/></div>
                                 </div>
 
 
@@ -10405,7 +10863,7 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
                                   <div className="ml-2 flex justify-center items-center"><h2 className="font-albertsans font-bold text-[18px] text-[#383838] mr-3 ">Search: </h2><div className="relative flex items-center justify-center gap-3"><i className="bx bx-search absolute left-3 text-2xl text-gray-500"></i><input onChange={(e) => setsearchpatientorderbautistaTerm(e.target.value)} value={searchpatientorderbautistaTerm} type="text" placeholder="Enter product name..."   className="transition-all duration-300 ease-in-out py-2 pl-10  rounded-2xl  bg-[#e4e4e4] focus:bg-slate-100 focus:outline-sky-500"></input></div></div>
                                 <div className="mt-2 p-2 w-full max-h-138 overflow-y-auto  "> 
                 {bautistaloadingproducts ? (
-                  <div>Loading Ambher Products...</div> 
+                  <div>Loading bautista Products...</div> 
                 ): bautistainventoryproducts.length === 0 ? (
                   <div>No Products Found...</div> 
                 ):(
@@ -10419,14 +10877,27 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
                     return bquant - aquant;
                   }).map((product) => (
 
-                      <div className={`${product.bautistainventoryproductquantity == 0 ? 'opacity-50 relative' : ''} mb-2  items-center p-2 min-h-25 h-auto rounded-2xl border-1 hover:shadow-md hover:cursor-pointer transition-all duration-300 ease-in-out max-w-full`}>
+             
+                      <div key={product.bautistainventoryproductid} onClick={() => {
+                                                                          console.log('Selecting product:', product);
+                                                                           setselectedorderbautistaproduct(product);
+                                                                           setorderbautistacurrentimageindex(0);
+                                                                           setbautistaCount(1);
+                                                                           setorderbautistainventorycategorynamebox(product?.bautistainventoryproductcategory || '');
+                                                                           setorderbautistainventoryproductname(product?.bautistainventoryproductname || '');
+                                                                           setorderbautistainventoryproductbrand(product?.bautistainventoryproductbrand || '');
+                                                                           setorderbautistainventoryproductmodelnumber(product?.bautistainventoryproductmodelnumber || '');
+                                                                           setorderbautistainventoryproductdescription(product?.bautistainventoryproductdescription || '');
+                                                                           setorderbautistainventoryproductprice(product?.bautistainventoryproductprice || 0);
+                                                                           setorderbautistainventoryproductquantity(product?.bautistainventoryproductquantity || 0);
+                                                                           setorderbautistainventoryproductimagepreviewimages(product?.bautistainventoryproductimagepreviewimages || []);}}    className={`${product.bautistainventoryproductquantity == 0 ? 'opacity-50 relative' : ''} mb-2  items-center p-2 min-h-25 h-auto rounded-2xl border-1 hover:shadow-md hover:cursor-pointer transition-all duration-300 ease-in-out max-w-full`} >
                            {product.bautistainventoryproductquantity == 0 && (
                                           
                                 <div className="absolute inset-0 flex items-center  justify-center"><h1 className="font-albertsans font-semibold bg-gray-200 text-lg  px-2 py-1 rounded-lg">Out of Stock</h1></div>
                                   
                             )}
 
-                                    <div className="flex items-center">
+                                    <div  className="flex items-center">
                                       <img src={product.bautistainventoryproductimagepreviewimages[0]} className="mr-2 w-18 h-18 rounded-md shrink-0"/>
                                       <h1 className="ml-2 font-albertsans text-[#36454F] font-semibold text-[14px] break-words max-w-[200px] overflow-hidden">
                                         {product.bautistainventoryproductname}
@@ -10449,7 +10920,134 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
                                 </div>
 
                                  </div>
-                                <div className="p-2 w-[75%] h-100 bg-red-400"></div>
+                          <div className="w-[75%] min-h-100 h-auto ">
+
+                    {selectedorderbautistaproduct && (
+                             <div className="motion-opacity-in-0  bg-[#fefefe] rounded-2xl w-full h-auto animate-fadeInUp ">
+
+
+
+                          <form className="flex flex-col  ml-15 mr-15 mt-5    pb-10" >
+                                <div className=" flex justify-center items-start rounded-2xl w-full h-auto">
+                                  <div className=" pb-10 w-full h-full mr-15 rounded-2xl flex justify-center mb-20">
+
+
+
+                                      <div className=" h-fit w-fit flex-none">
+  
+                                <div className=" relative">
+                                
+
+                                <img  className="mt-2 w-100 object-cover rounded-2xl h-100" src={(selectedorderbautistaproduct?.bautistainventoryproductimagepreviewimages?.[orderbautistacurrentimageindex]) || defaultimageplaceholder}/>
+
+                                     {((selectedorderbautistaproduct?.bautistainventoryproductimagepreviewimages?.length || 0) > 1 || 
+                                       addbautistainventoryproductimagepreviewimages?.length > 1) && (
+                                         <>
+                                           <div type="button" onClick={orderbautistahandlepreviousimage}  className="cursor-pointer bg-opacity-50 hover:bg-opacity-75 rounded-2xl text-white p-2 absolute left-2 top-1/2 transform -translate-y-1/2 bg-gray-500"><i className="bx bx-chevron-left text-2xl" /></div>
+
+                                           <div type="button" onClick={orderbautistahandlenextimage}  className="cursor-pointer rounded-2xl absolute bg-opacity-50 text-white p-2 transform -translate-y-1/2 bg-gray-500 hover:bg-opacity-75 right-2 top-1/2">  <i className="bx bx-chevron-right text-2xl" /></div>
+
+                                         </>
+                                       )}
+
+                                      {orderbautistainventoryproductimagepreviewimages.length > 0 && (
+                                          <div className="overflow-x-auto flex gap-2 mt-2 p-4 border-y-1 rounded-2xl bg-[#fbfbfb]  items-center ">
+                                              {orderbautistainventoryproductimagepreviewimages.map((preview, index) => (
+                                                  <div key={index} className="relative">
+                                                  <img 
+                                                      onClick={() => setorderbautistacurrentimageindex(index)} 
+                                                      src={preview} 
+                                                      className={`rounded-lg cursor-pointer object-cover w-20 h-20 ${orderbautistacurrentimageindex === index ? 'border-2 border-[#78b0d4]' : ''}`} 
+                                                  />
+                                                  </div>
+                                              ))}
+                                          </div>
+                                        )}
+
+                                     </div>
+                                      
+                                      
+
+                                      </div>
+
+
+
+                                  </div>
+                          
+                                  <div className="  w-full h-auto flex items-start mb-10 rounded-2xl min-w-0">
+                                        <div className=" w-[100%] h-auto  rounded-4xl">
+                                  
+                                  
+              
+                                        <div className=" w-[100%] registration-container">
+
+                                    
+                                        <div className="flex items-center mx-1  w-fit  h-fit  mt-2 break-words min-w-0 "><h1 className="font-albertsans rounded-md py-1 px-2  rounded-1xl bg-[#F0F6FF] font-medium   text-[#0d0d0d]  min-w-0 break-words ">{orderbautistainventorycategorynamebox}</h1>
+                                        <p className="font-albertsans ml-1">by</p>
+                                        <p className="font-albertsans ml-1 font-semibold  ">{orderbautistainventoryproductbrand}</p>
+                                        </div>
+                                        
+                                     
+
+                                        <h1 className="font-albertsans mt-3 min-w-0 break-words h-fit w-full font-albertsans font-bold text-[#212121] text-[29px]">{orderbautistainventoryproductname}</h1>
+                         
+                                        <div className="mt-1 flex items-center">
+                                          <img src={starimage} className="w-5 h-5"/>
+                                          <p className="font-albertsans ml-2 mt-1 text-[15px] font-semibold">4.8</p><span className="mt-1 text-[13px] pr-3 ml-2">(89 reviews)</span>
+                                          
+                                          <p className="mt-1 font-albertsans border-l-2  border-[#8c8c8c] pl-3  text-[13px]">50 sold</p>
+                                        </div>
+                        
+                                  
+                                        <p className="mt-5 font-albertsans font-semibold text-[#478d12] text-[40px]">₱{Number(orderbautistainventoryproductprice).toLocaleString('en-PH', {minimumFractionDigits: 2,  maximumFractionDigits: 2})}</p>
+                                  
+                                        <p className="font-albertsans mt-6  font-medium text-[#020202] text-[18px]">Description</p>
+                                        <p className="font-albertsans font-semibold text-[#4b4b4b] mt-3">{orderbautistainventoryproductdescription}</p>
+                                      
+                                    <div className="gap-4 mt-15 flex items-center">
+                                          <p className="font-albertsans font-semibold ">Quantity:</p>
+                                        <div className="w-auto h-10  flex items-center justify-between border-1 rounded-2xl">
+                                          <div   className={`font-bold h-full w-10 bg-gray-100 rounded-l-2xl flex items-center justify-center cursor-pointer select-none ${bautistacount <= 1 ? "opacity-50 cursor-not-allowed" : "active:bg-gray-200"}`} style={{ WebkitTapHighlightColor: 'transparent' }} type="button" onClick={() => setbautistaCount (c => Math.max(1, c - 1))}>-</div>
+
+                                              <input type="number" min="1" max={orderbautistainventoryproductquantity}  value={bautistacount}
+                                                     onChange={(e) => {
+                                                       const bautistacountvalue = parseInt(e.target.value);
+                                                       if (!isNaN(bautistacountvalue)) {
+                                                         const clampedbautistacountValue = Math.max(1, Math.min(orderbautistainventoryproductquantity, bautistacountvalue));
+                                                         setbautistaCount(clampedbautistacountValue);
+                                                       }
+                                                     }}
+                                                     className="w-16 text-center border-0 focus:outline-none font-semibold"/>
+                                                   
+                                          <div  className={`font-bold h-full w-10 bg-gray-100 rounded-r-2xl flex items-center justify-center cursor-pointer select-none  ${bautistacount >= orderbautistainventoryproductquantity ? "opacity-50 cursor-not-allowed" : "active:bg-gray-200"}`} style={{ WebkitTapHighlightColor: 'transparent' }}  type="button" onClick={() => setbautistaCount ((c) => Math.min(c + 1, orderbautistainventoryproductquantity))}>+</div> 
+                                         </div>
+                                               <p className="font-albertsans font-semibold text-[#616161] text-[14px]">{orderbautistainventoryproductquantity} pieces available </p>
+                                       </div>
+
+
+                                   
+                                        </div>
+                                
+
+                                  
+                                        </div>
+
+
+                                  </div>
+
+                                </div>
+
+
+                                </form>
+                           </div>
+                    )}
+                   
+
+
+
+~
+                                      
+                                </div>
 
 
                                 </div>
@@ -10457,7 +11055,12 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
                          </div>
               
 
-          )}
+                )}
+
+
+              </div> )}
+
+
 
 
 

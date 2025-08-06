@@ -279,6 +279,31 @@ function PatientInformation(){
 
 
 
+
+
+
+
+
+
+const calculateAge = (birthdate) => {
+  if (!birthdate) return '';
+  
+  const birthDate = new Date(birthdate);
+  const today = new Date();
+  
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const monthDiff = today.getMonth() - birthDate.getMonth();
+  
+  // If birthday hasn't occurred yet this year, subtract 1 from age
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+    age--;
+  }
+  
+  return age.toString();
+};
+
+
+
 const handleinputchange = (e) => {
   const {name, value} = e.target;
   
@@ -370,35 +395,6 @@ const submitpatientdemographic = async (e) => {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-const calculateAge = (birthdate) => {
-  if (!birthdate) return '';
-  
-  const birthDate = new Date(birthdate);
-  const today = new Date();
-  
-  let age = today.getFullYear() - birthDate.getFullYear();
-  const monthDiff = today.getMonth() - birthDate.getMonth();
-  
-  // If birthday hasn't occurred yet this year, subtract 1 from age
-  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-    age--;
-  }
-  
-  return age.toString();
-};
 
 
 

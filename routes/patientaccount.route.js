@@ -11,6 +11,7 @@ import {
       existingemail, 
       createPatient,
       updatePatient,
+      getpatientbyemail,
       //forgotpassword,
       deletePatient,
      } from "../controllers/patientaccount.controller.js";
@@ -36,7 +37,7 @@ patientrouter.get("/", getpatientaccounts);
 patientrouter.get("/id/:id", getpatientaccountbyid);
 patientrouter.get("/patientlastname/:patientlastname", getpatientaccountbylastname);
 patientrouter.get("/me", verifyloggedinpatientacc, getloggedinpatientacc);
-
+patientrouter.get("/get-by-email/:patientemail", getpatientbyemail);
 
 
 //Retrieve Existing Email datas

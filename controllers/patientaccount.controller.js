@@ -99,6 +99,25 @@ export const getloggedinpatientacc = async (req, res) => {
 
 
 
+export const getpatientbyemail = async (req, res) => {
+  try {
+    const { patientemail } = req.params;
+    const patient = await Patientaccount.findOne({ patientemail }).select(
+      "patientfirstname patientmiddlename patientlastname"
+    );
+
+    if (!patient) {
+      return res.status(404).json({ message: "Patient not found" });
+    }
+
+    res.status(200).json(patient);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+
+
 
 
 export const verifyloggedinpatientacc = async(req,res,next) => {
