@@ -4372,6 +4372,33 @@ const [ambherloadingproducts, setambherloadingproducts] = useState(true);
 const [selectedambherproduct, setselectedambherproduct] = useState(null);
 const [showdeleteambherproduct, setshowdeleteambherproduct] = useState(false);
 const [selecteddeleteambherproduct, setselecteddeleteambherproduct] = useState([]);
+const [wishlistCounts, setWishlistCounts] = useState({});
+
+useEffect(() => {
+  const fetchAllWishlistCounts = async () => {
+    const counts = {};
+
+    for (const product of ambherinventoryproducts) {
+      const count = await fetchWishlistCounts(product.ambherinventoryproductid, 'ambher');
+      counts[product.ambherinventoryproductid] = count;
+    }
+
+    setWishlistCounts(counts);
+  };
+
+  if (ambherinventoryproducts.length > 0) {
+    fetchAllWishlistCounts();
+  }
+}, [ambherinventoryproducts]);
+ 
+
+
+
+
+
+
+
+
 
 
 const filteredproducts = ambherinventoryproducts.filter(product => 
@@ -5843,6 +5870,39 @@ const orderData = {
       throw new Error(errorText || `Server error: ${response.status}`);
     }
 
+
+    
+    // If order was successful, update the product quantity
+    const productId = selectedorderambherproduct?.ambherinventoryproductid;
+    const quantityOrdered = ambhercount;
+    
+    const updateResponse = await fetch(`http://localhost:3000/api/ambherinventoryproduct/${productId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('patienttoken')}`
+      },
+      body: JSON.stringify({
+        ambherinventoryproductquantity: selectedorderambherproduct.ambherinventoryproductquantity - quantityOrdered
+      })
+    });
+
+    if (!updateResponse.ok) {
+      const errorText = await updateResponse.text();
+      console.error('Failed to update product quantity:', errorText);
+      throw new Error(`Failed to update inventory: ${errorText}`);
+    }
+      
+    // Update local state to reflect the new quantity
+    setambherinventoryproducts(prevProducts => 
+      prevProducts.map(product => 
+        product.ambherinventoryproductid === productId
+          ? { ...product, ambherinventoryproductquantity: product.ambherinventoryproductquantity - quantityOrdered }
+          : product
+      )
+    );
+
+
     const result = await response.json();
         setpatientorderambherproductisClicked(true);
         setpatientorderambherproductToastMessage("Order Submitted Successfully!");
@@ -5851,8 +5911,20 @@ const orderData = {
 
     
 
+        setorderambherEmail('');
+        setorderambherprofilePicture('');
+        setorderambherfullName('');
+        setorderambherlastName('');
+        setorderambhermiddleName('');
+        setorderambherfirstName('');
+        setorderambhercontactNumber('');
+        setorderambherdownPayment('');
+        setorderambhercustomFee('');
+        setorderambheramountPaid('');
+        setorderambherNotes('');
+ 
 
-        setambherCount(1);
+
         setselectedorderambherproduct(null);
         setshowpatientorderambher(false);
         await fetchambherOrders();
@@ -5946,6 +6018,39 @@ const orderData = {
       throw new Error(errorText || `Server error: ${response.status}`);
     }
 
+
+    
+    // If order was successful, update the product quantity
+    const productId = selectedorderbautistaproduct?.bautistainventoryproductid;
+    const quantityOrdered = bautistacount;
+    
+    const updateResponse = await fetch(`http://localhost:3000/api/bautistainventoryproduct/${productId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('patienttoken')}`
+      },
+      body: JSON.stringify({
+        bautistainventoryproductquantity: selectedorderbautistaproduct.bautistainventoryproductquantity - quantityOrdered
+      })
+    });
+
+    if (!updateResponse.ok) {
+      const errorText = await updateResponse.text();
+      console.error('Failed to update product quantity:', errorText);
+      throw new Error(`Failed to update inventory: ${errorText}`);
+    }
+      
+    // Update local state to reflect the new quantity
+    setbautistainventoryproducts(prevProducts => 
+      prevProducts.map(product => 
+        product.bautistainventoryproductid === productId
+          ? { ...product, bautistainventoryproductquantity: product.bautistainventoryproductquantity - quantityOrdered }
+          : product
+      )
+    );
+
+
     const result = await response.json();
         setpatientorderbautistaproductisClicked(true);
         setpatientorderbautistaproductToastMessage("Order Submitted Successfully!");
@@ -5954,8 +6059,20 @@ const orderData = {
 
     
 
+        setorderbautistaEmail('');
+        setorderbautistaprofilePicture('');
+        setorderbautistafullName('');
+        setorderbautistalastName('');
+        setorderbautistamiddleName('');
+        setorderbautistafirstName('');
+        setorderbautistacontactNumber('');
+        setorderbautistadownPayment('');
+        setorderbautistacustomFee('');
+        setorderbautistaamountPaid('');
+        setorderbautistaNotes('');
+ 
 
-        setbautistaCount(1);
+
         setselectedorderbautistaproduct(null);
         setshowpatientorderbautista(false);
         await fetchbautistaOrders();
@@ -5967,7 +6084,6 @@ const orderData = {
       setpatientorderbautistaproductToastClosing(false);
   }
 };  
-
 
 
 
@@ -6270,7 +6386,7 @@ const orderData = {
 
     
         
-          <div className={`transition-all duration-300 ease-in-out flex flex-col justify-between items-start pl-3 bg-[#272828]  rounded-2xl    ml-3 mb-3 pt-3 pb-3 ${sidebarexpanded ? 'w-[365px]' : 'w-[85px]'}`} id="adminsidebar">
+          <div className={`relative z-30 transition-all duration-300 ease-in-out flex flex-col justify-between items-start pl-3 bg-[#272828]  rounded-2xl    ml-3 mb-3 pt-3 pb-3 ${sidebarexpanded ? 'w-[365px]' : 'w-[85px]'}`} id="adminsidebar">
 
               <div className="group relative " id="expandbtn" onClick={toggleadminsidebar} ><div className="hover:bg-[#454545] hover:rounded-2xl  hover:cursor-pointer rounded-3xl  transition-all duration-300 ease-in-out flex items-center justify-center w-fit overflow-hidden">{sidebarexpanded &&(<i className='bx bx-collapse-horizontal  p-2 hover:text-white text-white text-[40px] ' ></i>)}   {!sidebarexpanded &&(<i className='bx bx-expand-horizontal  p-2 hover:text-white text-white text-[40px] ' ></i>)}<span className={`text-[16px] text-white font-semibold font-albertsans transition-all duration-300 ease-in-out whitespace-nowrap overflow-hidden ${sidebarexpanded ? 'opacity-100 w-auto ml-2 mr-2 animate-slideIn' : 'opacity-0 w-0 animate-slideOut'}`}>{sidebarexpanded ? 'Collapse Sidebar' : ''}</span></div></div>
           
@@ -9941,8 +10057,10 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
 
                 <div className="mx-1  w-fit rounded-md py-1 px-2  rounded-1xl h-fit  bg-[#F0F6FF] mt-2 break-words min-w-0 "><h1 className={`font-medium   text-[13px] min-w-0 break-words text-[#0d0d0d] ${product.ambherinventoryproductquantity === 0 ? 'text-gray-400': ''}`} >{product.ambherinventoryproductcategory}</h1></div>
                 <div className="w-full h-auto ml-2 mt-2 "><h1 className={`font-semibold  text-[15px] min-w-0 break-words text-[#0d0d0d] ${product.ambherinventoryproductquantity === 0 ? 'text-gray-400': ''}`}>{product.ambherinventoryproductname}</h1></div>
-                <div className="w-fit h-auto ml-2 mt-1 "><h1 className={`font-albertsans font-bold text-[18px] min-w-0 break-words ${product.ambherinventoryproductquantity === 0 ? 'text-gray-400': ''}`}>{product.ambherinventoryproductprice}</h1></div>
+                <div className="w-fit h-auto ml-2 mt-1 "><h1 className={`font-albertsans font-bold text-[18px] min-w-0 break-words ${product.ambherinventoryproductquantity === 0 ? 'text-gray-400': ''}`}>₱{Number(product.ambherinventoryproductprice).toLocaleString('en-PH', {minimumFractionDigits: 2,  maximumFractionDigits: 2})}</h1></div>
                 <div className="w-full h-auto ml-2 mt-5 mb-5 "><h1 className={`font-albertsans font-medium  text-[15px] min-w-0 break-words ${product.ambherinventoryproductquantity === 0 ? 'text-red-600' : product.ambherinventoryproductquantity <= 10 ? 'text-yellow-700' : 'text-[#4e4f4f]'}`}>{product.ambherinventoryproductquantity === 0 ? ('Out Of Stock'):(`In Stock: ${product.ambherinventoryproductquantity}${product.ambherinventoryproductquantity <= 10 ? ' (Low)': ''}`)}</h1></div>   
+                <div className="w-full h-auto ml-2 mt-1 mb-2 flex items-center"> <p className="text-[14px] text-gray-600 font-albertsans font-semibold">{wishlistCounts[product.ambherinventoryproductid] || 0} wishlisted  </p></div>
+                
               </div>
                   ))
                 )}
@@ -10422,7 +10540,7 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
 
                 <div className="mx-1  w-fit rounded-md py-1 px-2  rounded-1xl h-fit  bg-[#F0F6FF] mt-2 break-words min-w-0 "><h1 className={`font-medium   text-[13px] min-w-0 break-words text-[#0d0d0d] ${product.bautistainventoryproductquantity === 0 ? 'text-gray-400': ''}`} >{product.bautistainventoryproductcategory}</h1></div>
                 <div className="w-full h-auto ml-2 mt-2 "><h1 className={`font-semibold  text-[15px] min-w-0 break-words text-[#0d0d0d] ${product.bautistainventoryproductquantity === 0 ? 'text-gray-400': ''}`}>{product.bautistainventoryproductname}</h1></div>
-                <div className="w-fit h-auto ml-2 mt-1 "><h1 className={`font-albertsans font-bold text-[18px] min-w-0 break-words ${product.bautistainventoryproductquantity === 0 ? 'text-gray-400': ''}`}>{product.bautistainventoryproductprice}</h1></div>
+                <div className="w-fit h-auto ml-2 mt-1 "><h1 className={`font-albertsans font-bold text-[18px] min-w-0 break-words ${product.bautistainventoryproductquantity === 0 ? 'text-gray-400': ''}`}>₱{Number(product.bautistainventoryproductprice).toLocaleString('en-PH', {minimumFractionDigits: 2,  maximumFractionDigits: 2})}</h1></div>
                 <div className="w-full h-auto ml-2 mt-5 mb-5 "><h1 className={`font-albertsans font-medium  text-[15px] min-w-0 break-words ${product.bautistainventoryproductquantity === 0 ? 'text-red-600' : product.bautistainventoryproductquantity <= 10 ? 'text-yellow-700' : 'text-[#4e4f4f]'}`}>{product.bautistainventoryproductquantity === 0 ? ('Out Of Stock'):(`In Stock: ${product.bautistainventoryproductquantity}${product.bautistainventoryproductquantity <= 10 ? ' (Low)': ''}`)}</h1></div>   
              
               </div>
@@ -10895,7 +11013,22 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
                            <div className="motion-preset-fade  h-auto min-h-180  mb-7 mt-7 pl-5 pr-5 bg-white rounded-2xl w-full  animate-fadeInUp ">
                                 <div className=" mt-5 border-3 flex justify-between items-center border-[#2d2d4400] w-full h-[70px]">
                                   <div className="flex justify-center items-center"><img src={darklogo} alt="Eye2Wear: Optical Clinic" className="w-15 hover:scale-105 transition-all   p-1"></img><h1 className="text-[#184d85] font-albertsans font-bold ml-3 text-[30px]">Set Order</h1></div>
-                                  <div onClick={() => {setactiveambherpickupnoworlater(null); setambherCount(0); setselectedorderambherproduct(null);setshowpatientorderambher(false);}} className="bg-[#333232] px-10 rounded-2xl hover:cursor-pointer hover:scale-105 transition-all duration-300 ease-in-out"><i className="bx bx-x text-white text-[40px] "/></div>
+                                  <div onClick={() => {
+                                     setorderambherEmail('');
+                                     setorderambherprofilePicture('');
+                                     setorderambherfullName('');
+                                     setorderambherlastName('');
+                                     setorderambhermiddleName('');
+                                     setorderambherfirstName('');
+                                     setorderambhercontactNumber('');
+                                     setorderambherdownPayment('');
+                                     setorderambhercustomFee('');
+                                     setorderambheramountPaid('');
+                                     setorderambherNotes('');
+                                     setactiveambherpickupnoworlater(null);
+                                     setambherCount(0); 
+                                     setselectedorderambherproduct(null);
+                                     setshowpatientorderambher(false);}} className="bg-[#333232] px-10 rounded-2xl hover:cursor-pointer hover:scale-105 transition-all duration-300 ease-in-out"><i className="bx bx-x text-white text-[40px] "/></div>
                                 </div>
 
 
@@ -11293,8 +11426,23 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
                            <div className="motion-preset-fade  h-auto min-h-180  mb-7 mt-7 pl-5 pr-5 bg-white rounded-2xl w-full  animate-fadeInUp ">
                                 <div className=" mt-5 border-3 flex justify-between items-center border-[#2d2d4400] w-full h-[70px]">
                                   <div className="flex justify-center items-center"><img src={darklogo} alt="Eye2Wear: Optical Clinic" className="w-15 hover:scale-105 transition-all   p-1"></img><h1 className="text-[#184d85] font-albertsans font-bold ml-3 text-[30px]">Set Order</h1></div>
-                                  <div onClick={() => {setactivebautistapickupnoworlater(null); setbautistaCount(0); setselectedorderbautistaproduct(null);setshowpatientorderbautista(false);}} className="bg-[#333232] px-10 rounded-2xl hover:cursor-pointer hover:scale-105 transition-all duration-300 ease-in-out"><i className="bx bx-x text-white text-[40px] "/></div>
-                                </div>
+                                  <div onClick={() => {
+                                     setorderbautistaEmail('');
+                                     setorderbautistaprofilePicture('');
+                                     setorderbautistafullName('');
+                                     setorderbautistalastName('');
+                                     setorderbautistamiddleName('');
+                                     setorderbautistafirstName('');
+                                     setorderbautistacontactNumber('');
+                                     setorderbautistadownPayment('');
+                                     setorderbautistacustomFee('');
+                                     setorderbautistaamountPaid('');
+                                     setorderbautistaNotes('');
+                                     setactivebautistapickupnoworlater(null);
+                                     setbautistaCount(0); 
+                                     setselectedorderbautistaproduct(null);
+                                     setshowpatientorderbautista(false);}} className="bg-[#333232] px-10 rounded-2xl hover:cursor-pointer hover:scale-105 transition-all duration-300 ease-in-out"><i className="bx bx-x text-white text-[40px] "/></div>
+                                </div>                               
 
 
                                 <div className="gap-2 mt-3 w-full h-auto  flex items-start justify-center">
