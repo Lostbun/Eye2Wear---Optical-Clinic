@@ -1181,6 +1181,133 @@ const submitpatientorderbautista = async (e) => {
 
 
 
+//FETCHING AMBHERORDER and BAUTISTAORDER SOLD COUNT
+const [ambherproductsoldCount, setambherproductsoldCount] = useState(0);
+const [bautistaproductsoldCount, setbautistaproductsoldCount] = useState(0);
+const [ambherproductsoldCounts, setambherproductsoldCounts] = useState(0);
+const [bautistaproductsoldCounts, setbautistaproductsoldCounts] = useState(0);
+
+
+
+
+
+
+//Fetching ambherproducts sold count  
+useEffect(() => {
+  const fetchSoldCount = async () => {
+    if (!selectedambherproduct?.ambherinventoryproductid) return;
+
+    try {
+      const response = await fetch(`/api/patientorderambher/ambherproductsoldcount/${selectedambherproduct.ambherinventoryproductid}`);
+      if (!response.ok) throw new Error("Failed to fetch sold count");
+      const data = await response.json();
+      setambherproductsoldCount(data.sold || 0);
+    } catch (error) {
+      console.error("Error fetching sold count:", error);
+    }
+  };
+
+  fetchSoldCount();
+}, [selectedambherproduct]);
+
+
+
+
+//Fetching ambherproducts sold count for every card display 
+useEffect(() => {
+  const fetchAllSoldCounts = async () => {
+    const counts = {};
+
+    await Promise.all(
+      ambherinventoryproducts.map(async (product) => {
+        try {
+          const response = await fetch(`/api/patientorderambher/ambherproductsoldcount/${product.ambherinventoryproductid}`);
+          if (!response.ok) throw new Error("Failed to fetch");
+
+          const data = await response.json();
+          counts[product.ambherinventoryproductid] = data.sold || 0;
+        } catch (error) {
+          console.error("Error fetching sold count for", product.ambherinventoryproductid, error);
+          counts[product.ambherinventoryproductid] = 0;
+        }
+      })
+    );
+
+    setambherproductsoldCounts(counts);
+  };
+
+  if (ambherinventoryproducts.length > 0) {
+    fetchAllSoldCounts();
+  }
+}, [ambherinventoryproducts]);
+
+
+
+
+
+
+//Fetching bautistaproducts sold count  
+useEffect(() => {
+  const fetchSoldCount = async () => {
+    if (!selectedbautistaproduct?.bautistainventoryproductid) return;
+
+    try {
+      const response = await fetch(`/api/patientorderbautista/bautistaproductsoldcount/${selectedbautistaproduct.bautistainventoryproductid}`);
+      if (!response.ok) throw new Error("Failed to fetch sold count");
+      const data = await response.json();
+      setbautistaproductsoldCount(data.sold || 0);
+    } catch (error) {
+      console.error("Error fetching sold count:", error);
+    }
+  };
+
+  fetchSoldCount();
+}, [selectedbautistaproduct]);
+
+
+
+
+
+
+//Fetching bautistaproducts sold count for every card display 
+useEffect(() => {
+  const fetchAllSoldCounts = async () => {
+    const counts = {};
+
+    await Promise.all(
+      bautistainventoryproducts.map(async (product) => {
+        try {
+          const response = await fetch(`/api/patientorderbautista/bautistaproductsoldcount/${product.bautistainventoryproductid}`);
+          if (!response.ok) throw new Error("Failed to fetch");
+
+          const data = await response.json();
+          counts[product.bautistainventoryproductid] = data.sold || 0;
+        } catch (error) {
+          console.error("Error fetching sold count for", product.bautistainventoryproductid, error);
+          counts[product.bautistainventoryproductid] = 0;
+        }
+      })
+    );
+
+    setbautistaproductsoldCounts(counts);
+  };
+
+  if (bautistainventoryproducts.length > 0) {
+    fetchAllSoldCounts();
+  }
+}, [bautistainventoryproducts]);
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1433,7 +1560,7 @@ const submitpatientorderbautista = async (e) => {
                 <div className=" mx-1  w-fit rounded-md py-1 px-2  rounded-1xl h-fit  mt-2 break-words min-w-0 bg-[#F0F6FF]"><h1 className={`font-medium   text-[#0d0d0d] text-[13px] min-w-0 break-words ${product.ambherinventoryproductquantity === 0 ? 'text-gray-400': ''}`}>{product.ambherinventoryproductcategory}</h1></div>
                     <div className="w-full h-auto ml-2 mt-2 "><h1 className={`font-semibold  text-[15px] min-w-0 break-words ${product.ambherinventoryproductquantity === 0 ? 'text-gray-400': ''}`}>{product.ambherinventoryproductname}</h1></div>
                     <div className="w-fit h-auto ml-2 mt-1 "><h1 className={`font-albertsans font-bold text-[18px] min-w-0 break-words ${product.ambherinventoryproductquantity === 0 ? 'text-gray-400': ''}`}>₱ {product.ambherinventoryproductprice?.toLocaleString()}</h1></div>
-                <div className="w-full h-auto ml-2 mt-5 mb-5 "><h1 className={`font-albertsans font-medium text-[#4e4f4f] text-[15px] min-w-0 break-words ${product.ambherinventoryproductquantity === 0 ? 'text-gray-400': ''}`}>0 Sold</h1></div>
+                <div className="w-full h-auto ml-2 mt-5 mb-5 "><h1 className={`font-albertsans font-medium text-[#4e4f4f] text-[15px] min-w-0 break-words ${product.ambherinventoryproductquantity === 0 ? 'text-gray-400': ''}`}>{ambherproductsoldCounts[product.ambherinventoryproductid] ?? 0} Sold</h1></div>
               </div>
                   ))
                 )}
@@ -1568,7 +1695,7 @@ const submitpatientorderbautista = async (e) => {
                                           <img src={starimage} className="w-5 h-5"/>
                                           <p className="font-albertsans ml-2 mt-1 text-[15px] font-semibold">4.8</p><span className="mt-1 text-[13px] pr-3 ml-2">(89 reviews)</span>
                                           
-                                          <p className="mt-1 font-albertsans border-l-2  border-[#8c8c8c] pl-3  text-[13px]">50 sold</p>
+                                          <p className="mt-1 font-albertsans border-l-2  border-[#8c8c8c] pl-3  text-[13px]">{ambherproductsoldCount} sold</p>
                                         </div>
                         
                                   
@@ -1743,7 +1870,7 @@ const submitpatientorderbautista = async (e) => {
                 <div className=" mx-1  w-fit rounded-md py-1 px-2  rounded-1xl h-fit  mt-2 break-words min-w-0 bg-[#F0F6FF]"><h1 className={`font-medium   text-[#0d0d0d] text-[13px] min-w-0 break-words ${product.bautistainventoryproductquantity === 0 ? 'text-gray-400': ''}`}>{product.bautistainventoryproductcategory}</h1></div>
                     <div className="w-full h-auto ml-2 mt-2 "><h1 className={`font-semibold  text-[15px] min-w-0 break-words ${product.bautistainventoryproductquantity === 0 ? 'text-gray-400': ''}`}>{product.bautistainventoryproductname}</h1></div>
                     <div className="w-fit h-auto ml-2 mt-1 "><h1 className={`font-albertsans font-bold text-[18px] min-w-0 break-words ${product.bautistainventoryproductquantity === 0 ? 'text-gray-400': ''}`}>₱ {product.bautistainventoryproductprice?.toLocaleString()}</h1></div>
-                <div className="w-full h-auto ml-2 mt-5 mb-5 "><h1 className={`font-albertsans font-medium text-[#4e4f4f] text-[15px] min-w-0 break-words ${product.bautistainventoryproductquantity === 0 ? 'text-gray-400': ''}`}>0 Sold</h1></div>
+                <div className="w-full h-auto ml-2 mt-5 mb-5 "><h1 className={`font-albertsans font-medium text-[#4e4f4f] text-[15px] min-w-0 break-words ${product.bautistainventoryproductquantity === 0 ? 'text-gray-400': ''}`}>{bautistaproductsoldCounts[product.bautistainventoryproductid] ?? 0} Sold</h1></div>
               </div>
                   ))
                 )}
@@ -1854,7 +1981,7 @@ const submitpatientorderbautista = async (e) => {
                                           <img src={starimage} className="w-5 h-5"/>
                                           <p className="font-albertsans ml-2 mt-1 text-[15px] font-semibold">4.8</p><span className="mt-1 text-[13px] pr-3 ml-2">(89 reviews)</span>
                                           
-                                          <p className="mt-1 font-albertsans border-l-2  border-[#8c8c8c] pl-3  text-[13px]">50 sold</p>
+                                          <p className="mt-1 font-albertsans border-l-2  border-[#8c8c8c] pl-3  text-[13px]">{bautistaproductsoldCount} sold</p>
                                         </div>
                         
                                   

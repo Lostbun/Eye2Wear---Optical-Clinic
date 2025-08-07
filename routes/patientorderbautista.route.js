@@ -6,6 +6,7 @@ import {
      getorderbautistasbyemail,
      updateorderbautistabyid,
      deleteorderbautistabyid,
+     getbautistaproductsoldcountbyid,
 } from '../controllers/patientorderbautista.controller.js';
 
 
@@ -15,6 +16,7 @@ patientorderbautistarouter.post('/', createpatientorderbautista);
 patientorderbautistarouter.get('/', getallpatientorderbautistas);
 patientorderbautistarouter.get('/email/:email', getorderbautistasbyemail);
 patientorderbautistarouter.get('/:id', getpatientorderbautistabyid);
+patientorderbautistarouter.get("/bautistaproductsoldcount/:productid", getbautistaproductsoldcountbyid);
 patientorderbautistarouter.put('/:id', updateorderbautistabyid);
 patientorderbautistarouter.delete('/:id', deleteorderbautistabyid);
 
