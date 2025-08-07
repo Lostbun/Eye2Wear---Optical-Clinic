@@ -62,5 +62,49 @@ AmbherInventoryProductSchema.plugin(AutoIncrement(mongoose),{
 
 
 
+AmbherInventoryProductSchema.pre('save', async function(next) {
+  if (this.isModified('ambherinventoryproductquantity')) {
+
+    try {
+      await mongoose.model("Patientwishlist").updateMany(
+        { 
+          patientwishlistinventoryproductid: this.ambherinventoryproductid,
+          clinicType: 'ambher'},
+        { 
+          $set: { 
+            patientwishlistinventoryproductquantity: this.ambherinventoryproductquantity 
+          } 
+        });
+
+    } catch (err) {
+      console.error('Failed updating user wishlist product quantities:', err);
+    }
+
+  }next();
+});
+
+
+
+
+AmbherInventoryProductSchema.post('findOneAndUpdate', async function(doc) {
+  if (doc && doc.ambherinventoryproductquantity !== undefined) {
+    try {
+      await mongoose.model("Patientwishlist").updateMany(
+        { 
+          patientwishlistinventoryproductid: doc.ambherinventoryproductid,
+          clinicType: 'ambher'},
+        { 
+          $set: { 
+            patientwishlistinventoryproductquantity: doc.ambherinventoryproductquantity 
+        }});
+
+
+    } catch (err) {
+      console.error('Failed updating user wishlist product quantities:', err);
+    }
+  }
+});
+
+
 
 export default mongoose.model("AmbherInventoryProduct", AmbherInventoryProductSchema);

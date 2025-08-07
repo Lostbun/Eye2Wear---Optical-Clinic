@@ -59,4 +59,50 @@ BautistaInventoryProductSchema.plugin(AutoIncrement(mongoose),{
 
 
 
+
+BautistaInventoryProductSchema.pre('save', async function(next) {
+  if (this.isModified('bautistainventoryproductquantity')) {
+    
+    try {
+      await mongoose.model("Patientwishlist").updateMany(
+        { 
+          patientwishlistinventoryproductid: this.bautistainventoryproductid,
+          clinicType: 'bautista'},
+          { 
+          $set: { 
+            patientwishlistinventoryproductquantity: this.bautistainventoryproductquantity 
+          } 
+        });
+
+    } catch (err) {
+      console.error('Failed updating user bautista wishlist product quantities:', err);
+    }
+
+  } next();
+});
+
+
+
+BautistaInventoryProductSchema.post('findOneAndUpdate', async function(doc) {
+  if (doc && doc.bautistainventoryproductquantity !== undefined) {
+    try {
+      await mongoose.model("Patientwishlist").updateMany(
+        { 
+          patientwishlistinventoryproductid: doc.bautistainventoryproductid,
+          clinicType: 'bautista' },
+        { 
+          $set: { 
+            patientwishlistinventoryproductquantity: doc.bautistainventoryproductquantity 
+          }});
+
+    } catch (err) {
+      console.error('Failed updating user bautista wishlist product quantities:', err);
+    }
+  }
+});
+
+
+
+
+
 export default mongoose.model("BautistaInventoryProduct", BautistaInventoryProductSchema);
