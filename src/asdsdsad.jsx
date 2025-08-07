@@ -1,39 +1,50 @@
-                {bautistaloadingproducts ? (
-                  <div>Loading Ambher Products...</div> 
-                ): bautistainventoryproducts.length === 0 ? (
-                  <div>No Products Found...</div> 
-                ):(
-                  [...filteredproducts]
-                  .sort((a, b) => {
-                    const aquant = a.bautistainventoryproductquantity || 0;
-                    const bquant = b.bautistainventoryproductquantity || 0;
-                    return aquant <= 10 ? (bquant <= 10 ? 0 : -1) : 1;
-                  }).map((product) => (
-              <div key={product.bautistainventoryproductid} onClick={() => {setshowaddbautistainventoryproductdialog(true);
-                                                                           setselectedbautistaproduct(product);
-                                                                           setcurrentimageindex(0);
-                                                                           setbautistainventorycategorynamebox(product?.bautistainventoryproductcategory || '');
-                                                                           setaddbautistainventoryproductname(product?.bautistainventoryproductname || '');
-                                                                           setaddbautistainventoryproductbrand(product?.bautistainventoryproductbrand || '');
-                                                                           setaddbautistainventoryproductmodelnumber(product?.bautistainventoryproductmodelnumber || '');
-                                                                           setaddbautistainventoryproductdescription(product?.bautistainventoryproductdescription || '');
-                                                                           setaddbautistainventoryproductprice(product?.bautistainventoryproductprice || 0);
-                                                                           setaddbautistainventoryproductquantity(product?.bautistainventoryproductquantity || 0);
-                                                                           setaddbautistainventoryproductimagepreviewimages(product?.bautistainventoryproductimagepreviewimages || []);
-              }} className="motion-preset-slide-up mr-3 mb-3 flex flex-col items-start justify-start w-[220px] h-auto shadow-md bg-white rounded-2xl ">
-                <img src={product.bautistainventoryproductimagepreviewimages[0] || defaultimageplaceholder}  alt={product.bautistainventoryproductname} className={`rounded-tr-2xl  rounded-tl-2xl w-full h-45 ${product.bautistainventoryproductquantity === 0 ? 'opacity-50': ''}`}/>
-                
-                
-                {product.bautistainventoryproductquantity === 0 ? (<div className="top-2 right-2 absolute px-2 py-1 rounded-md text-xs font-semibold bg-red-500"><h1 className="text-white">Out of Stock</h1></div>): 
-                 product.bautistainventoryproductquantity <= 10 ? (<div className="top-2 right-2 absolute px-2 py-1 rounded-md text-xs font-semibold bg-yellow-500"><h1 className="text-white">Low Stock</h1></div>): null}
+         <div className=" w-[100%] registration-container">
+
+                                    
+                                        <div className="flex items-center mx-1  w-fit  h-fit  mt-2 break-words min-w-0 "><h1 className="font-albertsans rounded-md py-1 px-2  rounded-1xl bg-[#F0F6FF] font-medium   text-[#0d0d0d]  min-w-0 break-words ">{bautistainventorycategorynamebox}</h1>
+                                        <p className="font-albertsans ml-1">by</p>
+                                        <p className="font-albertsans ml-1 font-semibold  ">{addbautistainventoryproductbrand}</p>
+                                        </div>
+                                        
+                                     
+
+                                        <h1 className="font-albertsans mt-3 min-w-0 break-words h-fit w-full font-albertsans font-bold text-[#212121] text-[29px]">{addbautistainventoryproductname}</h1>
+                         
+                                        <div className="mt-1 flex items-center">
+                                          <img src={starimage} className="w-5 h-5"/>
+                                          <p className="font-albertsans ml-2 mt-1 text-[15px] font-semibold">4.8</p><span className="mt-1 text-[13px] pr-3 ml-2">(89 reviews)</span>
+                                          
+                                          <p className="mt-1 font-albertsans border-l-2  border-[#8c8c8c] pl-3  text-[13px]">50 sold</p>
+                                        </div>
+                        
+                                  
+                                        <p className="mt-5 font-albertsans font-semibold text-[#478d12] text-[40px]">₱{Number(addbautistainventoryproductprice).toLocaleString('en-PH', {minimumFractionDigits: 2,  maximumFractionDigits: 2})}</p>
+                                  
+                                        <p className="font-albertsans mt-6  font-medium text-[#020202] text-[18px]">Description</p>
+                                        <p className="font-albertsans font-semibold text-[#4b4b4b] mt-3">{addbautistainventoryproductdescription}</p>
+                                      
+                                       
+
+                                      {addbautistainventoryproductquantity === 0 ? ( 
+                                        <div className="bg-gray-400 py-2 px-3 rounded-md justify-center  gap-4 mt-15 flex items-center">
+                                          <p className="font-albertsans font-semibold ">Out of Stock</p>
+                                         </div>
+                                       
+                                      ):(
+                                        <div className="gap-4 mt-15 flex items-center">
+                                          <p className="font-albertsans font-semibold ">In Stock:</p>
+                                          <p className="font-albertsans font-semibold text-[#616161] text-[14px]">{addbautistainventoryproductquantity} pieces available </p>
+                                         </div>
+                                      )}    
 
 
-                <div className="mx-1  w-fit rounded-md py-1 px-2  rounded-1xl h-fit  bg-[#F0F6FF] mt-2 break-words min-w-0 "><h1 className={`font-medium   text-[13px] min-w-0 break-words text-[#0d0d0d] ${product.bautistainventoryproductquantity === 0 ? 'text-gray-400': ''}`} >{product.bautistainventoryproductcategory}</h1></div>
-                <div className="w-full h-auto ml-2 mt-2 "><h1 className={`font-semibold  text-[15px] min-w-0 break-words text-[#0d0d0d] ${product.bautistainventoryproductquantity === 0 ? 'text-gray-400': ''}`}>{product.bautistainventoryproductname}</h1></div>
-                <div className="w-fit h-auto ml-2 mt-1 "><h1 className={`font-albertsans font-bold text-[18px] min-w-0 break-words ${product.bautistainventoryproductquantity === 0 ? 'text-gray-400': ''}`}>₱{Number(product.bautistainventoryproductprice).toLocaleString('en-PH', {minimumFractionDigits: 2,  maximumFractionDigits: 2})}</h1></div>
-                <div className="w-full h-auto ml-2 mt-5 mb-1 "><h1 className={`font-albertsans font-medium  text-[15px] min-w-0 break-words ${product.bautistainventoryproductquantity === 0 ? 'text-red-600' : product.bautistainventoryproductquantity <= 10 ? 'text-yellow-700' : 'text-[#4e4f4f]'}`}>{product.bautistainventoryproductquantity === 0 ? ('Out Of Stock'):(`In Stock: ${product.bautistainventoryproductquantity}${product.bautistainventoryproductquantity <= 10 ? ' (Low)': ''}`)}</h1></div>   
-                <div className="w-full h-auto ml-2 mb-3  flex items-center"> <p className="font-albertsans font-medium  text-[15px] text-[#4e4f4f]">Wishlisted: {wishlistCounts[product.bautistainventoryproductid] ?? 0}  </p></div>
-                
-              </div>
-                  ))
-                )}
+
+                                           <div className="flex w-auto items-center justify-between mt-10 h-22 w-full bg-[#fbfbfb] rounded-2xl">
+                                              <div className="gap-2 h-full w-40 flex items-center flex-col justify-center"><img src={find} className="w-8 h-8"/><p className="font-albertsans text-[13px] font-medium">Browse Products</p></div>
+                                              <div className="gap-2 h-full w-30 flex items-center flex-col justify-center"><img src={nextimage} className="w-8 h-8"/></div>
+                                              <div className="gap-2 h-full w-auto min-w-[160px] flex items-center flex-col justify-center"><img src={storeimage} className="w-8 h-8"/> <p className="font-albertsans text-[13px] font-medium whitespace-nowrap">Go to Bautista Eye Center</p></div>
+                                              <div className="gap-2 h-full w-30 flex items-center flex-col justify-center"><img src={nextimage} className="w-8 h-8"/></div>
+                                              <div className="gap-2 h-full w-40 flex items-center flex-col justify-center"><img src={inquire} className="w-8 h-8"/><p className=" font-albertsans text-[13px] font-medium">Inquire</p></div>
+                                           </div>
+                                   
+                                        </div>

@@ -8,13 +8,13 @@ import defaultimageplaceholder from "../src/assets/images/defaultimageplaceholde
 import heartblack from "../src/assets/images/heartblack.png";
 import heartwhite from "../src/assets/images/heartwhite.png";
 import heartfilled from "../src/assets/images/heartfilled.png";
-import packageimage from "../src/assets/images/shopping-bag.png";
+
 import storeimage from "../src/assets/images/store.png";
 import profileuser from "../src/assets/images/profile-user.png";
 import logout from "../src/assets/images/logout.png";
-
+import inquire from "../src/assets/images/inquire.png";
+import find from "../src/assets/images/find.png";
 import nextimage from "../src/assets/images/next.png";
-import paymentimage from "../src/assets/images/card-payment.png";
 import { AmbherinventorycategoryBox } from "./components/AmbherinventorycategoryBox";
 import { BautistainventorycategoryBox } from "./components/BautistainventorycategoryBox";
 import Rating from '@mui/material/Rating';
@@ -1505,14 +1505,16 @@ const submitpatientorderbautista = async (e) => {
   
                                 <div className=" relative">
                                 
+
+
+                                 {addambherinventoryproductquantity === 0 &&(
+
                                 <div className="flex items-center justify-end">
-                         
-                                
                                  <img  src={getambherHeartImage()} onClick={ambherhearthandleClick} onMouseEnter={() => !ambherheartisClicked && setambherheartisHovered(true)} onMouseLeave={() => !ambherheartisClicked && setambherheartisHovered(false)}  className={` ease-in-out duration-300 transition-all  border-1  w-10 h-10 p-2 rounded-2xl cursor-pointer ${ambherheartisClicked ? "bg-red-400" : "hover:bg-red-400"}`}/>
                                  <h1 className="ml-2 text-[17px] font-semibold text-[#383838]">Wishlist ({wishlistCounts[selectedambherproduct?.ambherinventoryproductid] || 0})</h1>     
-
-                                 
                                 </div>
+                                 )}
+
                                 <img  className="mt-2 w-120 object-cover rounded-2xl h-120" src={(selectedambherproduct?.ambherinventoryproductimagepreviewimages?.[ambhercurrentimageindex]) || (addambherinventoryproductimagepreviewimages?.[ambhercurrentimageindex]) || defaultimageplaceholder}/>
 
                                      {((selectedambherproduct?.ambherinventoryproductimagepreviewimages?.length || 0) > 1 || 
@@ -1576,62 +1578,27 @@ const submitpatientorderbautista = async (e) => {
                                         <p className="font-albertsans font-semibold text-[#4b4b4b] mt-3">{addambherinventoryproductdescription}</p>
                                       
                                        
-                                           {addambherinventoryproductquantity === 0 ? (                                        
-                         <div  className="mt-10    font-albertsans bg-[#a7a7a7]  hover:rounded-2xl transition-all duration-300 ease-in-out rounded-2xl px-25 py-2.5 text-center flex justify-center items-center "><span className="font-albertsans font-bold text-[#3f3f3f] text-[17px]">Out of Stock</span></div> 
-                         ):       
-                         addambherinventoryproductquantity >= 1 ? (
-                           <div>
-                                  <div className="gap-4 mt-15 flex items-center">
-                                          <p className="font-albertsans font-semibold ">Quantity:</p>
-                                        <div className="w-auto h-10  flex items-center justify-between border-1 rounded-2xl">
-                                          <div   className={`font-bold h-full w-10 bg-gray-100 rounded-l-2xl flex items-center justify-center cursor-pointer select-none ${ambhercount <= 1 ? "opacity-50 cursor-not-allowed" : "active:bg-gray-200"}`} style={{ WebkitTapHighlightColor: 'transparent' }} type="button" onClick={() => setambherCount (c => Math.max(1, c - 1))}>-</div>
-                                          <span className="px-6 font-semibold">{ambhercount}</span>
-                                          <div  className={`font-bold h-full w-10 bg-gray-100 rounded-r-2xl flex items-center justify-center cursor-pointer select-none  ${ambhercount >= addambherinventoryproductquantity ? "opacity-50 cursor-not-allowed" : "active:bg-gray-200"}`} style={{ WebkitTapHighlightColor: 'transparent' }}  type="button" onClick={() => setambherCount ((c) => Math.min(c + 1, addambherinventoryproductquantity))}>+</div>
+
+                                      {addambherinventoryproductquantity === 0 ? ( 
+                                        <div className="bg-gray-400 py-2 px-3 rounded-md justify-center  gap-4 mt-15 flex items-center">
+                                          <p className="font-albertsans font-semibold ">Out of Stock</p>
                                          </div>
-                                               <p className="font-albertsans font-semibold text-[#616161] text-[14px]">{addambherinventoryproductquantity} pieces available </p>
-                                       </div>
+                                       
+                                      ):(
+                                        <div className="gap-4 mt-15 flex items-center">
+                                          <p className="font-albertsans font-semibold ">In Stock:</p>
+                                          <p className="font-albertsans font-semibold text-[#616161] text-[14px]">{addambherinventoryproductquantity} pieces available </p>
+                                         </div>
+                                      )}    
 
 
 
-                                                <div className="flex items-center mt-5">
-                                        
-                                      <p className="font-albertsans font-semibold ">Select Pickup Date:</p>   
-                                      <input   className="w-38 justify-center border-b-2 border-[#272727] ml-3 text-[16px] font-semibold [&::-webkit-calendar-picker-indicator]:filter [&::-webkit-calendar-picker-indicator]:invert-[70%]"
-                                               value={patientorderambherproductchosenpickupdate}  
-                                               onChange={(e) => {const selecteddate = new Date(e.target.value);
-                                                                  if (selecteddate < dateinphtomorrow) {
-                                                                    e.preventDefault();
-                                                                    return;
-                                                                  }
-                                                                  setpatientorderambherproductchosenpickupdate(e.target.value);  }}  
-                                                                  type="date"
-                                                                  name="patientorderambherproductchosenpickupdate"
-                                                                  id="patientorderambherproductchosenpickupdate"
-                                                                  min={dateinphtomorrow.toISOString().split('T')[0]}
-                                                                  max={dateinphmaxdate.toISOString().split('T')[0]}
-                                                   placeholder=""/> </div>
-                                
-
-
-
-                                           {!patientorderambherproductchosenpickupdate && (                                
-                                           <div onClick={() => setshowpatientorderambherscheduleandreview(true)} className="mt-10    font-albertsans bg-[#a7a7a7]  hover:rounded-2xl transition-all duration-300 ease-in-out rounded-2xl px-25 py-2.5 text-center flex justify-center items-center "><span className="font-albertsans font-bold text-[#3f3f3f] text-[17px]">Select Date for Order</span></div>
-                                            )} 
-                                          
-                                           {patientorderambherproductchosenpickupdate && (
-                                            <div  onClick={(e) => submitpatientorderambher(e)} className="mt-10 hover:cursor-pointer hover:scale-102  font-albertsans bg-[#117db0]  hover:rounded-2xl transition-all duration-300 ease-in-out rounded-2xl px-25 py-2.5 text-center flex justify-center items-center "><span className="font-albertsans font-bold text-white text-[17px]">Submit Order Request</span></div>
-
-                                           )}</div>
-
-                                           ): null}
-
-
-                                           <div className="flex items-center justify-between mt-10 h-22 w-full bg-[#fbfbfb] rounded-2xl">
-                                              <div className="gap-2 h-full w-40 flex items-center flex-col justify-center"><img src={packageimage} className="w-8 h-8"/><p className="font-albertsans text-[13px] font-medium">Prepare Order</p></div>
-                                              <div className="gap-2 h-full w-40 flex items-center flex-col justify-center"><img src={nextimage} className="w-8 h-8"/></div>
-                                              <div className="gap-2 h-full w-40 flex items-center flex-col justify-center"><img src={storeimage} className="w-8 h-8"/><p className="font-albertsans text-[13px] font-medium">Store Pickup</p></div>
-                                              <div className="gap-2 h-full w-40 flex items-center flex-col justify-center"><img src={nextimage} className="w-8 h-8"/></div>
-                                              <div className="gap-2 h-full w-40 flex items-center flex-col justify-center"><img src={paymentimage} className="w-8 h-8"/><p className=" font-albertsans text-[13px] font-medium">Payment</p></div>
+                                           <div className="flex w-auto items-center justify-between mt-10 h-22 w-full bg-[#fbfbfb] rounded-2xl">
+                                              <div className="gap-2 h-full w-40 flex items-center flex-col justify-center"><img src={find} className="w-8 h-8"/><p className="font-albertsans text-[13px] font-medium">Browse Products</p></div>
+                                              <div className="gap-2 h-full w-30 flex items-center flex-col justify-center"><img src={nextimage} className="w-8 h-8"/></div>
+                                              <div className="gap-2 h-full w-auto min-w-[160px] flex items-center flex-col justify-center"><img src={storeimage} className="w-8 h-8"/> <p className="font-albertsans text-[13px] font-medium whitespace-nowrap">Go to Ambher Optical</p></div>
+                                              <div className="gap-2 h-full w-30 flex items-center flex-col justify-center"><img src={nextimage} className="w-8 h-8"/></div>
+                                              <div className="gap-2 h-full w-40 flex items-center flex-col justify-center"><img src={inquire} className="w-8 h-8"/><p className=" font-albertsans text-[13px] font-medium">Inquire</p></div>
                                            </div>
                                    
                                         </div>
@@ -1871,7 +1838,7 @@ const submitpatientorderbautista = async (e) => {
                                   
                                   
               
-                                        <div className=" w-[100%] registration-container">
+                                               <div className=" w-[100%] registration-container">
 
                                     
                                         <div className="flex items-center mx-1  w-fit  h-fit  mt-2 break-words min-w-0 "><h1 className="font-albertsans rounded-md py-1 px-2  rounded-1xl bg-[#F0F6FF] font-medium   text-[#0d0d0d]  min-w-0 break-words ">{bautistainventorycategorynamebox}</h1>
@@ -1882,6 +1849,7 @@ const submitpatientorderbautista = async (e) => {
                                      
 
                                         <h1 className="font-albertsans mt-3 min-w-0 break-words h-fit w-full font-albertsans font-bold text-[#212121] text-[29px]">{addbautistainventoryproductname}</h1>
+                         
                                         <div className="mt-1 flex items-center">
                                           <img src={starimage} className="w-5 h-5"/>
                                           <p className="font-albertsans ml-2 mt-1 text-[15px] font-semibold">4.8</p><span className="mt-1 text-[13px] pr-3 ml-2">(89 reviews)</span>
@@ -1897,70 +1865,26 @@ const submitpatientorderbautista = async (e) => {
                                       
                                        
 
-
-                        {addbautistainventoryproductquantity === 0 ? (                                        
-                         <div  className="mt-10    font-albertsans bg-[#a7a7a7]  hover:rounded-2xl transition-all duration-300 ease-in-out rounded-2xl px-25 py-2.5 text-center flex justify-center items-center "><span className="font-albertsans font-bold text-[#3f3f3f] text-[17px]">Out of Stock</span></div> 
-                         ):       
-                         addbautistainventoryproductquantity >= 1 ? (
-                           <div>
-                                  <div className="gap-4 mt-15 flex items-center">
-                                          <p className="font-albertsans font-semibold ">Quantity:</p>
-                                        <div className="w-auto h-10  flex items-center justify-between border-1 rounded-2xl">
-                                          <div   className={`font-bold h-full w-10 bg-gray-100 rounded-l-2xl flex items-center justify-center cursor-pointer select-none ${bautistacount <= 1 ? "opacity-50 cursor-not-allowed" : "active:bg-gray-200"}`} style={{ WebkitTapHighlightColor: 'transparent' }} type="button" onClick={() => setbautistaCount (c => Math.max(1, c - 1))}>-</div>
-                                          <span className="px-6 font-semibold">{bautistacount}</span>
-                                          <div  className={`font-bold h-full w-10 bg-gray-100 rounded-r-2xl flex items-center justify-center cursor-pointer select-none  ${bautistacount >= addbautistainventoryproductquantity ? "opacity-50 cursor-not-allowed" : "active:bg-gray-200"}`} style={{ WebkitTapHighlightColor: 'transparent' }}  type="button" onClick={() => setbautistaCount ((c) => Math.min(c + 1, addbautistainventoryproductquantity))}>+</div>
+                                      {addbautistainventoryproductquantity === 0 ? ( 
+                                        <div className="bg-gray-400 py-2 px-3 rounded-md justify-center  gap-4 mt-15 flex items-center">
+                                          <p className="font-albertsans font-semibold ">Out of Stock</p>
                                          </div>
-                                               <p className="font-albertsans font-semibold text-[#616161] text-[14px]">{addbautistainventoryproductquantity} pieces available </p>
-                                       </div>
+                                       
+                                      ):(
+                                        <div className="gap-4 mt-15 flex items-center">
+                                          <p className="font-albertsans font-semibold ">In Stock:</p>
+                                          <p className="font-albertsans font-semibold text-[#616161] text-[14px]">{addbautistainventoryproductquantity} pieces available </p>
+                                         </div>
+                                      )}    
 
 
 
-                                                <div className="flex items-center mt-5">
-                                        
-                                      <p className="font-albertsans font-semibold ">Select Pickup Date:</p>   
-                                      <input   className="w-38 justify-center border-b-2 border-[#272727] ml-3 text-[16px] font-semibold [&::-webkit-calendar-picker-indicator]:filter [&::-webkit-calendar-picker-indicator]:invert-[70%]"
-                                               value={patientorderbautistaproductchosenpickupdate}  
-                                               onChange={(e) => {const selecteddate = new Date(e.target.value);
-                                                                  if (selecteddate < dateinphtomorrow) {
-                                                                    e.preventDefault();
-                                                                    return;
-                                                                  }
-                                                                  setpatientorderbautistaproductchosenpickupdate(e.target.value);  }}  
-                                                                  type="date"
-                                                                  name="patientorderbautistaproductchosenpickupdate"
-                                                                  id="patientorderbautistaproductchosenpickupdate"
-                                                                  min={dateinphtomorrow.toISOString().split('T')[0]}
-                                                                  max={dateinphmaxdate.toISOString().split('T')[0]}
-                                                   placeholder=""/> </div>
-                                
-
-
-
-                                           {!patientorderbautistaproductchosenpickupdate && (                                
-                                           <div onClick={() => setshowpatientorderbautistascheduleandreview(true)} className="mt-10    font-albertsans bg-[#a7a7a7]  hover:rounded-2xl transition-all duration-300 ease-in-out rounded-2xl px-25 py-2.5 text-center flex justify-center items-center "><span className="font-albertsans font-bold text-[#3f3f3f] text-[17px]">Select Date for Order</span></div>
-                                            )} 
-                                          
-                                           {patientorderbautistaproductchosenpickupdate && (
-                                            <div  onClick={(e) => submitpatientorderbautista(e)} className="mt-10 hover:cursor-pointer hover:scale-102  font-albertsans bg-[#117db0]  hover:rounded-2xl transition-all duration-300 ease-in-out rounded-2xl px-25 py-2.5 text-center flex justify-center items-center "><span className="font-albertsans font-bold text-white text-[17px]">Submit Order Request</span></div>
-
-                                           )}</div>
-
-                                           ): null}
-
-
-                                        
-
-
-
-
-
-
-                                           <div className="flex items-center justify-between mt-10 h-22 w-full bg-[#fbfbfb] rounded-2xl">
-                                              <div className="gap-2 h-full w-40 flex items-center flex-col justify-center"><img src={packageimage} className="w-8 h-8"/><p className="font-albertsans text-[13px] font-medium">Prepare Order</p></div>
-                                              <div className="gap-2 h-full w-40 flex items-center flex-col justify-center"><img src={nextimage} className="w-8 h-8"/></div>
-                                              <div className="gap-2 h-full w-40 flex items-center flex-col justify-center"><img src={storeimage} className="w-8 h-8"/><p className="font-albertsans text-[13px] font-medium">Store Pickup</p></div>
-                                              <div className="gap-2 h-full w-40 flex items-center flex-col justify-center"><img src={nextimage} className="w-8 h-8"/></div>
-                                              <div className="gap-2 h-full w-40 flex items-center flex-col justify-center"><img src={paymentimage} className="w-8 h-8"/><p className=" font-albertsans text-[13px] font-medium">Payment</p></div>
+                                           <div className="flex w-auto items-center justify-between mt-10 h-22 w-full bg-[#fbfbfb] rounded-2xl">
+                                              <div className="gap-2 h-full w-40 flex items-center flex-col justify-center"><img src={find} className="w-8 h-8"/><p className="font-albertsans text-[13px] font-medium">Browse Products</p></div>
+                                              <div className="gap-2 h-full w-30 flex items-center flex-col justify-center"><img src={nextimage} className="w-8 h-8"/></div>
+                                              <div className="gap-2 h-full w-auto min-w-[160px] flex items-center flex-col justify-center"><img src={storeimage} className="w-8 h-8"/> <p className="font-albertsans text-[13px] font-medium whitespace-nowrap">Go to Bautista Eye Center</p></div>
+                                              <div className="gap-2 h-full w-30 flex items-center flex-col justify-center"><img src={nextimage} className="w-8 h-8"/></div>
+                                              <div className="gap-2 h-full w-40 flex items-center flex-col justify-center"><img src={inquire} className="w-8 h-8"/><p className=" font-albertsans text-[13px] font-medium">Inquire</p></div>
                                            </div>
                                    
                                         </div>
