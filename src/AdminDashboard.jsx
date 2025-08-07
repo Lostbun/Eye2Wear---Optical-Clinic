@@ -4374,23 +4374,53 @@ const [showdeleteambherproduct, setshowdeleteambherproduct] = useState(false);
 const [selecteddeleteambherproduct, setselecteddeleteambherproduct] = useState([]);
 const [wishlistCounts, setWishlistCounts] = useState({});
 
+
+
+
+
+const fetchWishlistCounts = async (productIds, clinicType) => {
+  try {
+    const idsParam = Array.isArray(productIds) ? productIds.join(',') : productIds;
+    
+    const response = await fetch(
+      `/api/patientwishlistinventoryproduct/wishlist-count/${idsParam}/${clinicType}`,
+      {
+        headers: {
+          'Authorization': `Bearer ${currentusertoken}`
+        }
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch wishlist counts. Status: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    return data;
+  } catch(error) {
+    console.error("Error fetching wishlist counts:", error);
+    return Array.isArray(productIds) ? {} : 0;
+  }
+};
+
+
 useEffect(() => {
   const fetchAllWishlistCounts = async () => {
-    const counts = {};
-
-    for (const product of ambherinventoryproducts) {
-      const count = await fetchWishlistCounts(product.ambherinventoryproductid, 'ambher');
-      counts[product.ambherinventoryproductid] = count;
+    try {
+      const productIds = ambherinventoryproducts.map(p => p.ambherinventoryproductid);
+      if (productIds.length === 0) return;
+      
+      const counts = await fetchWishlistCounts(productIds, 'ambher');
+      setWishlistCounts(prev => ({ ...prev, ...counts }));
+    } catch(error) {
+      console.error("Error fetching wishlist counts:", error);
     }
-
-    setWishlistCounts(counts);
   };
 
   if (ambherinventoryproducts.length > 0) {
     fetchAllWishlistCounts();
   }
-}, [ambherinventoryproducts]);
- 
+}, [ambherinventoryproducts, currentusertoken]);
 
 
 
@@ -4794,23 +4824,23 @@ const deleteambherproduct = async (e) => {
 
 
 const [showaddbautistainventoryproductdialog, setshowaddbautistainventoryproductdialog] = useState(false);
-          const [bautistainventorycategorynamebox, setbautistainventorycategorynamebox] = useState("");
-          const [addbautistainventoryproductname, setaddbautistainventoryproductname] = useState("");
-          const [addbautistainventoryproductbrand, setaddbautistainventoryproductbrand] = useState("");
-          const [addbautistainventoryproductmodelnumber, setaddbautistainventoryproductmodelnumber] = useState("");
-          const [addbautistainventoryproductdescription, setaddbautistainventoryproductdescription] = useState("");
-          const [addbautistainventoryproductprice, setaddbautistainventoryproductprice] = useState();
-          const [addbautistainventoryproductquantity, setaddbautistainventoryproductquantity] = useState();
-          const [addbautistainventoryproductimageselectedimages, setaddbautistainventoryproductimageselectedimages] = useState([]);
-          const [addbautistainventoryproductimagepreviewimages, setaddbautistainventoryproductimagepreviewimages] = useState([]);
-          const [bautistacurrentimageindex, setbautistacurrentimageindex] = useState(0);
-          const addbautistainventoryproductimageimageinputref = useRef(null);
-          const [bautistainventoryproductissubmitting, setbautistainventoryproductissubmitting] = useState(false);
-          const [bautistainventoryproducts, setbautistainventoryproducts] = useState([]);
-          const [bautistaloadingproducts, setbautistaloadingproducts] = useState(true);
-          const [selectedbautistaproduct, setselectedbautistaproduct] = useState(null);
-          const [showdeletebautistaproduct, setshowdeletebautistaproduct] = useState(false);
-          const [selecteddeletebautistaproduct, setselecteddeletebautistaproduct] = useState([]);
+const [bautistainventorycategorynamebox, setbautistainventorycategorynamebox] = useState("");
+const [addbautistainventoryproductname, setaddbautistainventoryproductname] = useState("");
+const [addbautistainventoryproductbrand, setaddbautistainventoryproductbrand] = useState("");
+const [addbautistainventoryproductmodelnumber, setaddbautistainventoryproductmodelnumber] = useState("");
+const [addbautistainventoryproductdescription, setaddbautistainventoryproductdescription] = useState("");
+const [addbautistainventoryproductprice, setaddbautistainventoryproductprice] = useState();
+const [addbautistainventoryproductquantity, setaddbautistainventoryproductquantity] = useState();
+const [addbautistainventoryproductimageselectedimages, setaddbautistainventoryproductimageselectedimages] = useState([]);
+const [addbautistainventoryproductimagepreviewimages, setaddbautistainventoryproductimagepreviewimages] = useState([]);
+const [bautistacurrentimageindex, setbautistacurrentimageindex] = useState(0);
+const addbautistainventoryproductimageimageinputref = useRef(null);
+const [bautistainventoryproductissubmitting, setbautistainventoryproductissubmitting] = useState(false);
+const [bautistainventoryproducts, setbautistainventoryproducts] = useState([]);
+const [bautistaloadingproducts, setbautistaloadingproducts] = useState(true);
+const [selectedbautistaproduct, setselectedbautistaproduct] = useState(null);
+const [showdeletebautistaproduct, setshowdeletebautistaproduct] = useState(false);
+const [selecteddeletebautistaproduct, setselecteddeletebautistaproduct] = useState([]);
           
           
           const bautistafilteredproducts = bautistainventoryproducts.filter(product => 
@@ -4822,6 +4852,24 @@ const bautistainventoryproductcount = bautistainventoryproducts.filter(
   product => product.bautistainventoryproductquantity <= 10
 );
 
+
+useEffect(() => {
+  const fetchAllWishlistCounts = async () => {
+    try {
+      const productIds = bautistainventoryproducts.map(p => p.bautistainventoryproductid);
+      if (productIds.length === 0) return;
+      
+      const counts = await fetchWishlistCounts(productIds, 'bautista');
+      setWishlistCounts(prev => ({ ...prev, ...counts }));
+    } catch(error) {
+      console.error("Error fetching wishlist counts:", error);
+    }
+  };
+
+  if (bautistainventoryproducts.length > 0) {
+    fetchAllWishlistCounts();
+  }
+}, [bautistainventoryproducts, currentusertoken]);
 
 
 
@@ -5893,10 +5941,9 @@ const orderData = {
       throw new Error(`Failed to update inventory: ${errorText}`);
     }
       
-    // Update local state to reflect the new quantity
+    // Update quantity of products in set orders
     setambherinventoryproducts(prevProducts => 
-      prevProducts.map(product => 
-        product.ambherinventoryproductid === productId
+      prevProducts.map(product => product.ambherinventoryproductid === productId
           ? { ...product, ambherinventoryproductquantity: product.ambherinventoryproductquantity - quantityOrdered }
           : product
       )
@@ -6041,12 +6088,11 @@ const orderData = {
       throw new Error(`Failed to update inventory: ${errorText}`);
     }
       
-    // Update local state to reflect the new quantity
+    // Update quantity of products in set orders
     setbautistainventoryproducts(prevProducts => 
-      prevProducts.map(product => 
-        product.bautistainventoryproductid === productId
-          ? { ...product, bautistainventoryproductquantity: product.bautistainventoryproductquantity - quantityOrdered }
-          : product
+      prevProducts.map(product => product.bautistainventoryproductid === productId
+        ? { ...product, bautistainventoryproductquantity: product.bautistainventoryproductquantity - quantityOrdered }
+        : product
       )
     );
 
@@ -10058,8 +10104,8 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
                 <div className="mx-1  w-fit rounded-md py-1 px-2  rounded-1xl h-fit  bg-[#F0F6FF] mt-2 break-words min-w-0 "><h1 className={`font-medium   text-[13px] min-w-0 break-words text-[#0d0d0d] ${product.ambherinventoryproductquantity === 0 ? 'text-gray-400': ''}`} >{product.ambherinventoryproductcategory}</h1></div>
                 <div className="w-full h-auto ml-2 mt-2 "><h1 className={`font-semibold  text-[15px] min-w-0 break-words text-[#0d0d0d] ${product.ambherinventoryproductquantity === 0 ? 'text-gray-400': ''}`}>{product.ambherinventoryproductname}</h1></div>
                 <div className="w-fit h-auto ml-2 mt-1 "><h1 className={`font-albertsans font-bold text-[18px] min-w-0 break-words ${product.ambherinventoryproductquantity === 0 ? 'text-gray-400': ''}`}>₱{Number(product.ambherinventoryproductprice).toLocaleString('en-PH', {minimumFractionDigits: 2,  maximumFractionDigits: 2})}</h1></div>
-                <div className="w-full h-auto ml-2 mt-5 mb-5 "><h1 className={`font-albertsans font-medium  text-[15px] min-w-0 break-words ${product.ambherinventoryproductquantity === 0 ? 'text-red-600' : product.ambherinventoryproductquantity <= 10 ? 'text-yellow-700' : 'text-[#4e4f4f]'}`}>{product.ambherinventoryproductquantity === 0 ? ('Out Of Stock'):(`In Stock: ${product.ambherinventoryproductquantity}${product.ambherinventoryproductquantity <= 10 ? ' (Low)': ''}`)}</h1></div>   
-                <div className="w-full h-auto ml-2 mt-1 mb-2 flex items-center"> <p className="text-[14px] text-gray-600 font-albertsans font-semibold">{wishlistCounts[product.ambherinventoryproductid] || 0} wishlisted  </p></div>
+                <div className="w-full h-auto ml-2 mt-5 mb-1 "><h1 className={`font-albertsans font-medium  text-[15px] min-w-0 break-words ${product.ambherinventoryproductquantity === 0 ? 'text-red-600' : product.ambherinventoryproductquantity <= 10 ? 'text-yellow-700' : 'text-[#4e4f4f]'}`}>{product.ambherinventoryproductquantity === 0 ? ('Out Of Stock'):(`In Stock: ${product.ambherinventoryproductquantity}${product.ambherinventoryproductquantity <= 10 ? ' (Low)': ''}`)}</h1></div>   
+                <div className="w-full h-auto ml-2 mb-3  flex items-center"> <p className="font-albertsans font-medium  text-[15px] text-[#4e4f4f]">Wishlisted: {wishlistCounts[product.ambherinventoryproductid] ?? 0}  </p></div>
                 
               </div>
                   ))
@@ -10521,7 +10567,7 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
                   }).map((product) => (
               <div key={product.bautistainventoryproductid} onClick={() => {setshowaddbautistainventoryproductdialog(true);
                                                                            setselectedbautistaproduct(product);
-                                                                           setbautistacurrentimageindex(0);
+                                                                           setcurrentimageindex(0);
                                                                            setbautistainventorycategorynamebox(product?.bautistainventoryproductcategory || '');
                                                                            setaddbautistainventoryproductname(product?.bautistainventoryproductname || '');
                                                                            setaddbautistainventoryproductbrand(product?.bautistainventoryproductbrand || '');
@@ -10531,7 +10577,7 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
                                                                            setaddbautistainventoryproductquantity(product?.bautistainventoryproductquantity || 0);
                                                                            setaddbautistainventoryproductimagepreviewimages(product?.bautistainventoryproductimagepreviewimages || []);
               }} className="motion-preset-slide-up mr-3 mb-3 flex flex-col items-start justify-start w-[220px] h-auto shadow-md bg-white rounded-2xl ">
-                <img src={product.bautistainventoryproductimagepreviewimages[0] || defaultimageplaceholder}  alt={product.bautistainventoryproductname} className="rounded-tr-2xl  rounded-tl-2xl w-full h-45"/>
+                <img src={product.bautistainventoryproductimagepreviewimages[0] || defaultimageplaceholder}  alt={product.bautistainventoryproductname} className={`rounded-tr-2xl  rounded-tl-2xl w-full h-45 ${product.bautistainventoryproductquantity === 0 ? 'opacity-50': ''}`}/>
                 
                 
                 {product.bautistainventoryproductquantity === 0 ? (<div className="top-2 right-2 absolute px-2 py-1 rounded-md text-xs font-semibold bg-red-500"><h1 className="text-white">Out of Stock</h1></div>): 
@@ -10541,10 +10587,11 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
                 <div className="mx-1  w-fit rounded-md py-1 px-2  rounded-1xl h-fit  bg-[#F0F6FF] mt-2 break-words min-w-0 "><h1 className={`font-medium   text-[13px] min-w-0 break-words text-[#0d0d0d] ${product.bautistainventoryproductquantity === 0 ? 'text-gray-400': ''}`} >{product.bautistainventoryproductcategory}</h1></div>
                 <div className="w-full h-auto ml-2 mt-2 "><h1 className={`font-semibold  text-[15px] min-w-0 break-words text-[#0d0d0d] ${product.bautistainventoryproductquantity === 0 ? 'text-gray-400': ''}`}>{product.bautistainventoryproductname}</h1></div>
                 <div className="w-fit h-auto ml-2 mt-1 "><h1 className={`font-albertsans font-bold text-[18px] min-w-0 break-words ${product.bautistainventoryproductquantity === 0 ? 'text-gray-400': ''}`}>₱{Number(product.bautistainventoryproductprice).toLocaleString('en-PH', {minimumFractionDigits: 2,  maximumFractionDigits: 2})}</h1></div>
-                <div className="w-full h-auto ml-2 mt-5 mb-5 "><h1 className={`font-albertsans font-medium  text-[15px] min-w-0 break-words ${product.bautistainventoryproductquantity === 0 ? 'text-red-600' : product.bautistainventoryproductquantity <= 10 ? 'text-yellow-700' : 'text-[#4e4f4f]'}`}>{product.bautistainventoryproductquantity === 0 ? ('Out Of Stock'):(`In Stock: ${product.bautistainventoryproductquantity}${product.bautistainventoryproductquantity <= 10 ? ' (Low)': ''}`)}</h1></div>   
-             
+                <div className="w-full h-auto ml-2 mt-2  "><h1 className={`font-albertsans font-medium  text-[15px] min-w-0 break-words ${product.bautistainventoryproductquantity === 0 ? 'text-red-600' : product.bautistainventoryproductquantity <= 10 ? 'text-yellow-700' : 'text-[#4e4f4f]'}`}>{product.bautistainventoryproductquantity === 0 ? ('Out Of Stock'):(`In Stock: ${product.bautistainventoryproductquantity}${product.bautistainventoryproductquantity <= 10 ? ' (Low)': ''}`)}</h1></div>   
+                <div className="w-full h-auto ml-2 mb-3  flex items-center"> <p className="font-albertsans font-medium  text-[15px] text-[#4e4f4f]">Wishlisted: {wishlistCounts[product.bautistainventoryproductid] ?? 0}  </p></div>
+                
               </div>
-                  ))  
+                  ))
                 )}
               </div>
 

@@ -1763,6 +1763,10 @@ const submitpatientorderbautista = async (e) => {
                                                                            setaddbautistainventoryproductprice(product?.bautistainventoryproductprice || 0);
                                                                            setaddbautistainventoryproductquantity(product?.bautistainventoryproductquantity || 0);
                                                                            setaddbautistainventoryproductimagepreviewimages(product?.bautistainventoryproductimagepreviewimages || []);
+              
+              const isInWishList = wishlistItems.some(item => item.patientwishlistinventoryproductid === product.bautistainventoryproductid);
+              setbautistaheartisClicked(isInWishList);    
+              
               }} className="motion-preset-slide-up mr-3 mb-3 flex flex-col items-start justify-start w-[220px] h-auto shadow-md bg-white rounded-2xl">
                 <img src={product.bautistainventoryproductimagepreviewimages[0] || defaultimageplaceholder}  alt={product.bautistainventoryproductname} className={`w-full h-45 ${product.bautistainventoryproductquantity === 0 ? 'opacity-50': ''}`}/>
                 
