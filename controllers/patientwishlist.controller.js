@@ -226,6 +226,9 @@ export const deletepatientwishlistinventoryproductbyid = async (req, res) => {
 
 
 
+
+
+
 //Get wishlist count per product
 export const getwishlistcount = async (req, res) => {
     try {
@@ -256,3 +259,43 @@ export const getwishlistcount = async (req, res) => {
         res.status(500).json({message: error.message});
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+export const deletewishlistitembyAdmin = async (req, res) => {
+  try {
+    const { email, productId, clinicType } = req.body;
+
+    if (!email || !productId || !clinicType) {
+      return res.status(400).json({ message: "MIssing requirements email, inventoryid, clinictype" });
+    }
+
+    const wishlistItem = await Patientwishlist.findOneAndDelete({
+      patientwishlistemail: email,
+      patientwishlistinventoryproductid: productId,
+      clinicType: clinicType
+    });
+
+    if (!wishlistItem) {
+      return res.status(404).json({ message: "Wishlisted product does not exist" });
+    }
+    
+    res.json({ message: "Wishlisted product automatically deleted after ordering the same product: ", deleted: wishlistItem });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};

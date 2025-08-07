@@ -35,7 +35,8 @@ const PatientOrderBautistaSchema = new mongoose.Schema({
     //PAYMENT INFORMATION
     patientorderbautistacustomfee: { type: Number, default: 0 }, // Clinic customization fee
     patientorderbautistaamountpaid: { type: Number, default: 0 }, // Customer total paid amount
-    patientorderbautistaremainingbalance: { type: Number, default: 0 }, // Computed from deducting overall total to total paid amount
+    patientorderbautistaremainingbalance: { type: Number, default: 0 },
+    patientorderbautistaamountpaidchange: { type: Number, default: 0 }, // Computed from deducting overall total to total paid amount
     patientorderbautistaproducttotal: { type: Number, default: 0 },  // Subtotal + CustomizationFee
     patientorderbautistaproductpaymentmethod: {type: String, enum: ['Cash', 'Bank Transfer'], default: 'Cash'},
     patientorderbautistaproductpaymentreceiptimage: String,

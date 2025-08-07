@@ -9,6 +9,7 @@ import {
     deletepatientwishlistinventoryproductbyid,
     getallpatientwishlistinventoryproductbyemail,
     getwishlistcount,
+    deletewishlistitembyAdmin,
 
      } from "../controllers/patientwishlist.controller.js";
 import Patientwishlist from "../models/patientwishlist.js";
@@ -27,7 +28,7 @@ patientwishlistinventoryproductrouter.post("/", createpatientwishlistinventorypr
 patientwishlistinventoryproductrouter.put("/:id", updatepatientwishlistinventoryproductbyid);
 patientwishlistinventoryproductrouter.get("/email", getallpatientwishlistinventoryproductbyemail);
 patientwishlistinventoryproductrouter.delete("/:id", deletepatientwishlistinventoryproductbyid);
-
+patientwishlistinventoryproductrouter.post('/admin-delete', deletewishlistitembyAdmin);
 
 
 
