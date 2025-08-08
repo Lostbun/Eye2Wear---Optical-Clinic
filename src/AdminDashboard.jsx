@@ -5320,15 +5320,37 @@ const showbillingsandorderstable = (billingsandorderstableid) => {
 };
 
 
+const [ambherpickupStatus, setambherpickupStatus] = useState('Now'); 
+const [bautistapickupStatus, setbautistapickupStatus] = useState('Now'); 
 const [activeambherpickupnoworlater, setactiveambherpickupnoworlater] = useState(null);
+const [activebautistapickupnoworlater, setactivebautistapickupnoworlater] = useState(null);
+
+
 const showambherpickupnoworlater = (pickupnoworlaterid) => {
       setactiveambherpickupnoworlater(pickupnoworlaterid);
+
+  if (pickupnoworlaterid === 'ambherorderpickupnow') {
+    setambherpickupStatus('Now');
+  } else if (pickupnoworlaterid === 'ambherorderpickuplater') {
+    setambherpickupStatus('Later');
+  }
+
+
+
 };
 
 
-const [activebautistapickupnoworlater, setactivebautistapickupnoworlater] = useState(null);
 const showbautistapickupnoworlater = (pickupnoworlaterid) => {
       setactivebautistapickupnoworlater(pickupnoworlaterid);
+
+  if (pickupnoworlaterid === 'bautistaorderpickupnow') {
+    setbautistapickupStatus('Now');
+  } else if (pickupnoworlaterid === 'bautistaorderpickuplater') {
+    setbautistapickupStatus('Later');
+  }
+
+  
+
 };
 
   const [ambherorders, setambherOrders] = useState([]);
@@ -5341,6 +5363,8 @@ const showbautistapickupnoworlater = (pickupnoworlaterid) => {
   const [searchpatientorderbautistaTerm, setsearchpatientorderbautistaTerm] = useState('');
   const [showpatientorderambher, setshowpatientorderambher] = useState(false);
   const [showpatientorderbautista, setshowpatientorderbautista] = useState(false);
+  const [showpatientorderedambher, setshowpatientorderedambher] = useState(false);
+  const [showpatientorderedbautista, setshowpatientorderedbautista] = useState(false);
   const [ambhercount, setambherCount] = useState(1);
   const [bautistacount, setbautistaCount] = useState(1);
   const [selectedorderambherproduct, setselectedorderambherproduct] = useState(null);
@@ -5973,9 +5997,9 @@ useEffect(() => {
 
 
 
-  
+//FUNCTION BUTTON FOR COMPLETE ORDER  
 
- //SUBMITTING CUSTOMER AMBHER OPTICAL ORDER PRODUCT
+ //AMBHER OPTICAL ORDER PRODUCT
 const submitpatientorderambher = async (e) => {
   e.preventDefault();
   
@@ -6014,7 +6038,7 @@ const submitpatientorderambher = async (e) => {
       patientorderambherproductpaymenttransactionid: '',
 
       //Pickup if not "Now"
-      patientorderambherproductpickupstatus: 'Now', //'Now' or 'Later'
+      patientorderambherproductpickupstatus: ambherpickupStatus, //'Now' or 'Later'
       patientorderambherproductchosenpickupdate: 'Now',
       patientorderambherproductchosenpickuptime: 'Default',
 
@@ -6148,19 +6172,7 @@ const submitpatientorderambher = async (e) => {
   }
 };
 
-
-
-
-
-
-
-
-
-
-
-
-
- //SUBMITTING CUSTOMER BAUTISTA ORDER PRODUCT
+ //BAUTISTA ORDER PRODUCT
 const submitpatientorderbautista = async (e) => {
   e.preventDefault();
   
@@ -6199,7 +6211,7 @@ const submitpatientorderbautista = async (e) => {
       patientorderbautistaproductpaymenttransactionid: '',
 
       //Pickup if not "Now"
-      patientorderbautistaproductpickupstatus: 'Now', //'Now' or 'Later'
+      patientorderbautistaproductpickupstatus: bautistapickupStatus, //'Now' or 'Later'
       patientorderbautistaproductchosenpickupdate: 'Now',
       patientorderbautistaproductchosenpickuptime: 'Default',
 
@@ -6335,7 +6347,233 @@ const submitpatientorderbautista = async (e) => {
 
 
 
+//FUNCTION BUTTON FOR PENDING ORDER
 
+ //AMBHER OPTICAL ORDER PRODUCT
+const submitpatientpendingorderambher = async (e) => {
+  e.preventDefault();
+  
+  try {
+    // Prepare order data
+    const orderData = {
+      // Patient Information
+      patientprofilepicture: orderambherprofilePicture,
+      patientfirstname: orderambherfirstName,
+      patientmiddlename: orderambhermiddleName,
+      patientlastname: orderambherlastName,
+      patientemail: orderambherEmail,
+      patientcontactnumber: orderambhercontactNumber,
+
+      // Ordered Product Info
+      patientorderambherproductid: selectedorderambherproduct?.ambherinventoryproductid,
+      patientorderambherproductname: orderambherinventoryproductname,
+      patientorderambherproductbrand: orderambherinventoryproductbrand,
+      patientorderambherproductmodelnumber: orderambherinventoryproductmodelnumber,
+      patientorderambherproductimage: orderambherinventoryproductimagepreviewimages,
+      patientorderambherproductprice: orderambherinventoryproductprice,
+      patientorderambherproductquantity: ambhercount,
+      patientorderambherproductsubtotal: orderambherinventoryproductprice * ambhercount,
+
+      //Total
+      patientorderambhercustomfee: Number(orderambhercustomFee),
+      patientorderambheramountpaid: Number(orderambheramountPaid),
+      patientorderambherproducttotal: orderambhertotalwithFee,
+      patientorderambherremainingbalance: orderambherremainingBalance,
+      patientorderambheramountpaidChange: orderambheramountpaidChange,
+
+      //Payment
+      patientorderambherproductpaymentmethod: 'Cash',
+      patientorderambherproductpaymentreceiptimage: '',
+      patientorderambherproductpaymentstatus: 'Partially Paid', //"Partially Paid" or "Fully Paid"
+      patientorderambherproductpaymenttransactionid: '',
+
+      //Pickup if not "Now"
+      patientorderambherproductpickupstatus: ambherpickupStatus, //'Now' or 'Later'
+      patientorderambherproductchosenpickupdate: 'Later',
+      patientorderambherproductchosenpickuptime: 'Default',
+
+      //Authorized Person
+      patientorderambherproducauthorizedname: adminfirstname + " " + adminmiddlename + " " + adminlastname,
+      patientorderambherproducauthorizedtype: currentuserloggedin,
+
+      // Order History
+      patientorderambherstatus: 'Pending',
+      patientorderambherhistory: [{
+        status: 'Pending',
+        changedAt: new Date(),
+        changedBy: `${orderambherfirstName} ${orderambherlastName}`
+      }]
+    };
+
+    console.log('Submitting order:', orderData);
+
+    // Submit order using admin token
+    const response = await fetch('http://localhost:3000/api/patientorderambher', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('admintoken')}` // Using admin token
+      },
+      body: JSON.stringify(orderData)
+    });
+
+    // Handle response
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Server response:', errorText);
+      throw new Error(errorText || `Server error: ${response.status}`);
+    }
+
+    
+
+
+    // Handle success
+    const result = await response.json();
+    console.log(result);
+    setpatientorderambherproductisClicked(true);
+    setpatientorderambherproductToastMessage("Pending Order Submitted Successfully!");
+    setpatientorderambherproductToast(true);
+    setpatientorderambherproductToastClosing(false);
+
+    // Reset form fields
+    setorderambherEmail('');
+    setorderambherprofilePicture('');
+    setorderambherfullName('');
+    setorderambherlastName('');
+    setorderambhermiddleName('');
+    setorderambherfirstName('');
+    setorderambhercontactNumber('');
+    setorderambherdownPayment('');
+    setorderambhercustomFee('');
+    setorderambheramountPaid('');
+    setorderambherNotes('');
+    setambherproductsoldCount(0);
+
+    // Reset state
+    setselectedorderambherproduct(null);
+    setshowpatientorderambher(false);
+    await fetchambherOrders();
+
+  } catch (error) {
+    console.error('Submission error:', error);
+    setpatientorderambherproductToastMessage(error.message);
+    setpatientorderambherproductToast(true);
+    setpatientorderambherproductToastClosing(false);
+  }
+};
+
+ //BAUTISTA ORDER PRODUCT
+const submitpatientpendingorderbautista = async (e) => {
+  e.preventDefault();
+  
+  try {
+    // Prepare order data
+    const orderData = {
+      // Patient Information
+      patientprofilepicture: orderbautistaprofilePicture,
+      patientfirstname: orderbautistafirstName,
+      patientmiddlename: orderbautistamiddleName,
+      patientlastname: orderbautistalastName,
+      patientemail: orderbautistaEmail,
+      patientcontactnumber: orderbautistacontactNumber,
+
+      // Ordered Product Info
+      patientorderbautistaproductid: selectedorderbautistaproduct?.bautistainventoryproductid,
+      patientorderbautistaproductname: orderbautistainventoryproductname,
+      patientorderbautistaproductbrand: orderbautistainventoryproductbrand,
+      patientorderbautistaproductmodelnumber: orderbautistainventoryproductmodelnumber,
+      patientorderbautistaproductimage: orderbautistainventoryproductimagepreviewimages,
+      patientorderbautistaproductprice: orderbautistainventoryproductprice,
+      patientorderbautistaproductquantity: bautistacount,
+      patientorderbautistaproductsubtotal: orderbautistainventoryproductprice * bautistacount,
+
+      //Total
+      patientorderbautistacustomfee: Number(orderbautistacustomFee),
+      patientorderbautistaamountpaid: Number(orderbautistaamountPaid),
+      patientorderbautistaproducttotal: orderbautistatotalwithFee,
+      patientorderbautistaremainingbalance: orderbautistaremainingBalance,
+      patientorderbautistaamountpaidChange: orderbautistaamountpaidChange,
+
+      //Payment
+      patientorderbautistaproductpaymentmethod: 'Cash',
+      patientorderbautistaproductpaymentreceiptimage: '',
+      patientorderbautistaproductpaymentstatus: 'Partially Paid', //"Partially Paid" or "Fully Paid"
+      patientorderbautistaproductpaymenttransactionid: '',
+
+      //Pickup if not "Now"
+      patientorderbautistaproductpickupstatus: bautistapickupStatus, //'Now' or 'Later'
+      patientorderbautistaproductchosenpickupdate: 'Later',
+      patientorderbautistaproductchosenpickuptime: 'Default',
+
+      //Authorized Person
+      patientorderbautistaproducauthorizedname: adminfirstname + " " + adminmiddlename + " " + adminlastname,
+      patientorderbautistaproducauthorizedtype: currentuserloggedin,
+
+      // Order History
+      patientorderbautistastatus: 'Pending',
+      patientorderbautistahistory: [{
+        status: 'Pending',
+        changedAt: new Date(),
+        changedBy: `${orderbautistafirstName} ${orderbautistalastName}`
+      }]
+    };
+
+    console.log('Submitting order:', orderData);
+
+    // Submit order using admin token
+    const response = await fetch('http://localhost:3000/api/patientorderbautista', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('admintoken')}` // Using admin token
+      },
+      body: JSON.stringify(orderData)
+    });
+
+    // Handle response
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Server response:', errorText);
+      throw new Error(errorText || `Server error: ${response.status}`);
+    }
+
+    
+
+
+    // Handle success
+    const result = await response.json();
+    console.log(result);
+    setpatientorderbautistaproductisClicked(true);
+    setpatientorderbautistaproductToastMessage("Pending Order Submitted Successfully!");
+    setpatientorderbautistaproductToast(true);
+    setpatientorderbautistaproductToastClosing(false);
+
+    // Reset form fields
+    setorderbautistaEmail('');
+    setorderbautistaprofilePicture('');
+    setorderbautistafullName('');
+    setorderbautistalastName('');
+    setorderbautistamiddleName('');
+    setorderbautistafirstName('');
+    setorderbautistacontactNumber('');
+    setorderbautistadownPayment('');
+    setorderbautistacustomFee('');
+    setorderbautistaamountPaid('');
+    setorderbautistaNotes('');
+    setbautistaproductsoldCount(0);
+
+    // Reset state
+    setselectedorderbautistaproduct(null);
+    setshowpatientorderbautista(false);
+    await fetchbautistaOrders();
+
+  } catch (error) {
+    console.error('Submission error:', error);
+    setpatientorderbautistaproductToastMessage(error.message);
+    setpatientorderbautistaproductToast(true);
+    setpatientorderbautistaproductToastClosing(false);
+  }
+};
 
 
 
@@ -11219,10 +11457,11 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
           <div className="text-gray-500 p-4">No orders found</div>
         ) : (
           filteredambherOrders.map((order) => (
-                  <div  className="pb-7 shadow-md rounded-2xl py-3.25 px-3.25 mb-3 border-1 flex items-center motion-preset-slide-up w-full h-auto ">
+                  <div    className="hover:bg-gray-100 transition-all duration-300 ease-in-out cursor-pointer pb-7 shadow-md rounded-2xl py-3.25 px-3.25 mb-3 border-1 flex items-center motion-preset-slide-up w-full h-auto ">
                    <img src={order.patientorderambherproductimage?.[0] || 'default-image-url'} alt={order.patientorderambherproductname}  className="mr-5 w-35 h-35 rounded-2xl"/>
                     <div className="mt-2 h-auto w-full flex flex-col items-start">
-                        <div className="flex justify-between w-full"><h1 className="font-semibold font-albertsans text-[20px] text-[#1f1f1f]">{order.patientorderambherproductname}</h1>                   <span className={`ml-3 font-albertsans font-semibold rounded-full text-[15px] leading-5 px-4 py-2 inline-flex ${
+                        <div className="flex justify-between w-full"><h1 className="font-semibold font-albertsans text-[20px] text-[#1f1f1f]">{order.patientorderambherproductname}</h1>                  
+                    <span className={`ml-3 font-albertsans font-semibold rounded-full text-[15px] leading-5 px-4 py-2 inline-flex ${
                     order.patientorderambherstatus === 'Pending' ? 'bg-yellow-100 text-yellow-800' :
                     order.patientorderambherstatus === 'Processing' ? 'bg-blue-100 text-blue-800' :
                     order.patientorderambherstatus === 'Ready for Pickup' ? 'bg-purple-100 text-purple-800' :
@@ -11234,13 +11473,13 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
                         <h1 className="font-semibold font-albertsans text-[13px] text-[#1f1f1f]">Customer: {order.patientfirstname} {order.patientmiddlename} {order.patientlastname}</h1>
                         <div className=" mt-5 justify-between w-full flex items-center text-[#323232]  font-semibold text-[13px]">
                           <div className="flex items-center gap-1"><i className="text-[#565656] bx bxs-calendar mt-0.5  font-semibold text-[22px]"/><div><p className="text-[#777777] font-medium text-[13px]">Date Ordered</p><p className="text-[#303030]  font-semibold text-[15px]">{formatorderDates(order.createdAt)}</p></div></div>
-                          <div className="flex items-center gap-1"><i className="text-[#565656] bx bxs-calendar mt-0.5  font-semibold text-[22px]"/><div><p className="text-[#777777] font-medium text-[13px]">Requested Pickup at Ambher Optical</p><p className="text-[#303030]  font-semibold text-[15px]">{formatorderDates(order.patientorderambherproductchosenpickupdate)}</p></div></div>
+                          <div className="flex items-center gap-1"><i className="text-[#565656] bx bxs-calendar mt-0.5  font-semibold text-[22px]"/><div><p className="text-[#777777] font-medium text-[13px]">Pickup at Ambher Optical</p><p className="text-[#303030]  font-semibold text-[15px]">{order.patientorderambherproductpickupstatus === 'Now'  ? `Completed (${formatorderDates(order.createdAt)})` : order.patientorderambherproductpickupstatus === 'Later' ? "To be scheduled" :null}</p></div></div>
                           <div className="flex items-center gap-1"><i className="text-[#565656] bx bxs-package mt-0.5  font-semibold text-[22px]"/><div><p className="text-[#777777]  font-medium text-[13px]">Quantity</p><p className="text-[#303030]  font-semibold text-[15px]">{order.patientorderambherproductquantity}</p></div></div>
-                          <div className="flex items-center gap-1"><p className="font-semibold text-[22px] text-[#565656]">₱</p><div><p className="text-[#777777]  font-medium text-[13px]">Unit Price</p><p className="text-[#303030]  font-semibold text-[15px]">{Number(order.patientorderambherproductprice).toLocaleString('en-PH', {minimumFractionDigits: 2,  maximumFractionDigits: 2})}</p></div></div>
+                          <div className="flex items-center gap-1"><p className="font-semibold text-[22px] text-[#565656]">₱</p><div> <p className="text-[#777777]  font-medium text-[13px]">{Number(order.patientorderambheramountpaid) < Number(order.patientorderambherproducttotal) ? (<span className="px-1 py-.5 bg-yellow-100 text-yellow-900 font-alberstans rounded-md">Down Payment</span> ): "Amount Paid"}</p><p className="text-[#303030]  font-semibold text-[15px]">{Number(order.patientorderambheramountpaid).toLocaleString('en-PH', {minimumFractionDigits: 2,  maximumFractionDigits: 2})}</p></div></div>
                         </div>
                         <div className="flex items-center justify-between border-t-2 w-full h-10 mt-5">
                           <div></div>
-                          <div className="flex items-center gap-3 mt-5 h-auto"><h1 className="font-semibold font-albertsans text-[#343434] text-[17px]">Total Price: </h1><p className="font-semibold font-albertsans text-[25px] text-[#549013]">  ₱{(order.patientorderambherproductprice * order.patientorderambherproductquantity).toLocaleString('en-PH', {minimumFractionDigits: 2,  maximumFractionDigits: 2})}</p></div>
+                          <div className="flex items-center gap-3 mt-5 h-auto"><h1 className="font-semibold font-albertsans text-[#343434] text-[17px]">Total Price: </h1><p className="font-semibold font-albertsans text-[25px] text-[#549013]">  ₱{Number(order.patientorderambherproducttotal).toLocaleString('en-PH', {minimumFractionDigits: 2,  maximumFractionDigits: 2})}</p></div>
                         </div>
                     </div>
                   </div>
@@ -11555,7 +11794,7 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
                                   <div onClick={(e) => submitpatientorderambher(e)} className="w-full mt-10 p-2 hover:cursor-pointer hover:scale-103 bg-[#4ca22b] rounded-2xl flex justify-center items-center pl-3 pr-3 transition-all duration-300 ease-in-out"><p className="font-bold font-albertsans text-white text-[18px] ml-2">Complete Order</p></div>
                                   ) : (
                                  (Number(orderambheramountPaid) >= Number(orderambhertotalwithFee) * 0.10) || activeambherpickupnoworlater==='ambherorderpickuplater' ? (
-                                  <div className="w-full mt-10 p-2 hover:cursor-pointer hover:scale-103 bg-[#F08000] rounded-2xl flex justify-center items-center pl-3 pr-3 transition-all duration-300 ease-in-out"><p className="font-bold font-albertsans text-white text-[18px] ml-2">Set as Pending Order</p></div>
+                                  <div onClick={(e) => submitpatientpendingorderambher(e)} className="w-full mt-10 p-2 hover:cursor-pointer hover:scale-103 bg-[#F08000] rounded-2xl flex justify-center items-center pl-3 pr-3 transition-all duration-300 ease-in-out"><p className="font-bold font-albertsans text-white text-[18px] ml-2">Set as Pending Order</p></div>
                                   ) : null)}
                                     
  
@@ -11641,7 +11880,7 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
           <div className="text-gray-500 p-4">No orders found</div>
         ) : (
           filteredbautistaOrders.map((order) => (
-                  <div  className="pb-7 shadow-md rounded-2xl py-3.25 px-3.25 mb-3 border-1 flex items-center motion-preset-slide-up w-full h-auto ">
+                  <div  className="hover:bg-gray-100 transition-all duration-300 ease-in-out cursor-pointer pb-7 shadow-md rounded-2xl py-3.25 px-3.25 mb-3 border-1 flex items-center motion-preset-slide-up w-full h-auto ">
                    <img src={order.patientorderbautistaproductimage?.[0] || 'default-image-url'} alt={order.patientorderbautistaproductname}  className="mr-5 w-35 h-35 rounded-2xl"/>
                     <div className="mt-2 h-auto w-full flex flex-col items-start">
                         <div className="flex justify-between w-full"><h1 className="font-semibold font-albertsans text-[20px] text-[#1f1f1f]">{order.patientorderbautistaproductname}</h1>                   <span className={`ml-3 font-albertsans font-semibold rounded-full text-[15px] leading-5 px-4 py-2 inline-flex ${
@@ -11656,13 +11895,13 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
                         <h1 className="font-semibold font-albertsans text-[13px] text-[#1f1f1f]">Customer: {order.patientfirstname} {order.patientmiddlename} {order.patientlastname}</h1>
                         <div className=" mt-5 justify-between w-full flex items-center text-[#323232]  font-semibold text-[13px]">
                           <div className="flex items-center gap-1"><i className="text-[#565656] bx bxs-calendar mt-0.5  font-semibold text-[22px]"/><div><p className="text-[#777777] font-medium text-[13px]">Date Ordered</p><p className="text-[#303030]  font-semibold text-[15px]">{formatorderDates(order.createdAt)}</p></div></div>
-                          <div className="flex items-center gap-1"><i className="text-[#565656] bx bxs-calendar mt-0.5  font-semibold text-[22px]"/><div><p className="text-[#777777] font-medium text-[13px]">Requested Pickup at Ambher Optical</p><p className="text-[#303030]  font-semibold text-[15px]">{formatorderDates(order.patientorderbautistaproductchosenpickupdate)}</p></div></div>
+                          <div className="flex items-center gap-1"><i className="text-[#565656] bx bxs-calendar mt-0.5  font-semibold text-[22px]"/><div><p className="text-[#777777] font-medium text-[13px]">Pickup at Bautista Eye Center</p><p className="text-[#303030]  font-semibold text-[15px]">{order.patientorderbautistaproductpickupstatus === 'Now'  ? `Completed (${formatorderDates(order.createdAt)})` : order.patientorderbautistaproductpickupstatus === 'Later' ? "To be scheduled" :null}</p></div></div>
                           <div className="flex items-center gap-1"><i className="text-[#565656] bx bxs-package mt-0.5  font-semibold text-[22px]"/><div><p className="text-[#777777]  font-medium text-[13px]">Quantity</p><p className="text-[#303030]  font-semibold text-[15px]">{order.patientorderbautistaproductquantity}</p></div></div>
-                          <div className="flex items-center gap-1"><p className="font-semibold text-[22px] text-[#565656]">₱</p><div><p className="text-[#777777]  font-medium text-[13px]">Unit Price</p><p className="text-[#303030]  font-semibold text-[15px]">{Number(order.patientorderbautistaproductprice).toLocaleString('en-PH', {minimumFractionDigits: 2,  maximumFractionDigits: 2})}</p></div></div>
+                          <div className="flex items-center gap-1"><p className="font-semibold text-[22px] text-[#565656]">₱</p><div> <p className="text-[#777777]  font-medium text-[13px]">{Number(order.patientorderbautistaamountpaid) < Number(order.patientorderbautistaproducttotal) ? (<span className="px-1 py-.5 bg-yellow-100 text-yellow-900 font-alberstans rounded-md">Down Payment</span> ): "Amount Paid"}</p><p className="text-[#303030]  font-semibold text-[15px]">{Number(order.patientorderbautistaamountpaid).toLocaleString('en-PH', {minimumFractionDigits: 2,  maximumFractionDigits: 2})}</p></div></div>
                         </div>
                         <div className="flex items-center justify-between border-t-2 w-full h-10 mt-5">
                           <div></div>
-                          <div className="flex items-center gap-3 mt-5 h-auto"><h1 className="font-semibold font-albertsans text-[#343434] text-[17px]">Total Price: </h1><p className="font-semibold font-albertsans text-[25px] text-[#549013]">  ₱{(order.patientorderbautistaproductprice * order.patientorderbautistaproductquantity).toLocaleString('en-PH', {minimumFractionDigits: 2,  maximumFractionDigits: 2})}</p></div>
+                          <div className="flex items-center gap-3 mt-5 h-auto"><h1 className="font-semibold font-albertsans text-[#343434] text-[17px]">Total Price: </h1><p className="font-semibold font-albertsans text-[25px] text-[#549013]">  ₱{Number(order.patientorderbautistaproducttotal).toLocaleString('en-PH', {minimumFractionDigits: 2,  maximumFractionDigits: 2})}</p></div>
                         </div>
                     </div>
                   </div>
@@ -11978,7 +12217,7 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
                                   <div onClick={(e) => submitpatientorderbautista(e)} className="w-full mt-10 p-2 hover:cursor-pointer hover:scale-103 bg-[#4ca22b] rounded-2xl flex justify-center items-center pl-3 pr-3 transition-all duration-300 ease-in-out"><p className="font-bold font-albertsans text-white text-[18px] ml-2">Complete Order</p></div>
                                   ) : (
                                  (Number(orderbautistaamountPaid) >= Number(orderbautistatotalwithFee) * 0.10) || activebautistapickupnoworlater==='bautistaorderpickuplater' ? (
-                                  <div className="w-full mt-10 p-2 hover:cursor-pointer hover:scale-103 bg-[#F08000] rounded-2xl flex justify-center items-center pl-3 pr-3 transition-all duration-300 ease-in-out"><p className="font-bold font-albertsans text-white text-[18px] ml-2">Set as Pending Order</p></div>
+                                  <div onClick={(e) => submitpatientpendingorderbautista(e)}  className="w-full mt-10 p-2 hover:cursor-pointer hover:scale-103 bg-[#F08000] rounded-2xl flex justify-center items-center pl-3 pr-3 transition-all duration-300 ease-in-out"><p className="font-bold font-albertsans text-white text-[18px] ml-2">Set as Pending Order</p></div>
                                   ) : null)}
                                     
  

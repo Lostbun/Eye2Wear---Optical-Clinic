@@ -27,6 +27,7 @@ const PatientOrderBautistaSchema = new mongoose.Schema({
     patientorderbautistaproductname: {type: String, required: true},
     patientorderbautistaproductbrand: {type: String, required: true},
     patientorderbautistaproductmodelnumber: {type: String, required: true},
+    patientorderbautistaproductcategory:{type: String, required: true},
     patientorderbautistaproductimage: {type: [String], required: true},
     patientorderbautistaproductprice: {type: Number, required: true},
     patientorderbautistaproductquantity: {type: Number, required: true, min: 1},
