@@ -5320,8 +5320,8 @@ const showbillingsandorderstable = (billingsandorderstableid) => {
 };
 
 
-const [ambherpickupStatus, setambherpickupStatus] = useState('Now'); 
-const [bautistapickupStatus, setbautistapickupStatus] = useState('Now'); 
+const [ambherpickupStatus, setambherpickupStatus] = useState('Later'); 
+const [bautistapickupStatus, setbautistapickupStatus] = useState('Later'); 
 const [activeambherpickupnoworlater, setactiveambherpickupnoworlater] = useState(null);
 const [activebautistapickupnoworlater, setactivebautistapickupnoworlater] = useState(null);
 
@@ -6019,6 +6019,7 @@ const submitpatientorderambher = async (e) => {
       patientorderambherproductname: orderambherinventoryproductname,
       patientorderambherproductbrand: orderambherinventoryproductbrand,
       patientorderambherproductmodelnumber: orderambherinventoryproductmodelnumber,
+      patientorderambherproductcategory: orderambherinventorycategorynamebox,
       patientorderambherproductimage: orderambherinventoryproductimagepreviewimages,
       patientorderambherproductprice: orderambherinventoryproductprice,
       patientorderambherproductquantity: ambhercount,
@@ -6158,7 +6159,7 @@ const submitpatientorderambher = async (e) => {
     setorderambheramountPaid('');
     setorderambherNotes('');
     setambherproductsoldCount(0);
-
+    setambherpickupStatus('');
     // Reset state
     setselectedorderambherproduct(null);
     setshowpatientorderambher(false);
@@ -6192,6 +6193,7 @@ const submitpatientorderbautista = async (e) => {
       patientorderbautistaproductname: orderbautistainventoryproductname,
       patientorderbautistaproductbrand: orderbautistainventoryproductbrand,
       patientorderbautistaproductmodelnumber: orderbautistainventoryproductmodelnumber,
+      patientorderbautistaproductcategory: orderbautistainventorycategorynamebox,
       patientorderbautistaproductimage: orderbautistainventoryproductimagepreviewimages,
       patientorderbautistaproductprice: orderbautistainventoryproductprice,
       patientorderbautistaproductquantity: bautistacount,
@@ -6331,7 +6333,7 @@ const submitpatientorderbautista = async (e) => {
     setorderbautistaamountPaid('');
     setorderbautistaNotes('');
     setbautistaproductsoldCount(0);
-
+    setbautistapickupStatus('');
     // Reset state
     setselectedorderbautistaproduct(null);
     setshowpatientorderbautista(false);
@@ -6369,6 +6371,7 @@ const submitpatientpendingorderambher = async (e) => {
       patientorderambherproductname: orderambherinventoryproductname,
       patientorderambherproductbrand: orderambherinventoryproductbrand,
       patientorderambherproductmodelnumber: orderambherinventoryproductmodelnumber,
+      patientorderambherproductcategory: orderambherinventorycategorynamebox,
       patientorderambherproductimage: orderambherinventoryproductimagepreviewimages,
       patientorderambherproductprice: orderambherinventoryproductprice,
       patientorderambherproductquantity: ambhercount,
@@ -6448,7 +6451,7 @@ const submitpatientpendingorderambher = async (e) => {
     setorderambheramountPaid('');
     setorderambherNotes('');
     setambherproductsoldCount(0);
-
+    setambherpickupStatus('');
     // Reset state
     setselectedorderambherproduct(null);
     setshowpatientorderambher(false);
@@ -6482,6 +6485,7 @@ const submitpatientpendingorderbautista = async (e) => {
       patientorderbautistaproductname: orderbautistainventoryproductname,
       patientorderbautistaproductbrand: orderbautistainventoryproductbrand,
       patientorderbautistaproductmodelnumber: orderbautistainventoryproductmodelnumber,
+      patientorderbautistaproductcategory: orderbautistainventorycategorynamebox,
       patientorderbautistaproductimage: orderbautistainventoryproductimagepreviewimages,
       patientorderbautistaproductprice: orderbautistainventoryproductprice,
       patientorderbautistaproductquantity: bautistacount,
@@ -6561,7 +6565,7 @@ const submitpatientpendingorderbautista = async (e) => {
     setorderbautistaamountPaid('');
     setorderbautistaNotes('');
     setbautistaproductsoldCount(0);
-
+    setbautistapickupStatus('');  
     // Reset state
     setselectedorderbautistaproduct(null);
     setshowpatientorderbautista(false);

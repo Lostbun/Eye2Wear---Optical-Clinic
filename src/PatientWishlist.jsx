@@ -1085,7 +1085,7 @@ import find from "../src/assets/images/find.png";
                   <div className=" mx-1  w-fit rounded-md py-1 px-2  rounded-1xl h-fit  mt-2 break-words min-w-0 bg-[#F0F6FF]"><h1 className= {`font-medium   text-[#0d0d0d] text-[13px] min-w-0 break-words ${item.patientwishlistinventoryproductquantity === 0 ? 'text-gray-400': ''}`}>{item.patientwishlistinventoryproductcategory}</h1></div>
                       <div className="w-full h-auto ml-2 mt-2 "><h1 className={` font-semibold  text-[15px] min-w-0 break-words ${item.patientwishlistinventoryproductquantity === 0 ? 'text-gray-400': ''}`}>{item.patientwishlistinventoryproductname}</h1></div>
                       <div className="w-fit h-auto ml-2 mt-1 "><h1 className={`font-albertsans font-bold text-[18px] min-w-0 break-words ${item.patientwishlistinventoryproductquantity === 0 ? 'text-gray-400': ''}`}>₱ {item.patientwishlistinventoryproductprice?.toLocaleString()}</h1></div>
-                  <div className="w-full h-auto ml-2 mt-5 mb-5 "><h1 className={`font-albertsans font-medium text-[#4e4f4f] text-[15px] min-w-0 break-words ${item.patientwishlistinventoryproductquantity === 0 ? 'text-gray-400': ''}`}>0 Sold</h1></div>
+                  {/*<div className="w-full h-auto ml-2 mt-5 mb-5 "><h1 className={`font-albertsans font-medium text-[#4e4f4f] text-[15px] min-w-0 break-words ${item.patientwishlistinventoryproductquantity === 0 ? 'text-gray-400': ''}`}>0 Sold</h1></div>*/}
 
                   {item.patientwishlistinventoryproductquantity === 0 ? (
                     <div className="w-full py-1 flex justify-center items-center bg-[#b94c4c] rounded-b-2xl"><h1 className="font-semibold text-white">Out of Stock</h1></div>
@@ -1202,7 +1202,7 @@ import find from "../src/assets/images/find.png";
                                           <img src={starimage} className="w-5 h-5"/>
                                           <p className="font-albertsans ml-2 mt-1 text-[15px] font-semibold">4.8</p><span className="mt-1 text-[13px] pr-3 ml-2">(89 reviews)</span>
                                           
-                                          <p className="mt-1 font-albertsans border-l-2  border-[#8c8c8c] pl-3  text-[13px]">0 sold</p>
+                                         {/*<p className="mt-1 font-albertsans border-l-2  border-[#8c8c8c] pl-3  text-[13px]">0 sold</p>*/}
                                         </div>
                         
                                   
@@ -1356,7 +1356,7 @@ import find from "../src/assets/images/find.png";
                   <div className=" mx-1  w-fit rounded-md py-1 px-2  rounded-1xl h-fit  mt-2 break-words min-w-0 bg-[#F0F6FF]"><h1 className= {`font-medium   text-[#0d0d0d] text-[13px] min-w-0 break-words ${item.patientwishlistinventoryproductquantity === 0 ? 'text-gray-400': ''}`}>{item.patientwishlistinventoryproductcategory}</h1></div>
                       <div className="w-full h-auto ml-2 mt-2 "><h1 className={` font-semibold  text-[15px] min-w-0 break-words ${item.patientwishlistinventoryproductquantity === 0 ? 'text-gray-400': ''}`}>{item.patientwishlistinventoryproductname}</h1></div>
                       <div className="w-fit h-auto ml-2 mt-1 "><h1 className={`font-albertsans font-bold text-[18px] min-w-0 break-words ${item.patientwishlistinventoryproductquantity === 0 ? 'text-gray-400': ''}`}>₱ {item.patientwishlistinventoryproductprice?.toLocaleString()}</h1></div>
-                  <div className="w-full h-auto ml-2 mt-5 mb-5 "><h1 className={`font-albertsans font-medium text-[#4e4f4f] text-[15px] min-w-0 break-words ${item.patientwishlistinventoryproductquantity === 0 ? 'text-gray-400': ''}`}>0 Sold</h1></div>
+                  {/*<div className="w-full h-auto ml-2 mt-5 mb-5 "><h1 className={`font-albertsans font-medium text-[#4e4f4f] text-[15px] min-w-0 break-words ${item.patientwishlistinventoryproductquantity === 0 ? 'text-gray-400': ''}`}>0 Sold</h1></div>*/}
 
                   {item.patientwishlistinventoryproductquantity === 0 ? (
                     <div className="w-full py-1 flex justify-center items-center bg-[#b94c4c] rounded-b-2xl"><h1 className="font-semibold text-white">Out of Stock</h1></div>
@@ -1471,7 +1471,7 @@ import find from "../src/assets/images/find.png";
                                           <img src={starimage} className="w-5 h-5"/>
                                           <p className="font-albertsans ml-2 mt-1 text-[15px] font-semibold">4.8</p><span className="mt-1 text-[13px] pr-3 ml-2">(89 reviews)</span>
                                           
-                                          <p className="mt-1 font-albertsans border-l-2  border-[#8c8c8c] pl-3  text-[13px]">0 sold</p>
+                                          {/*<p className="mt-1 font-albertsans border-l-2  border-[#8c8c8c] pl-3  text-[13px]">0 sold</p>*/}
                                         </div>
                         
                                   
