@@ -32,6 +32,7 @@ const PatientOrderBautistaSchema = new mongoose.Schema({
     patientorderbautistaproductprice: {type: Number, required: true},
     patientorderbautistaproductquantity: {type: Number, required: true, min: 1},
     patientorderbautistaproductsubtotal: {type: Number, required: true},
+    patientorderbautistaproductdescription: {type: String, required: true},
 
     //PAYMENT INFORMATION
     patientorderbautistacustomfee: { type: Number, default: 0 }, // Clinic customization fee
@@ -54,7 +55,6 @@ const PatientOrderBautistaSchema = new mongoose.Schema({
     //PICKUP INFORMATION
     patientorderbautistaproductpickupstatus: { 
         type: String, 
-        enum: ['Now', 'Later'], 
         default: 'Later' 
     },
     patientorderbautistaproductchosenpickupdate: String,

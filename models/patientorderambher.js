@@ -33,6 +33,7 @@ const PatientOrderAmbherSchema = new mongoose.Schema({
     patientorderambherproductprice: {type: Number, required: true},
     patientorderambherproductquantity: {type: Number, required: true, min: 1},
     patientorderambherproductsubtotal: {type: Number, required: true},
+    patientorderambherproductdescription: {type: String, required: true},
 
     //PAYMENT INFORMATION
     patientorderambhercustomfee: { type: Number, default: 0 }, // Clinic customization fee
@@ -55,7 +56,6 @@ const PatientOrderAmbherSchema = new mongoose.Schema({
     //PICKUP INFORMATION
     patientorderambherproductpickupstatus: { 
         type: String, 
-        enum: ['Now', 'Later'], 
         default: 'Later' 
     },
     patientorderambherproductchosenpickupdate: String,
