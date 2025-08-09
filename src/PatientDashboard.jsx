@@ -917,7 +917,7 @@ useEffect(() => {
     <>
 
      {/* NavBar */}
-    <div className=" bg-white w-[100vw]">
+    <div className=" bg-white w-[99vw]">
       <header id="header" className="top-0 absolute flex justify-between items-center text-black  md:px-32 bg-white w-full drop-shadow-md">
         <a id:logocontain href="#">
           <img src={navlogo} alt="" className="w-33  hover:scale-105 transition-all"></img>
@@ -1027,7 +1027,7 @@ useEffect(() => {
 
 
     {/* First Section */} {/* First Section */} {/* First Section */} {/* First Section */}
-    <section className="bg-cover bg-center min-h-[100vh]  w-[98vw] flex justify-center align-center" >
+    <section className="bg-cover bg-center min-h-[100vh]  w-[99vw] flex justify-center align-center" >
     <div className="bg-cover bg-center h-full w-full flex items-center justify-center " >
 
       <div className="w-full h-full flex justify-start items-start pt-3 ">

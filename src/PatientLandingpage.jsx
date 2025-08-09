@@ -76,8 +76,8 @@ function PatientLandingpage(){
     <>
 
      {/* NavBar */}
-    <div className=" bg-white w-[100vw]">
-      <header id="header" className="flex justify-between items-center text-black  md:px-32 bg-white w-full drop-shadow-md">
+<div className="bg-white w-full relative z-10 mb-10">
+  <header id="header" className="top-0 absolute flex justify-between items-center text-black md:px-32 bg-white w-full drop-shadow-md z-50">
         <a id:logocontain href="#">
           <img src={navlogo} alt="" className="w-33  hover:scale-105 transition-all"></img>
         </a>
@@ -86,7 +86,7 @@ function PatientLandingpage(){
         <Link to="/patientlandingpage" className="text-[#000000] hover:text-white no-underline"><li className="text-[15px] p-3 hover:bg-[#2781af] hover:text-white text-black  rounded-md transition-all cursor-pointer">Home</li></Link>
         <Link to="/patientdashboard"><li className="text-[15px] p-3 hover:bg-[#2781af] hover:text-white rounded-md transition-all cursor-pointer">Appointments</li></Link>
         <Link to="/patientproducts"><li className="text-[15px] p-3 hover:bg-[#2781af] hover:text-white rounded-md transition-all cursor-pointer">Store</li></Link>
-        <Link to="/patientwishlist"><li className="text-[15px] p-3 hover:bg-[#2781af] hover:text-white rounded-md transition-all cursor-pointer">Wishlist</li></Link>
+         <Link to="/patientwishlist"><li className="text-[15px] p-3 hover:bg-[#2781af] hover:text-white rounded-md transition-all cursor-pointer">Wishlist</li></Link>
         <Link to="/patientorders"><li className="text-[15px] p-3 hover:bg-[#2781af] hover:text-white rounded-md transition-all cursor-pointer">Orders</li></Link>
 
 
@@ -103,7 +103,6 @@ function PatientLandingpage(){
         </div>
         
       */}
-
 
 
 
@@ -178,8 +177,9 @@ function PatientLandingpage(){
 
 
 
+
     {/* First Section */} {/* First Section */} {/* First Section */} {/* First Section */}
-    <section className="bg-white h-full w-[100%] flex justify-center align-center" >
+    <section className=" h-full w-full flex justify-center align-center" >
     <div className="bg-cover bg-center h-screen flex items-center justify-center " style={{ backgroundImage: `url(${landingbg2})` }}>
 
       {/* Left Side */}
@@ -237,10 +237,10 @@ function PatientLandingpage(){
 
 
      {/* Second Section */} {/* Second Section */} {/* Second Section */} {/* Second Section */} {/* Second Section */}
-     <section className="bg-white h-[160vh] w-[98vw]" >
+     <section className="bg-white h-[160vh] w-[99.5%]" >
 
 
-      <div className="bg-cover bg-center h-screen  flex flex-col items-center " style={{ backgroundImage: `url(${landingbg3})` }}>
+      <div className="bg-cover bg-center w-full h-screen  flex flex-col items-center " style={{ backgroundImage: `url(${landingbg3})` }}>
 
         
           <img src={lonelogo} className="w-30  mt-30"   style={{ animation: 'spin 8s linear infinite' }}/>
@@ -249,7 +249,7 @@ function PatientLandingpage(){
 
 
           <div className=" w-screen h-max flex justify-center align-center">
-                <div className=" mt-15 w-[1400px] h-[800px] flex justify-between align-center">
+                <div className=" mt-15 w-full max-w-[1400px] h-[800px] flex justify-between align-center">
                   <div className=" h-full w-[70%] ">
                     <div className=" h-[50%] pt-5 pr-2 pl-5 flex justify-center align-start">
                         <div className="bg-cover bg-center w-[60%] hover:scale-105 transition-all bg-white border-1 border-gray-200 shadow-md mr-5 rounded-4xl flex flex-col justify-end pl-10 pb-10" style={{ backgroundImage: `url(${bentoglass})` }}>
