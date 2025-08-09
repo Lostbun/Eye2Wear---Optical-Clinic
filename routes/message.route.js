@@ -1,14 +1,16 @@
 import express from "express";
 import { 
-  getMessages, 
   sendMessage,
-  markAsRead 
+  markAsRead,
+  getMessagesByConversation
 } from "../controllers/message.controller.js";
 
-const router = express.Router();
+const messagerouter = express.Router();
 
-router.get("/:conversationId", getMessages);
-router.post("/", sendMessage);
-router.patch("/:messageId/read", markAsRead);
+messagerouter.get("/:conversationId", getMessagesByConversation);
+messagerouter.post("/", sendMessage);
+messagerouter.patch("/:messageId/read", markAsRead);
 
-export default router;
+
+
+export default messagerouter;

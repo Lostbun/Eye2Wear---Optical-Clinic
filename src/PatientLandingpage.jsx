@@ -225,7 +225,7 @@ function PatientLandingpage(){
 
 
       {/* Right Side */}
-            <div className="w-[95%] h-[100%] items-center justify-center ">
+            <div className=" translate-z-9 w-[95%] h-[100%] items-center justify-center ">
             <img src={eyemodel2} className="w-140 h-140  ml-20 mt-[35px] pr-6 rotate-[-0.3deg]"/>
           
             </div>

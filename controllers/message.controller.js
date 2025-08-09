@@ -1,6 +1,12 @@
 import Message from "../models/message.js";
 import mongoose from "mongoose";
+import Owneraccount from "../models/owneraccount.js";
+import Staffaccount from "../models/staffacount.js";
+import Adminaccount from "../models/adminaccount.js";
+import Patientaccount from "../models/patientaccount.js";
 
+
+/*
 export const getMessages = async (req, res) => {
   try {
     const { conversationId } = req.params;
@@ -66,7 +72,7 @@ export const getMessages = async (req, res) => {
       error: "Server error while fetching messages"
     });
   }
-};
+};*/
 
 export const sendMessage = async (req, res) => {
   try {
@@ -246,5 +252,61 @@ export const deleteMessage = async (req, res) => {
       success: false,
       error: "Server error while deleting message"
     });
+  }
+};
+
+
+
+export const getMessagesByConversation = async (req, res) => {
+  try {
+    const { conversationId } = req.params;
+
+    const messages = await Message.find({ conversationId }).lean();
+
+    const updatedMessages = await Promise.all(
+      messages.map(async (msg) => {
+        let senderData = null;
+
+        switch (msg.senderModel) {
+          case "Owneraccount":
+            senderData = await Owneraccount.findById(msg.senderId).lean();
+            break;
+          case "Staffaccount":
+            senderData = await Staffaccount.findById(msg.senderId).lean();
+            break;
+          case "Adminaccount":
+            senderData = await Adminaccount.findById(msg.senderId).lean();
+            break;
+          case "Patientaccount":
+            senderData = await Patientaccount.findById(msg.senderId).lean();
+            break;
+        }
+
+        // Shorten avatar URL to just path
+        let avatarPath = "/default-avatar.png";
+        if (senderData?.avatar) {
+          try {
+            const parsedUrl = new URL(senderData.avatar);
+            avatarPath = parsedUrl.pathname;
+          } catch {
+            avatarPath = senderData.avatar; // If it's already a relative path
+          }
+        }
+
+        msg.sender = {
+          _id: senderData?._id || null,
+          name: `${senderData?.firstname || ""} ${senderData?.lastname || ""}`.trim(),
+          avatar: avatarPath,
+          role: msg.senderModel.replace("account", ""),
+        };
+
+        return msg;
+      })
+    );
+
+    res.status(200).json({ success: true, messages: updatedMessages });
+  } catch (error) {
+    console.error("Error fetching messages:", error);
+    res.status(500).json({ success: false, error: "Server error" });
   }
 };
