@@ -144,7 +144,7 @@ function UserLogin(){
               if(user  === 'Patient'){
                 localStorage.setItem("patienttoken", data.jsontoken);
                 localStorage.setItem("patientdetails", JSON.stringify(data.patient));
-                localStorage.setItem("patientid", data.patient.patientId);
+                localStorage.setItem("patientid", data.patient._id);
                 localStorage.setItem("patientemail", data.patient.patientemail);
                 localStorage.setItem('role', 'patient');
                 localStorage.setItem('token', data.jsontoken);

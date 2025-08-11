@@ -1,5 +1,10 @@
 import Message from "../models/message.js";
 import Conversation from "../models/conversation.js";
+import multer from 'multer';
+import path from 'path';
+import { v4 as uuidv4 } from 'uuid';
+
+
 
 // Get all conversations for a user
 export const getConversations = async (req, res) => {
@@ -61,13 +66,48 @@ export const getMessages = async (req, res) => {
   }
 };
 
-// Create a new message
+
+// Configure multer storage
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'uploads/message-images/');
+  },
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname);
+    cb(null, `${uuidv4()}${ext}`);
+  }
+});
+
+// File filter for images only
+const fileFilter = (req, file, cb) => {
+  const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+  if (allowedTypes.includes(file.mimetype)) {
+    cb(null, true);
+  } else {
+    cb(new Error('Only image files are allowed'), false);
+  }
+};
+
+// Create multer instance
+export const upload = multer({ 
+  storage, 
+  fileFilter,
+  limits: { fileSize: 5 * 1024 * 1024 } // 5MB limit
+});
+
+// Updated createMessage function
 export const createMessage = async (req, res) => {
   try {
     const { conversationId, text } = req.body;
     const { userId, role, name, clinic } = req.user;
+    let imageUrl = null;
 
-    // Find or create conversation
+    // Handle image if uploaded
+    if (req.file) {
+      imageUrl = `/uploads/message-images/${req.file.filename}`;
+    }
+
+    // Find or create conversation (same as before)
     let conversation;
     if (conversationId) {
       conversation = await Conversation.findById(conversationId);
@@ -75,10 +115,7 @@ export const createMessage = async (req, res) => {
         return res.status(404).json({ message: 'Conversation not found' });
       }
     } else {
-      // This is for patient initiating conversation with clinic
       const clinicName = req.body.clinic;
-      
-      // Check if conversation already exists
       conversation = await Conversation.findOne({
         'participants.userId': userId,
         'participants.role': 'patient',
@@ -92,9 +129,8 @@ export const createMessage = async (req, res) => {
             role,
             clinic: null
           }, {
-            // Clinic participant - userId will be added when staff/owner joins
             userId: null,
-            role: 'staff', // Initial role - will be updated when staff/owner joins
+            role: 'staff',
             clinic: clinicName
           }],
           clinic: clinicName
@@ -105,12 +141,13 @@ export const createMessage = async (req, res) => {
 
     // Create the message
     const message = new Message({
-      conversationId: conversation._id.toString(), // Step 5: Convert ObjectId to string
+      conversationId: conversation._id.toString(),
       senderId: userId,
       senderRole: role,
       senderName: name,
       senderClinic: clinic || null,
-      text
+      text,
+      imageUrl
     });
 
     await message.save();
@@ -120,7 +157,7 @@ export const createMessage = async (req, res) => {
     await conversation.save();
 
     // Emit the message via Socket.IO
-    const io = req.app.get('io'); // Step 1: Access io from app
+    const io = req.app.get('io');
     io.to(conversation._id.toString()).emit('newMessage', message);
 
     res.status(201).json(message);

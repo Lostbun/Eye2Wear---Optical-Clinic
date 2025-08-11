@@ -73,6 +73,26 @@ app.use(express.urlencoded({limit: '50mb', extended: true}));
 
 
 
+//AI CODDE
+import fs from 'fs';
+import path from 'path';
+
+// eslint-disable-next-line no-undef
+const uploadDir = path.join(process.cwd(), 'uploads', 'message-images');
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
+
+
+
+
+app.use('/uploads', express.static('uploads'));
+
+
+
+
+
+
 
 //Routes
 app.use("/api/accountdeletion", accountdeletionemailrouter);

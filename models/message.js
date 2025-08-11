@@ -25,7 +25,11 @@ const MessageSchema = new mongoose.Schema({
   },
   text: {
     type: String,
-    required: true,
+    required: false,
+  },
+  imageUrl: {
+    type: String,
+    required: false
   },
   readBy: [{
     userId: String,
