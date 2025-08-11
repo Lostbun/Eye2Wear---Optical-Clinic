@@ -21,8 +21,11 @@ import bautistainventoryproductrouter from "./routes/bautistainventoryproduct.ro
 import patientwishlistinventoryproductrouter from "./routes/patientwishlist.route.js";
 import patientorderambherrouter from "./routes/patientorderambher.route.js";
 import patientorderbautistarouter from "./routes/patientorderbautista.route.js";
-import messagerouter from "./routes/message.route.js";
 import Message from "./models/message.js";
+import messageRouter from "./routes/message.route.js";
+import { updateConversationParticipants } from "./middleware/conversationMiddleware.js";
+import Conversation from "./models/conversation.js";
+import jwt from 'jsonwebtoken';
 const {Connection} = mongoose;
 
 
@@ -46,83 +49,6 @@ const mongoUri = process.env.MONGO_URI;
 const app = express();
 const server = http.createServer(app);
 
-
-//SOCKET I.O. Configuration
-// Socket.io configuration
-const io = new Server(server, {
-  cors: {
-    origin: ['http://localhost:5173', 'https://www.getpostman.com'],
-    methods: ['GET', 'POST'],
-    credentials: true
-  },
-  transports: ['websocket', 'polling'], // Explicitly enable transports
-  allowEIO3: true // For compatibility with older clients
-});
-
-// Socket.io connection handling
-io.on('connection', (socket) => {
-  console.log('New client connected:', socket.id);
-  console.log('Handshake headers:', socket.handshake.headers);
-  console.log('Handshake query:', socket.handshake.query);
-
-  socket.onAny((event, ...args) => {
-    console.log(`Received event: ${event}`, args);
-  });
-  // Join a specific conversation room
-  socket.on('joinConversation', ({ conversationId, userId }) => {
-    socket.join(conversationId);
-    console.log(`User ${userId} joined conversation ${conversationId}`);
-  });
-
-// In server.js - Update your sendMessage handler
-// Update the sendMessage handler
-socket.on('sendMessage', async ({ conversationId, message, sender }) => {
-  try {
-    // Verify sender exists first
-    const Model = mongoose.model(sender.role.endsWith('account') ? 
-                  sender.role : `${sender.role}account`);
-    const userExists = await Model.exists({ _id: sender._id });
-    
-    if (!userExists) {
-      throw new Error('Sender does not exist');
-    }
-
-    const newMessage = await Message.create({
-      conversationId,
-      content: message,
-      sender: sender._id,
-      senderModel: sender.role.endsWith('account') ? 
-                 sender.role : `${sender.role}account`
-    });
-
-    // Manually populate
-    const senderData = await Model.findById(sender._id)
-      .select('patientfirstname patientlastname patientprofilepicture role')
-      .lean();
-
-    io.to(conversationId).emit('receiveMessage', {
-      _id: newMessage._id,
-      content: newMessage.content,
-      sender: {
-        _id: sender._id,
-        name: `${senderData.patientfirstname} ${senderData.patientlastname}`,
-        avatar: senderData.patientprofilepicture,
-        role: senderData.role
-      },
-      createdAt: newMessage.createdAt
-    });
-
-  } catch (err) {
-    console.error('Message error:', err);
-    socket.emit('messageError', { error: err.message });
-  }
-});
-
-  // Handle disconnection
-  socket.on('disconnect', () => {
-    console.log('Client disconnected:', socket.id);
-  });
-});
 
 
 
@@ -183,11 +109,83 @@ app.use("/api/patientorderambher", patientorderambherrouter);
 //Routes
 app.use("/api/patientorderbautista", patientorderbautistarouter);
 //Routes
-app.use("/api/messages", messagerouter);
+app.use("/api/messages", messageRouter);
+//Routes
+app.use(updateConversationParticipants);
+
+
+
 
 app.get("/", (req, res) => {
     res.send("Hello from Althea Ebora");
   });
+
+// Socket.IO setup
+const io = new Server(server, {
+  cors: {
+    origin: "http://localhost:5173",
+    methods: ["GET", "POST"]
+  }
+});
+
+// Socket.IO middleware for token verification
+io.use(async (socket, next) => {
+  const token = socket.handshake.auth.token;
+  if (!token) {
+    return next(new Error('Authentication error: No token provided'));
+  }
+
+  try {
+    // eslint-disable-next-line no-undef
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    socket.user = {
+      userId: decoded.id,
+      role: decoded.role,
+      clinic: decoded.clinic || null
+    };
+    next();
+  } catch (error) {
+    next(new Error('Authentication error: Invalid token'));
+  }
+});
+
+// Attach io to app for use in controllers
+app.set('io', io);
+
+// Socket.IO connection handling
+io.on('connection', (socket) => {
+  console.log('A user connected:', socket.id);
+
+  socket.on('joinConversations', async (userId, role, clinic) => {
+    try {
+      let conversations;
+      
+      if (role === 'patient') {
+        conversations = await Conversation.find({
+          'participants.userId': userId,
+          'participants.role': role
+        });
+      } else {
+        conversations = await Conversation.find({
+          'participants.clinic': clinic,
+          clinic: clinic
+        });
+      }
+      
+      conversations.forEach(conv => {
+        socket.join(conv._id.toString());
+        console.log(`User ${socket.id} joined conversation ${conv._id}`);
+      });
+    } catch (error) {
+      console.error('Error joining conversations:', error);
+    }
+  });
+
+  socket.on('disconnect', () => {
+    console.log('User disconnected:', socket.id);
+  });
+});
+
 
 
 

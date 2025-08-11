@@ -144,6 +144,10 @@ function UserLogin(){
               if(user  === 'Patient'){
                 localStorage.setItem("patienttoken", data.jsontoken);
                 localStorage.setItem("patientdetails", JSON.stringify(data.patient));
+                localStorage.setItem("patientid", data.patient.patientId);
+                localStorage.setItem("patientemail", data.patient.patientemail);
+                localStorage.setItem('role', 'patient');
+                localStorage.setItem('token', data.jsontoken);
                 axios.defaults.headers.common['Authorization'] = `Bearer ${data.jsontoken}`;
 
                 

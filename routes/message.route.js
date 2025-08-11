@@ -1,16 +1,15 @@
 import express from "express";
 import { 
-  sendMessage,
-  markAsRead,
-  getMessagesByConversation
+  getConversations, 
+  getMessages, 
+  createMessage 
 } from "../controllers/message.controller.js";
+import { protect } from "../middleware/authMiddleware.js";
 
-const messagerouter = express.Router();
+const router = express.Router();
 
-messagerouter.get("/:conversationId", getMessagesByConversation);
-messagerouter.post("/", sendMessage);
-messagerouter.patch("/:messageId/read", markAsRead);
+router.get("/conversations", protect, getConversations);
+router.get("/:conversationId", protect, getMessages);
+router.post("/", protect, createMessage);
 
-
-
-export default messagerouter;
+export default router;
