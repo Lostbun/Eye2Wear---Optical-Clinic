@@ -6789,10 +6789,19 @@ const submitpatientpendingorderbautista = async (e) => {
     <>
 
      {/* NavBar */}
-    <div className="  bg-[#003366] rounded-full mt-2 ml-3 mr-3">
+<div className="rounded-full mt-2 ml-3 mr-3 bg-[#003366] ">
       <header id="header" className="flex justify-between items-center text-black py-4 px-8 md:px-20  ">
         <a id:logocontain href="#" >
-          <img src={landinglogo} alt="Eye2Wear: Optical Clinic" className="w-60 hover:scale-105 transition-all   p-1"></img>
+   
+  {(localStorage.getItem('staffclinic') === 'Ambher Optical' || 
+   localStorage.getItem('ownerclinic') === 'Ambher Optical') 
+    ?  <div className="gap-2 flex items-center"><img src={ambherlogo} alt="Ambher Optical" className="w-14 hover:scale-105 transition-all   p-1"/><h1 className="font-albertsans font-semibold text-white text-[25px]">Ambher Optical</h1></div>
+
+    : (localStorage.getItem('staffclinic') === 'Bautista Eye Center' || 
+   localStorage.getItem('ownerclinic') === 'Bautista Eye Center')     ? 
+    <div className="gap-2 flex items-center"><img src={bautistalogo} alt="Bautista Eye Center" className="w-14 hover:scale-105 transition-all   p-1"/><h1 className="font-albertsans font-semibold text-white text-[25px]">Bautista Eye Center</h1></div>
+   :<img src={landinglogo} alt="Eye2Wear: Optical Clinic" className="w-60 hover:scale-105 transition-all   p-1"/>
+}
         </a>
 
 

@@ -165,6 +165,11 @@ function UserLogin(){
 
               else if(user  === 'Staff'){
                 localStorage.setItem("stafftoken", data.jsontoken);
+                localStorage.setItem("staffdetails", JSON.stringify(data.staff));
+                localStorage.setItem("staffemail", data.staff.staffemail);
+                localStorage.setItem("staffclinic", data.staff.staffclinic);
+                localStorage.setItem('role', 'staff');
+                localStorage.setItem('token', data.jsontoken);
                 localStorage.setItem("currentuser", JSON.stringify({
                   type: 'Staff',
                   firstname: data.staff.stafffirstname,

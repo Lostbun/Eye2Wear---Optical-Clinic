@@ -424,6 +424,7 @@ const cancelFile = () => {
 )}
 
 
+  {localStorage.getItem("role") === "patient" && (
       <div className="fixed bottom-5 right-5 z-[99] flex flex-col items-start gap-2">
         {showpatientchatdashboard && (
           <div className="mb-6 motion-preset-slide-down w-90 h-140 shadow-2xl z-[9999] flex flex-col items-center justify-center rounded-2xl bg-white">
@@ -665,6 +666,58 @@ const cancelFile = () => {
           )}
         </div>
       </div>
+  )}
+
+  {(localStorage.getItem("role") === "staff" || localStorage.getItem("role") === "owner" ) && localStorage.getItem("staffclinic") === "Ambher Optical" && (
+
+      <div className="fixed bottom-5 right-5 z-[99] flex flex-col items-start gap-2">
+        {showpatientchatdashboard && (
+          <div className="mb-6 motion-preset-slide-down w-250 h-150 shadow-2xl z-[9999] flex flex-col   rounded-2xl bg-white"  >
+            {/* Header */}
+            <div className={`min-h-12 max-h-12 w-full h-14 rounded-t-2xl flex justify-center items-center bg-[#39715f]`}>
+                <div className=" flex px-2 w-full items-center">
+                  <img src={ambherlogo} className="w-15 px-2 py-1"/>
+                  <p className="font-albertsans font-semibold text-[17px] text-[#ffffff]">Ambher Optical</p>
+                </div>
+           
+            </div>
+
+
+          </div>
+        )}
+
+
+        
+
+        {/* Chat Toggle Button */}
+        <div className="w-full justify-end flex items-end">
+          {showpatientchatdashboard ? (
+            <div 
+              onClick={() => {
+                setshowpatientbautistaConversation(false);
+                setshowpatientambherConversation(false);
+                setshowpatientchatdashboard(false);
+                setMessages([]);
+                setSelectedImage(null); 
+                setSelectedFile(null);
+              }} 
+              className="motion-preset-slide-down hover:scale-105 ease-in-out duration-300 transition-all cursor-pointer flex justify-center items-center w-[60px] h-[60px] rounded-full bg-[#39715f]"
+            >
+              <img src={close} alt="logo" className="select-none motion-preset-shake w-10 h-10 p-2" />
+            </div>
+          ) : (
+            <div 
+              onClick={() => setshowpatientchatdashboard(true)} 
+              className="motion-preset-slide-down hover:scale-105 ease-in-out duration-300 transition-all cursor-pointer flex justify-center items-center w-[60px] h-[60px] rounded-full bg-[#39715f]"
+            >
+              <img src={chat} alt="logo" className="select-none motion-preset-seesaw w-10 h-10 p-2" />
+            </div>
+          )}
+        </div>
+      </div>
+
+  )}
+
     </>
   );
 }

@@ -17,6 +17,11 @@ export const useAuth = () => {
         if (window.confirm("Are you sure you want to logout?")) {
             localStorage.removeItem("stafftoken");
             localStorage.removeItem("staffdetails");
+            localStorage.removeItem("currentuser");
+            localStorage.removeItem("staffclinic");
+            localStorage.removeItem("staffemail");
+            localStorage.removeItem("token");
+            localStorage.removeItem("role");
             navigate("/userlogin");
         }
     };

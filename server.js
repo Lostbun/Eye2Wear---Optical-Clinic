@@ -170,7 +170,7 @@ io.use(async (socket, next) => {
     };
     next();
   } catch (error) {
-    next(new Error('Authentication error: Invalid token'));
+    next(new Error('Authentication error: Invalid token', error));
   }
 });
 
