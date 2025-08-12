@@ -21,6 +21,18 @@ import { io } from "socket.io-client";
 import closeimage from "./assets/images/cancelimage.png";
 import addimage from "./assets/images/addimage.png";
 import documenticon from "./assets/images/documenticon.png";
+import filesent from "./assets/images/filesent.png";
+import leftarrow from "./assets/images/left-arrow.png";
+
+
+
+
+
+
+
+
+
+
 
 function PatientChatButton() {
   const location = useLocation();
@@ -264,7 +276,7 @@ const renderMessageContent = (msg) => {
   return (
     <>
       {msg.text && (
-        <p className="text-[15px] font-albertsans font-semibold text-[#555555]">
+        <p className="text-[15px] font-albertsans font-semibold text-[#555555] whitespace-pre-wrap break-words">
           {msg.text}
         </p>
       )}
@@ -286,16 +298,16 @@ const renderMessageContent = (msg) => {
         </div>
       )}
       {msg.documentUrl && (
-        <div className="mt-2 p-2 bg-gray-100 rounded-lg flex items-center">
-          <img src={documenticon} className="w-6 h-6 mr-2" />
+        <div className="mt-2 p-2 bg-gray-100 rounded-lg flex items-center w-full">
+          <img src={filesent} className="w-6 h-6 mr-2 flex-shrink-0" />
           <a 
             href={`http://localhost:3000${msg.documentUrl}`} 
             target="_blank" 
             rel="noopener noreferrer"
-            className="text-blue-600 hover:underline"
-            download
+            className="text-blue-600 hover:underline break-all"
+            download={msg.documentName || msg.documentUrl.split('/').pop()}
           >
-            {msg.documentUrl.split('/').pop()}
+            {msg.documentName || msg.documentUrl.split('/').pop()}
           </a>
         </div>
       )}
@@ -373,9 +385,8 @@ const cancelFile = () => {
   if (fileInputRef.current) {
     fileInputRef.current.value = '';
   }
+  forceUpdate(); 
 };
-
-
 
 
 
@@ -413,7 +424,7 @@ const cancelFile = () => {
 )}
 
 
-      <div className="fixed bottom-5 right-5 z-[9999] flex flex-col items-start gap-2">
+      <div className="fixed bottom-5 right-5 z-[99] flex flex-col items-start gap-2">
         {showpatientchatdashboard && (
           <div className="mb-6 motion-preset-slide-down w-90 h-140 shadow-2xl z-[9999] flex flex-col items-center justify-center rounded-2xl bg-white">
             {/* Header */}
@@ -424,11 +435,13 @@ const cancelFile = () => {
             }`}>
               {showpatientambherConversation ? (
                 <div className="flex px-2 w-full items-center">
+                  <img src={leftarrow} className="cursor-pointer hover:scale-105 transition-all duration-300 ease-in-out w-5 h-5 mr-2" onClick={()=> {setMessages([]); setSelectedImage(null); setSelectedFile(null);setshowpatientambherConversation(false);}}/>
                   <img src={ambherlogo} className="w-15 px-2 py-1"/>
                   <p className="font-albertsans font-semibold text-[17px] text-[#ffffff]">Ambher Optical</p>
                 </div>
               ) : showpatientbautistaConversation ? (
                 <div className="flex px-2 w-full items-center">
+                  <img src={leftarrow} className="cursor-pointer hover:scale-105 transition-all duration-300 ease-in-out w-5 h-5 mr-2" onClick={()=> {setMessages([]); setSelectedImage(null); setSelectedFile(null); setshowpatientbautistaConversation(false);}}/>
                   <img src={bautistalogo} className="w-15 px-2 py-1"/>
                   <p className="font-albertsans font-semibold text-[17px] text-[#ffffff]">Bautista Eye Center</p>
                 </div>
@@ -464,7 +477,7 @@ const cancelFile = () => {
                 {/* Messages Container */}
                 <div 
                   id="conversationmessages" 
-                  className="p-3 overflow-y-auto w-full flex-grow" 
+                  className="px-3 pb-3 pt-10 overflow-y-auto w-full flex-grow" 
                   style={{ maxHeight: '430px' }}
                 >
                   {loading ? (
@@ -508,12 +521,17 @@ const cancelFile = () => {
                             msg.senderId === patientId ? 'justify-end' : 'justify-start'
                           } ${index === messages.length - 1 ? '' : 'pb-0'}`}
                         >
-                          <div 
-                            className={`max-w-[70%] flex flex-col px-5 py-2 ${
-                              msg.senderId === patientId ? 'bg-[#e0e0e0]' : 'bg-[#c0eed6]'
-                            } ${borderRadiusClasses} relative group`}
-                          >
-                            {renderMessageContent(msg)}
+<div 
+  className={`max-w-[80%] flex flex-col px-5 py-2 ${
+    msg.senderId === patientId ? 'bg-[#e0e0e0]' : 'bg-[#c0eed6]'
+  } ${borderRadiusClasses} relative group`}
+  style={{
+    wordWrap: 'break-word',
+    overflowWrap: 'break-word',
+    whiteSpace: 'pre-wrap'
+  }}
+>
+  {renderMessageContent(msg)}
                             <div className="motion-preset-slide-up rounded-2xl absolute bottom-full right-0 mb-1 hidden group-hover:block bg-black bg-opacity-75 text-white text-xs px-2 py-1 whitespace-nowrap">
                               {formatDate(msg.createdAt)} at {new Date(msg.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
                             </div>
@@ -539,73 +557,82 @@ const cancelFile = () => {
 
 {/* Message Input */}
 <div className="px-2 pb-2 flex flex-col w-full rounded-2xl mt-auto">
-  <div className=" bg-gray-200 rounded-2xl p-3 pb-3 flex items-center w-full h-16">
+  <div className="bg-gray-200 rounded-2xl p-3 pb-3 flex items-center w-full h-16">
+    {/* File upload button (only shown when no file is selected) */}
+    {!selectedFile && (
+      <label className="cursor-pointer p-2 mr-2">
+        <input 
+          type="file" 
+          ref={fileInputRef}
+          accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt"
+          className="hidden"
+          onChange={handleFileChange}
+        />
+        <img src={documenticon} className="w-7 h-7"/>
+      </label>
+    )}
 
-{selectedFile != null ? (
-  <div className="flex items-center">
-    {selectedFile.isImage ? (
-      <div className="w-8 h-8 flex-shrink-0 relative">
+    {/* Image preview (if image is selected) */}
+    {selectedFile?.isImage && (
+      <div className="flex-shrink-0 relative mr-2">
         <img 
           src={selectedFile.preview} 
           alt="Preview" 
-          className="w-full h-full object-cover rounded cursor-pointer"
+          className="w-8 h-8 object-cover rounded cursor-pointer"
           onClick={() => {
             setSelectedImageForModal(selectedFile.preview);
             setModalOpen(true);
           }}
         />
         <img 
-          onClick={cancelImage} 
+          onClick={cancelFile}
           src={closeimage} 
           alt="cancel" 
           className="absolute -top-2 -right-2 h-5 w-5 cursor-pointer hover:scale-110 transition-all duration-300 ease-in-out bg-white rounded-full p-0.5 shadow-sm"
         />
       </div>
-    ) : (
-      <div className="flex items-center bg-gray-100 px-2 py-1 rounded">
-        <img src={documenticon} className="w-5 h-5 mr-2" />
-        <span className="text-sm">{shortenFileName(selectedFile.name)}</span>
+    )}
+
+    {/* Document preview (if document is selected) */}
+    {selectedFile && !selectedFile.isImage && (
+      <div className="flex items-center bg-gray-100 px-2 py-1 rounded mr-2 max-w-[100px]">
+        <img src={filesent} className="w-5 h-5 mr-2 flex-shrink-0" />
+        <span className="text-sm truncate">
+          {selectedFile.name}
+        </span>
         <img 
           onClick={cancelFile} 
           src={closeimage} 
           alt="cancel" 
-          className="ml-2 h-4 w-4 cursor-pointer hover:scale-110 transition-all duration-300 ease-in-out"
+          className="ml-2 h-4 w-4 cursor-pointer hover:scale-110 transition-all duration-300 ease-in-out flex-shrink-0"
         />
       </div>
     )}
-  </div>
-) : (
-  <label className="cursor-pointer p-2">
-    <input 
-      type="file" 
-      ref={fileInputRef}
-      accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt"
-      className="hidden"
-      onChange={handleFileChange}
-    />
-    <img src={addimage} className="w-7 h-7"/>
-  </label>
-)}
-    <textarea 
-      className="flex-grow h-full p-2 outline-none resize-none  flex items-center " 
-      placeholder="Type your message..."
-      value={message}
-      onChange={(e) => setMessage(e.target.value)}
-      onKeyPress={(e) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
-          e.preventDefault();
-          handleSendMessage();
-        }
-      }}
-    />
+
+    {/* Text input area */}
+    <div className="flex-grow flex items-center">
+      <textarea 
+        className="w-full h-full p-2 outline-none resize-none bg-transparent" 
+        placeholder="Type your message..."
+        value={message}
+        onChange={(e) => setMessage(e.target.value)}
+        onKeyPress={(e) => {
+          if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            handleSendMessage();
+          }
+        }}
+      />
+    </div>
+
+    {/* Send button */}
     <img 
       src={showpatientambherConversation ? sendchatambher : sendchatbautista} 
       alt="send" 
-      className="hover:scale-105 transition-all duration-300 ease-in-out h-10 w-10 p-2 cursor-pointer" 
+      className="hover:scale-105 transition-all duration-300 ease-in-out h-10 w-10 p-2 cursor-pointer flex-shrink-0" 
       onClick={handleSendMessage}
     />
   </div>
-
 </div>
               </div>
             )}
@@ -621,6 +648,8 @@ const cancelFile = () => {
                 setshowpatientambherConversation(false);
                 setshowpatientchatdashboard(false);
                 setMessages([]);
+                setSelectedImage(null); 
+                setSelectedFile(null);
               }} 
               className="motion-preset-slide-down hover:scale-105 ease-in-out duration-300 transition-all cursor-pointer flex justify-center items-center w-[60px] h-[60px] rounded-full bg-[#1583b3]"
             >

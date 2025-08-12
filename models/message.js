@@ -35,6 +35,10 @@ const MessageSchema = new mongoose.Schema({
     type: String,
     required: false
   },
+    documentName: { 
+    type: String,
+    required: false
+  },
   readBy: [{
     userId: String,
     role: String,

@@ -170,7 +170,8 @@ if (req.file) {
       senderClinic: clinic || null,
       text,
       imageUrl,
-      documentUrl
+      documentUrl,
+      documentName: req.file?.originalname
     });
 
     await message.save();
