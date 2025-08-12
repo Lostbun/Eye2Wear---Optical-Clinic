@@ -31,6 +31,10 @@ const MessageSchema = new mongoose.Schema({
     type: String,
     required: false
   },
+  documentUrl: {
+    type: String,
+    required: false
+  },
   readBy: [{
     userId: String,
     role: String,
@@ -39,5 +43,4 @@ const MessageSchema = new mongoose.Schema({
 }, {
   timestamps: true
 });
-
 export default mongoose.model("Message", MessageSchema);

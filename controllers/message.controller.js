@@ -66,11 +66,11 @@ export const getMessages = async (req, res) => {
   }
 };
 
-
 // Configure multer storage
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, 'uploads/message-images/');
+    const isImage = file.mimetype.startsWith('image/');
+    cb(null, isImage ? 'uploads/message-images/' : 'uploads/message-documents/');
   },
   filename: (req, file, cb) => {
     const ext = path.extname(file.originalname);
@@ -78,36 +78,58 @@ const storage = multer.diskStorage({
   }
 });
 
-// File filter for images only
+// File filter for both images and documents
 const fileFilter = (req, file, cb) => {
-  const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+  const allowedTypes = [
+    'image/jpeg',
+    'image/png',
+    'image/gif',
+    'image/webp',
+    'application/pdf',
+    'application/msword',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'application/vnd.ms-excel',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    'text/plain'
+  ];
+
   if (allowedTypes.includes(file.mimetype)) {
     cb(null, true);
   } else {
-    cb(new Error('Only image files are allowed'), false);
+    cb(new Error('Invalid file type. Only images and documents are allowed.'), false);
   }
 };
 
-// Create multer instance
 export const upload = multer({ 
   storage, 
   fileFilter,
-  limits: { fileSize: 5 * 1024 * 1024 } // 5MB limit
+  limits: { fileSize: 10 * 1024 * 1024 } // 10MB limit
 });
 
-// Updated createMessage function
 export const createMessage = async (req, res) => {
   try {
+    // Log incoming request for debugging
+    console.log('Request body:', req.body);
+    console.log('Uploaded file:', req.file);
+
     const { conversationId, text } = req.body;
     const { userId, role, name, clinic } = req.user;
+    
     let imageUrl = null;
+    let documentUrl = null;
 
-    // Handle image if uploaded
-    if (req.file) {
-      imageUrl = `/uploads/message-images/${req.file.filename}`;
-    }
+if (req.file) {
+  const fileType = req.file.mimetype.startsWith('image/') ? 'message-images' : 'message-documents';
+  const fileUrl = `/uploads/${fileType}/${req.file.filename}`;
+  
+  if (req.file.mimetype.startsWith('image/')) {
+    imageUrl = fileUrl;
+  } else {
+    documentUrl = fileUrl;
+  }
+}
 
-    // Find or create conversation (same as before)
+    // Find or create conversation
     let conversation;
     if (conversationId) {
       conversation = await Conversation.findById(conversationId);
@@ -147,7 +169,8 @@ export const createMessage = async (req, res) => {
       senderName: name,
       senderClinic: clinic || null,
       text,
-      imageUrl
+      imageUrl,
+      documentUrl
     });
 
     await message.save();
@@ -163,6 +186,10 @@ export const createMessage = async (req, res) => {
     res.status(201).json(message);
   } catch (error) {
     console.error('Error creating message:', error);
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ 
+      message: error.message,
+      // eslint-disable-next-line no-undef
+      error: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
   }
 };

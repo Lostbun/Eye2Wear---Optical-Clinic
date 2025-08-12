@@ -7,10 +7,9 @@ import {
 } from "../controllers/message.controller.js";
 import { protect } from "../middleware/authMiddleware.js";
 
-const router = express.Router();
+const messagerouter = express.Router();
 
-router.get("/conversations", protect, getConversations);
-router.get("/:conversationId", protect, getMessages);
-router.post("/", protect, upload.single('image'), createMessage);
-
-export default router;
+messagerouter.get("/conversations", protect, getConversations);
+messagerouter.get("/:conversationId", protect, getMessages);
+messagerouter.post("/", protect, upload.single('file'), createMessage);
+export default messagerouter;

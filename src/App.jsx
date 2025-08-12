@@ -20,7 +20,7 @@ import sendchatbautista from "./assets/images/sendchatbautista.png";
 import { io } from "socket.io-client";
 import closeimage from "./assets/images/cancelimage.png";
 import addimage from "./assets/images/addimage.png";
-
+import documenticon from "./assets/images/documenticon.png";
 
 function PatientChatButton() {
   const location = useLocation();
@@ -50,7 +50,10 @@ function PatientChatButton() {
   const [selectedImage, setSelectedImage] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedImageForModal, setSelectedImageForModal] = useState(null);
-  
+  const [selectedFile, setSelectedFile] = useState(null);
+
+
+
 
 
   useEffect(() => {
@@ -174,7 +177,7 @@ function PatientChatButton() {
   };
 
 const handleSendMessage = async () => {
-  if (!message.trim() && !selectedImage) return;
+  if (!message.trim() && !selectedFile) return;
 
   try {
     const token = localStorage.getItem('token');
@@ -187,26 +190,40 @@ const handleSendMessage = async () => {
     if (message.trim()) formData.append('text', message);
     formData.append('clinic', clinic);
     
-    if (selectedImage) {
-      formData.append('image', selectedImage.file);
+    // Always use 'file' as the field name
+    if (selectedFile) {
+      formData.append('file', selectedFile.file);
     }
 
     const response = await fetch("http://localhost:3000/api/messages", {
       method: "POST",
-      headers: { "Authorization": `Bearer ${token}` },
+      headers: { 
+        "Authorization": `Bearer ${token}` 
+        // Let browser set Content-Type automatically
+      },
       body: formData
     });
 
+    // Handle response properly
+    const responseText = await response.text();
     if (!response.ok) {
-      const errorData = await response.json();
-      console.error('Failed to send message:', errorData.message);
-      return;
+      try {
+        const errorData = JSON.parse(responseText);
+        throw new Error(errorData.message || 'Failed to send message');
+      } catch {
+        throw new Error(responseText || 'Failed to send message');
+      }
     }
 
+    const data = JSON.parse(responseText);
     setMessage("");
-    setSelectedImage(null);
+    setSelectedFile(null);
+    
+    // Handle successful response
   } catch (error) {
     console.error("Error sending message:", error);
+    // Show error to user
+    alert(`Error: ${error.message}`);
   }
 };
 // Update your Socket.IO effect
@@ -242,7 +259,7 @@ useEffect(() => {
   };
 }, [selectedImage]);
 
-
+// Update the renderMessageContent function
 const renderMessageContent = (msg) => {
   return (
     <>
@@ -261,7 +278,25 @@ const renderMessageContent = (msg) => {
               setSelectedImageForModal(`http://localhost:3000${msg.imageUrl}`);
               setModalOpen(true);
             }}
+            onError={(e) => {
+              e.target.onerror = null;
+              e.target.src = '/path-to-placeholder-image.png';
+            }}
           />
+        </div>
+      )}
+      {msg.documentUrl && (
+        <div className="mt-2 p-2 bg-gray-100 rounded-lg flex items-center">
+          <img src={documenticon} className="w-6 h-6 mr-2" />
+          <a 
+            href={`http://localhost:3000${msg.documentUrl}`} 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="text-blue-600 hover:underline"
+            download
+          >
+            {msg.documentUrl.split('/').pop()}
+          </a>
         </div>
       )}
     </>
@@ -281,12 +316,18 @@ const renderMessageContent = (msg) => {
 
 const handleFileChange = (e) => {
   if (e.target.files && e.target.files[0]) {
-    setSelectedImage({
-      file: e.target.files[0],
-      preview: URL.createObjectURL(e.target.files[0])
+    const file = e.target.files[0];
+    const isImage = file.type.startsWith('image/');
+    
+    setSelectedFile({
+      file: file,
+      preview: isImage ? URL.createObjectURL(file) : null,
+      isImage: isImage,
+      name: file.name
     });
   }
 };
+
 
 const shortenFileName = (name) => {
   if (name.length <= 20) return name;
@@ -319,6 +360,39 @@ useEffect(() => {
     window.removeEventListener('keydown', handleKeyDown);
   };
 }, [modalOpen]);
+
+
+
+
+
+const cancelFile = () => {
+  if (selectedFile?.preview) {
+    URL.revokeObjectURL(selectedFile.preview);
+  }
+  setSelectedFile(null);
+  if (fileInputRef.current) {
+    fileInputRef.current.value = '';
+  }
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
   return (
@@ -467,32 +541,45 @@ useEffect(() => {
 <div className="px-2 pb-2 flex flex-col w-full rounded-2xl mt-auto">
   <div className=" bg-gray-200 rounded-2xl p-3 pb-3 flex items-center w-full h-16">
 
-{selectedImage != null ? (
+{selectedFile != null ? (
   <div className="flex items-center">
-    <div className="w-8 h-8 flex-shrink-0 relative">
-      <img 
-        src={selectedImage.preview} 
-        alt="Preview" 
-        className="w-full h-full object-cover rounded cursor-pointer"
-        onClick={() => {
-          setSelectedImageForModal(selectedImage.preview);
-          setModalOpen(true);
-        }}
-      />
-      <img 
-        onClick={cancelImage} 
-        src={closeimage} 
-        alt="cancel" 
-        className="absolute -top-2 -right-2 h-5 w-5 cursor-pointer hover:scale-110 transition-all duration-300 ease-in-out bg-white rounded-full p-0.5 shadow-sm"
-      />
-    </div>
+    {selectedFile.isImage ? (
+      <div className="w-8 h-8 flex-shrink-0 relative">
+        <img 
+          src={selectedFile.preview} 
+          alt="Preview" 
+          className="w-full h-full object-cover rounded cursor-pointer"
+          onClick={() => {
+            setSelectedImageForModal(selectedFile.preview);
+            setModalOpen(true);
+          }}
+        />
+        <img 
+          onClick={cancelImage} 
+          src={closeimage} 
+          alt="cancel" 
+          className="absolute -top-2 -right-2 h-5 w-5 cursor-pointer hover:scale-110 transition-all duration-300 ease-in-out bg-white rounded-full p-0.5 shadow-sm"
+        />
+      </div>
+    ) : (
+      <div className="flex items-center bg-gray-100 px-2 py-1 rounded">
+        <img src={documenticon} className="w-5 h-5 mr-2" />
+        <span className="text-sm">{shortenFileName(selectedFile.name)}</span>
+        <img 
+          onClick={cancelFile} 
+          src={closeimage} 
+          alt="cancel" 
+          className="ml-2 h-4 w-4 cursor-pointer hover:scale-110 transition-all duration-300 ease-in-out"
+        />
+      </div>
+    )}
   </div>
 ) : (
   <label className="cursor-pointer p-2">
     <input 
       type="file" 
       ref={fileInputRef}
-      accept="image/*"
+      accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt"
       className="hidden"
       onChange={handleFileChange}
     />

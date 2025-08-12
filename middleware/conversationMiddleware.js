@@ -2,6 +2,9 @@ import Conversation from "../models/conversation.js";
 
 export const updateConversationParticipants = async (req, res, next) => {
   try {
+    // Skip if this isn't an authenticated request
+    if (!req.user) return next();
+    
     const { userId, role, clinic } = req.user;
     
     if (role === 'staff' || role === 'owner') {
