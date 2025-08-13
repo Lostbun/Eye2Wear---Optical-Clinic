@@ -683,6 +683,25 @@ const cancelFile = () => {
             </div>
 
 
+             {/* Chat and List Space */}
+
+            <div className="p-2 gap-2 w-full h-full rounded-b-2xl flex items-center justify-center">
+              <div className="rounded-2xl h-full w-[30%] border-1 flex flex-col items-start">
+                <div className="border-1 rounded-2xl h-[12%] w-full"> </div>
+                <div className="border-1 rounded-2xl h-[8%] w-full"> </div>
+                <div className="border-1 rounded-2xl h-[80%] w-full"> </div>   
+              </div>
+
+              <div className="flex flex-col rounded-2xl h-full w-[70%] border-1 ">
+
+                <div className="rounded-t-2xl border-1 h-[10%] w-full"> </div>
+                <div className="rounded-b-2xl border-1 h-[90%] w-full"> 
+                
+                </div>
+
+              </div>
+            </div>
+
           </div>
         )}
 
