@@ -89,8 +89,13 @@ export const verifyloggedinstaffacc = async (req, res, next) => {
       return res.status(401).json({message: 'Authorization required'});
     }
 
-    const tokendecoded = jwt.verify(stafftoken, process.env.JWT_KEY);
-    req.staff = {id: tokendecoded.id};
+    const tokendecoded = jwt.verify(stafftoken, process.env.JWT_SECRET);
+    req.staff = {
+      id: tokendecoded.id,
+      email: tokendecoded.email,
+      role: tokendecoded.role,
+      clinic: tokendecoded.clinic
+    };
     next();
   
   }catch(error){
@@ -101,8 +106,6 @@ export const verifyloggedinstaffacc = async (req, res, next) => {
     });
   }
 }
-
-
 
 
 
@@ -207,11 +210,10 @@ export const stafflogin = async(req, res) => {
   try{
     const {staffemail,staffpassword} = req.body;
 
-    const staff = await Staffaccount.findOne({staffemail});
+    const staff = await Staffaccount.findOne({staffemail}).select('+staffpassword');
     if(!staff) {
       return res.status(401).json({message:"Login Error, Invalid Credentials"});
     }
-
 
     const loginmatch = await bcrypt.compare(staffpassword, staff.staffpassword);
     if(!loginmatch) {
@@ -220,25 +222,24 @@ export const stafflogin = async(req, res) => {
 
     const jsontoken = jwt.sign(
       {
-        id: staff._id, email: staff.staffemail},
-     
-        process.env.JWT_KEY,
-        {expiresIn: "1h"}
+        id: staff._id,
+        email: staff.staffemail,
+        role: 'staff',
+        clinic: staff.staffclinic,
+        name: `${staff.stafffirstname} ${staff.stafflastname}`
+      },
+      process.env.JWT_SECRET,
+      {expiresIn: "30d"}
+    );
 
-       );
+    const stafflogin = staff.toObject();
+    delete stafflogin.staffpassword;
 
-
-
-
-       const stafflogin = staff.toObject();
-       delete stafflogin.staffpassword;
-
-       res.json({
-        message:"Loggin Success",
-        jsontoken,
-        staff: stafflogin
-       });
-
+    res.json({
+      message:"Login Success",
+      jsontoken,
+      staff: stafflogin
+    });
 
   } catch(error){
     console.error("Login Failed", error);

@@ -1,18 +1,16 @@
 import mongoose from "mongoose";
-
 const ConversationSchema = new mongoose.Schema({
   participants: [{
     userId: {
       type: String,
       required: function() {
-        // Only require userId for patients
-        return this.role === 'patient';
+        return this.role !== 'clinic';
       }
     },
     role: {
       type: String,
       required: true,
-      enum: ['patient', 'staff', 'owner']
+      enum: ['patient', 'staff', 'owner', 'clinic']
     },
     clinic: {
       type: String,

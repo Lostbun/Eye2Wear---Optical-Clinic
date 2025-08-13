@@ -17,11 +17,14 @@ const generateAuthToken = (patient) => {
   return jwt.sign({
     id: patient._id,
     email: patient.patientemail,
-    role: 'patient'
+    role: 'patient',
+    clinic: null,
+    name: `${patient.patientfirstname} ${patient.patientlastname}`
   },
-process.env.JWT_SECRET, {expiresIn: "1h"});
+  process.env.JWT_SECRET, { expiresIn: "30d" }); // Increased expiration
 }
 
+// In verifyloggedinpatientacc:
 
 
 
@@ -128,7 +131,6 @@ export const verifyloggedinpatientacc = async(req,res,next) => {
       console.error("No token provided");
       return res.status(401).json({message: "Authorization Required" });
     }
-
 
     const tokendecoded = jwt.verify(patienttoken, process.env.JWT_SECRET);
     console.log("Decoded token: ", tokendecoded);

@@ -27,6 +27,10 @@ import Conversation from "./models/conversation.js";
 import jwt from 'jsonwebtoken';
 const {Connection} = mongoose;
 import mongoose from "mongoose";
+import Patientaccount from "./models/patientaccount.js";
+import Staffaccount from "./models/staffacount.js";
+import Owneraccount from "./models/owneraccount.js";
+import path from 'path';
 
 
 
@@ -75,7 +79,7 @@ app.use(express.urlencoded({limit: '50mb', extended: true}));
 
 //AI CODDE
 import fs from 'fs';
-import path from 'path';
+
 
 // eslint-disable-next-line no-undef
 const uploadDir = path.join(process.cwd(), 'uploads', 'message-images');
@@ -163,14 +167,36 @@ io.use(async (socket, next) => {
   try {
     // eslint-disable-next-line no-undef
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    
+    // Verify user exists in database
+    let user;
+    switch (decoded.role) {
+      case 'patient':
+        user = await Patientaccount.findById(decoded.id);
+        break;
+      case 'staff':
+        user = await Staffaccount.findById(decoded.id);
+        break;
+      case 'owner':
+        user = await Owneraccount.findById(decoded.id);
+        break;
+      default:
+        return next(new Error('Invalid user role'));
+    }
+
+    if (!user) {
+      return next(new Error('User not found'));
+    }
+
     socket.user = {
       userId: decoded.id,
       role: decoded.role,
-      clinic: decoded.clinic || null
+      clinic: user.staffclinic || user.ownerclinic || null
     };
     next();
   } catch (error) {
-    next(new Error('Authentication error: Invalid token', error));
+    console.error('Socket authentication error:', error);
+    next(new Error('Authentication error: Invalid token'));
   }
 });
 

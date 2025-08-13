@@ -23,6 +23,11 @@ const MessageSchema = new mongoose.Schema({
     enum: ['Ambher Optical', 'Bautista Eye Center', null],
     default: null
   },
+  sentToClinic: {  // Add this new field
+    type: String,
+    enum: ['Ambher Optical', 'Bautista Eye Center', null],
+    default: null
+  },
   text: {
     type: String,
     required: false,
@@ -35,7 +40,7 @@ const MessageSchema = new mongoose.Schema({
     type: String,
     required: false
   },
-    documentName: { 
+  documentName: { 
     type: String,
     required: false
   },

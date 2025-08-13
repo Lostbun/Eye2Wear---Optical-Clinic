@@ -8,6 +8,7 @@ export const protect = async (req, res, next) => {
   try {
     let token;
     
+    // Check Authorization header
     if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
       token = req.headers.authorization.split(' ')[1];
     }
@@ -41,7 +42,7 @@ export const protect = async (req, res, next) => {
     
     // Attach user to request object
     req.user = {
-      userId: user._id,
+      userId: user._id.toString(), // Ensure this is a string
       role: decoded.role,
       name: user.patientfirstname || user.stafffirstname || user.ownerfirstname,
       clinic: user.staffclinic || user.ownerclinic || null
@@ -50,6 +51,9 @@ export const protect = async (req, res, next) => {
     next();
   } catch (error) {
     console.error('Authentication error:', error);
+    if (error.name === 'TokenExpiredError') {
+      return res.status(401).json({ message: 'Token expired' });
+    }
     res.status(401).json({ message: 'Not authorized, token failed' });
   }
 };

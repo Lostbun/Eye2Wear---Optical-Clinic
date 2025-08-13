@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 import Message from "../models/message.js";
 import Conversation from "../models/conversation.js";
 import multer from 'multer';
@@ -9,9 +10,8 @@ import { v4 as uuidv4 } from 'uuid';
 // Get all conversations for a user
 export const getConversations = async (req, res) => {
   try {
-    const { userId, role } = req.user;
-    console.log('Fetching conversations for user:', userId, role); // Debug log
-
+    const { userId, role, clinic } = req.user;
+    
     let conversations;
     if (role === 'patient') {
       conversations = await Conversation.find({
@@ -20,19 +20,20 @@ export const getConversations = async (req, res) => {
       }).populate('lastMessage');
     } else {
       conversations = await Conversation.find({
-        'participants.clinic': req.user.clinic,
-        clinic: req.user.clinic
+        clinic: clinic,
+        $or: [
+          { 'participants.userId': userId },
+          { 'participants.clinic': clinic }
+        ]
       }).populate('lastMessage');
     }
 
-    console.log('Conversations found:', conversations); // Debug log
     res.status(200).json(conversations);
   } catch (error) {
     console.error('Error fetching conversations:', error);
     res.status(500).json({ message: error.message });
   }
 };
-
 
 
 
@@ -108,26 +109,26 @@ export const upload = multer({
 
 export const createMessage = async (req, res) => {
   try {
-    // Log incoming request for debugging
-    console.log('Request body:', req.body);
-    console.log('Uploaded file:', req.file);
-
-    const { conversationId, text } = req.body;
-    const { userId, role, name, clinic } = req.user;
+    const { conversationId, text, patientId } = req.body;
+    const { userId, role, clinic, name } = req.user;
     
+    // Determine if this is a patient messaging a clinic
+    const isPatientMessagingClinic = role === 'patient' && !patientId;
+    const targetClinic = isPatientMessagingClinic ? req.body.clinic : clinic;
+
     let imageUrl = null;
     let documentUrl = null;
 
-if (req.file) {
-  const fileType = req.file.mimetype.startsWith('image/') ? 'message-images' : 'message-documents';
-  const fileUrl = `/uploads/${fileType}/${req.file.filename}`;
-  
-  if (req.file.mimetype.startsWith('image/')) {
-    imageUrl = fileUrl;
-  } else {
-    documentUrl = fileUrl;
-  }
-}
+    if (req.file) {
+      const fileType = req.file.mimetype.startsWith('image/') ? 'message-images' : 'message-documents';
+      const fileUrl = `/uploads/${fileType}/${req.file.filename}`;
+      
+      if (req.file.mimetype.startsWith('image/')) {
+        imageUrl = fileUrl;
+      } else {
+        documentUrl = fileUrl;
+      }
+    }
 
     // Find or create conversation
     let conversation;
@@ -137,42 +138,49 @@ if (req.file) {
         return res.status(404).json({ message: 'Conversation not found' });
       }
     } else {
-      const clinicName = req.body.clinic;
-      conversation = await Conversation.findOne({
-        'participants.userId': userId,
-        'participants.role': 'patient',
-        clinic: clinicName
+      // Create new conversation
+      const participants = [{
+        userId: userId,
+        role: role,
+        clinic: role === 'staff' || role === 'owner' ? clinic : null
+      }];
+
+      if (isPatientMessagingClinic) {
+        // Add clinic as a participant
+        participants.push({
+          role: 'clinic',
+          clinic: targetClinic
+        });
+      } else if (patientId) {
+        // Staff messaging a specific patient
+        participants.push({
+          userId: patientId,
+          role: 'patient',
+          clinic: null
+        });
+      }
+
+      conversation = new Conversation({
+        participants,
+        clinic: targetClinic
       });
 
-      if (!conversation) {
-        conversation = new Conversation({
-          participants: [{
-            userId,
-            role,
-            clinic: null
-          }, {
-            userId: null,
-            role: 'staff',
-            clinic: clinicName
-          }],
-          clinic: clinicName
-        });
-        await conversation.save();
-      }
+      await conversation.save();
     }
 
     // Create the message
-    const message = new Message({
-      conversationId: conversation._id.toString(),
-      senderId: userId,
-      senderRole: role,
-      senderName: name,
-      senderClinic: clinic || null,
-      text,
-      imageUrl,
-      documentUrl,
-      documentName: req.file?.originalname
-    });
+const message = new Message({
+  conversationId: conversation._id,
+  senderId: userId,
+  senderRole: role,
+  senderName: name,
+  senderClinic: role === 'patient' ? null : clinic,
+  sentToClinic: role === 'patient' ? targetClinic : null,
+  text,
+  imageUrl,
+  documentUrl,
+  documentName: req.file?.originalname
+});
 
     await message.save();
 
@@ -189,7 +197,6 @@ if (req.file) {
     console.error('Error creating message:', error);
     res.status(500).json({ 
       message: error.message,
-      // eslint-disable-next-line no-undef
       error: process.env.NODE_ENV === 'development' ? error.stack : undefined
     });
   }

@@ -8,13 +8,11 @@
   import heartblack from "../src/assets/images/heartblack.png";
   import heartwhite from "../src/assets/images/heartwhite.png";
   import heartfilled from "../src/assets/images/heartfilled.png";
-  import packageimage from "../src/assets/images/shopping-bag.png";
   import storeimage from "../src/assets/images/store.png";
   import profileuser from "../src/assets/images/profile-user.png";
   import logout from "../src/assets/images/logout.png";
   import heartempty from "../src/assets/images/heartempty.png"
   import nextimage from "../src/assets/images/next.png";
-  import paymentimage from "../src/assets/images/card-payment.png";
   import { AmbherinventorycategoryBox } from "./components/AmbherinventorycategoryBox";
   import { BautistainventorycategoryBox } from "./components/BautistainventorycategoryBox";
   import Rating from '@mui/material/Rating';

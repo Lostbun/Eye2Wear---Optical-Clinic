@@ -195,14 +195,18 @@ function UserLogin(){
 
               else if(user  === 'Owner'){
                 localStorage.setItem("ownertoken", data.jsontoken);
+                localStorage.setItem("ownerdetails", JSON.stringify(data.owner));
+                localStorage.setItem("owneremail", data.owner.owneremail);
+                localStorage.setItem("ownerclinic", data.owner.ownerclinic);
+                localStorage.setItem('role', 'owner');
+                localStorage.setItem('token', data.jsontoken);
                 localStorage.setItem("currentuser", JSON.stringify({
-                  type: 'Owner',
+                  type: 'Staff',
                   firstname: data.owner.ownerfirstname,
                   middlename: data.owner.ownermiddlename,
                   lastname: data.owner.ownerlastname,
-                  profilepicture: data.owner.ownerprofilepicture,
                   email: data.owner.owneremail,
-                  clinic: data.owner.ownerclinic,
+                  profilepicture: data.owner.ownerprofilepicture
                 }));
                 
                 setloginnotice({

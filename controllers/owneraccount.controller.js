@@ -89,8 +89,13 @@ export const verifyloggedinowneracc = async (req, res, next) => {
       return res.status(401).json({message: 'Authorization required'});
     }
 
-    const tokendecoded = jwt.verify(ownertoken, process.env.JWT_KEY);
-    req.owner = {id: tokendecoded.id};
+    const tokendecoded = jwt.verify(ownertoken, process.env.JWT_SECRET);
+    req.owner = {
+      id: tokendecoded.id,
+      email: tokendecoded.email,
+      role: tokendecoded.role,
+      clinic: tokendecoded.clinic
+    };
     next();
   
   }catch(error){
@@ -205,11 +210,10 @@ export const ownerlogin = async(req, res) => {
   try{
     const {owneremail,ownerpassword} = req.body;
 
-    const owner = await Owneraccount.findOne({owneremail});
+    const owner = await Owneraccount.findOne({owneremail}).select('+ownerpassword');
     if(!owner) {
       return res.status(401).json({message:"Login Error, Invalid Credentials"});
     }
-
 
     const loginmatch = await bcrypt.compare(ownerpassword, owner.ownerpassword);
     if(!loginmatch) {
@@ -218,25 +222,24 @@ export const ownerlogin = async(req, res) => {
 
     const jsontoken = jwt.sign(
       {
-        id: owner._id, email: owner.owneremail},
-     
-        process.env.JWT_KEY,
-        {expiresIn: "1h"}
+        id: owner._id,
+        email: owner.owneremail,
+        role: 'owner',
+        clinic: owner.ownerclinic,
+        name: `${owner.ownerfirstname} ${owner.ownerlastname}`
+      },
+      process.env.JWT_SECRET,
+      {expiresIn: "30d"}
+    );
 
-       );
+    const ownerlogin = owner.toObject();
+    delete ownerlogin.ownerpassword;
 
-
-
-
-       const ownerlogin = owner.toObject();
-       delete ownerlogin.ownerpassword;
-
-       res.json({
-        message:"Loggin Success",
-        jsontoken,
-        owner: ownerlogin
-       });
-
+    res.json({
+      message:"Login Success",
+      jsontoken,
+      owner: ownerlogin
+    });
 
   } catch(error){
     console.error("Login Failed", error);
