@@ -16,7 +16,7 @@ import axios from "axios";
 
 function UserLogin(){
 
-
+  const apiUrl = import.meta.env.VITE_API_URL;
 
   
 
@@ -58,16 +58,16 @@ function UserLogin(){
             try{
 
 
-              const  patientemailcheck = await fetch(`http://localhost:3000/api/patientaccounts/check-email/${logindetails.loginemail}`);
+              const  patientemailcheck = await fetch(`${apiUrl}/api/patientaccounts/check-email/${logindetails.loginemail}`);
               const  patientemailexist = await  patientemailcheck.json();
 
-              const staffemailcheck = await fetch(`http://localhost:3000/api/staffaccounts/check-email/${logindetails.loginemail}`);
+              const staffemailcheck = await fetch(`${apiUrl}/api/staffaccounts/check-email/${logindetails.loginemail}`);
               const staffemailexist = await staffemailcheck.json();
 
-              const owneremailcheck = await fetch(`http://localhost:3000/api/owneraccounts/check-email/${logindetails.loginemail}`);
+              const owneremailcheck = await fetch(`${apiUrl}/api/owneraccounts/check-email/${logindetails.loginemail}`);
               const owneremailexist = await owneremailcheck.json();
 
-              const adminemailcheck = await fetch(`http://localhost:3000/api/adminaccounts/check-email/${logindetails.loginemail}`);
+              const adminemailcheck = await fetch(`${apiUrl}/api/adminaccounts/check-email/${logindetails.loginemail}`);
               const adminemailexist = await adminemailcheck.json();
 
               if(!patientemailexist.exists && !adminemailexist.exists && !staffemailexist.exists && !owneremailexist.exists){
@@ -282,7 +282,7 @@ function UserLogin(){
 
          try{
 
-          const res = await axios.post('http://localhost:3000/api/auth/forgot-password', {email: forgotpasswordemail});
+          const res = await axios.post(`${apiUrl}/api/auth/forgot-password`, {email: forgotpasswordemail});
            
  
   

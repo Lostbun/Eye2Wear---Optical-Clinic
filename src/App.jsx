@@ -35,6 +35,8 @@ import leftarrow from "./assets/images/left-arrow.png";
 
 
 function PatientChatButton() {
+  const apiUrl = import.meta.env.VITE_API_URL;
+
   const location = useLocation();
   const [ispatientloggedIn, setispatientloggedIn] = useState(false);
   const allowedRoutes = [
@@ -70,7 +72,7 @@ function PatientChatButton() {
 
   useEffect(() => {
     // Initialize socket connection
-    socket.current = io("http://localhost:3000", {
+    socket.current = io(`${apiUrl}`, {
       auth: {
         token: localStorage.getItem('token')
       }
@@ -125,7 +127,7 @@ function PatientChatButton() {
         return;
       }
 
-      const response = await fetch(`http://localhost:3000/api/messages/conversations`, {
+      const response = await fetch(`${apiUrl}/api/messages/conversations`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -164,7 +166,7 @@ function PatientChatButton() {
         return;
       }
 
-      const response = await fetch(`http://localhost:3000/api/messages/${convId}`, {
+      const response = await fetch(`${apiUrl}/api/messages/${convId}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -207,7 +209,7 @@ const handleSendMessage = async () => {
       formData.append('file', selectedFile.file);
     }
 
-    const response = await fetch("http://localhost:3000/api/messages", {
+    const response = await fetch(`${apiUrl}/api/messages`, {
       method: "POST",
       headers: { 
         "Authorization": `Bearer ${token}` 
@@ -283,11 +285,11 @@ const renderMessageContent = (msg) => {
       {msg.imageUrl && (
         <div className="mt-2">
           <img 
-            src={`http://localhost:3000${msg.imageUrl}`} 
+            src={`${apiUrl}${msg.imageUrl}`} 
             alt="Uploaded content" 
             className="max-w-full max-h-60 rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
             onClick={() => {
-              setSelectedImageForModal(`http://localhost:3000${msg.imageUrl}`);
+              setSelectedImageForModal(`${apiUrl}${msg.imageUrl}`);
               setModalOpen(true);
             }}
             onError={(e) => {
@@ -301,7 +303,7 @@ const renderMessageContent = (msg) => {
         <div className="mt-2 p-2 bg-gray-100 rounded-lg flex items-center w-full">
           <img src={filesent} className="w-6 h-6 mr-2 flex-shrink-0" />
           <a 
-            href={`http://localhost:3000${msg.documentUrl}`} 
+            href={`${apiUrl}${msg.documentUrl}`} 
             target="_blank" 
             rel="noopener noreferrer"
             className="text-blue-600 hover:underline break-all"
@@ -686,10 +688,14 @@ const cancelFile = () => {
              {/* Chat and List Space */}
 
             <div className="p-2 gap-2 w-full h-full rounded-b-2xl flex items-center justify-center">
-              <div className="rounded-2xl h-full w-[30%] border-1 flex flex-col items-start">
-                <div className="border-1 rounded-2xl h-[12%] w-full"> </div>
-                <div className="border-1 rounded-2xl h-[8%] w-full"> </div>
-                <div className="border-1 rounded-2xl h-[80%] w-full"> </div>   
+              <div className="rounded-2xl h-full w-[30%] flex flex-col items-start">
+                <div className=" rounded-2xl h-[10%] w-full flex justify-center items-center"><div className="flex items-center justify-center w-full h-full  "><i className="bx bx-search absolute left-3 text-2xl text-gray-500"></i><input  type="text" placeholder="Search..."   className="transition-all duration-300 ease-in-out py-3 pl-10 w-250 rounded-2xl  bg-[#e4e4e4] focus:bg-slate-100 focus:outline-sky-500"></input></div></div>
+    
+                <div className="flex justify-center items-start border-1 rounded-2xl h-[9%] w-full">
+                  <div className="border-1 w-[50%] h-full rounded-2xl"> </div>
+                  <div className="border-1 w-[50%] h-full rounded-2xl"> </div>
+                </div>
+                <div className="border-1 rounded-2xl h-[81%] w-full"></div>   
               </div>
 
               <div className="flex flex-col rounded-2xl h-full w-[70%] border-1 ">

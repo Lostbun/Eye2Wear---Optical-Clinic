@@ -13,7 +13,7 @@ import {Link} from "react-router-dom";
 
 function PatientRegistration() {
 
-
+  const apiUrl = import.meta.env.VITE_API_URL;
 
   const navigate = useNavigate();
   const emailcharacters = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -65,13 +65,13 @@ function PatientRegistration() {
         try{
           //Request to server if the email exists in patientaccounts collection
           const patientresponse = await fetch(
-            `http://localhost:3000/api/patientaccounts/check-email/${encodeURIComponent(formdata.patientemail)}`
+            `${apiUrl}/api/patientaccounts/check-email/${encodeURIComponent(formdata.patientemail)}`
      
           );
 
           //Request to server if the email exists in adminaccounts collection
           const adminresponse = await fetch(
-            `http://localhost:3000/api/adminaccounts/check-email/${encodeURIComponent(formdata.patientemail)}`
+           `${apiUrl}/api/adminaccounts/check-email/${encodeURIComponent(formdata.patientemail)}`
      
           );
           
@@ -185,7 +185,7 @@ function PatientRegistration() {
 
 
   //Sends all patient data to the server
-      const response = await fetch("http://localhost:3000/api/patientaccounts",{
+      const response = await fetch(`${apiUrl}/api/patientaccounts`,{
         //POST Request to create the patient data
         method:"POST",
         headers:{

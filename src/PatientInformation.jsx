@@ -22,7 +22,7 @@ import logout from "../src/assets/images/logout.png";
 
 function PatientInformation(){
 
-  
+    const apiUrl = import.meta.env.VITE_API_URL;
   //For switching title forms
 
   const [activeForm, setactiveForm] = useState ('patientdemographic');
@@ -344,11 +344,11 @@ const submitpatientdemographic = async (e) => {
         : demographicformdata.patientprofilepicture
     };
 
-    let endpoint = "http://localhost:3000/api/patientdemographics";
+    let endpoint = `${apiUrl}/api/patientdemographics`;
     let method = "POST";
     
     if(isexistingdemographic) {
-      endpoint = `http://localhost:3000/api/patientdemographics/${demographicid}`;
+      endpoint = `${apiUrl}/api/patientdemographics/${demographicid}`;
       method = "PUT";
     }
 

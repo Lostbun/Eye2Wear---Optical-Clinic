@@ -16,7 +16,7 @@ import profileuser from "../src/assets/images/profile-user.png";
 import logout from "../src/assets/images/logout.png";
 function PatientDashboard(){
 
-
+  const apiUrl = import.meta.env.VITE_API_URL;
 
   
 
@@ -225,7 +225,7 @@ const patientsubmitappointment = async (formData) => {
     }
 
 
-    const response = await fetch('http://localhost:3000/api/patientappointments/appointments',{
+    const response = await fetch(`${apiUrl}/api/patientappointments/appointments`,{
       method: 'POST',
       headers: {
         'Content-Type' : 'application/json',
@@ -271,7 +271,7 @@ const checkclinicscheduledappointments = async (formData) => {
 
     //Checks existing appointment schedules for Ambher Optical
     if (existingappointmentambherDate && existingappointmentambherTime) {
-      const ambherexistingscheduleresponse = await fetch(`http://localhost:3000/api/patientappointments/appointments/ambher/${existingappointmentambherDate}/${existingappointmentambherTime}`, {
+      const ambherexistingscheduleresponse = await fetch(`${apiUrl}/api/patientappointments/appointments/ambher/${existingappointmentambherDate}/${existingappointmentambherTime}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('patienttoken')}`
         }
@@ -291,7 +291,7 @@ const checkclinicscheduledappointments = async (formData) => {
 
     //Checks existing appointment schedules for Bautista Eye Center
     if (existingappointmentbautistaDate && existingappointmentbautistaTime) {
-      const bautisaexistingscheduleresponse = await fetch(`http://localhost:3000/api/patientappointments/appointments/bautista/${existingappointmentbautistaDate}/${existingappointmentbautistaTime}`, {
+      const bautisaexistingscheduleresponse = await fetch(`${apiUrl}/api/patientappointments/appointments/bautista/${existingappointmentbautistaDate}/${existingappointmentbautistaTime}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('patienttoken')}`
         }
@@ -496,7 +496,7 @@ const handleviewappointment = (appointment) => {
      try{
        const email = localStorage.getItem("patientemail");
        const response = await fetch(
-         `http://localhost:3000/api/patientappointments/appointments/email/${email}`,
+        `${apiUrl}/api/patientappointments/appointments/email/${email}`,
          {
            headers: {
                Authorization: `Bearer ${localStorage.getItem('patienttoken')}`
@@ -555,7 +555,7 @@ const formatappointmenttimes = (formattedtimestring) => {
 //DELETE PATIENT APPOINTMENT //DELETE PATIENT APPOINTMENT //DELETE PATIENT APPOINTMENT //DELETE PATIENT APPOINTMENT //DELETE PATIENT APPOINTMENT //DELETE PATIENT APPOINTMENT
 const handledeleteappointment = async (appointmentId) => {
   try{
-    const response = await fetch(`http://localhost:3000/api/patientappointments/appointments/${appointmentId}`,{
+    const response = await fetch(`${apiUrl}/api/patientappointments/appointments/${appointmentId}`,{
       method: 'DELETE',
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('patienttoken')}`
@@ -696,7 +696,7 @@ const handledeleteappointment = async (appointmentId) => {
     const feedbackrating = clinicType === 'ambher' ? ambherappointmentrating : bautistaappointmentrating;
     const feedbackmessage = clinicType === 'ambher' ? ambherappointmentfeedback : bautistaappointmentfeedback;
 
-    const response = await fetch(`http://localhost:3000/api/patientappointments/appointments/${appointmentid}`,{
+    const response = await fetch(`${apiUrl}/api/patientappointments/appointments/${appointmentid}`,{
       method: "PUT",
       headers: {
         "Content-Type" : "application/json",

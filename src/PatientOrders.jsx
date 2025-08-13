@@ -35,7 +35,7 @@ import Stack from '@mui/material/Stack';
 
 function PatientOrders(){
 
-
+  const apiUrl = import.meta.env.VITE_API_URL;
 
 
   
@@ -182,7 +182,7 @@ useEffect(() => {
     setLoading(true);
 
     if (activeorderstable === 'ambherorderstable') {
-      const response = await fetch(`http://localhost:3000/api/patientorderambher/email/${patientemail}`, {
+      const response = await fetch(`${apiUrl}/api/patientorderambher/email/${patientemail}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('patienttoken')}`
         }
@@ -196,7 +196,7 @@ useEffect(() => {
       }
 
     } else {
-      const response = await fetch(`http://localhost:3000/api/patientorderbautista/email/${patientemail}`, {
+      const response = await fetch(`${apiUrl}/api/patientorderbautista/email/${patientemail}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('patienttoken')}`
         }
