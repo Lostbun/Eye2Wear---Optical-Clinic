@@ -336,65 +336,7 @@ function PatientChatButton() {
     }
   };
 
-  const fetchPatients = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      if (!token) return;
 
-      const response = await fetch(`${apiUrl}/api/patientaccounts`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch patients');
-      }
-
-      const patientsData = await response.json();
-      const patientsWithLatestMessage = await Promise.all(
-        patientsData.map(async (patient) => {
-          const conversationResponse = await fetch(`${apiUrl}/api/messages/conversations`, {
-            headers: {
-              'Authorization': `Bearer ${token}`
-            }
-          });
-          
-          if (!conversationResponse.ok) return { ...patient, latestMessage: null };
-          
-          const conversations = await conversationResponse.json();
-          const patientConversation = conversations.find(conv => 
-            conv.participants.some(p => p.userId === patient._id && p.role === 'patient')
-          );
-          
-          if (!patientConversation) return { ...patient, latestMessage: null };
-          
-          const messagesResponse = await fetch(`${apiUrl}/api/messages/${patientConversation._id}`, {
-            headers: {
-              'Authorization': `Bearer ${token}`
-            }
-          });
-          
-          if (!messagesResponse.ok) return { ...patient, latestMessage: null };
-          
-          const messages = await response.json();
-          const latestMessage = messages.length > 0 ? messages[messages.length - 1] : null;
-          return { ...patient, latestMessage };
-        })
-      );
-
-      const sortedPatients = patientsWithLatestMessage.sort((a, b) => {
-        if (!a.latestMessage && !b.latestMessage) return 0;
-        if (!a.latestMessage) return 1;
-        if (!b.latestMessage) return -1;
-        return new Date(b.latestMessage.createdAt) - new Date(a.latestMessage.createdAt);
-      });
-
-      setPatients(sortedPatients);
-    } catch (error) {
-      console.error("Error fetching patients:", error);
-    }
-  };
 
   useEffect(() => {
     if (showpatientchatdashboard && (localStorage.getItem("role") === "staff" || localStorage.getItem("role") === "owner")) {
