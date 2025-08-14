@@ -245,17 +245,19 @@ function PatientChatButton() {
       
       const temporaryId = Date.now().toString() + Math.random().toString(36).substr(2, 9);
       
-      const optimisticMessage = {
-        temporaryId,
-        text: message.trim() || '',
-        imageUrl: selectedFile?.isImage ? URL.createObjectURL(selectedFile.file) : null,
-        documentUrl: selectedFile && !selectedFile.isImage ? selectedFile.name : null,
-        senderId: userId,
-        senderRole: role,
-        senderName: patientName || 'You',
-        createdAt: new Date().toISOString(),
-        conversationId
-      };
+    const optimisticMessage = {
+    temporaryId,
+    text: message.trim() || '',
+    imageUrl: selectedFile?.isImage ? URL.createObjectURL(selectedFile.file) : null,
+    documentUrl: selectedFile && !selectedFile.isImage ? selectedFile.name : null,
+    senderId: userId,
+    senderRole: role,
+    senderName: patientName || 'You',
+    senderClinic: role === 'staff' || role === 'owner' ? localStorage.getItem(`${role}clinic`) : null,
+    sentToClinic: role === 'patient' ? clinic : null,
+    createdAt: new Date().toISOString(),
+    conversationId
+     };
       
       setMessages(prev => [...prev, optimisticMessage]);
       setPendingMessageId(temporaryId);
@@ -271,9 +273,10 @@ function PatientChatButton() {
       if (message.trim()) formData.append('text', message);
       formData.append('temporaryId', temporaryId);
       
-      if (role === 'patient') {
-        formData.append('clinic', clinic);
-      }
+    if (role === 'patient') {
+      formData.append('clinic', clinic);
+      formData.append('sentToClinic', clinic);
+    }
       
       if (selectedPatient) {
         formData.append('patientId', selectedPatient._id);
@@ -336,8 +339,72 @@ function PatientChatButton() {
     }
   };
 
+const fetchPatients = async () => {
+  try {
+    const token = localStorage.getItem('token');
+    if (!token) return;
 
+    // First fetch patients
+    const response = await fetch(`${apiUrl}/api/patientaccounts`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
 
+    if (!response.ok) {
+      throw new Error('Failed to fetch patients');
+    }
+
+    const patientsData = await response.json();
+    
+    // Then fetch conversations separately
+    const conversationsResponse = await fetch(`${apiUrl}/api/messages/conversations`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    
+    if (!conversationsResponse.ok) {
+      throw new Error('Failed to fetch conversations');
+    }
+    
+    const conversations = await conversationsResponse.json();
+
+    const patientsWithLatestMessage = await Promise.all(
+      patientsData.map(async (patient) => {
+        const patientConversation = conversations.find(conv => 
+          conv.participants.some(p => p.userId === patient._id && p.role === 'patient')
+        );
+        
+        if (!patientConversation) return { ...patient, latestMessage: null };
+        
+        // Fetch messages for this conversation
+        const messagesResponse = await fetch(`${apiUrl}/api/messages/${patientConversation._id}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        
+        if (!messagesResponse.ok) return { ...patient, latestMessage: null };
+        
+        const messages = await messagesResponse.json();
+        const latestMessage = messages.length > 0 ? messages[messages.length - 1] : null;
+        return { ...patient, latestMessage };
+      })
+    );
+
+    const sortedPatients = patientsWithLatestMessage.sort((a, b) => {
+      if (!a.latestMessage && !b.latestMessage) return 0;
+      if (!a.latestMessage) return 1;
+      if (!b.latestMessage) return -1;
+      return new Date(b.latestMessage.createdAt) - new Date(a.latestMessage.createdAt);
+    });
+
+    setPatients(sortedPatients);
+  } catch (error) {
+    console.error("Error fetching patients:", error);
+  }
+};
   useEffect(() => {
     if (showpatientchatdashboard && (localStorage.getItem("role") === "staff" || localStorage.getItem("role") === "owner")) {
       fetchPatients();
@@ -525,80 +592,88 @@ function PatientChatButton() {
                       </div>
                     ) : messages.length > 0 ? (
                       
-                      messages.map((msg, index) => {
-  const isStaffOrOwner = msg.senderRole === 'staff' || msg.senderRole === 'owner';
+messages.map((msg, index) => {
+  const isCurrentUser = msg.senderRole === localStorage.getItem('role') && 
+                       msg.senderId === localStorage.getItem('patientid');
+  
   const isSameSenderAsPrevious = index > 0 && 
     messages[index - 1].senderId === msg.senderId;
   const isSameSenderAsNext = index < messages.length - 1 && 
     messages[index + 1].senderId === msg.senderId;
   
+  // Add this to determine if we need extra spacing
+  const isDifferentSenderFromPrevious = index > 0 && 
+    messages[index - 1].senderId !== msg.senderId;
+
   let borderRadiusClasses = '';
-  if (isStaffOrOwner) {
+  if (isCurrentUser) {
     borderRadiusClasses = !isSameSenderAsPrevious && !isSameSenderAsNext ? 'rounded-2xl' :
       !isSameSenderAsPrevious ? 'rounded-tl-2xl rounded-bl-2xl rounded-tr-2xl' :
       !isSameSenderAsNext ? 'rounded-tl-2xl rounded-bl-2xl rounded-br-2xl' :
       'rounded-tl-2xl rounded-bl-2xl';
   } else {
-    borderRadiusClasses = !isSameSenderAsPrevious && !isSameSenderAsNext ? 'rounded-2xl' :
+        borderRadiusClasses = !isSameSenderAsPrevious && !isSameSenderAsNext ? 'rounded-2xl' :
       !isSameSenderAsPrevious ? 'rounded-tr-2xl rounded-br-2xl rounded-tl-2xl' :
       !isSameSenderAsNext ? 'rounded-tr-2xl rounded-br-2xl rounded-bl-2xl' :
       'rounded-tr-2xl rounded-br-2xl';
+
   }
 
   const isImageOnly = msg.imageUrl && !msg.text && !msg.documentUrl;
   const isLastInSequence = !isSameSenderAsNext;
-  const profilePicture = selectedPatient && !isStaffOrOwner 
-    ? (selectedPatient.patientprofilepicture || profileuser) 
-    : (msg.clinic === "Ambher Optical" ? ambherlogo : bautistalogo);
+  const profilePicture = isCurrentUser 
+    ? (currentuserprofilepicture || profileuser)
+    : (msg.senderClinic === "Ambher Optical" ? ambherlogo : bautistalogo);
 
   return (
     <div 
       key={msg._id || msg.temporaryId}
-      className={`w-full flex ${isStaffOrOwner ? 'justify-end' : 'justify-start'} ${index === messages.length - 1 ? '' : 'mb-2'}`}
+      className={`w-full flex ${isCurrentUser ? 'justify-end' : 'justify-start'} ${
+        isDifferentSenderFromPrevious ? 'mt-4' : ''
+      }`}
     >
-      <div className={`flex-shrink-0 ${isStaffOrOwner ? 'order-1 ml-2' : 'order-0 mr-2'} ${isLastInSequence ? 'visible' : 'invisible'}`}>
-        {!isStaffOrOwner && (
+      <div className={`flex-shrink-0 ${isCurrentUser ? 'order-1 ml-2' : 'order-0 mr-2'} ${isLastInSequence ? 'visible' : 'invisible'}`}>
+        {!isCurrentUser && (
           <img 
             src={profilePicture} 
             alt="Profile picture"
-            className="w-8 h-8 self-end rounded-full"
+            className="w-8 h-8 self-end rounded-full object-cover"
             onError={(e) => { e.target.src = profileuser }}
           />
         )}
       </div>
 
-      {/* Message content */}
-      <div className={`max-w-[80%] ${isStaffOrOwner ? 'order-0' : 'order-1'}`}>
-        {isImageOnly ? (
-          renderMessageContent(msg, isStaffOrOwner)
-        ) : (
-          <div 
-            className={`flex flex-col px-5 py-2 ${
-              isStaffOrOwner ? 'bg-[#c0eed6]' : 'bg-[#e0e0e0]'
-            } ${borderRadiusClasses} relative group`}
-            style={{
-              wordWrap: 'break-word',
-              overflowWrap: 'break-word',
-              whiteSpace: 'pre-wrap'
-            }}
-          >
-            {!isSameSenderAsPrevious && (
-              <p className="text-xs font-semibold text-gray-600 mb-1">
-                {msg.senderName}
-              </p>
-            )}
-            
-            {renderMessageContent(msg, isStaffOrOwner)}
-            
-            {index === messages.length - 1 && (
+<div className={`max-w-[80%] ${isCurrentUser ? 'order-0' : 'order-1'}`}>
+  {!isSameSenderAsPrevious && !isCurrentUser && (
+    <div className={`flex ${isCurrentUser ? 'justify-end' : 'justify-start'}`}>
+      <p className="text-xs font-semibold text-gray-600 mb-1">
+        {msg.senderName}
+      </p>
+    </div>
+  )}
+  {isImageOnly ? (
+    renderMessageContent(msg, isCurrentUser)
+  ) : (
+    <div 
+      className={`flex flex-col px-5 py-2 ${
+        isCurrentUser ? 'bg-[#c0eed6]' : 'bg-[#e0e0e0]'
+      } ${borderRadiusClasses} relative group`}
+      style={{
+        wordWrap: 'break-word',
+        overflowWrap: 'break-word',
+        whiteSpace: 'pre-wrap'
+      }}
+    >
+      {renderMessageContent(msg, isCurrentUser)}
+    </div>
+  )}
+                    {index === messages.length - 1 && (
               <div className="mt-1 w-full flex justify-end">
                 <p className="text-[12px] text-[#565656]">
                   {formatDate(msg.createdAt)} at {new Date(msg.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
                 </p>
               </div>
             )}
-          </div>
-        )}
       </div>
     </div>
   );
@@ -813,13 +888,18 @@ function PatientChatButton() {
                       <div className="w-full flex justify-center items-center h-full text-gray-500">
                         <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#39715f]"></div>
                       </div>
-                    ) : messages.length > 0 ? (messages.map((msg, index) => {
+                    ) : messages.length > 0 ? (
+  messages.map((msg, index) => {
   const isStaffOrOwner = msg.senderRole === 'staff' || msg.senderRole === 'owner';
   const isSameSenderAsPrevious = index > 0 && 
     messages[index - 1].senderId === msg.senderId;
   const isSameSenderAsNext = index < messages.length - 1 && 
     messages[index + 1].senderId === msg.senderId;
   
+  // Add this to determine if we need extra spacing
+  const isDifferentSenderFromPrevious = index > 0 && 
+    messages[index - 1].senderId !== msg.senderId;
+
   let borderRadiusClasses = '';
   if (isStaffOrOwner) {
     borderRadiusClasses = !isSameSenderAsPrevious && !isSameSenderAsNext ? 'rounded-2xl' :
@@ -837,57 +917,59 @@ function PatientChatButton() {
   const isLastInSequence = !isSameSenderAsNext;
   const profilePicture = selectedPatient && !isStaffOrOwner 
     ? (selectedPatient.patientprofilepicture || profileuser) 
-    : (msg.clinic === "Ambher Optical" ? ambherlogo : bautistalogo);
+    : (msg.senderClinic === "Ambher Optical" ? ambherlogo : bautistalogo);
 
   return (
     <div 
       key={msg._id || msg.temporaryId}
-      className={`w-full flex ${isStaffOrOwner ? 'justify-end' : 'justify-start'} ${index === messages.length - 1 ? '' : ''}`}
+      className={`w-full flex ${isStaffOrOwner ? 'justify-end' : 'justify-start'} ${
+        isDifferentSenderFromPrevious ? 'mt-4' : ''
+      }`}
     >
-      {/* Profile picture container - always rendered but hidden if not last in sequence */}
+
       <div className={`flex-shrink-0 ${isStaffOrOwner ? 'order-1 ml-2' : 'order-0 mr-2'} ${isLastInSequence ? 'visible' : 'invisible'}`}>
         {!isStaffOrOwner && (
           <img 
             src={profilePicture} 
             alt="Profile picture"
-            className="w-8 h-8 self-end rounded-full"
+            className="w-8 h-8 self-end rounded-full object-cover"
             onError={(e) => { e.target.src = profileuser }}
           />
         )}
       </div>
 
       {/* Message content */}
-      <div className={`max-w-[80%] ${isStaffOrOwner ? 'order-0' : 'order-1'}`}>
-        {isImageOnly ? (
-          renderMessageContent(msg, isStaffOrOwner)
-        ) : (
-          <div 
-            className={`flex flex-col px-5 py-2 ${
-              isStaffOrOwner ? 'bg-[#c0eed6]' : 'bg-[#e0e0e0]'
-            } ${borderRadiusClasses} relative group`}
-            style={{
-              wordWrap: 'break-word',
-              overflowWrap: 'break-word',
-              whiteSpace: 'pre-wrap'
-            }}
-          >
-            {!isSameSenderAsPrevious && (
-              <p className="text-xs font-semibold text-gray-600 mb-1">
-                {msg.senderName}
-              </p>
-            )}
-            
-            {renderMessageContent(msg, isStaffOrOwner)}
-            
-            {index === messages.length - 1 && (
-              <div className="mt-1 w-full flex justify-end">
+<div className={`max-w-[80%] ${isStaffOrOwner ? 'order-0' : 'order-1'}`}>
+  {!isSameSenderAsPrevious && (
+    <div className={`flex ${isStaffOrOwner ? 'justify-end' : 'justify-start'}`}>
+      <p className="text-xs font-semibold text-gray-600 mb-1">
+        {msg.senderName}
+      </p>
+    </div>
+  )}
+  {isImageOnly ? (
+    renderMessageContent(msg, isStaffOrOwner)
+  ) : (
+    <div 
+      className={`flex flex-col px-5 py-2 ${
+        isStaffOrOwner ? 'bg-[#c0eed6]' : 'bg-[#e0e0e0]'
+      } ${borderRadiusClasses} relative group`}
+      style={{
+        wordWrap: 'break-word',
+        overflowWrap: 'break-word',
+        whiteSpace: 'pre-wrap'
+      }}
+    >
+      {renderMessageContent(msg, isStaffOrOwner)}
+    </div>
+  )}
+                    {index === messages.length - 1 && (
+              <div className="mt-1 w-full flex ">
                 <p className="text-[12px] text-[#565656]">
                   {formatDate(msg.createdAt)} at {new Date(msg.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
                 </p>
               </div>
             )}
-          </div>
-        )}
       </div>
     </div>
   );

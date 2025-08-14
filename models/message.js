@@ -23,10 +23,12 @@ const MessageSchema = new mongoose.Schema({
     enum: ['Ambher Optical', 'Bautista Eye Center', null],
     default: null
   },
-  sentToClinic: {  // Add this new field
+  sentToClinic: { 
     type: String,
-    enum: ['Ambher Optical', 'Bautista Eye Center', null],
-    default: null
+    enum: ['Ambher Optical', 'Bautista Eye Center'],
+    required: function() {
+      return this.senderRole === 'patient';
+    }
   },
   text: {
     type: String,
