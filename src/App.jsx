@@ -59,6 +59,12 @@ function PatientChatButton() {
   const currentuserprofilepicture = localStorage.getItem(`${localStorage.getItem('role')}profilepicture`);
   const [activeambhermessageslist, setactiveambhermessageslist] = useState('allambhermessageslist');
   const [pendingMessageId, setPendingMessageId] = useState(null);
+  const [selectedClinic, setSelectedClinic] = useState(null);
+
+
+
+
+
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -143,6 +149,10 @@ function PatientChatButton() {
 
   const startConversation = async (clinic, patientId = null) => {
     try {
+
+      setSelectedClinic(clinic);
+      setSelectedPatient(patientId ? patients.find(p => p._id === patientId) : null);
+
       const token = localStorage.getItem('token');
       if (!token) {
         console.error('No token found');
@@ -868,20 +878,28 @@ messages.map((msg, index) => {
                 </div>
 
                 <div className="flex flex-col rounded-2xl h-full w-[70%] border-1">
-                  <div className="shadow-md pt-0.5 pb-0.5 pl-3 rounded-t-2xl border-1 h-[11%] w-full flex item-center justify-start">
-                    <div className="flex items-center justify-center">
-                      <img 
-                        src={selectedPatient ? (selectedPatient.patientprofilepicture || profileuser) : profileuser} 
-                        className="w-12 h-12 rounded-full"
-                        onError={(e) => { e.target.src = profileuser }}
-                      />
-                    </div>
-                    <div className="flex flex-col justify-center items-start ml-3">
-                      <p className="font-albertsans font-semibold text-[16px] text-[#3a3a3a]">
-                        {selectedPatient ? `${selectedPatient.patientfirstname} ${selectedPatient.patientlastname}` : "Select a patient"}
-                      </p>
-                    </div>
-                  </div>
+<div className="shadow-md pt-0.5 pb-0.5 pl-3 rounded-t-2xl border-1 h-[11%] w-full flex item-center justify-start">
+  <div className="flex items-center justify-center">
+    <img 
+      src={
+        selectedPatient 
+          ? (selectedPatient.patientprofilepicture || profileuser) 
+          : selectedClinic === "Ambher Optical" 
+            ? ambherlogo
+            : bautistalogo 
+      } 
+      className="w-12 h-12 rounded-full"
+      onError={(e) => { e.target.src = profileuser }}
+    />
+  </div>
+  <div className="flex flex-col justify-center items-start ml-3">
+    <p className="font-albertsans font-semibold text-[16px] text-[#3a3a3a]">
+      {selectedPatient 
+        ? `${selectedPatient.patientfirstname} ${selectedPatient.patientlastname}`
+        : selectedClinic || "Select a conversation"}
+    </p>
+  </div>
+</div>
                   <div className="pb-2  h-full w-full overflow-y-auto" style={{ maxHeight: '400px' }}>
                     <div  className=" px-3  h-[100%] w-full overflow-y-auto" style={{ maxHeight: '400px' }}>
                     {loading ? (
@@ -1169,20 +1187,28 @@ messages.map((msg, index) => {
                 </div>
 
                 <div className="flex flex-col rounded-2xl h-full w-[70%] border-1">
-                  <div className="shadow-md pt-0.5 pb-0.5 pl-3 rounded-t-2xl border-1 h-[11%] w-full flex item-center justify-start">
-                    <div className="flex items-center justify-center">
-                      <img 
-                        src={selectedPatient ? (selectedPatient.patientprofilepicture || profileuser) : profileuser} 
-                        className="w-12 h-12 rounded-full"
-                        onError={(e) => { e.target.src = profileuser }}
-                      />
-                    </div>
-                    <div className="flex flex-col justify-center items-start ml-3">
-                      <p className="font-albertsans font-semibold text-[16px] text-[#3a3a3a]">
-                        {selectedPatient ? `${selectedPatient.patientfirstname} ${selectedPatient.patientlastname}` : "Select a patient"}
-                      </p>
-                    </div>
-                  </div>
+<div className="shadow-md pt-0.5 pb-0.5 pl-3 rounded-t-2xl border-1 h-[11%] w-full flex item-center justify-start">
+  <div className="flex items-center justify-center">
+    <img 
+      src={
+        selectedPatient 
+          ? (selectedPatient.patientprofilepicture || profileuser) 
+          : selectedClinic === "Bautista Eye Center" 
+            ? bautistalogo 
+            : ambherlogo
+      } 
+      className="w-12 h-12 rounded-full"
+      onError={(e) => { e.target.src = profileuser }}
+    />
+  </div>
+  <div className="flex flex-col justify-center items-start ml-3">
+    <p className="font-albertsans font-semibold text-[16px] text-[#3a3a3a]">
+      {selectedPatient 
+        ? `${selectedPatient.patientfirstname} ${selectedPatient.patientlastname}`
+        : selectedClinic || "Select a conversation"}
+    </p>
+  </div>
+</div>
                   <div className="pb-2  h-full w-full overflow-y-auto" style={{ maxHeight: '400px' }}>
                     <div  className=" px-3  h-[100%] w-full overflow-y-auto" style={{ maxHeight: '400px' }}>
                     {loading ? (
