@@ -4,7 +4,7 @@ const ConversationSchema = new mongoose.Schema({
     userId: {
       type: String,
       required: function() {
-        return this.role !== 'clinic';
+        return this.role !== 'clinic'; // userId is not required for clinic role
       }
     },
     role: {
@@ -21,7 +21,7 @@ const ConversationSchema = new mongoose.Schema({
   clinic: {
     type: String,
     enum: ['Ambher Optical', 'Bautista Eye Center'],
-    required: true
+    required: false // Make optional for clinic-to-clinic conversations
   },
   lastMessage: {
     type: mongoose.Schema.Types.ObjectId,
@@ -30,5 +30,4 @@ const ConversationSchema = new mongoose.Schema({
 }, {
   timestamps: true
 });
-
 export default mongoose.model("Conversation", ConversationSchema);

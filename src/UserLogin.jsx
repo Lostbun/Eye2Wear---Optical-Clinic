@@ -167,6 +167,7 @@ function UserLogin(){
                 localStorage.setItem("stafftoken", data.jsontoken);
                 localStorage.setItem("staffdetails", JSON.stringify(data.staff));
                 localStorage.setItem("staffemail", data.staff.staffemail);
+                localStorage.setItem("staffname", data.staff.stafffirstname + " " + data.staff.stafflastname);
                 localStorage.setItem("staffclinic", data.staff.staffclinic);
                 localStorage.setItem('role', 'staff');
                 localStorage.setItem('token', data.jsontoken);
@@ -198,6 +199,7 @@ function UserLogin(){
                 localStorage.setItem("ownerdetails", JSON.stringify(data.owner));
                 localStorage.setItem("owneremail", data.owner.owneremail);
                 localStorage.setItem("ownerclinic", data.owner.ownerclinic);
+                localStorage.setItem("ownername", data.owner.ownerfirstname + " " + data.owner.ownerlastname);
                 localStorage.setItem('role', 'owner');
                 localStorage.setItem('token', data.jsontoken);
                 localStorage.setItem("currentuser", JSON.stringify({

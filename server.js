@@ -168,7 +168,6 @@ io.use(async (socket, next) => {
     // eslint-disable-next-line no-undef
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     
-    // Verify user exists in database
     let user;
     switch (decoded.role) {
       case 'patient':
@@ -218,8 +217,10 @@ io.on('connection', (socket) => {
         });
       } else {
         conversations = await Conversation.find({
-          'participants.clinic': clinic,
-          clinic: clinic
+          $or: [
+            { 'participants.clinic': clinic },
+            { clinic: clinic }
+          ]
         });
       }
       

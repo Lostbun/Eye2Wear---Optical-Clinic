@@ -12,7 +12,7 @@ const MessageSchema = new mongoose.Schema({
   senderRole: {
     type: String,
     required: true,
-    enum: ['patient', 'staff', 'owner']
+    enum: ['patient', 'staff', 'owner', 'clinic'] // Add 'clinic' as a valid role
   },
   senderName: {
     type: String,
@@ -25,10 +25,8 @@ const MessageSchema = new mongoose.Schema({
   },
   sentToClinic: { 
     type: String,
-    enum: ['Ambher Optical', 'Bautista Eye Center'],
-    required: function() {
-      return this.senderRole === 'patient';
-    }
+    enum: ['Ambher Optical', 'Bautista Eye Center', null], // Allow null for clinic-to-clinic messages
+    required: false // Make optional to support clinic-to-clinic
   },
   text: {
     type: String,
@@ -54,4 +52,5 @@ const MessageSchema = new mongoose.Schema({
 }, {
   timestamps: true
 });
+
 export default mongoose.model("Message", MessageSchema);

@@ -1,13 +1,10 @@
-/* eslint-disable no-undef */
 import Message from "../models/message.js";
 import Conversation from "../models/conversation.js";
 import multer from 'multer';
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 
-
-
-// Get all conversations for a user
+// Get all conversations for a user or clinic
 export const getConversations = async (req, res) => {
   try {
     const { userId, role, clinic } = req.user;
@@ -20,10 +17,9 @@ export const getConversations = async (req, res) => {
       }).populate('lastMessage');
     } else {
       conversations = await Conversation.find({
-        clinic: clinic,
         $or: [
-          { 'participants.userId': userId },
-          { 'participants.clinic': clinic }
+          { 'participants.clinic': clinic },
+          { clinic: clinic }
         ]
       }).populate('lastMessage');
     }
@@ -35,26 +31,44 @@ export const getConversations = async (req, res) => {
   }
 };
 
-
-
 // Get messages in a conversation
 export const getMessages = async (req, res) => {
   try {
     const { conversationId } = req.params;
+    const { userId, role, clinic } = req.user;
+
+    // Verify conversation access
+    const conversation = await Conversation.findById(conversationId);
+    if (!conversation) {
+      return res.status(404).json({ message: 'Conversation not found' });
+    }
+
+    // Check if user has access to the conversation
+    const hasAccess = conversation.participants.some(p => 
+      (p.userId === userId && p.role === role) || 
+      (p.role === 'clinic' && p.clinic === clinic)
+    );
+
+    if (!hasAccess) {
+      return res.status(403).json({ message: 'Unauthorized access to conversation' });
+    }
+
     const messages = await Message.find({ conversationId })
       .sort({ createdAt: 1 });
 
-    // Mark messages as read by the current user
+    // Mark messages as read
     await Message.updateMany(
       { 
         conversationId,
-        'readBy.userId': { $ne: req.user.userId }
+        'readBy.userId': { $ne: userId },
+        senderId: { $ne: userId } // Don't mark own messages as read
       },
       {
         $push: {
           readBy: {
-            userId: req.user.userId,
-            role: req.user.role,
+            userId: userId || null,
+            role: role,
+            clinic: role === 'clinic' ? clinic : null,
             readAt: new Date()
           }
         }
@@ -109,12 +123,8 @@ export const upload = multer({
 
 export const createMessage = async (req, res) => {
   try {
-    const { conversationId, text, patientId } = req.body;
+    const { conversationId, text, patientId, targetClinic, senderName } = req.body;
     const { userId, role, clinic, name } = req.user;
-    
-    // Determine if this is a patient messaging a clinic
-    const isPatientMessagingClinic = role === 'patient' && !patientId;
-    const targetClinic = isPatientMessagingClinic ? req.body.clinic : clinic;
 
     let imageUrl = null;
     let documentUrl = null;
@@ -122,7 +132,6 @@ export const createMessage = async (req, res) => {
     if (req.file) {
       const fileType = req.file.mimetype.startsWith('image/') ? 'message-images' : 'message-documents';
       const fileUrl = `/uploads/${fileType}/${req.file.filename}`;
-      
       if (req.file.mimetype.startsWith('image/')) {
         imageUrl = fileUrl;
       } else {
@@ -130,7 +139,11 @@ export const createMessage = async (req, res) => {
       }
     }
 
-    // Find or create conversation
+    // Determine message type
+    const isPatientMessagingClinic = role === 'patient' && !patientId && !targetClinic;
+    const isStaffMessagingPatient = (role === 'staff' || role === 'owner') && patientId;
+    const isClinicMessagingClinic = (role === 'staff' || role === 'owner') && targetClinic;
+
     let conversation;
     if (conversationId) {
       conversation = await Conversation.findById(conversationId);
@@ -146,41 +159,48 @@ export const createMessage = async (req, res) => {
       }];
 
       if (isPatientMessagingClinic) {
-        // Add clinic as a participant
+        // Patient to clinic
         participants.push({
           role: 'clinic',
-          clinic: targetClinic
+          clinic: req.body.clinic
         });
-      } else if (patientId) {
-        // Staff messaging a specific patient
+      } else if (isStaffMessagingPatient) {
+        // Staff/owner to patient
         participants.push({
           userId: patientId,
           role: 'patient',
           clinic: null
         });
+      } else if (isClinicMessagingClinic) {
+        // Clinic to clinic
+        participants[0] = { role: 'clinic', clinic: clinic }; // Sender is the clinic
+        participants.push({ role: 'clinic', clinic: targetClinic }); // Recipient is the target clinic
       }
 
       conversation = new Conversation({
         participants,
-        clinic: targetClinic
+        clinic: isClinicMessagingClinic ? clinic : req.body.clinic || targetClinic
       });
 
       await conversation.save();
     }
 
+
+    const finalSenderName = senderName || (isClinicMessagingClinic ? clinic : name || 'Unknown');
+
     // Create the message
-const message = new Message({
-  conversationId: conversation._id,
-  senderId: userId,
-  senderRole: role,
-  senderName: name,
-  senderClinic: role === 'patient' ? null : clinic,
-  sentToClinic: role === 'patient' ? targetClinic : null,
-  text,
-  imageUrl,
-  documentUrl,
-  documentName: req.file?.originalname
-});
+    const message = new Message({
+      conversationId: conversation._id,
+      senderId: userId,
+      senderRole: isClinicMessagingClinic ? 'clinic' : role,
+      senderName: finalSenderName,
+      senderClinic: isClinicMessagingClinic ? clinic : (role === 'patient' ? null : clinic),
+      sentToClinic: isPatientMessagingClinic ? req.body.clinic : (isClinicMessagingClinic ? targetClinic : null),
+      text,
+      imageUrl,
+      documentUrl,
+      documentName: req.file?.originalname
+    });
 
     await message.save();
 

@@ -20,6 +20,7 @@ export const useAuth = () => {
             localStorage.removeItem("currentuser");
             localStorage.removeItem("staffclinic");
             localStorage.removeItem("staffemail");
+            localStorage.removeItem("staffname");
             localStorage.removeItem("token");
             localStorage.removeItem("role");
             navigate("/userlogin");

@@ -19,6 +19,7 @@ export const useAuth = () => {
             localStorage.removeItem("ownerdetails");
             localStorage.removeItem("currentuser");
             localStorage.removeItem("ownerclinic");
+            localStorage.removeItem("ownername");
             localStorage.removeItem("owneremail");
             localStorage.removeItem("token");
             localStorage.removeItem("role");

@@ -2,19 +2,23 @@ import Conversation from "../models/conversation.js";
 
 export const updateConversationParticipants = async (req, res, next) => {
   try {
-    // Skip if this isn't an authenticated request
     if (!req.user) return next();
     
     const { userId, role, clinic } = req.user;
     
     if (role === 'staff' || role === 'owner') {
-      // Find all conversations for this clinic where the userId is null
+      // Update conversations where userId is null for this clinic
       const conversations = await Conversation.find({
-        'participants.clinic': clinic,
-        'participants.userId': null
+        $or: [
+          { 'participants.clinic': clinic, 'participants.userId': null },
+          {
+            'participants': {
+              $elemMatch: { role: 'clinic', clinic }
+            }
+          }
+        ]
       });
       
-      // Update these conversations to include the current user
       for (const conversation of conversations) {
         const participantIndex = conversation.participants.findIndex(
           p => p.clinic === clinic && p.userId === null

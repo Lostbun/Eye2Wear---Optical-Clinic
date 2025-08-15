@@ -24,6 +24,19 @@ import filesent from "./assets/images/filesent.png";
 import leftarrow from "./assets/images/left-arrow.png";
 import profileuser from "./assets/images/profile-user.png";
 
+
+
+
+
+
+
+
+
+
+
+
+
+
 function PatientChatButton() {
   const apiUrl = import.meta.env.VITE_API_URL;
   const location = useLocation();
@@ -41,7 +54,6 @@ function PatientChatButton() {
   const [showpatientbautistaConversation, setshowpatientbautistaConversation] = useState(false);
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([]);
-  const [clinicMessages, setClinicMessages] = useState([]);
   const [conversationId, setConversationId] = useState(null);
   const socket = useRef(null);
   const messagesEndRef = useRef(null);
@@ -62,77 +74,72 @@ function PatientChatButton() {
   const [pendingMessageId, setPendingMessageId] = useState(null);
   const [selectedClinic, setSelectedClinic] = useState(null);
 
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token) return;
 
+    socket.current = io(`${apiUrl}`, {
+      auth: {
+        token: token
+      },
+      reconnectionAttempts: 5,
+      reconnectionDelay: 1000,
+      timeout: 20000
+    });
 
+    socket.current.on('connect', () => {
+      const userId = localStorage.getItem('patientid') || 
+                    localStorage.getItem('staffid') || 
+                    localStorage.getItem('ownerid');
+      const role = localStorage.getItem('role');
+      const clinic = localStorage.getItem('staffclinic') || 
+                    localStorage.getItem('ownerclinic');
 
+      if (userId && role) {
+        socket.current.emit('joinConversations', userId, role, clinic);
+      }
+    });
 
-
-useEffect(() => {
-  const token = localStorage.getItem('token');
-  if (!token) return;
-
-  socket.current = io(`${apiUrl}`, {
-    auth: {
-      token: token
-    },
-    reconnectionAttempts: 5,
-    reconnectionDelay: 1000,
-    timeout: 20000
-  });
-
-  socket.current.on('connect', () => {
-    const userId = localStorage.getItem('patientid') || 
-                  localStorage.getItem('staffid') || 
-                  localStorage.getItem('ownerid');
-    const role = localStorage.getItem('role');
-    const clinic = localStorage.getItem('staffclinic') || 
-                  localStorage.getItem('ownerclinic');
-
-    if (userId && role) {
-      socket.current.emit('joinConversations', userId, role, clinic);
-    }
-  });
-
-  socket.current.on('newMessage', (newMessage) => {
-    console.log('New message received:', newMessage); // Debug log
-    if (newMessage.conversationId === conversationId) {
-      setMessages(prev => {
-        if (!prev.some(msg => msg._id === newMessage._id || msg.temporaryId === newMessage.temporaryId)) {
-          if (pendingMessageId && newMessage.temporaryId === pendingMessageId) {
-            return prev.map(msg => 
-              msg.temporaryId === pendingMessageId ? { ...msg, ...newMessage, temporaryId: undefined } : msg
-            );
+    socket.current.on('newMessage', (newMessage) => {
+      console.log('New message received:', newMessage);
+      if (newMessage.conversationId === conversationId) {
+        setMessages(prev => {
+          if (!prev.some(msg => msg._id === newMessage._id || msg.temporaryId === newMessage.temporaryId)) {
+            if (pendingMessageId && newMessage.temporaryId === pendingMessageId) {
+              return prev.map(msg => 
+                msg.temporaryId === pendingMessageId ? { ...msg, ...newMessage, temporaryId: undefined } : msg
+              );
+            }
+            return [...prev, newMessage];
           }
-          return [...prev, newMessage];
-        }
-        return prev;
-      });
-      setPendingMessageId(null);
-    }
-    if (localStorage.getItem("role") === "staff" || localStorage.getItem("role") === "owner") {
-      setPatients(prevPatients => {
-        const updatedPatients = prevPatients.map(patient => {
-          if (patient._id === newMessage.senderId || (selectedPatient && patient._id === selectedPatient._id)) {
-            return { ...patient, latestMessage: newMessage };
-          }
-          return patient;
+          return prev;
         });
-        return updatedPatients.sort((a, b) => {
-          if (!a.latestMessage && !b.latestMessage) return 0;
-          if (!a.latestMessage) return 1;
-          if (!b.latestMessage) return -1;
-          return new Date(b.latestMessage.createdAt) - new Date(a.latestMessage.createdAt);
+        setPendingMessageId(null);
+      }
+      if (localStorage.getItem("role") === "staff" || localStorage.getItem("role") === "owner") {
+        setPatients(prevPatients => {
+          const updatedPatients = prevPatients.map(patient => {
+            if (patient._id === newMessage.senderId || (selectedPatient && patient._id === selectedPatient._id)) {
+              return { ...patient, latestMessage: newMessage };
+            }
+            return patient;
+          });
+          return updatedPatients.sort((a, b) => {
+            if (!a.latestMessage && !b.latestMessage) return 0;
+            if (!a.latestMessage) return 1;
+            if (!b.latestMessage) return -1;
+            return new Date(b.latestMessage.createdAt) - new Date(a.latestMessage.createdAt);
+          });
         });
-      });
-    }
-  });
+      }
+    });
 
-  return () => {
-    if (socket.current) {
-      socket.current.disconnect();
-    }
-  };
-}, [conversationId, selectedPatient]);
+    return () => {
+      if (socket.current) {
+        socket.current.disconnect();
+      }
+    };
+  }, [conversationId, selectedPatient]);
 
   useEffect(() => {
     if (showpatientambherConversation || showpatientbautistaConversation) {
@@ -149,281 +156,294 @@ useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-const startConversation = async (clinic, patientId = null) => {
-  try {
-    setSelectedClinic(clinic);
-    setSelectedPatient(patientId ? patients.find(p => p._id === patientId) : null);
+  const startConversation = async (clinic, patientId = null) => {
+    try {
+      setSelectedClinic(clinic);
+      setSelectedPatient(patientId ? patients.find(p => p._id === patientId) : null);
 
-    const token = localStorage.getItem('token');
-    if (!token) {
-      console.error('No token found');
-      return;
-    }
-
-    const userId = localStorage.getItem('patientid') || 
-                  localStorage.getItem('staffid') || 
-                  localStorage.getItem('ownerid');
-    const role = localStorage.getItem('role');
-
-    const response = await fetch(`${apiUrl}/api/messages/conversations`, {
-      headers: {
-        'Authorization': `Bearer ${token}`
+      const token = localStorage.getItem('token');
+      if (!token) {
+        console.error('No token found');
+        return;
       }
-    });
 
-    if (!response.ok) {
-      console.error('Failed to fetch conversations:', response.status, response.statusText);
-      return;
-    }
+      const userId = localStorage.getItem('patientid') || 
+                    localStorage.getItem('staffid') || 
+                    localStorage.getItem('ownerid');
+      const role = localStorage.getItem('role');
 
-    const conversations = await response.json();
-    console.log('Conversations fetched:', conversations); // Debug log
+      const response = await fetch(`${apiUrl}/api/messages/conversations`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
 
-    let existingConversation;
+      if (!response.ok) {
+        console.error('Failed to fetch conversations:', response.status, response.statusText);
+        return;
+      }
 
-    if (role === 'staff' || role === 'owner') {
-      existingConversation = conversations.find(conv => 
-        conv.clinic === clinic &&
-        (patientId 
-          ? conv.participants.some(p => p.userId === patientId && p.role === 'patient')
-          : conv.participants.some(p => p.role === 'clinic' && p.clinic === clinic)
-        )
-      );
-    } else {
-      existingConversation = conversations.find(conv => 
-        conv.clinic === clinic &&
-        conv.participants.some(p => p.userId === userId && p.role === role)
-      );
-    }
+      const conversations = await response.json();
+      console.log('Conversations fetched:', conversations);
 
-    console.log('Existing conversation:', existingConversation); // Debug log
+      let existingConversation;
 
-    if (existingConversation) {
-      setConversationId(existingConversation._id);
-      socket.current.emit('joinConversation', existingConversation._id);
-      await loadMessages(existingConversation._id, patientId);
-    } else {
-      console.warn(`No conversation found for clinic: ${clinic}, userId: ${userId}, role: ${role}`);
-      setConversationId(null);
-      if (patientId) {
-        setMessages([]); // Clear patient messages
+      if (role === 'patient') {
+        existingConversation = conversations.find(conv => 
+          conv.clinic === clinic &&
+          conv.participants.some(p => p.userId === userId && p.role === role)
+        );
+      } else if (role === 'staff' || role === 'owner') {
+        existingConversation = conversations.find(conv => {
+          if (patientId) {
+            // Staff/Owner to Patient
+            return conv.clinic === clinic &&
+                   conv.participants.some(p => p.userId === patientId && p.role === 'patient');
+          } else {
+            // Clinic to Clinic
+            const otherClinic = clinic === "Ambher Optical" ? "Bautista Eye Center" : "Ambher Optical";
+            return conv.participants.some(p => p.role === 'clinic' && p.clinic === clinic) &&
+                   conv.participants.some(p => p.role === 'clinic' && p.clinic === otherClinic);
+          }
+        });
+      }
+
+      console.log('Existing conversation:', existingConversation);
+
+      if (existingConversation) {
+        setConversationId(existingConversation._id);
+        socket.current.emit('joinConversation', existingConversation._id);
+        await loadMessages(existingConversation._id);
       } else {
-        setClinicMessages([]); // Clear clinic-to-clinic messages
+        console.warn(`No conversation found for clinic: ${clinic}, userId: ${userId}, role: ${role}, patientId: ${patientId}`);
+        setConversationId(null);
+        setMessages([]);
       }
+    } catch (error) {
+      console.error("Error starting conversation:", error);
     }
-  } catch (error) {
-    console.error("Error starting conversation:", error);
-  }
-};
-const loadMessages = async (convId, patientId = null) => {
-  try {
-    setLoadingMessages(true);
-    const token = localStorage.getItem('token');
-    if (!token) {
-      console.error('No token found');
-      setLoadingMessages(false);
-      return;
-    }
+  };
 
-    const response = await fetch(`${apiUrl}/api/messages/${convId}`, {
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
-    });
-
-    if (!response.ok) {
-      if (response.status === 401) {
-        console.error('Session expired - please login again');
+  const loadMessages = async (convId) => {
+    try {
+      setLoadingMessages(true);
+      const token = localStorage.getItem('token');
+      if (!token) {
+        console.error('No token found');
         setLoadingMessages(false);
         return;
       }
-      throw new Error('Failed to load messages');
-    }
 
-    const loadedMessages = await response.json();
-    console.log('Loaded messages:', loadedMessages); // Debug log
-    setMessages(loadedMessages); // Always store in messages for patient conversations
-  } catch (error) {
-    console.error("Error loading messages:", error);
-  } finally {
-    setLoadingMessages(false);
-  }
-};
-const handleSendMessage = async () => {
-  if (!message.trim() && !selectedFile) return;
-
-  try {
-    const token = localStorage.getItem('token');
-    if (!token) return;
-
-    const clinic = showpatientambherConversation ? "Ambher Optical" : "Bautista Eye Center";
-    const role = localStorage.getItem('role');
-    const userId = localStorage.getItem('patientid') || 
-                  localStorage.getItem('staffid') || 
-                  localStorage.getItem('ownerid');
-    
-    const temporaryId = Date.now().toString() + Math.random().toString(36).substr(2, 9);
-    
-    const optimisticMessage = {
-      temporaryId,
-      text: message.trim() || '',
-      imageUrl: selectedFile?.isImage ? URL.createObjectURL(selectedFile.file) : null,
-      documentUrl: selectedFile && !selectedFile.isImage ? selectedFile.name : null,
-      senderId: userId,
-      senderRole: role,
-      senderName: patientName || 'You',
-      senderClinic: role === 'staff' || role === 'owner' ? localStorage.getItem(`${role}clinic`) : null,
-      sentToClinic: role === 'patient' ? clinic : null,
-      createdAt: new Date().toISOString(),
-      conversationId
-    };
-    
-    setMessages(prev => [...prev, optimisticMessage]); // Always store in messages
-    setPendingMessageId(temporaryId);
-    setMessage("");
-    setSelectedFile(null);
-    
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
-
-    const formData = new FormData();
-    if (conversationId) formData.append('conversationId', conversationId);
-    if (message.trim()) formData.append('text', message);
-    formData.append('temporaryId', temporaryId);
-    
-    if (role === 'patient') {
-      formData.append('clinic', clinic);
-      formData.append('sentToClinic', clinic);
-    }
-    
-    if (selectedPatient) {
-      formData.append('patientId', selectedPatient._id);
-    }
-    
-    if (selectedFile) {
-      formData.append('file', selectedFile.file);
-    }
-
-    formData.append('senderId', userId);
-    formData.append('senderRole', role);
-
-    const response = await fetch(`${apiUrl}/api/messages`, {
-      method: "POST",
-      headers: { 
-        "Authorization": `Bearer ${token}` 
-      },
-      body: formData
-    });
-
-    const responseText = await response.text();
-    if (!response.ok) {
-      try {
-        const errorData = JSON.parse(responseText);
-        throw new Error(errorData.message || 'Failed to send message');
-      } catch {
-        throw new Error(responseText || 'Failed to send message');
-      }
-    }
-
-    const data = JSON.parse(responseText);
-    
-    setMessages(prev => prev.map(msg => 
-      msg.temporaryId === temporaryId ? { ...msg, ...data, temporaryId: undefined } : msg
-    ));
-    
-    setTimeout(scrollToBottom, 100);
-
-    if (localStorage.getItem("role") === "staff" || localStorage.getItem("role") === "owner") {
-      setPatients(prevPatients => {
-        const updatedPatients = prevPatients.map(patient => {
-          if (patient._id === selectedPatient?._id) {
-            return { ...patient, latestMessage: data };
-          }
-          return patient;
-        });
-        return updatedPatients.sort((a, b) => {
-          if (!a.latestMessage && !b.latestMessage) return 0;
-          if (!a.latestMessage) return 1;
-          if (!b.latestMessage) return -1;
-          return new Date(b.latestMessage.createdAt) - new Date(a.latestMessage.createdAt);
-        });
+      const response = await fetch(`${apiUrl}/api/messages/${convId}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
       });
-    }
-  } catch (error) {
-    console.error("Error sending message:", error);
-    setMessages(prev => prev.filter(msg => msg.temporaryId !== temporaryId));
-    setPendingMessageId(null);
-    alert(`Error: ${error.message}`);
-  }
-};
 
-const fetchPatients = async () => {
-  try {
-    const token = localStorage.getItem('token');
-    if (!token) return;
-
-    // First fetch patients
-    const response = await fetch(`${apiUrl}/api/patientaccounts`, {
-      headers: {
-        'Authorization': `Bearer ${token}`
+      if (!response.ok) {
+        if (response.status === 401) {
+          console.error('Session expired - please login again');
+          setLoadingMessages(false);
+          return;
+        }
+        throw new Error('Failed to load messages');
       }
-    });
 
-    if (!response.ok) {
-      throw new Error('Failed to fetch patients');
+      const loadedMessages = await response.json();
+      console.log('Loaded messages:', loadedMessages);
+      setMessages(loadedMessages);
+    } catch (error) {
+      console.error("Error loading messages:", error);
+    } finally {
+      setLoadingMessages(false);
     }
+  };
 
-    const patientsData = await response.json();
-    
-    // Then fetch conversations separately
-    const conversationsResponse = await fetch(`${apiUrl}/api/messages/conversations`, {
-      headers: {
-        'Authorization': `Bearer ${token}`
+  const handleSendMessage = async () => {
+    if (!message.trim() && !selectedFile) return;
+
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+
+      const clinic = showpatientambherConversation ? "Ambher Optical" : "Bautista Eye Center";
+      const role = localStorage.getItem('role');
+      const userId = localStorage.getItem('patientid') || 
+                    localStorage.getItem('staffid') || 
+                    localStorage.getItem('ownerid');
+      const userClinic = localStorage.getItem('staffclinic') || localStorage.getItem('ownerclinic');
+      const targetClinic = userClinic === "Ambher Optical" ? "Bautista Eye Center" : "Ambher Optical";
+      
+      const temporaryId = Date.now().toString() + Math.random().toString(36).substr(2, 9);
+
+      const senderName = patientName || localStorage.getItem('staffname') || localStorage.getItem('ownername') || 'You';
+      
+      const optimisticMessage = {
+        temporaryId,
+        text: message.trim() || '',
+        imageUrl: selectedFile?.isImage ? URL.createObjectURL(selectedFile.file) : null,
+        documentUrl: selectedFile && !selectedFile.isImage ? selectedFile.name : null,
+        senderId: userId,
+        senderRole: role,
+        senderName: senderName,
+        senderClinic: role === 'patient' ? null : userClinic,
+        sentToClinic: role === 'patient' || !selectedPatient ? clinic || targetClinic : null,
+        createdAt: new Date().toISOString(),
+        conversationId
+      };
+      
+      console.log('Optimistic message:', optimisticMessage);
+
+      setMessages(prev => [...prev, optimisticMessage]);
+      setPendingMessageId(temporaryId);
+      setMessage("");
+      setSelectedFile(null);
+      
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
       }
-    });
-    
-    if (!conversationsResponse.ok) {
-      throw new Error('Failed to fetch conversations');
-    }
-    
-    const conversations = await conversationsResponse.json();
 
-    const patientsWithLatestMessage = await Promise.all(
-      patientsData.map(async (patient) => {
-        const patientConversation = conversations.find(conv => 
-          conv.participants.some(p => p.userId === patient._id && p.role === 'patient')
-        );
-        
-        if (!patientConversation) return { ...patient, latestMessage: null };
-        
-        // Fetch messages for this conversation
-        const messagesResponse = await fetch(`${apiUrl}/api/messages/${patientConversation._id}`, {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
+      const formData = new FormData();
+      if (conversationId) formData.append('conversationId', conversationId);
+      if (message.trim()) formData.append('text', message);
+      formData.append('temporaryId', temporaryId);
+      
+      if (role === 'patient') {
+        formData.append('clinic', clinic);
+        formData.append('sentToClinic', clinic);
+      } else if (!selectedPatient) {
+        formData.append('targetClinic', targetClinic);
+        formData.append('sentToClinic', targetClinic);
+      }
+      
+      if (selectedPatient) {
+        formData.append('patientId', selectedPatient._id);
+      }
+      
+      if (selectedFile) {
+        formData.append('file', selectedFile.file);
+      }
+
+      formData.append('senderId', userId);
+      formData.append('senderRole', role);
+      formData.append('senderName', senderName);
+
+
+
+      const response = await fetch(`${apiUrl}/api/messages`, {
+        method: "POST",
+        headers: { 
+          "Authorization": `Bearer ${token}` 
+        },
+        body: formData
+      });
+
+      const responseText = await response.text();
+      if (!response.ok) {
+        try {
+          const errorData = JSON.parse(responseText);
+          throw new Error(errorData.message || 'Failed to send message');
+        } catch {
+          throw new Error(responseText || 'Failed to send message');
+        }
+      }
+
+      const data = JSON.parse(responseText);
+      
+      setMessages(prev => prev.map(msg => 
+        msg.temporaryId === temporaryId ? { ...msg, ...data, temporaryId: undefined } : msg
+      ));
+      
+      setTimeout(scrollToBottom, 100);
+
+      if (localStorage.getItem("role") === "staff" || localStorage.getItem("role") === "owner") {
+        setPatients(prevPatients => {
+          const updatedPatients = prevPatients.map(patient => {
+            if (patient._id === selectedPatient?._id) {
+              return { ...patient, latestMessage: data };
+            }
+            return patient;
+          });
+          return updatedPatients.sort((a, b) => {
+            if (!a.latestMessage && !b.latestMessage) return 0;
+            if (!a.latestMessage) return 1;
+            if (!b.latestMessage) return -1;
+            return new Date(b.latestMessage.createdAt) - new Date(a.latestMessage.createdAt);
+          });
         });
-        
-        if (!messagesResponse.ok) return { ...patient, latestMessage: null };
-        
-        const messages = await messagesResponse.json();
-        const latestMessage = messages.length > 0 ? messages[messages.length - 1] : null;
-        return { ...patient, latestMessage };
-      })
-    );
+      }
+    } catch (error) {
+      console.error("Error sending message:", error);
+      setMessages(prev => prev.filter(msg => msg.temporaryId !== temporaryId));
+      setPendingMessageId(null);
+      alert(`Error: ${error.message}`);
+    }
+  };
 
-    const sortedPatients = patientsWithLatestMessage.sort((a, b) => {
-      if (!a.latestMessage && !b.latestMessage) return 0;
-      if (!a.latestMessage) return 1;
-      if (!b.latestMessage) return -1;
-      return new Date(b.latestMessage.createdAt) - new Date(a.latestMessage.createdAt);
-    });
+  const fetchPatients = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) return;
 
-    setPatients(sortedPatients);
-  } catch (error) {
-    console.error("Error fetching patients:", error);
-  }
-};
+      const response = await fetch(`${apiUrl}/api/patientaccounts`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch patients');
+      }
+
+      const patientsData = await response.json();
+      
+      const conversationsResponse = await fetch(`${apiUrl}/api/messages/conversations`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (!conversationsResponse.ok) {
+        throw new Error('Failed to fetch conversations');
+      }
+      
+      const conversations = await conversationsResponse.json();
+
+      const patientsWithLatestMessage = await Promise.all(
+        patientsData.map(async (patient) => {
+          const patientConversation = conversations.find(conv => 
+            conv.participants.some(p => p.userId === patient._id && p.role === 'patient')
+          );
+          
+          if (!patientConversation) return { ...patient, latestMessage: null };
+          
+          const messagesResponse = await fetch(`${apiUrl}/api/messages/${patientConversation._id}`, {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          });
+          
+          if (!messagesResponse.ok) return { ...patient, latestMessage: null };
+          
+          const messages = await messagesResponse.json();
+          const latestMessage = messages.length > 0 ? messages[messages.length - 1] : null;
+          return { ...patient, latestMessage };
+        })
+      );
+
+      const sortedPatients = patientsWithLatestMessage.sort((a, b) => {
+        if (!a.latestMessage && !b.latestMessage) return 0;
+        if (!a.latestMessage) return 1;
+        if (!b.latestMessage) return -1;
+        return new Date(b.latestMessage.createdAt) - new Date(a.latestMessage.createdAt);
+      });
+
+      setPatients(sortedPatients);
+    } catch (error) {
+      console.error("Error fetching patients:", error);
+    }
+  };
+
   useEffect(() => {
     if (showpatientchatdashboard && (localStorage.getItem("role") === "staff" || localStorage.getItem("role") === "owner")) {
       fetchPatients();
@@ -534,46 +554,18 @@ const fetchPatients = async () => {
 
   const handlePatientSelect = (patient) => {
     setSelectedPatient(patient);
-    startConversation("Ambher Optical", patient._id); 
+    const clinic = localStorage.getItem('staffclinic') || localStorage.getItem('ownerclinic');
+    startConversation(clinic, patient._id); 
   };
 
-
-
-useEffect(() => {
-  if (showpatientchatdashboard && localStorage.getItem("role") === "patient") {
-    const clinic = showpatientambherConversation ? "Ambher Optical" : "Bautista Eye Center";
-    if (clinic) {
-      startConversation(clinic);
+  useEffect(() => {
+    if (showpatientchatdashboard && localStorage.getItem("role") === "patient") {
+      const clinic = showpatientambherConversation ? "Ambher Optical" : "Bautista Eye Center";
+      if (clinic) {
+        startConversation(clinic);
+      }
     }
-  }
-}, [showpatientchatdashboard, showpatientambherConversation, showpatientbautistaConversation]);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+  }, [showpatientchatdashboard, showpatientambherConversation, showpatientbautistaConversation]);
 
   return (
     <>
@@ -648,93 +640,90 @@ useEffect(() => {
                         <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#1583b3]"></div>
                       </div>
                     ) : messages.length > 0 ? (
-                      
-messages.map((msg, index) => {
-  const isCurrentUser = msg.senderRole === localStorage.getItem('role') && 
-                       msg.senderId === localStorage.getItem('patientid');
-  
-  const isSameSenderAsPrevious = index > 0 && 
-    messages[index - 1].senderId === msg.senderId;
-  const isSameSenderAsNext = index < messages.length - 1 && 
-    messages[index + 1].senderId === msg.senderId;
-  
-  // Add this to determine if we need extra spacing
-  const isDifferentSenderFromPrevious = index > 0 && 
-    messages[index - 1].senderId !== msg.senderId;
+                      messages.map((msg, index) => {
+                        const isCurrentUser = msg.senderRole === localStorage.getItem('role') && 
+                                             msg.senderId === localStorage.getItem('patientid');
+                        
+                        const isSameSenderAsPrevious = index > 0 && 
+                          messages[index - 1].senderId === msg.senderId;
+                        const isSameSenderAsNext = index < messages.length - 1 && 
+                          messages[index + 1].senderId === msg.senderId;
+                        
+                        const isDifferentSenderFromPrevious = index > 0 && 
+                          messages[index - 1].senderId !== msg.senderId;
 
-  let borderRadiusClasses = '';
-  if (isCurrentUser) {
-    borderRadiusClasses = !isSameSenderAsPrevious && !isSameSenderAsNext ? 'rounded-2xl' :
-      !isSameSenderAsPrevious ? 'rounded-tl-2xl rounded-bl-2xl rounded-tr-2xl' :
-      !isSameSenderAsNext ? 'rounded-tl-2xl rounded-bl-2xl rounded-br-2xl' :
-      'rounded-tl-2xl rounded-bl-2xl';
-  } else {
-        borderRadiusClasses = !isSameSenderAsPrevious && !isSameSenderAsNext ? 'rounded-2xl' :
-      !isSameSenderAsPrevious ? 'rounded-tr-2xl rounded-br-2xl rounded-tl-2xl' :
-      !isSameSenderAsNext ? 'rounded-tr-2xl rounded-br-2xl rounded-bl-2xl' :
-      'rounded-tr-2xl rounded-br-2xl';
+                        let borderRadiusClasses = '';
+                        if (isCurrentUser) {
+                          borderRadiusClasses = !isSameSenderAsPrevious && !isSameSenderAsNext ? 'rounded-2xl' :
+                            !isSameSenderAsPrevious ? 'rounded-tl-2xl rounded-bl-2xl rounded-tr-2xl' :
+                            !isSameSenderAsNext ? 'rounded-tl-2xl rounded-bl-2xl rounded-br-2xl' :
+                            'rounded-tl-2xl rounded-bl-2xl';
+                        } else {
+                          borderRadiusClasses = !isSameSenderAsPrevious && !isSameSenderAsNext ? 'rounded-2xl' :
+                            !isSameSenderAsPrevious ? 'rounded-tr-2xl rounded-br-2xl rounded-tl-2xl' :
+                            !isSameSenderAsNext ? 'rounded-tr-2xl rounded-br-2xl rounded-bl-2xl' :
+                            'rounded-tr-2xl rounded-br-2xl';
+                        }
 
-  }
+                        const isImageOnly = msg.imageUrl && !msg.text && !msg.documentUrl;
+                        const isLastInSequence = !isSameSenderAsNext;
+                        const profilePicture = isCurrentUser 
+                          ? (currentuserprofilepicture || profileuser)
+                          : (msg.senderClinic === "Ambher Optical" ? ambherlogo : bautistalogo);
 
-  const isImageOnly = msg.imageUrl && !msg.text && !msg.documentUrl;
-  const isLastInSequence = !isSameSenderAsNext;
-  const profilePicture = isCurrentUser 
-    ? (currentuserprofilepicture || profileuser)
-    : (msg.senderClinic === "Ambher Optical" ? ambherlogo : bautistalogo);
+                        return (
+                          <div 
+                            key={msg._id || msg.temporaryId}
+                            className={`w-full flex ${isCurrentUser ? 'justify-end' : 'justify-start'} ${
+                              isDifferentSenderFromPrevious ? 'mt-4' : ''
+                            }`}
+                          >
+                            <div className={`flex-shrink-0 ${isCurrentUser ? 'order-1 ml-2' : 'order-0 mr-2'} ${isLastInSequence ? 'visible' : 'invisible'}`}>
+                              {!isCurrentUser && (
+                                <img 
+                                  src={profilePicture} 
+                                  alt="Profile picture"
+                                  className="w-8 h-8 self-end rounded-full object-cover"
+                                  onError={(e) => { e.target.src = profileuser }}
+                                />
+                              )}
+                            </div>
 
-  return (
-    <div 
-      key={msg._id || msg.temporaryId}
-      className={`w-full flex ${isCurrentUser ? 'justify-end' : 'justify-start'} ${
-        isDifferentSenderFromPrevious ? 'mt-4' : ''
-      }`}
-    >
-      <div className={`flex-shrink-0 ${isCurrentUser ? 'order-1 ml-2' : 'order-0 mr-2'} ${isLastInSequence ? 'visible' : 'invisible'}`}>
-        {!isCurrentUser && (
-          <img 
-            src={profilePicture} 
-            alt="Profile picture"
-            className="w-8 h-8 self-end rounded-full object-cover"
-            onError={(e) => { e.target.src = profileuser }}
-          />
-        )}
-      </div>
-
-<div className={`max-w-[80%] ${isCurrentUser ? 'order-0' : 'order-1'}`}>
-  {!isSameSenderAsPrevious && !isCurrentUser && (
-    <div className={`flex ${isCurrentUser ? 'justify-end' : 'justify-start'}`}>
-      <p className="text-xs font-semibold text-gray-600 mb-1">
-        {msg.senderName}
-      </p>
-    </div>
-  )}
-  {isImageOnly ? (
-    renderMessageContent(msg, isCurrentUser)
-  ) : (
-    <div 
-      className={`flex flex-col px-5 py-2 ${
-        isCurrentUser ? (showpatientbautistaConversation ? 'bg-[#d8f1fd]' : 'bg-[#c0eed6]') : 'bg-[#e0e0e0]'
-      } ${borderRadiusClasses} relative group`}
-      style={{
-        wordWrap: 'break-word',
-        overflowWrap: 'break-word',
-        whiteSpace: 'pre-wrap'
-      }}
-    >
-      {renderMessageContent(msg, isCurrentUser)}
-    </div>
-  )}
-                    {index === messages.length - 1 && (
-              <div className={`mt-1 w-full flex ${isCurrentUser ? 'justify-end' : 'justify-start'}`}>
-                <p className="text-[12px] text-[#565656]">
-                  {formatDate(msg.createdAt)} at {new Date(msg.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
-                </p>
-              </div>
-            )}
-      </div>
-    </div>
-  );
-})
+                            <div className={`max-w-[80%] ${isCurrentUser ? 'order-0' : 'order-1'}`}>
+                              {!isSameSenderAsPrevious && !isCurrentUser && (
+                                <div className={`flex ${isCurrentUser ? 'justify-end' : 'justify-start'}`}>
+                                  <p className="text-xs font-semibold text-gray-600 mb-1">
+                                    {msg.senderName}
+                                  </p>
+                                </div>
+                              )}
+                              {isImageOnly ? (
+                                renderMessageContent(msg, isCurrentUser)
+                              ) : (
+                                <div 
+                                  className={`flex flex-col px-5 py-2 ${
+                                    isCurrentUser ? (showpatientbautistaConversation ? 'bg-[#d8f1fd]' : 'bg-[#c0eed6]') : 'bg-[#e0e0e0]'
+                                  } ${borderRadiusClasses} relative group`}
+                                  style={{
+                                    wordWrap: 'break-word',
+                                    overflowWrap: 'break-word',
+                                    whiteSpace: 'pre-wrap'
+                                  }}
+                                >
+                                  {renderMessageContent(msg, isCurrentUser)}
+                                </div>
+                              )}
+                              {index === messages.length - 1 && (
+                                <div className={`mt-1 w-full flex ${isCurrentUser ? 'justify-end' : 'justify-start'}`}>
+                                  <p className="text-[12px] text-[#565656]">
+                                    {formatDate(msg.createdAt)} at {new Date(msg.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                                  </p>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })
                     ) : (
                       <div className="w-full text-center text-gray-500 h-full flex items-center justify-center">
                         No messages yet. Start the conversation!
@@ -887,19 +876,19 @@ messages.map((msg, index) => {
                     </div>
                   </div>
 
-                  <div className="pt-3  gap-1 px-2 flex flex-col rounded-2xl min-h-[72%] w-full max-h-[72%] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-transparent">
-<div 
-  className="p-2 flex items-center justify-start w-full h-15 border-1 hover:bg-gray-100 hover:shadow-md transition-all duration-300 ease-in-out cursor-pointer hover:scale-105 rounded-2xl"
-  onClick={() => startConversation("Bautista Eye Center")}
->
-  <img src={bautistalogo} className="w-13 h-7"/>
-  <div className="w-[76%] flex flex-col justify-center items-start ml-3">
-    <p className="font-albertsans font-semibold text-[16px] text-[#3a3a3a] truncate overflow-hidden whitespace-nowrap w-full">Bautista Eye Center</p>
-    <p className="font-albertsans font-medium text-[13px] text-[#555555] truncate overflow-hidden whitespace-nowrap w-full">
-      {getLatestMessageDisplay({ patientfirstname: "Bautista Eye Center" }, clinicMessages)}
-    </p>
-  </div>
-</div>
+                  <div className="pt-3 gap-1 px-2 flex flex-col rounded-2xl min-h-[72%] w-full max-h-[72%] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-transparent">
+                    <div 
+                      className="p-2 flex items-center justify-start w-full h-15 border-1 hover:bg-gray-100 hover:shadow-md transition-all duration-300 ease-in-out cursor-pointer hover:scale-105 rounded-2xl"
+                      onClick={() => startConversation("Bautista Eye Center")}
+                    >
+                      <img src={bautistalogo} className="w-13 h-13 "/>
+                      <div className="w-[76%] flex flex-col justify-center items-start ml-3">
+                        <p className="font-albertsans font-semibold text-[16px] text-[#3a3a3a] truncate overflow-hidden whitespace-nowrap w-full">Bautista Eye Center</p>
+                        <p className="font-albertsans font-medium text-[13px] text-[#555555] truncate overflow-hidden whitespace-nowrap w-full">
+                          {getLatestMessageDisplay({ patientfirstname: "Bautista Eye Center" }, messages)}
+                        </p>
+                      </div>
+                    </div>
                     {patients.map((patient) => (
                       <div 
                         key={patient._id}
@@ -925,48 +914,49 @@ messages.map((msg, index) => {
                 </div>
 
                 <div className="flex flex-col rounded-2xl h-full w-[70%] border-1">
-<div className="shadow-md pt-0.5 pb-0.5 pl-3 rounded-t-2xl border-1 h-[11%] w-full flex item-center justify-start">
-  <div className="flex items-center justify-center">
-    <img 
-      src={
-        selectedPatient 
-          ? (selectedPatient.patientprofilepicture || profileuser) 
-          : selectedClinic === "Ambher Optical" 
-            ? ambherlogo
-            : bautistalogo 
-      } 
-      className="w-12 h-12 rounded-full"
-      onError={(e) => { e.target.src = profileuser }}
-    />
-  </div>
-  <div className="flex flex-col justify-center items-start ml-3">
-    <p className="font-albertsans font-semibold text-[16px] text-[#3a3a3a]">
-      {selectedPatient 
-        ? `${selectedPatient.patientfirstname} ${selectedPatient.patientlastname}`
-        : selectedClinic || "Select a conversation"}
-    </p>
-  </div>
-</div>
-                  <div className="pb-2  h-full w-full overflow-y-auto" style={{ maxHeight: '400px' }}>
-                    <div  className=" px-3  h-[100%] w-full overflow-y-auto" style={{ maxHeight: '400px' }}>
-                    {loading ? (
-                      <div className="w-full flex justify-center items-center h-full text-gray-500">
-                        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#39715f]"></div>
-                      </div>
-                    ) : messages.length > 0 ? (
-  messages.map((msg, index) => {
-  const isStaffOrOwner = msg.senderRole === 'staff' || msg.senderRole === 'owner';
+                  <div className="shadow-md pt-0.5 pb-0.5 pl-3 rounded-t-2xl border-1 h-[11%] w-full flex item-center justify-start">
+                    <div className="flex items-center justify-center">
+                      <img 
+                        src={
+                          selectedPatient 
+                            ? (selectedPatient.patientprofilepicture || profileuser) 
+                            : selectedClinic === "Ambher Optical" 
+                              ? ambherlogo
+                              : bautistalogo 
+                        } 
+                        className="w-12 h-12 rounded-full"
+                        onError={(e) => { e.target.src = profileuser }}
+                      />
+                    </div>
+                    <div className="flex flex-col justify-center items-start ml-3">
+                      <p className="font-albertsans font-semibold text-[16px] text-[#3a3a3a]">
+                        {selectedPatient 
+                          ? `${selectedPatient.patientfirstname} ${selectedPatient.patientlastname}`
+                          : selectedClinic || "Select a conversation"}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="pb-2 h-full w-full overflow-y-auto" style={{ maxHeight: '400px' }}>
+                    <div className="px-3 pt-10 h-[100%] w-full overflow-y-auto" style={{ maxHeight: '400px' }}>
+                      {loading ? (
+                        <div className="w-full flex justify-center items-center h-full text-gray-500">
+                          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#39715f]"></div>
+                        </div>
+                      ) : messages.length > 0 ? (
+messages.map((msg, index) => {
+  const isCurrentClinic = (msg.senderClinic === "Ambher Optical" && (localStorage.getItem("staffclinic") === "Ambher Optical" || localStorage.getItem("ownerclinic") === "Ambher Optical")) || 
+                         (msg.senderClinic === "Bautista Eye Center" && (localStorage.getItem("staffclinic") === "Bautista Eye Center" || localStorage.getItem("ownerclinic") === "Bautista Eye Center"));
+  
   const isSameSenderAsPrevious = index > 0 && 
     messages[index - 1].senderId === msg.senderId;
   const isSameSenderAsNext = index < messages.length - 1 && 
     messages[index + 1].senderId === msg.senderId;
   
-  // Add this to determine if we need extra spacing
   const isDifferentSenderFromPrevious = index > 0 && 
     messages[index - 1].senderId !== msg.senderId;
 
   let borderRadiusClasses = '';
-  if (isStaffOrOwner) {
+  if (isCurrentClinic) {
     borderRadiusClasses = !isSameSenderAsPrevious && !isSameSenderAsNext ? 'rounded-2xl' :
       !isSameSenderAsPrevious ? 'rounded-tl-2xl rounded-bl-2xl rounded-tr-2xl' :
       !isSameSenderAsNext ? 'rounded-tl-2xl rounded-bl-2xl rounded-br-2xl' :
@@ -980,74 +970,72 @@ messages.map((msg, index) => {
 
   const isImageOnly = msg.imageUrl && !msg.text && !msg.documentUrl;
   const isLastInSequence = !isSameSenderAsNext;
-  const profilePicture = selectedPatient && !isStaffOrOwner 
-    ? (selectedPatient.patientprofilepicture || profileuser) 
-    : (msg.senderClinic === "Ambher Optical" ? ambherlogo : bautistalogo);
+  const profilePicture = msg.senderRole === 'clinic' 
+    ? (msg.senderClinic === "Ambher Optical" ? ambherlogo : bautistalogo)
+    : (selectedPatient?.patientprofilepicture || profileuser);
+
 
   return (
     <div 
       key={msg._id || msg.temporaryId}
-      className={`w-full flex ${isStaffOrOwner ? 'justify-end' : 'justify-start'} ${
+      className={`w-full flex ${isCurrentClinic ? 'justify-end' : 'justify-start'} ${
         isDifferentSenderFromPrevious ? 'mt-4' : ''
       }`}
     >
-
-      <div className={`flex-shrink-0 ${isStaffOrOwner ? 'order-1 ml-2' : 'order-0 mr-2'} ${isLastInSequence ? 'visible' : 'invisible'}`}>
-        {!isStaffOrOwner && (
+      <div className={`flex-shrink-0 ${isCurrentClinic ? 'order-1 ml-2' : 'order-0 mr-2'} ${isLastInSequence ? 'visible' : 'invisible'}`}>
+        {!isCurrentClinic && (
           <img 
             src={profilePicture} 
             alt="Profile picture"
             className="w-8 h-8 self-end rounded-full object-cover"
-            onError={(e) => { e.target.src = profileuser }}
           />
         )}
       </div>
 
-      {/* Message content */}
-<div className={`max-w-[80%] ${isStaffOrOwner ? 'order-0' : 'order-1'}`}>
-  {!isSameSenderAsPrevious && (
-    <div className={`flex ${isStaffOrOwner ? 'justify-end' : 'justify-start'}`}>
-      <p className="text-xs font-semibold text-gray-600 mb-1">
-        {msg.senderName}
-      </p>
-    </div>
-  )}
-  {isImageOnly ? (
-    renderMessageContent(msg, isStaffOrOwner)
-  ) : (
-    <div 
-      className={`flex flex-col px-5 py-2 ${
-        isStaffOrOwner ? 'bg-[#c0eed6]' : 'bg-[#e0e0e0]'
-      } ${borderRadiusClasses} relative group`}
-      style={{
-        wordWrap: 'break-word',
-        overflowWrap: 'break-word',
-        whiteSpace: 'pre-wrap'
-      }}
-    >
-      {renderMessageContent(msg, isStaffOrOwner)}
-    </div>
-  )}
-                    {index === messages.length - 1 && (
-              <div className={`mt-1 w-full flex ${isStaffOrOwner ? 'justify-end' : 'justify-start'}`}>
-                <p className="text-[12px] text-[#565656]">
-                  {formatDate(msg.createdAt)} at {new Date(msg.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
-                </p>
-              </div>
-            )}
+      <div className={`max-w-[80%] ${isCurrentClinic ? 'order-0' : 'order-1'}`}>
+        {!isSameSenderAsPrevious && !isCurrentClinic && (
+          <div className={`flex ${isCurrentClinic ? 'justify-end' : 'justify-start'}`}>
+            <p className="text-xs font-semibold text-gray-600 mb-1">
+              {msg.senderName}
+            </p>
+          </div>
+        )}
+        {isImageOnly ? (
+          renderMessageContent(msg, isCurrentClinic)
+        ) : (
+          <div 
+            className={`flex flex-col px-5 py-2 ${
+              isCurrentClinic ? (localStorage.getItem("staffclinic") === "Ambher Optical" || localStorage.getItem("ownerclinic") === "Ambher Optical" ? 'bg-[#c0eed6]' : 'bg-[#d8f1fd]') : 'bg-[#e0e0e0]'
+            } ${borderRadiusClasses} relative group`}
+            style={{
+              wordWrap: 'break-word',
+              overflowWrap: 'break-word',
+              whiteSpace: 'pre-wrap'
+            }}
+          >
+            {renderMessageContent(msg, isCurrentClinic)}
+          </div>
+        )}
+        {index === messages.length - 1 && (
+          <div className={`mt-1 w-full flex ${isCurrentClinic ? 'justify-end' : 'justify-start'}`}>
+            <p className="text-[12px] text-[#565656]">
+              {formatDate(msg.createdAt)} at {new Date(msg.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );
 })
-                    ) : (
-                      <div className="w-full text-center text-gray-500 h-full flex items-center justify-center">
-                        No messages yet. Start the conversation!
-                      </div>
-                    )}
-                    <div ref={messagesEndRef} />
+                      ) : (
+                        <div className="w-full text-center text-gray-500 h-full flex items-center justify-center">
+                          No messages yet. Start the conversation!
+                        </div>
+                      )}
+                      <div ref={messagesEndRef} />
+                    </div>
                   </div>
-   </div>
-                  <div className=" px-2 pb-2 flex flex-col w-full rounded-2xl">
+                  <div className="px-2 pb-2 flex flex-col w-full rounded-2xl">
                     <div className="bg-gray-200 rounded-2xl p-3 pb-3 flex items-center w-full h-16">
                       {!selectedFile && (
                         <label className="cursor-pointer p-2 mr-2">
@@ -1120,7 +1108,6 @@ messages.map((msg, index) => {
                       />
                     </div>
                   </div>
-             
                 </div>
               </div>
             </div>
@@ -1193,27 +1180,24 @@ messages.map((msg, index) => {
                     </div>
                   </div>
 
-                  <div className="pt-3  gap-1 px-2 flex flex-col rounded-2xl min-h-[72%] w-full max-h-[72%] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-transparent">
-<div 
-  className="p-2 flex items-center justify-start w-full h-15 border-1 hover:bg-gray-100 hover:shadow-md transition-all duration-300 ease-in-out cursor-pointer hover:scale-105 rounded-2xl"
-  onClick={() => startConversation("Ambher Optical")}
->
-  <img src={ambherlogo} className="w-13 h-7"/>
-  <div className="w-[76%] flex flex-col justify-center items-start ml-3">
-    <p className="font-albertsans font-semibold text-[16px] text-[#3a3a3a] truncate overflow-hidden whitespace-nowrap w-full">Ambher Optical</p>
-    <p className="font-albertsans font-medium text-[13px] text-[#555555] truncate overflow-hidden whitespace-nowrap w-full">
-      {getLatestMessageDisplay({ patientfirstname: "Ambher Optical" }, clinicMessages)}
-    </p>
-  </div>
-</div>
+                  <div className="pt-3 gap-1 px-2 flex flex-col rounded-2xl min-h-[72%] w-full max-h-[72%] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-transparent">
+                    <div 
+                      className="p-2 flex items-center justify-start w-full h-15 border-1 hover:bg-gray-100 hover:shadow-md transition-all duration-300 ease-in-out cursor-pointer hover:scale-105 rounded-2xl"
+                      onClick={() => startConversation("Ambher Optical")}
+                    >
+                      <img src={ambherlogo} className="w-13 h-7"/>
+                      <div className="w-[76%] flex flex-col justify-center items-start ml-3">
+                        <p className="font-albertsans font-semibold text-[16px] text-[#3a3a3a] truncate overflow-hidden whitespace-nowrap w-full">Ambher Optical</p>
+                        <p className="font-albertsans font-medium text-[13px] text-[#555555] truncate overflow-hidden whitespace-nowrap w-full">
+                          {getLatestMessageDisplay({ patientfirstname: "Ambher Optical" }, messages)}
+                        </p>
+                      </div>
+                    </div>
                     {patients.map((patient) => (
                       <div 
                         key={patient._id}
                         className="p-2 flex items-center justify-start w-full h-19 hover:bg-gray-100 hover:shadow-md transition-all duration-300 ease-in-out cursor-pointer rounded-2xl"
-                        onClick={() => {
-                          setSelectedPatient(patient);
-                          startConversation("Bautista Eye Center", patient._id);
-                        }}
+                        onClick={() => handlePatientSelect(patient)}
                       >
                         <img 
                           src={patient.patientprofilepicture || profileuser} 
@@ -1234,48 +1218,49 @@ messages.map((msg, index) => {
                 </div>
 
                 <div className="flex flex-col rounded-2xl h-full w-[70%] border-1">
-<div className="shadow-md pt-0.5 pb-0.5 pl-3 rounded-t-2xl border-1 h-[11%] w-full flex item-center justify-start">
-  <div className="flex items-center justify-center">
-    <img 
-      src={
-        selectedPatient 
-          ? (selectedPatient.patientprofilepicture || profileuser) 
-          : selectedClinic === "Bautista Eye Center" 
-            ? bautistalogo 
-            : ambherlogo
-      } 
-      className="w-12 h-12 rounded-full"
-      onError={(e) => { e.target.src = profileuser }}
-    />
-  </div>
-  <div className="flex flex-col justify-center items-start ml-3">
-    <p className="font-albertsans font-semibold text-[16px] text-[#3a3a3a]">
-      {selectedPatient 
-        ? `${selectedPatient.patientfirstname} ${selectedPatient.patientlastname}`
-        : selectedClinic || "Select a conversation"}
-    </p>
-  </div>
-</div>
-                  <div className="pb-2  h-full w-full overflow-y-auto" style={{ maxHeight: '400px' }}>
-                    <div  className=" px-3  h-[100%] w-full overflow-y-auto" style={{ maxHeight: '400px' }}>
-                    {loading ? (
-                      <div className="w-full flex justify-center items-center h-full text-gray-500">
-                        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#0a4277]"></div>
-                      </div>
-                    ) : messages.length > 0 ? (
-  messages.map((msg, index) => {
-  const isStaffOrOwner = msg.senderRole === 'staff' || msg.senderRole === 'owner';
+                  <div className="shadow-md pt-0.5 pb-0.5 pl-3 rounded-t-2xl border-1 h-[11%] w-full flex item-center justify-start">
+                    <div className="flex items-center justify-center">
+                      <img 
+                        src={
+                          selectedPatient 
+                            ? (selectedPatient.patientprofilepicture || profileuser) 
+                            : selectedClinic === "Bautista Eye Center" 
+                              ? bautistalogo 
+                              : ambherlogo
+                        } 
+                        className="w-12 h-12 rounded-full"
+                        onError={(e) => { e.target.src = profileuser }}
+                      />
+                    </div>
+                    <div className="flex flex-col justify-center items-start ml-3">
+                      <p className="font-albertsans font-semibold text-[16px] text-[#3a3a3a]">
+                        {selectedPatient 
+                          ? `${selectedPatient.patientfirstname} ${selectedPatient.patientlastname}`
+                          : selectedClinic || "Select a conversation"}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="pb-2 h-full w-full overflow-y-auto" style={{ maxHeight: '400px' }}>
+                    <div className="px-3 pt-10 h-[100%] w-full overflow-y-auto" style={{ maxHeight: '400px' }}>
+                      {loading ? (
+                        <div className="w-full flex justify-center items-center h-full text-gray-500">
+                          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#0a4277]"></div>
+                        </div>
+                      ) : messages.length > 0 ? (
+messages.map((msg, index) => {
+  const isCurrentClinic = (msg.senderClinic === "Ambher Optical" && (localStorage.getItem("staffclinic") === "Ambher Optical" || localStorage.getItem("ownerclinic") === "Ambher Optical")) || 
+                         (msg.senderClinic === "Bautista Eye Center" && (localStorage.getItem("staffclinic") === "Bautista Eye Center" || localStorage.getItem("ownerclinic") === "Bautista Eye Center"));
+  
   const isSameSenderAsPrevious = index > 0 && 
     messages[index - 1].senderId === msg.senderId;
   const isSameSenderAsNext = index < messages.length - 1 && 
     messages[index + 1].senderId === msg.senderId;
   
-  // Add this to determine if we need extra spacing
   const isDifferentSenderFromPrevious = index > 0 && 
     messages[index - 1].senderId !== msg.senderId;
 
   let borderRadiusClasses = '';
-  if (isStaffOrOwner) {
+  if (isCurrentClinic) {
     borderRadiusClasses = !isSameSenderAsPrevious && !isSameSenderAsNext ? 'rounded-2xl' :
       !isSameSenderAsPrevious ? 'rounded-tl-2xl rounded-bl-2xl rounded-tr-2xl' :
       !isSameSenderAsNext ? 'rounded-tl-2xl rounded-bl-2xl rounded-br-2xl' :
@@ -1289,74 +1274,71 @@ messages.map((msg, index) => {
 
   const isImageOnly = msg.imageUrl && !msg.text && !msg.documentUrl;
   const isLastInSequence = !isSameSenderAsNext;
-  const profilePicture = selectedPatient && !isStaffOrOwner 
-    ? (selectedPatient.patientprofilepicture || profileuser) 
-    : (msg.senderClinic === "Ambher Optical" ? ambherlogo : bautistalogo);
+  const profilePicture = msg.senderRole === 'clinic' 
+    ? (msg.senderClinic === "Ambher Optical" ? ambherlogo : bautistalogo)
+    : (selectedPatient?.patientprofilepicture || profileuser);
 
   return (
     <div 
       key={msg._id || msg.temporaryId}
-      className={`w-full flex ${isStaffOrOwner ? 'justify-end' : 'justify-start'} ${
+      className={`w-full flex ${isCurrentClinic ? 'justify-end' : 'justify-start'} ${
         isDifferentSenderFromPrevious ? 'mt-4' : ''
       }`}
     >
-
-      <div className={`flex-shrink-0 ${isStaffOrOwner ? 'order-1 ml-2' : 'order-0 mr-2'} ${isLastInSequence ? 'visible' : 'invisible'}`}>
-        {!isStaffOrOwner && (
+      <div className={`flex-shrink-0 ${isCurrentClinic ? 'order-1 ml-2' : 'order-0 mr-2'} ${isLastInSequence ? 'visible' : 'invisible'}`}>
+        {!isCurrentClinic && (
           <img 
             src={profilePicture} 
             alt="Profile picture"
             className="w-8 h-8 self-end rounded-full object-cover"
-            onError={(e) => { e.target.src = profileuser }}
           />
         )}
       </div>
 
-      {/* Message content */}
-<div className={` max-w-[80%] ${isStaffOrOwner ? 'order-0' : 'order-1'}`}>
-  {!isSameSenderAsPrevious && (
-    <div className={`flex ${isStaffOrOwner ? 'justify-end' : 'justify-start'}`}>
-      <p className="text-xs font-semibold text-gray-600 mb-1">
-        {msg.senderName}
-      </p>
-    </div>
-  )}
-  {isImageOnly ? (
-    renderMessageContent(msg, isStaffOrOwner)
-  ) : (
-    <div 
-      className={`flex flex-col px-5 py-2 ${
-        isStaffOrOwner ? 'bg-[#d8f1fd]' : 'bg-[#e0e0e0]'
-      } ${borderRadiusClasses} relative group`}
-      style={{
-        wordWrap: 'break-word',
-        overflowWrap: 'break-word',
-        whiteSpace: 'pre-wrap'
-      }}
-    >
-      {renderMessageContent(msg, isStaffOrOwner)}
-    </div>
-  )}
-                    {index === messages.length - 1 && (
-              <div className={`mt-1 w-full flex ${isStaffOrOwner ? 'justify-end' : 'justify-start'}`}>
-                <p className="text-[12px] text-[#565656]">
-                  {formatDate(msg.createdAt)} at {new Date(msg.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
-                </p>
-              </div>
-            )}
+      <div className={`max-w-[80%] ${isCurrentClinic ? 'order-0' : 'order-1'}`}>
+        {!isSameSenderAsPrevious && !isCurrentClinic && (
+          <div className={`flex ${isCurrentClinic ? 'justify-end' : 'justify-start'}`}>
+            <p className="text-xs font-semibold text-gray-600 mb-1">
+              {msg.senderName}
+            </p>
+          </div>
+        )}
+        {isImageOnly ? (
+          renderMessageContent(msg, isCurrentClinic)
+        ) : (
+          <div 
+            className={`flex flex-col px-5 py-2 ${
+              isCurrentClinic ? (localStorage.getItem("staffclinic") === "Ambher Optical" || localStorage.getItem("ownerclinic") === "Ambher Optical" ? 'bg-[#c0eed6]' : 'bg-[#d8f1fd]') : 'bg-[#e0e0e0]'
+            } ${borderRadiusClasses} relative group`}
+            style={{
+              wordWrap: 'break-word',
+              overflowWrap: 'break-word',
+              whiteSpace: 'pre-wrap'
+            }}
+          >
+            {renderMessageContent(msg, isCurrentClinic)}
+          </div>
+        )}
+        {index === messages.length - 1 && (
+          <div className={`mt-1 w-full flex ${isCurrentClinic ? 'justify-end' : 'justify-start'}`}>
+            <p className="text-[12px] text-[#565656]">
+              {formatDate(msg.createdAt)} at {new Date(msg.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );
 })
-                    ) : (
-                      <div className="w-full text-center text-gray-500 h-full flex items-center justify-center">
-                        No messages yet. Start the conversation!
-                      </div>
-                    )}
-                    <div ref={messagesEndRef} />
+                      ) : (
+                        <div className="w-full text-center text-gray-500 h-full flex items-center justify-center">
+                          No messages yet. Start the conversation!
+                        </div>
+                      )}
+                      <div ref={messagesEndRef} />
+                    </div>
                   </div>
-   </div>
-                  <div className=" px-2 pb-2 flex flex-col w-full rounded-2xl">
+                  <div className="px-2 pb-2 flex flex-col w-full rounded-2xl">
                     <div className="bg-gray-200 rounded-2xl p-3 pb-3 flex items-center w-full h-16">
                       {!selectedFile && (
                         <label className="cursor-pointer p-2 mr-2">
@@ -1429,7 +1411,6 @@ messages.map((msg, index) => {
                       />
                     </div>
                   </div>
-             
                 </div>
               </div>
             </div>
@@ -1462,10 +1443,30 @@ messages.map((msg, index) => {
           </div>
         </div>
       )}
-
     </>
   );
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 export default function App() {
   return (

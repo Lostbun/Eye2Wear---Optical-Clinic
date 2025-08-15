@@ -1,9 +1,17 @@
-import matplotlib.pyplot as plt
-import numpy
-from sklearn import metrics
+import pandas
+from sklearn import linear_model
 
-actual = numpy.random.binomial(1,.9,size = 1000)
-predicted = numpy.random.binomial(1,.9,size = 1000)
+df = pandas.read_csv("data.csv")
+
+X = df[['Weight', 'Volume']]
+y = df['CO2']
+
+regr = linear_model.LinearRegression()
+regr.fit(X, y)
+
+predictedCO2 = regr.predict([[3300, 1300]])
+
+print(predictedCO2)
 
 
 
