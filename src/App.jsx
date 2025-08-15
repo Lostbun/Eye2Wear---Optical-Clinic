@@ -41,6 +41,7 @@ function PatientChatButton() {
   const [showpatientbautistaConversation, setshowpatientbautistaConversation] = useState(false);
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([]);
+  const [clinicMessages, setClinicMessages] = useState([]);
   const [conversationId, setConversationId] = useState(null);
   const socket = useRef(null);
   const messagesEndRef = useRef(null);
@@ -147,98 +148,104 @@ function PatientChatButton() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  const startConversation = async (clinic, patientId = null) => {
-    try {
+const startConversation = async (clinic, patientId = null) => {
+  try {
+    setSelectedClinic(clinic);
+    setSelectedPatient(patientId ? patients.find(p => p._id === patientId) : null);
 
-      setSelectedClinic(clinic);
-      setSelectedPatient(patientId ? patients.find(p => p._id === patientId) : null);
-
-      const token = localStorage.getItem('token');
-      if (!token) {
-        console.error('No token found');
-        return;
-      }
-
-      const userId = localStorage.getItem('patientid') || 
-                    localStorage.getItem('staffid') || 
-                    localStorage.getItem('ownerid');
-      const role = localStorage.getItem('role');
-
-      const response = await fetch(`${apiUrl}/api/messages/conversations`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      if (!response.ok) {
-        console.error('Failed to fetch conversations:', response.status, response.statusText);
-        return;
-      }
-
-      const conversations = await response.json();
-      let existingConversation;
-
-      if (role === 'staff' || role === 'owner') {
-        existingConversation = conversations.find(conv => 
-          conv.clinic === clinic &&
-          (patientId 
-            ? conv.participants.some(p => p.userId === patientId && p.role === 'patient')
-            : conv.participants.some(p => p.role === 'clinic' && p.clinic === clinic)
-          )
-        );
-      } else {
-        existingConversation = conversations.find(conv => 
-          conv.clinic === clinic &&
-          conv.participants.some(p => p.userId === userId && p.role === role)
-        );
-      }
-
-      if (existingConversation) {
-        setConversationId(existingConversation._id);
-        socket.current.emit('joinConversation', existingConversation._id);
-        await loadMessages(existingConversation._id);
-      } else {
-        setConversationId(null);
-        setMessages([]);
-      }
-    } catch (error) {
-      console.error("Error starting conversation:", error);
+    const token = localStorage.getItem('token');
+    if (!token) {
+      console.error('No token found');
+      return;
     }
-  };
 
-  const loadMessages = async (convId) => {
-    try {
-      setLoadingMessages(true);
-      const token = localStorage.getItem('token');
-      if (!token) {
-        console.error('No token found');
+    const userId = localStorage.getItem('patientid') || 
+                  localStorage.getItem('staffid') || 
+                  localStorage.getItem('ownerid');
+    const role = localStorage.getItem('role');
+
+    const response = await fetch(`${apiUrl}/api/messages/conversations`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+
+    if (!response.ok) {
+      console.error('Failed to fetch conversations:', response.status, response.statusText);
+      return;
+    }
+
+    const conversations = await response.json();
+    let existingConversation;
+
+    if (role === 'staff' || role === 'owner') {
+      existingConversation = conversations.find(conv => 
+        conv.clinic === clinic &&
+        (patientId 
+          ? conv.participants.some(p => p.userId === patientId && p.role === 'patient')
+          : conv.participants.some(p => p.role === 'clinic' && p.clinic === clinic)
+        )
+      );
+    } else {
+      existingConversation = conversations.find(conv => 
+        conv.clinic === clinic &&
+        conv.participants.some(p => p.userId === userId && p.role === role)
+      );
+    }
+
+    if (existingConversation) {
+      setConversationId(existingConversation._id);
+      socket.current.emit('joinConversation', existingConversation._id);
+      await loadMessages(existingConversation._id, patientId);
+    } else {
+      setConversationId(null);
+      if (patientId) {
+        setMessages([]); // Clear patient messages
+      } else {
+        setClinicMessages([]); // Clear clinic-to-clinic messages
+      }
+    }
+  } catch (error) {
+    console.error("Error starting conversation:", error);
+  }
+};
+const loadMessages = async (convId, patientId = null) => {
+  try {
+    setLoadingMessages(true);
+    const token = localStorage.getItem('token');
+    if (!token) {
+      console.error('No token found');
+      setLoadingMessages(false);
+      return;
+    }
+
+    const response = await fetch(`${apiUrl}/api/messages/${convId}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        console.error('Session expired - please login again');
         setLoadingMessages(false);
         return;
       }
-
-      const response = await fetch(`${apiUrl}/api/messages/${convId}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      if (!response.ok) {
-        if (response.status === 401) {
-          console.error('Session expired - please login again');
-          setLoadingMessages(false);
-          return;
-        }
-        throw new Error('Failed to load messages');
-      }
-
-      const loadedMessages = await response.json();
-      setMessages(loadedMessages);
-    } catch (error) {
-      console.error("Error loading messages:", error);
-    } finally {
-      setLoadingMessages(false);
+      throw new Error('Failed to load messages');
     }
-  };
+
+    const loadedMessages = await response.json();
+    if (patientId) {
+      setMessages(loadedMessages); // Store patient conversation messages
+    } else {
+      setClinicMessages(loadedMessages); // Store clinic-to-clinic conversation messages
+    }
+  } catch (error) {
+    console.error("Error loading messages:", error);
+  } finally {
+    setLoadingMessages(false);
+  }
+};
 
   const handleSendMessage = async () => {
     if (!message.trim() && !selectedFile) return;
@@ -841,18 +848,18 @@ messages.map((msg, index) => {
                   </div>
 
                   <div className="pt-3  gap-1 px-2 flex flex-col rounded-2xl min-h-[72%] w-full max-h-[72%] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-transparent">
-                    <div 
-                      className="p-2 flex items-center justify-start w-full h-15 border-1 hover:bg-gray-100 hover:shadow-md transition-all duration-300 ease-in-out cursor-pointer hover:scale-105 rounded-2xl"
-                      onClick={() => startConversation("Bautista Eye Center")}
-                    >
-                      <img src={bautistalogo} className="w-13 h-7"/>
-                      <div className="w-[76%] flex flex-col justify-center items-start ml-3">
-                        <p className="font-albertsans font-semibold text-[16px] text-[#3a3a3a] truncate overflow-hidden whitespace-nowrap w-full">Bautista Eye Center</p>
-                        <p className="font-albertsans font-medium text-[13px] text-[#555555] truncate overflow-hidden whitespace-nowrap w-full">
-                          {getLatestMessageDisplay({ patientfirstname: "Bautista Eye Center" }, messages)}
-                        </p>
-                      </div>
-                    </div>
+<div 
+  className="p-2 flex items-center justify-start w-full h-15 border-1 hover:bg-gray-100 hover:shadow-md transition-all duration-300 ease-in-out cursor-pointer hover:scale-105 rounded-2xl"
+  onClick={() => startConversation("Bautista Eye Center")}
+>
+  <img src={bautistalogo} className="w-13 h-7"/>
+  <div className="w-[76%] flex flex-col justify-center items-start ml-3">
+    <p className="font-albertsans font-semibold text-[16px] text-[#3a3a3a] truncate overflow-hidden whitespace-nowrap w-full">Bautista Eye Center</p>
+    <p className="font-albertsans font-medium text-[13px] text-[#555555] truncate overflow-hidden whitespace-nowrap w-full">
+      {getLatestMessageDisplay({ patientfirstname: "Bautista Eye Center" }, clinicMessages)}
+    </p>
+  </div>
+</div>
                     {patients.map((patient) => (
                       <div 
                         key={patient._id}
@@ -1147,18 +1154,18 @@ messages.map((msg, index) => {
                   </div>
 
                   <div className="pt-3  gap-1 px-2 flex flex-col rounded-2xl min-h-[72%] w-full max-h-[72%] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-transparent">
-                    <div 
-                      className="p-2 flex items-center justify-start w-full h-15 border-1 hover:bg-gray-100 hover:shadow-md transition-all duration-300 ease-in-out cursor-pointer hover:scale-105 rounded-2xl"
-                      onClick={() => startConversation("Ambher Optical")}
-                    >
-                      <img src={ambherlogo} className="w-13 h-7"/>
-                      <div className="w-[76%] flex flex-col justify-center items-start ml-3">
-                        <p className="font-albertsans font-semibold text-[16px] text-[#3a3a3a] truncate overflow-hidden whitespace-nowrap w-full">Ambher Optical</p>
-                        <p className="font-albertsans font-medium text-[13px] text-[#555555] truncate overflow-hidden whitespace-nowrap w-full">
-                          {getLatestMessageDisplay({ patientfirstname: "Ambher Optical" }, messages)}
-                        </p>
-                      </div>
-                    </div>
+<div 
+  className="p-2 flex items-center justify-start w-full h-15 border-1 hover:bg-gray-100 hover:shadow-md transition-all duration-300 ease-in-out cursor-pointer hover:scale-105 rounded-2xl"
+  onClick={() => startConversation("Ambher Optical")}
+>
+  <img src={ambherlogo} className="w-13 h-7"/>
+  <div className="w-[76%] flex flex-col justify-center items-start ml-3">
+    <p className="font-albertsans font-semibold text-[16px] text-[#3a3a3a] truncate overflow-hidden whitespace-nowrap w-full">Ambher Optical</p>
+    <p className="font-albertsans font-medium text-[13px] text-[#555555] truncate overflow-hidden whitespace-nowrap w-full">
+      {getLatestMessageDisplay({ patientfirstname: "Ambher Optical" }, clinicMessages)}
+    </p>
+  </div>
+</div>
                     {patients.map((patient) => (
                       <div 
                         key={patient._id}
