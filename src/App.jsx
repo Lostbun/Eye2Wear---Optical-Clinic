@@ -67,71 +67,72 @@ function PatientChatButton() {
 
 
 
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (!token) return;
+useEffect(() => {
+  const token = localStorage.getItem('token');
+  if (!token) return;
 
-    socket.current = io(`${apiUrl}`, {
-      auth: {
-        token: token
-      },
-      reconnectionAttempts: 5,
-      reconnectionDelay: 1000,
-      timeout: 20000
-    });
+  socket.current = io(`${apiUrl}`, {
+    auth: {
+      token: token
+    },
+    reconnectionAttempts: 5,
+    reconnectionDelay: 1000,
+    timeout: 20000
+  });
 
-    socket.current.on('connect', () => {
-      const userId = localStorage.getItem('patientid') || 
-                    localStorage.getItem('staffid') || 
-                    localStorage.getItem('ownerid');
-      const role = localStorage.getItem('role');
-      const clinic = localStorage.getItem('staffclinic') || 
-                    localStorage.getItem('ownerclinic');
+  socket.current.on('connect', () => {
+    const userId = localStorage.getItem('patientid') || 
+                  localStorage.getItem('staffid') || 
+                  localStorage.getItem('ownerid');
+    const role = localStorage.getItem('role');
+    const clinic = localStorage.getItem('staffclinic') || 
+                  localStorage.getItem('ownerclinic');
 
-      if (userId && role) {
-        socket.current.emit('joinConversations', userId, role, clinic);
-      }
-    });
+    if (userId && role) {
+      socket.current.emit('joinConversations', userId, role, clinic);
+    }
+  });
 
-    socket.current.on('newMessage', (newMessage) => {
-      if (newMessage.conversationId === conversationId) {
-        setMessages(prev => {
-          if (!prev.some(msg => msg._id === newMessage._id || msg.temporaryId === newMessage.temporaryId)) {
-            if (pendingMessageId && newMessage.temporaryId === pendingMessageId) {
-              return prev.map(msg => 
-                msg.temporaryId === pendingMessageId ? { ...msg, ...newMessage, temporaryId: undefined } : msg
-              );
-            }
-            return [...prev, newMessage];
+  socket.current.on('newMessage', (newMessage) => {
+    console.log('New message received:', newMessage); // Debug log
+    if (newMessage.conversationId === conversationId) {
+      setMessages(prev => {
+        if (!prev.some(msg => msg._id === newMessage._id || msg.temporaryId === newMessage.temporaryId)) {
+          if (pendingMessageId && newMessage.temporaryId === pendingMessageId) {
+            return prev.map(msg => 
+              msg.temporaryId === pendingMessageId ? { ...msg, ...newMessage, temporaryId: undefined } : msg
+            );
           }
-          return prev;
+          return [...prev, newMessage];
+        }
+        return prev;
+      });
+      setPendingMessageId(null);
+    }
+    if (localStorage.getItem("role") === "staff" || localStorage.getItem("role") === "owner") {
+      setPatients(prevPatients => {
+        const updatedPatients = prevPatients.map(patient => {
+          if (patient._id === newMessage.senderId || (selectedPatient && patient._id === selectedPatient._id)) {
+            return { ...patient, latestMessage: newMessage };
+          }
+          return patient;
         });
-        setPendingMessageId(null);
-      }
-      if (localStorage.getItem("role") === "staff" || localStorage.getItem("role") === "owner") {
-        setPatients(prevPatients => {
-          const updatedPatients = prevPatients.map(patient => {
-            if (patient._id === newMessage.senderId || (selectedPatient && patient._id === selectedPatient._id)) {
-              return { ...patient, latestMessage: newMessage };
-            }
-            return patient;
-          });
-          return updatedPatients.sort((a, b) => {
-            if (!a.latestMessage && !b.latestMessage) return 0;
-            if (!a.latestMessage) return 1;
-            if (!b.latestMessage) return -1;
-            return new Date(b.latestMessage.createdAt) - new Date(a.latestMessage.createdAt);
-          });
+        return updatedPatients.sort((a, b) => {
+          if (!a.latestMessage && !b.latestMessage) return 0;
+          if (!a.latestMessage) return 1;
+          if (!b.latestMessage) return -1;
+          return new Date(b.latestMessage.createdAt) - new Date(a.latestMessage.createdAt);
         });
-      }
-    });
+      });
+    }
+  });
 
-    return () => {
-      if (socket.current) {
-        socket.current.disconnect();
-      }
-    };
-  }, [conversationId, selectedPatient]);
+  return () => {
+    if (socket.current) {
+      socket.current.disconnect();
+    }
+  };
+}, [conversationId, selectedPatient]);
 
   useEffect(() => {
     if (showpatientambherConversation || showpatientbautistaConversation) {
@@ -176,6 +177,8 @@ const startConversation = async (clinic, patientId = null) => {
     }
 
     const conversations = await response.json();
+    console.log('Conversations fetched:', conversations); // Debug log
+
     let existingConversation;
 
     if (role === 'staff' || role === 'owner') {
@@ -193,11 +196,14 @@ const startConversation = async (clinic, patientId = null) => {
       );
     }
 
+    console.log('Existing conversation:', existingConversation); // Debug log
+
     if (existingConversation) {
       setConversationId(existingConversation._id);
       socket.current.emit('joinConversation', existingConversation._id);
       await loadMessages(existingConversation._id, patientId);
     } else {
+      console.warn(`No conversation found for clinic: ${clinic}, userId: ${userId}, role: ${role}`);
       setConversationId(null);
       if (patientId) {
         setMessages([]); // Clear patient messages
@@ -235,126 +241,122 @@ const loadMessages = async (convId, patientId = null) => {
     }
 
     const loadedMessages = await response.json();
-    if (patientId) {
-      setMessages(loadedMessages); // Store patient conversation messages
-    } else {
-      setClinicMessages(loadedMessages); // Store clinic-to-clinic conversation messages
-    }
+    console.log('Loaded messages:', loadedMessages); // Debug log
+    setMessages(loadedMessages); // Always store in messages for patient conversations
   } catch (error) {
     console.error("Error loading messages:", error);
   } finally {
     setLoadingMessages(false);
   }
 };
+const handleSendMessage = async () => {
+  if (!message.trim() && !selectedFile) return;
 
-  const handleSendMessage = async () => {
-    if (!message.trim() && !selectedFile) return;
+  try {
+    const token = localStorage.getItem('token');
+    if (!token) return;
 
-    try {
-      const token = localStorage.getItem('token');
-      if (!token) return;
-
-      const clinic = showpatientambherConversation ? "Ambher Optical" : "Bautista Eye Center";
-      const role = localStorage.getItem('role');
-      const userId = localStorage.getItem('patientid') || 
-                    localStorage.getItem('staffid') || 
-                    localStorage.getItem('ownerid');
-      
-      const temporaryId = Date.now().toString() + Math.random().toString(36).substr(2, 9);
-      
+    const clinic = showpatientambherConversation ? "Ambher Optical" : "Bautista Eye Center";
+    const role = localStorage.getItem('role');
+    const userId = localStorage.getItem('patientid') || 
+                  localStorage.getItem('staffid') || 
+                  localStorage.getItem('ownerid');
+    
+    const temporaryId = Date.now().toString() + Math.random().toString(36).substr(2, 9);
+    
     const optimisticMessage = {
-    temporaryId,
-    text: message.trim() || '',
-    imageUrl: selectedFile?.isImage ? URL.createObjectURL(selectedFile.file) : null,
-    documentUrl: selectedFile && !selectedFile.isImage ? selectedFile.name : null,
-    senderId: userId,
-    senderRole: role,
-    senderName: patientName || 'You',
-    senderClinic: role === 'staff' || role === 'owner' ? localStorage.getItem(`${role}clinic`) : null,
-    sentToClinic: role === 'patient' ? clinic : null,
-    createdAt: new Date().toISOString(),
-    conversationId
-     };
-      
-      setMessages(prev => [...prev, optimisticMessage]);
-      setPendingMessageId(temporaryId);
-      setMessage("");
-      setSelectedFile(null);
-      
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
+      temporaryId,
+      text: message.trim() || '',
+      imageUrl: selectedFile?.isImage ? URL.createObjectURL(selectedFile.file) : null,
+      documentUrl: selectedFile && !selectedFile.isImage ? selectedFile.name : null,
+      senderId: userId,
+      senderRole: role,
+      senderName: patientName || 'You',
+      senderClinic: role === 'staff' || role === 'owner' ? localStorage.getItem(`${role}clinic`) : null,
+      sentToClinic: role === 'patient' ? clinic : null,
+      createdAt: new Date().toISOString(),
+      conversationId
+    };
+    
+    setMessages(prev => [...prev, optimisticMessage]); // Always store in messages
+    setPendingMessageId(temporaryId);
+    setMessage("");
+    setSelectedFile(null);
+    
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
 
-      const formData = new FormData();
-      if (conversationId) formData.append('conversationId', conversationId);
-      if (message.trim()) formData.append('text', message);
-      formData.append('temporaryId', temporaryId);
-      
+    const formData = new FormData();
+    if (conversationId) formData.append('conversationId', conversationId);
+    if (message.trim()) formData.append('text', message);
+    formData.append('temporaryId', temporaryId);
+    
     if (role === 'patient') {
       formData.append('clinic', clinic);
       formData.append('sentToClinic', clinic);
     }
-      
-      if (selectedPatient) {
-        formData.append('patientId', selectedPatient._id);
-      }
-      
-      if (selectedFile) {
-        formData.append('file', selectedFile.file);
-      }
-
-      formData.append('senderId', userId);
-      formData.append('senderRole', role);
-
-      const response = await fetch(`${apiUrl}/api/messages`, {
-        method: "POST",
-        headers: { 
-          "Authorization": `Bearer ${token}` 
-        },
-        body: formData
-      });
-
-      const responseText = await response.text();
-      if (!response.ok) {
-        try {
-          const errorData = JSON.parse(responseText);
-          throw new Error(errorData.message || 'Failed to send message');
-        } catch {
-          throw new Error(responseText || 'Failed to send message');
-        }
-      }
-
-      const data = JSON.parse(responseText);
-      
-      setMessages(prev => prev.map(msg => 
-        msg.temporaryId === temporaryId ? { ...msg, ...data, temporaryId: undefined } : msg
-      ));
-      
-      setTimeout(scrollToBottom, 100);
-
-      if (localStorage.getItem("role") === "staff" || localStorage.getItem("role") === "owner") {
-        setPatients(prevPatients => {
-          const updatedPatients = prevPatients.map(patient => {
-            if (patient._id === selectedPatient?._id) {
-              return { ...patient, latestMessage: data };
-            }
-            return patient;
-          });
-          return updatedPatients.sort((a, b) => {
-            if (!a.latestMessage && !b.latestMessage) return 0;
-            if (!a.latestMessage) return 1;
-            if (!b.latestMessage) return -1;
-            return new Date(b.latestMessage.createdAt) - new Date(a.latestMessage.createdAt);
-          });
-        });
-      }
-    } catch (error) {
-      console.error("Error sending message:", error);
-      setMessages(prev => prev.filter(msg => msg.temporaryId !== temporaryId));
-      setPendingMessageId(null);
-      alert(`Error: ${error.message}`);
+    
+    if (selectedPatient) {
+      formData.append('patientId', selectedPatient._id);
     }
-  };
+    
+    if (selectedFile) {
+      formData.append('file', selectedFile.file);
+    }
+
+    formData.append('senderId', userId);
+    formData.append('senderRole', role);
+
+    const response = await fetch(`${apiUrl}/api/messages`, {
+      method: "POST",
+      headers: { 
+        "Authorization": `Bearer ${token}` 
+      },
+      body: formData
+    });
+
+    const responseText = await response.text();
+    if (!response.ok) {
+      try {
+        const errorData = JSON.parse(responseText);
+        throw new Error(errorData.message || 'Failed to send message');
+      } catch {
+        throw new Error(responseText || 'Failed to send message');
+      }
+    }
+
+    const data = JSON.parse(responseText);
+    
+    setMessages(prev => prev.map(msg => 
+      msg.temporaryId === temporaryId ? { ...msg, ...data, temporaryId: undefined } : msg
+    ));
+    
+    setTimeout(scrollToBottom, 100);
+
+    if (localStorage.getItem("role") === "staff" || localStorage.getItem("role") === "owner") {
+      setPatients(prevPatients => {
+        const updatedPatients = prevPatients.map(patient => {
+          if (patient._id === selectedPatient?._id) {
+            return { ...patient, latestMessage: data };
+          }
+          return patient;
+        });
+        return updatedPatients.sort((a, b) => {
+          if (!a.latestMessage && !b.latestMessage) return 0;
+          if (!a.latestMessage) return 1;
+          if (!b.latestMessage) return -1;
+          return new Date(b.latestMessage.createdAt) - new Date(a.latestMessage.createdAt);
+        });
+      });
+    }
+  } catch (error) {
+    console.error("Error sending message:", error);
+    setMessages(prev => prev.filter(msg => msg.temporaryId !== temporaryId));
+    setPendingMessageId(null);
+    alert(`Error: ${error.message}`);
+  }
+};
 
 const fetchPatients = async () => {
   try {
@@ -534,6 +536,44 @@ const fetchPatients = async () => {
     setSelectedPatient(patient);
     startConversation("Ambher Optical", patient._id); 
   };
+
+
+
+useEffect(() => {
+  if (showpatientchatdashboard && localStorage.getItem("role") === "patient") {
+    const clinic = showpatientambherConversation ? "Ambher Optical" : "Bautista Eye Center";
+    if (clinic) {
+      startConversation(clinic);
+    }
+  }
+}, [showpatientchatdashboard, showpatientambherConversation, showpatientbautistaConversation]);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   return (
     <>
