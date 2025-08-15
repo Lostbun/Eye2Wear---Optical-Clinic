@@ -73,6 +73,11 @@ function PatientChatButton() {
   const [activeambhermessageslist, setactiveambhermessageslist] = useState('allambhermessageslist');
   const [pendingMessageId, setPendingMessageId] = useState(null);
   const [selectedClinic, setSelectedClinic] = useState(null);
+  const [conversations, setConversations] = useState([]);
+  const [messagesByConversation, setMessagesByConversation] = useState({});
+
+
+
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -97,6 +102,7 @@ function PatientChatButton() {
 
       if (userId && role) {
         socket.current.emit('joinConversations', userId, role, clinic);
+         fetchConversations(); 
       }
     });
 
@@ -156,6 +162,40 @@ function PatientChatButton() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
+
+
+
+
+  const fetchConversations = async () => {
+  try {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    const response = await fetch(`${apiUrl}/api/messages/conversations`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+
+    if (!response.ok) throw new Error('Failed to fetch conversations');
+    
+    const conversations = await response.json();
+    
+    // Store conversations in state
+    setConversations(conversations);
+    
+    // Pre-load messages for each conversation
+    if (conversations.length > 0) {
+      conversations.forEach(conv => {
+        loadMessages(conv._id); // This will populate the messages state
+      });
+    }
+  } catch (error) {
+    console.error("Error fetching conversations:", error);
+  }
+};
+
+
+
+
   const startConversation = async (clinic, patientId = null) => {
     try {
       setSelectedClinic(clinic);
@@ -213,7 +253,11 @@ function PatientChatButton() {
       if (existingConversation) {
         setConversationId(existingConversation._id);
         socket.current.emit('joinConversation', existingConversation._id);
-        await loadMessages(existingConversation._id);
+            if (messagesByConversation[existingConversation._id]) {
+      setMessages(messagesByConversation[existingConversation._id]);
+    } else {
+      await loadMessages(existingConversation._id);
+    }
       } else {
         console.warn(`No conversation found for clinic: ${clinic}, userId: ${userId}, role: ${role}, patientId: ${patientId}`);
         setConversationId(null);
@@ -224,40 +268,28 @@ function PatientChatButton() {
     }
   };
 
-  const loadMessages = async (convId) => {
-    try {
-      setLoadingMessages(true);
-      const token = localStorage.getItem('token');
-      if (!token) {
-        console.error('No token found');
-        setLoadingMessages(false);
-        return;
-      }
+const loadMessages = async (convId) => {
+  try {
+    const token = localStorage.getItem('token');
+    if (!token) return;
 
-      const response = await fetch(`${apiUrl}/api/messages/${convId}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
+    const response = await fetch(`${apiUrl}/api/messages/${convId}`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
 
-      if (!response.ok) {
-        if (response.status === 401) {
-          console.error('Session expired - please login again');
-          setLoadingMessages(false);
-          return;
-        }
-        throw new Error('Failed to load messages');
-      }
-
-      const loadedMessages = await response.json();
-      console.log('Loaded messages:', loadedMessages);
-      setMessages(loadedMessages);
-    } catch (error) {
-      console.error("Error loading messages:", error);
-    } finally {
-      setLoadingMessages(false);
-    }
-  };
+    if (!response.ok) throw new Error('Failed to load messages');
+    
+    const loadedMessages = await response.json();
+    
+    // Store messages in a state object keyed by conversationId
+    setMessagesByConversation(prev => ({
+      ...prev,
+      [convId]: loadedMessages
+    }));
+  } catch (error) {
+    console.error("Error loading messages:", error);
+  }
+};
 
   const handleSendMessage = async () => {
     if (!message.trim() && !selectedFile) return;
