@@ -47,97 +47,77 @@ function UserLogin(){
 
 
           //HANDLE THE SUBMISSION
-          const handleloginsubmit = async (e) => {
-            e.preventDefault();
-            setislogin(true);
-            setloginnotice({text:'', type:''});
+const handleloginsubmit = async (e) => {
+  e.preventDefault();
+  setislogin(true);
+  setloginnotice({ text: '', type: '' });
 
+  try {
+    // Use relative URLs
+    const patientemailcheck = await fetch(`/api/patientaccounts/check-email/${logindetails.loginemail}`);
+    const patientemailexist = await patientemailcheck.json();
 
+    const staffemailcheck = await fetch(`/api/staffaccounts/check-email/${logindetails.loginemail}`);
+    const staffemailexist = await staffemailcheck.json();
 
-            //SEND REQUEST TO THE BACKEND SERVER API 
-            try{
+    const owneremailcheck = await fetch(`/api/owneraccounts/check-email/${logindetails.loginemail}`);
+    const owneremailexist = await owneremailcheck.json();
 
+    const adminemailcheck = await fetch(`/api/adminaccounts/check-email/${logindetails.loginemail}`);
+    const adminemailexist = await adminemailcheck.json();
 
-              const  patientemailcheck = await fetch(`${apiUrl}/api/patientaccounts/check-email/${logindetails.loginemail}`);
-              const  patientemailexist = await  patientemailcheck.json();
+    if (!patientemailexist.exists && !adminemailexist.exists && !staffemailexist.exists && !owneremailexist.exists) {
+      throw new Error("Email does not exist");
+    }
 
-              const staffemailcheck = await fetch(`${apiUrl}/api/staffaccounts/check-email/${logindetails.loginemail}`);
-              const staffemailexist = await staffemailcheck.json();
+    let user = '';
+    let loginUrl = '';
+    let body = {};
 
-              const owneremailcheck = await fetch(`${apiUrl}/api/owneraccounts/check-email/${logindetails.loginemail}`);
-              const owneremailexist = await owneremailcheck.json();
+    if (patientemailexist.exists) {
+      user = 'Patient';
+      loginUrl = '/api/patientaccounts/login';
+      body = {
+        patientemail: logindetails.loginemail,
+        patientpassword: logindetails.loginpassword,
+      };
+    } else if (staffemailexist.exists) {
+      user = 'Staff';
+      loginUrl = '/api/staffaccounts/login';
+      body = {
+        staffemail: logindetails.loginemail,
+        staffpassword: logindetails.loginpassword,
+      };
+    } else if (owneremailexist.exists) {
+      user = 'Owner';
+      loginUrl = '/api/owneraccounts/login';
+      body = {
+        owneremail: logindetails.loginemail,
+        ownerpassword: logindetails.loginpassword,
+      };
+    } else if (adminemailexist.exists) {
+      user = 'Admin';
+      loginUrl = '/api/adminaccounts/login';
+      body = {
+        adminemail: logindetails.loginemail,
+        adminpassword: logindetails.loginpassword,
+      };
+    }
 
-              const adminemailcheck = await fetch(`${apiUrl}/api/adminaccounts/check-email/${logindetails.loginemail}`);
-              const adminemailexist = await adminemailcheck.json();
+    const response = await fetch(loginUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(body),
+    });
 
-              if(!patientemailexist.exists && !adminemailexist.exists && !staffemailexist.exists && !owneremailexist.exists){
-                throw new Error("Email does not exist");
-              }
+    if (!response.ok) {
+      const errordetails = await response.json();
+      throw new Error(errordetails.message || 'Password does not match');
+    }
 
-
-              let user = '';
-              let loginUrl = '';
-              let body = {};
-
-
-
-              if(patientemailexist.exists) {
-                user = 'Patient';
-                loginUrl = "/api/patientaccounts/login";
-                body = {
-                  patientemail: logindetails.loginemail,
-                  patientpassword: logindetails.loginpassword 
-                };
-              }
-
-
-              else if (staffemailexist.exists) {
-                user = 'Staff';
-                loginUrl = "/api/staffaccounts/login";
-                body = {
-                  staffemail: logindetails.loginemail,
-                  staffpassword: logindetails.loginpassword 
-                };
-              }
-
-
-              else if (owneremailexist.exists) {
-                user = 'Owner';
-                loginUrl = "/api/owneraccounts/login";
-                body = {
-                  owneremail: logindetails.loginemail,
-                  ownerpassword: logindetails.loginpassword 
-                };
-              }
-
-              else if (adminemailexist.exists) {
-                user = 'Admin';
-                loginUrl = "/api/adminaccounts/login";
-                body = {
-                  adminemail: logindetails.loginemail,
-                  adminpassword: logindetails.loginpassword 
-                };  
-              }
-
-              
-
-              const response = await fetch(loginUrl,{
-                  method:"POST",
-                  headers:{
-                      "Content-Type":"application/json",
-                  },
-                  body: JSON.stringify(body)
-              });
-
-
-              //NOT SUCESSFUL LOGIN
-              if(!response.ok){
-                  const errordetails = await response.json();
-                  throw new Error(errordetails.message || "Password not match");
-              }
-
-              //SUCCESSFUL LOGIN
-              const data = await response.json();
+    const data = await response.json();
               
 
               //If the user is patient it will assign token

@@ -107,13 +107,6 @@ const __dirname = path.dirname(__filename);
 
 // Serve static files from the Vite build output
 // eslint-disable-next-line no-undef
-if (process.env.NODE_ENV === 'production') {
-  app.use(express.static(path.join(__dirname, 'dist')));
-  // Handle client-side routing by serving index.html for all non-API routes
-  app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'dist', 'index.html'));
-  });
-}
 
 
 
@@ -157,9 +150,22 @@ app.use("/api/patientorderbautista", patientorderbautistarouter);
 app.use("/api/messages", messagerouter);
 //Routes
 app.use(updateConversationParticipants);
-
-
 app.use('/uploads', express.static('uploads'));
+
+
+
+
+
+if (process.env.NODE_ENV === 'production') {
+  app.use(express.static(path.join(__dirname, 'dist')));
+  // Handle client-side routing by serving index.html for all non-API routes
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+  });
+}
+
+
+
 
 
 app.get("/", (req, res) => {
