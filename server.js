@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
@@ -31,6 +32,8 @@ import Patientaccount from "./models/patientaccount.js";
 import Staffaccount from "./models/staffacount.js";
 import Owneraccount from "./models/owneraccount.js";
 import path from 'path';
+import { fileURLToPath } from 'url';
+
 
 
 
@@ -58,7 +61,8 @@ const server = http.createServer(app);
 
 
 app.use(cors({
-  origin: 'http://localhost:5173', //The frontend URL
+  // eslint-disable-next-line no-undef
+  origin: process.env.FRONTEND_URL, //The frontend URL
   credentials: true,
   methods:['GET','POST','PUT','DELETE'],
   allowedHeaders:['Content-Type', 'Authorization', 'X-Requested-With']
@@ -97,6 +101,19 @@ if (!fs.existsSync(docUploadDir)) {
 
 
 
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Serve static files from the Vite build output
+// eslint-disable-next-line no-undef
+if (process.env.NODE_ENV === 'production') {
+  app.use(express.static(path.join(__dirname, 'dist')));
+  // Handle client-side routing by serving index.html for all non-API routes
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+  });
+}
 
 
 
@@ -152,8 +169,8 @@ app.get("/", (req, res) => {
 // Socket.IO setup
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:5173",
-    methods: ["GET", "POST"]
+    origin: process.env.FRONTEND_URL,
+    methods: ['GET', 'POST']
   }
 });
 
@@ -237,6 +254,9 @@ io.on('connection', (socket) => {
     console.log('User disconnected:', socket.id);
   });
 });
+
+
+
 
 
 
