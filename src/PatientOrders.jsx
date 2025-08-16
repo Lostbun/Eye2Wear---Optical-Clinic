@@ -182,7 +182,7 @@ useEffect(() => {
     setLoading(true);
 
     if (activeorderstable === 'ambherorderstable') {
-      const response = await fetch(`${apiUrl}/api/patientorderambher/email/${patientemail}`, {
+      const response = await fetch(`/api/patientorderambher/email/${patientemail}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('patienttoken')}`
         }
@@ -196,7 +196,7 @@ useEffect(() => {
       }
 
     } else {
-      const response = await fetch(`${apiUrl}/api/patientorderbautista/email/${patientemail}`, {
+      const response = await fetch(`/api/patientorderbautista/email/${patientemail}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('patienttoken')}`
         }

@@ -35,7 +35,7 @@ function ResetPassword(){
 
 
         try{
-          const response = await axios.post(`${apiUrl}/api/auth/reset-password/${id}/${token}`,
+          const response = await axios.post(`/api/auth/reset-password/${id}/${token}`,
             {newpassword: resetpasswordnew},
             {timeout: 10000}
           );

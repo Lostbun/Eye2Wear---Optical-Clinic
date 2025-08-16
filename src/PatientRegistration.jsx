@@ -65,13 +65,13 @@ function PatientRegistration() {
         try{
           //Request to server if the email exists in patientaccounts collection
           const patientresponse = await fetch(
-            `${apiUrl}/api/patientaccounts/check-email/${encodeURIComponent(formdata.patientemail)}`
+            `/api/patientaccounts/check-email/${encodeURIComponent(formdata.patientemail)}`
      
           );
 
           //Request to server if the email exists in adminaccounts collection
           const adminresponse = await fetch(
-           `${apiUrl}/api/adminaccounts/check-email/${encodeURIComponent(formdata.patientemail)}`
+           `/api/adminaccounts/check-email/${encodeURIComponent(formdata.patientemail)}`
      
           );
           
@@ -185,7 +185,7 @@ function PatientRegistration() {
 
 
   //Sends all patient data to the server
-      const response = await fetch(`${apiUrl}/api/patientaccounts`,{
+      const response = await fetch(`/api/patientaccounts`,{
         //POST Request to create the patient data
         method:"POST",
         headers:{

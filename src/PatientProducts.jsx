@@ -132,7 +132,7 @@ const [ambherinventorycategorylist, setambherinventorycategorylist] = useState([
 useEffect(() => {
   const fetchambhercategories = async () => {
     try{
-      const response = await fetch(`${apiUrl}/api/ambherinventorycategory`);
+      const response = await fetch(`/api/ambherinventorycategory`);
       if(!response.ok) throw new Error("Failed to fetch Bautista Inevntory Categories");
 
 
@@ -153,7 +153,7 @@ useEffect(() => {
 
 const fetchambherinventorycategories = async () => {
   try{
-    const response = await fetch(`${apiUrl}/api/ambherinventorycategory`);
+    const response = await fetch(`/api/ambherinventorycategory`);
     if(!response.ok) throw new Error("Failed to retrieve ambher inventory categories");
 
     const data = await response.json();
@@ -176,7 +176,7 @@ useEffect(() => {
           
             const fetchambherproducts = async () => {
               try{
-                const response = await fetch(`${apiUrl}/api/ambherinventoryproduct`, {
+                const response = await fetch(`/api/ambherinventoryproduct`, {
                   headers:{
                     'Authorization' : `Bearer ${localStorage.getItem("patienttoken")}`
                   }
@@ -312,7 +312,7 @@ const [bautistainventorycategorylist, setbautistainventorycategorylist] = useSta
 useEffect(() => {
   const fetchbautistacategories = async () => {
     try{
-      const response = await fetch(`${apiUrl}/api/bautistainventorycategory`);
+      const response = await fetch(`/api/bautistainventorycategory`);
       if(!response.ok) throw new Error("Failed to fetch Bautista Inevntory Categories");
 
 
@@ -333,7 +333,7 @@ useEffect(() => {
 
 const fetchbautistainventorycategories = async () => {
   try{
-    const response = await fetch(`${apiUrl}/api/bautistainventorycategory`);
+    const response = await fetch(`/api/bautistainventorycategory`);
     if(!response.ok) throw new Error("Failed to retrieve bautista inventory categories");
 
     const data = await response.json();
@@ -356,7 +356,7 @@ useEffect(() => {
           
             const fetchbautistaproducts = async () => {
               try{
-                const response = await fetch(`${apiUrl}/api/bautistainventoryproduct`, {
+                const response = await fetch(`/api/bautistainventoryproduct`, {
                   headers:{
                     'Authorization' : `Bearer ${localStorage.getItem("patienttoken")}`
                   }
@@ -543,7 +543,7 @@ const [wishlistCounts, setWishlistCounts] = useState({});
 useEffect(() => {
   const fetchWishlistItems = async () => {
     try{
-      const response = await fetch(`${apiUrl}/api/patientwishlistinventoryproduct/email/${patientemail}`, {
+      const response = await fetch(`/api/patientwishlistinventoryproduct/email/${patientemail}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('patienttoken')}`
         }
@@ -652,7 +652,7 @@ const toggleWishlist = async (e) => {
         throw new Error("Wishlist item not found");
       }
 
-      const response = await fetch(`${apiUrl}/api/patientwishlistinventoryproduct/${wishlistItem._id}`, {
+      const response = await fetch(`/api/patientwishlistinventoryproduct/${wishlistItem._id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('patienttoken')}`
@@ -687,7 +687,7 @@ const toggleWishlist = async (e) => {
     } else {
       // Add to wishlist
      
-      const response = await fetch(`${apiUrl}/api/patientwishlistinventoryproduct`, {
+      const response = await fetch(`/api/patientwishlistinventoryproduct`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -760,7 +760,7 @@ const fetchWishlistCounts = async (productIds, clinicType) => {
     const idsParam = Array.isArray(productIds) ? productIds.join(',') : productIds;
     
     const response = await fetch(
-      `${apiUrl}/api/patientwishlistinventoryproduct/wishlist-count/${idsParam}/${clinicType}`,
+      `/api/patientwishlistinventoryproduct/wishlist-count/${idsParam}/${clinicType}`,
       {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('patienttoken')}`
@@ -978,7 +978,7 @@ const submitpatientorderambher = async (e) => {
   try {
     // Fetch patient demographic data
     const demographicResponse = await fetch(
-      `${apiUrl}/api/patientdemographics/patientemail/${patientemail}`,
+      `/api/patientdemographics/patientemail/${patientemail}`,
       {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('patienttoken')}`
@@ -1028,7 +1028,7 @@ const submitpatientorderambher = async (e) => {
     console.log('Submitting order:', orderData);
 
     // Submit order
-    const response = await fetch(`${apiUrl}/api/patientorderambher`, {
+    const response = await fetch(`/api/patientorderambher`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -1074,7 +1074,7 @@ const submitpatientorderbautista = async (e) => {
   try {
     // Fetch patient demographic data
     const demographicResponse = await fetch(
-      `${apiUrl}/api/patientdemographics/patientemail/${patientemail}`,
+      `/api/patientdemographics/patientemail/${patientemail}`,
       {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('patienttoken')}`
@@ -1123,7 +1123,7 @@ const submitpatientorderbautista = async (e) => {
     console.log('Submitting order:', orderData);
 
     // Submit order
-    const response = await fetch(`${apiUrl}/api/patientorderbautist`, {
+    const response = await fetch(`/api/patientorderbautist`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

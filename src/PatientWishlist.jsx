@@ -132,7 +132,7 @@ import find from "../src/assets/images/find.png";
   useEffect(() => {
     const fetchambhercategories = async () => {
       try{
-        const response = await fetch(`${apiUrl}/api/ambherinventorycategory`);
+        const response = await fetch(`/api/ambherinventorycategory`);
         if(!response.ok) throw new Error("Failed to fetch Bautista Inevntory Categories");
 
 
@@ -153,7 +153,7 @@ import find from "../src/assets/images/find.png";
 
   const fetchambherinventorycategories = async () => {
     try{
-      const response = await fetch(`${apiUrl}/api/ambherinventorycategory`);
+      const response = await fetch(`/api/ambherinventorycategory`);
       if(!response.ok) throw new Error("Failed to retrieve ambher inventory categories");
 
       const data = await response.json();
@@ -176,7 +176,7 @@ import find from "../src/assets/images/find.png";
             
               const fetchambherproducts = async () => {
                 try{
-                  const response = await fetch(`${apiUrl}/api/ambherinventoryproduct`, {
+                  const response = await fetch(`/api/ambherinventoryproduct`, {
                     headers:{
                       'Authorization' : `Bearer ${localStorage.getItem("patienttoken")}`
                     }
@@ -428,7 +428,7 @@ import find from "../src/assets/images/find.png";
       const idsParam = Array.isArray(productIds) ? productIds.join(',') : productIds;
       
       const response = await fetch(
-        `${apiUrl}/api/patientwishlistinventoryproduct/wishlist-count/${idsParam}/${clinicType}`,
+        `/api/patientwishlistinventoryproduct/wishlist-count/${idsParam}/${clinicType}`,
         {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('patienttoken')}`
@@ -478,7 +478,7 @@ import find from "../src/assets/images/find.png";
   useEffect(() => {
     const fetchWishlist = async () => {
       try {
-        const response = await fetch(`${apiUrl}/api/patientwishlistinventoryproduct/email`, {
+        const response = await fetch(`/api/patientwishlistinventoryproduct/email`, {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('patienttoken')}`
           }
@@ -502,7 +502,7 @@ import find from "../src/assets/images/find.png";
 
   const handleRemoveFromWishlist = async (wishlistItemId, clinicType) => {
     try {
-      const response = await fetch(`${apiUrl}/api/patientwishlistinventoryproduct/${wishlistItemId}`, {
+      const response = await fetch(`/api/patientwishlistinventoryproduct/${wishlistItemId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('patienttoken')}`
@@ -638,7 +638,7 @@ import find from "../src/assets/images/find.png";
 
 
 
-      const response = await fetch(`${apiUrl}/api/patientwishlistinventoryproduct/${wishlistItemId}`, {
+      const response = await fetch(`/api/patientwishlistinventoryproduct/${wishlistItemId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('patienttoken')}`
@@ -676,7 +676,7 @@ import find from "../src/assets/images/find.png";
     try {
       // Fetch patient demographic data
       const demographicResponse = await fetch(
-        `${apiUrl}/api/patientdemographics/patientemail/${patientemail}`,
+        `/api/patientdemographics/patientemail/${patientemail}`,
         {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('patienttoken')}`
@@ -726,7 +726,7 @@ import find from "../src/assets/images/find.png";
       console.log('Submitting order:', orderData);
 
       // Submit order
-      const response = await fetch(`${apiUrl}/api/patientorderambher`, {
+      const response = await fetch(`/api/patientorderambher`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -776,7 +776,7 @@ import find from "../src/assets/images/find.png";
     try {
       // Fetch patient demographic data
       const demographicResponse = await fetch(
-        `${apiUrl}/api/patientdemographics/patientemail/${patientemail}`,
+        `/api/patientdemographics/patientemail/${patientemail}`,
         {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('patienttoken')}`
@@ -825,7 +825,7 @@ import find from "../src/assets/images/find.png";
       console.log('Submitting order:', orderData);
 
       // Submit order
-      const response = await fetch(`${apiUrl}/api/patientorderbautista`, {
+      const response = await fetch(`/api/patientorderbautista`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

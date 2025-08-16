@@ -558,7 +558,7 @@ function AdminDashboard(){
           try{
             //Request to server if the email exists in patientaccounts collection
             const patientresponse = await fetch(
-              `${apiUrl}/api/patientaccounts/check-email/${encodeURIComponent(formdata.patientemail)}`
+              `/api/patientaccounts/check-email/${encodeURIComponent(formdata.patientemail)}`
        
             );
   
@@ -566,21 +566,21 @@ function AdminDashboard(){
 
             //Request to server if the email exists in staffaccounts collection
             const staffresponse = await fetch(
-               `${apiUrl}/api/staffaccounts/check-email/${encodeURIComponent(formdata.patientemail)}`
+               `/api/staffaccounts/check-email/${encodeURIComponent(formdata.patientemail)}`
                    
             );
 
 
             //Request to server if the email exists in adminaccounts collection
             const ownerresponse = await fetch(
-                `${apiUrl}/api/owneraccounts/check-email/${encodeURIComponent(formdata.patientemail)}`
+                `/api/owneraccounts/check-email/${encodeURIComponent(formdata.patientemail)}`
                    
              );
 
 
             //Request to server if the email exists in adminaccounts collection
             const adminresponse = await fetch(
-                `${apiUrl}/api/adminaccounts/check-email/${encodeURIComponent(formdata.patientemail)}`
+                `/api/adminaccounts/check-email/${encodeURIComponent(formdata.patientemail)}`
                    
             );
             
@@ -639,7 +639,7 @@ function AdminDashboard(){
       };
 
   //Sends all patient data to the server
-      const response = await fetch(`${apiUrl}/api/patientaccounts`,{
+      const response = await fetch(`/api/patientaccounts`,{
             method: "POST",
             headers: {
               "Content-Type":"application/json",
@@ -649,7 +649,7 @@ function AdminDashboard(){
       });
 
 
-      await axios.post(`${apiUrl}/api/accountcreation/patient`, {
+      await axios.post(`/api/accountcreation/patient`, {
         email: formdata.patientemail, 
         password: formdata.patientpassword});
 
@@ -697,7 +697,7 @@ function AdminDashboard(){
 
 
 
-        await axios.post(`${apiUrl}/api/accountdeletion/patient`, {
+        await axios.post(`/api/accountdeletion/patient`, {
           email: selectedpatientaccount.email});
 
 
@@ -1171,7 +1171,7 @@ const [showaddstaffdialog, setshowaddstaffdialog] = useState(false);
           try{
             //Request to server if the email exists in patientaccounts collection
             const patientresponse = await fetch(
-              `${apiUrl}/api/patientaccounts/check-email/${encodeURIComponent(staffformdata.staffemail)}`
+              `/api/patientaccounts/check-email/${encodeURIComponent(staffformdata.staffemail)}`
        
             );
   
@@ -1179,21 +1179,21 @@ const [showaddstaffdialog, setshowaddstaffdialog] = useState(false);
 
             //Request to server if the email exists in staffaccounts collection
             const staffresponse = await fetch(
-               `${apiUrl}/api/staffaccounts/check-email/${encodeURIComponent(staffformdata.staffemail)}`
+               `/api/staffaccounts/check-email/${encodeURIComponent(staffformdata.staffemail)}`
                    
             );
 
 
             //Request to server if the email exists in adminaccounts collection
             const ownerresponse = await fetch(
-                `${apiUrl}/api/owneraccounts/check-email/${encodeURIComponent(staffformdata.staffemail)}`
+                `/api/owneraccounts/check-email/${encodeURIComponent(staffformdata.staffemail)}`
                    
              );
 
 
             //Request to server if the email exists in adminaccounts collection
             const adminresponse = await fetch(
-                `${apiUrl}/api/adminaccounts/check-email/${encodeURIComponent(staffformdata.staffemail)}`
+                `/api/adminaccounts/check-email/${encodeURIComponent(staffformdata.staffemail)}`
                    
             );
             
@@ -1256,7 +1256,7 @@ const [showaddstaffdialog, setshowaddstaffdialog] = useState(false);
       console.log(staffaccsubmission);
 
   //Sends all staff data to the server
-      const response = await fetch(`${apiUrl}/api/staffaccounts`,{
+      const response = await fetch(`/api/staffaccounts`,{
             method: "POST",
             headers: {
               "Content-Type":"application/json",
@@ -1266,7 +1266,7 @@ const [showaddstaffdialog, setshowaddstaffdialog] = useState(false);
       });
 
 
-      await axios.post(`${apiUrl}/api/accountcreation/staff`, {
+      await axios.post(`/api/accountcreation/staff`, {
         email: staffformdata.staffemail, 
         password: staffformdata.staffpassword});
 
@@ -1322,7 +1322,7 @@ const [showaddstaffdialog, setshowaddstaffdialog] = useState(false);
 
 
 
-        await axios.post(`${apiUrl}/api/accountdeletion/staff`, {
+        await axios.post(`/api/accountdeletion/staff`, {
           email: selectedstaffaccount.email});
 
 
@@ -1786,27 +1786,27 @@ const [showaddstaffdialog, setshowaddstaffdialog] = useState(false);
             try{
               //Request to server if the email exists in patientaccounts collection
               const patientresponse = await fetch(
-                `${apiUrl}/api/patientaccounts/check-email/${encodeURIComponent(ownerformdata.owneremail)}`
+                `/api/patientaccounts/check-email/${encodeURIComponent(ownerformdata.owneremail)}`
          
               );
     
               //Request to server if the email exists in adminaccounts collection
               const staffresponse = await fetch(
-                `${apiUrl}/api/staffaccounts/check-email/${encodeURIComponent(ownerformdata.owneremail)}`
+                `/api/staffaccounts/check-email/${encodeURIComponent(ownerformdata.owneremail)}`
          
               );
               
   
               //Request to server if the email exists in owneraccounts collection
               const ownerresponse = await fetch(
-                 `${apiUrl}/api/owneraccounts/check-email/${encodeURIComponent(ownerformdata.owneremail)}`
+                 `/api/owneraccounts/check-email/${encodeURIComponent(ownerformdata.owneremail)}`
                      
               );
   
   
               //Request to server if the email exists in adminaccounts collection
               const adminresponse = await fetch(
-                 `${apiUrl}/api/adminaccounts/check-email/${encodeURIComponent(ownerformdata.owneremail)}`
+                 `/api/adminaccounts/check-email/${encodeURIComponent(ownerformdata.owneremail)}`
                      
               );
               
@@ -1870,7 +1870,7 @@ const [showaddstaffdialog, setshowaddstaffdialog] = useState(false);
   
   
     //Sends all owner data to the server
-        const response = await fetch(`${apiUrl}/api/owneraccounts`,{
+        const response = await fetch(`/api/owneraccounts`,{
               method: "POST",
               headers: {
                 "Content-Type":"application/json",
@@ -1936,7 +1936,7 @@ const [showaddstaffdialog, setshowaddstaffdialog] = useState(false);
           });
 
 
-          await axios.post(`${apiUrl}/api/accountdeletion/owner`, {
+          await axios.post(`/api/accountdeletion/owner`, {
             email: selectedowneraccount.email});
 
   
@@ -2393,27 +2393,27 @@ useEffect(() => {
         try{
           //Request to server if the email exists in patientaccounts collection
           const patientresponse = await fetch(
-            `${apiUrl}/api/patientaccounts/check-email/${encodeURIComponent(adminformdata.adminemail)}`
+            `/api/patientaccounts/check-email/${encodeURIComponent(adminformdata.adminemail)}`
      
           );
 
           //Request to server if the email exists in adminaccounts collection
           const staffresponse = await fetch(
-            `${apiUrl}/api/staffaccounts/check-email/${encodeURIComponent(adminformdata.adminemail)}`
+            `/api/staffaccounts/check-email/${encodeURIComponent(adminformdata.adminemail)}`
      
           );
           
 
           //Request to server if the email exists in adminaccounts collection
           const ownerresponse = await fetch(
-             `${apiUrl}/api/owneraccounts/check-email/${encodeURIComponent(adminformdata.adminemail)}`
+             `/api/owneraccounts/check-email/${encodeURIComponent(adminformdata.adminemail)}`
                  
           );
 
 
           //Request to server if the email exists in adminaccounts collection
           const adminresponse = await fetch(
-             `${apiUrl}/api/adminaccounts/check-email/${encodeURIComponent(adminformdata.adminemail)}`
+             `/api/adminaccounts/check-email/${encodeURIComponent(adminformdata.adminemail)}`
                  
           );
           
@@ -2474,7 +2474,7 @@ const adminhandlechange = (e) => {
 
 
 //Sends all admin data to the server
-    const response = await fetch(`${apiUrl}/api/adminaccounts`,{
+    const response = await fetch(`/api/adminaccounts`,{
           method: "POST",
           headers: {
             "Content-Type":"application/json",
@@ -2485,7 +2485,7 @@ const adminhandlechange = (e) => {
 
 
     
-    await axios.post(`${apiUrl}/api/accountcreation/admin`, {
+    await axios.post(`/api/accountcreation/admin`, {
       email: adminformdata.adminemail, 
       password: adminformdata.adminpassword});
 
@@ -2537,7 +2537,7 @@ const adminhandlechange = (e) => {
       });
 
 
-      await axios.post(`${apiUrl}/api/accountdeletion/admin`, {
+      await axios.post(`/api/accountdeletion/admin`, {
         email: selectedadminaccount.email});
 
 
@@ -2870,7 +2870,7 @@ const renderpatientprofiles = () => {
 
 
       try{
-        const demoresponse = await fetch(`${apiUrl}/api/patientdemographics/patientemail/${encodeURIComponent(demoformdata.patientemail)}`);
+        const demoresponse = await fetch(`/api/patientdemographics/patientemail/${encodeURIComponent(demoformdata.patientemail)}`);
 
         const demodata = await demoresponse.json();
 
@@ -2884,10 +2884,10 @@ const renderpatientprofiles = () => {
         }
 
         const [patientresponse, staffresponse, ownerresponse, adminresponse] = await Promise.all([
-          fetch(`${apiUrl}/api/patientaccounts/check-email/${encodeURIComponent(demoformdata.patientemail)}`),
-          fetch(`${apiUrl}/api/staffaccounts/check-email/${encodeURIComponent(demoformdata.patientemail)}`),
-          fetch(`${apiUrl}/api/owneraccounts/check-email/${encodeURIComponent(demoformdata.patientemail)}`),
-          fetch(`${apiUrl}/api/adminaccounts/check-email/${encodeURIComponent(demoformdata.patientemail)}`)
+          fetch(`/api/patientaccounts/check-email/${encodeURIComponent(demoformdata.patientemail)}`),
+          fetch(`/api/staffaccounts/check-email/${encodeURIComponent(demoformdata.patientemail)}`),
+          fetch(`/api/owneraccounts/check-email/${encodeURIComponent(demoformdata.patientemail)}`),
+          fetch(`/api/adminaccounts/check-email/${encodeURIComponent(demoformdata.patientemail)}`)
         ]);
 
 
@@ -2952,7 +2952,7 @@ const renderpatientprofiles = () => {
         patientprofilepicture: addpatientprofilepreviewimage || demoformdata.patientprofilepicture
       };
 
-      const response = await fetch(`${apiUrl}/api/patientdemographics`, {
+      const response = await fetch(`/api/patientdemographics`, {
         method: "POST",
         headers: {
           "Content-Type" : "application/json",
@@ -3249,7 +3249,7 @@ const showappointmentstable = (appointmentstableid) => {
      try{
 
        const response = await fetch(
-         `${apiUrl}/api/patientappointments/appointments`,
+         `/api/patientappointments/appointments`,
          {
            headers: {
                Authorization: `Bearer ${localStorage.getItem('admintoken')}`
@@ -3307,7 +3307,7 @@ const formatappointmenttime = (formattedtimestring) => {
 //WHOLE APPOINTMENT DELETE //WHOLE APPOINTMENT DELETE //WHOLE APPOINTMENT DELETE //WHOLE APPOINTMENT DELETE   
 const handledeleteappointment = async (appointmentId) => {
   try {
-    const response = await fetch(`${apiUrl}/api/patientappointments/appointments/${appointmentId}`, {
+    const response = await fetch(`/api/patientappointments/appointments/${appointmentId}`, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
@@ -3396,7 +3396,7 @@ const handledeleteappointmentbyclinic = async (appointmentId, clinicType) => {
 
       // Make API call to update appointment with nullified fields
       const response = await fetch(
-        `${apiUrl}/api/patientappointments/appointments/${appointmentId}`,
+        `/api/patientappointments/appointments/${appointmentId}`,
         {
           method: "PUT",
           headers: {
@@ -3438,7 +3438,7 @@ const handledeleteappointmentbyclinic = async (appointmentId, clinicType) => {
     } else {
       // If no appointment in other clinic, delete the entire appointment
       const response = await fetch(
-       `${apiUrl}/api/patientappointments/appointments/${appointmentId}`,
+       `/api/patientappointments/appointments/${appointmentId}`,
         {
           method: "DELETE",
           headers: {
@@ -3497,7 +3497,7 @@ const handleviewappointment = (appointment) => {
 //UPDATING APPOINTMENT STATUS
 const handleacceptappointment = async (appointmentId, clinicType) => {
   try{
-    const response = await fetch(`${apiUrl}/api/patientappointments/appointments/${appointmentId}`,{
+    const response = await fetch(`/api/patientappointments/appointments/${appointmentId}`,{
       method: "PUT",
       headers: {
         "Content-Type" : "application/json",
@@ -3544,7 +3544,7 @@ const handleacceptappointment = async (appointmentId, clinicType) => {
     try {
       // Make API call to update appointment status with correct URL
       const response = await fetch(
-        `${apiUrl}/api/patientappointments/appointments/${appointmentId}`,
+        `/api/patientappointments/appointments/${appointmentId}`,
         {
           method: "PUT",
           headers: {
@@ -3749,7 +3749,7 @@ const [otherclinicrecords, setotherclinicrecords] = useState([]);
   const fetchotherclinicrecords = async () => {
     try{
 
-      const response = await fetch(`${apiUrl}/api/otherclinicrecord`, {
+      const response = await fetch(`/api/otherclinicrecord`, {
         headers: {
           'Authorization' : `Bearer ${currentusertoken}`
         }
@@ -3815,7 +3815,7 @@ const submitotherclinicdata = async (e) => {
         }
     console.log("Submittin ReCORDD", otherclinicrecorddata);
 
-    const response = await fetch(`${apiUrl}/api/otherclinicrecord`,{
+    const response = await fetch(`/api/otherclinicrecord`,{
             method: "POST",
             headers: {
               "Content-Type":"application/json",
@@ -3867,7 +3867,7 @@ const deleteotherclinicrecord = async () => {
   try{
     if(!selectedpatientappointment) return;
 
-    const response = await fetch(`${apiUrl}/api/otherclinicrecord/${selectedpatientappointment.otherclinicid}`,{
+    const response = await fetch(`/api/otherclinicrecord/${selectedpatientappointment.otherclinicid}`,{
       method: 'DELETE',
       headers:{
         'Authorization' : `Bearer ${currentusertoken}`
@@ -3971,7 +3971,7 @@ const submitambherinventorycategory = async (e) => {
     }
 
     console.log(ambherinventorycategorydata);
-    const response = await fetch(`${apiUrl}/api/ambherinventorycategory`,{
+    const response = await fetch(`/api/ambherinventorycategory`,{
       method: 'POST',
       headers: {
         'Content-Type' : 'application/json',
@@ -4025,7 +4025,7 @@ useEffect(() => {
     if (ismounted) setambherinventorycategorynamecheck(true);
 
     try{
-      const response = await fetch(`${apiUrl}/api/ambherinventorycategory/ambherinventorycategoryname/${encodeURIComponent(categoryname)}`);
+      const response = await fetch(`/api/ambherinventorycategory/ambherinventorycategoryname/${encodeURIComponent(categoryname)}`);
    
       if(!ismounted) return;
 
@@ -4064,7 +4064,7 @@ useEffect(() => {
 useEffect(() => {
   const fetchambhercategories = async () => {
     try{
-      const response = await fetch(`${apiUrl}/api/ambherinventorycategory`);
+      const response = await fetch(`/api/ambherinventorycategory`);
       if(!response.ok) throw new Error("Failed to fetch Ambher Inevntory Categories");
 
       const data = await response.json();
@@ -4083,7 +4083,7 @@ useEffect(() => {
 
 const fetchambherinventorycategories = async () => {
   try{
-    const response = await fetch(`${apiUrl}/api/ambherinventorycategory`);
+    const response = await fetch(`/api/ambherinventorycategory`);
     if(!response.ok) throw new Error("Failed to retrieve ambher inventory categories");
 
     const data = await response.json();
@@ -4106,7 +4106,7 @@ const deleteambherinventorycategory = async () => {
   if(!selectedambherinventorycategory) return;
 
   try{
-    const response = await fetch(`${apiUrl}/api/ambherinventorycategory/${selectedambherinventorycategory.ambherinventorycategoryid}`,{
+    const response = await fetch(`/api/ambherinventorycategory/${selectedambherinventorycategory.ambherinventorycategoryid}`,{
       method: 'DELETE',
       headers:{
         'Authorization' : `Bearer ${currentusertoken}`
@@ -4186,7 +4186,7 @@ const submitbautistainventorycategory = async (e) => {
     }
 
     console.log(bautistainventorycategorydata);
-    const response = await fetch(`${apiUrl}/api/bautistainventorycategory`,{
+    const response = await fetch(`/api/bautistainventorycategory`,{
       method: 'POST',
       headers: {
         'Content-Type' : 'application/json',
@@ -4240,7 +4240,7 @@ useEffect(() => {
     if (ismounted) setbautistainventorycategorynamecheck(true);
 
     try{
-      const response = await fetch(`${apiUrl}/api/bautistainventorycategory/bautistainventorycategoryname/${encodeURIComponent(categoryname)}`);
+      const response = await fetch(`/api/bautistainventorycategory/bautistainventorycategoryname/${encodeURIComponent(categoryname)}`);
    
       if(!ismounted) return;
 
@@ -4279,7 +4279,7 @@ useEffect(() => {
 useEffect(() => {
   const fetchbautistacategories = async () => {
     try{
-      const response = await fetch(`${apiUrl}/api/bautistainventorycategory`);
+      const response = await fetch(`/api/bautistainventorycategory`);
       if(!response.ok) throw new Error("Failed to fetch Bautista Inevntory Categories");
 
 
@@ -4302,7 +4302,7 @@ useEffect(() => {
 
 const fetchbautistainventorycategories = async () => {
   try{
-    const response = await fetch(`${apiUrl}/api/bautistainventorycategory`);
+    const response = await fetch(`/api/bautistainventorycategory`);
     if(!response.ok) throw new Error("Failed to retrieve bautista inventory categories");
 
     const data = await response.json();
@@ -4325,7 +4325,7 @@ const deletebautistainventorycategory = async () => {
   if(!selectedbautistainventorycategory) return;
 
   try{
-    const response = await fetch(`${apiUrl}/api/bautistainventorycategory/${selectedbautistainventorycategory.bautistainventorycategoryid}`,{
+    const response = await fetch(`/api/bautistainventorycategory/${selectedbautistainventorycategory.bautistainventorycategoryid}`,{
       method: 'DELETE',
       headers:{
         'Authorization' : `Bearer ${currentusertoken}`
@@ -4599,7 +4599,7 @@ const addambherinventoryproductimagehandleuploadclick = () => {
 
   const fetchambherproducts = async () => {
     try{
-      const response = await fetch(`${apiUrl}/api/ambherinventoryproduct`, {
+      const response = await fetch(`/api/ambherinventoryproduct`, {
         headers:{
           'Authorization' : `Bearer ${currentusertoken}`
         }
@@ -4664,7 +4664,7 @@ const handlesubmitaddambherinventoryproduct = async (e) => {
     }
 
     console.log(ambherinventoryproductdata);
-    const response = await fetch(`${apiUrl}/api/ambherinventoryproduct`,{
+    const response = await fetch(`/api/ambherinventoryproduct`,{
       method: 'POST',
       headers: {
         'Content-Type' : 'application/json',
@@ -4735,7 +4735,7 @@ const handleupdateambherinventoryproduct = async (e) => {
     }
 
 
-    const response = await fetch(`${apiUrl}/api/ambherinventoryproduct/${selectedambherproduct.ambherinventoryproductid}`,{
+    const response = await fetch(`/api/ambherinventoryproduct/${selectedambherproduct.ambherinventoryproductid}`,{
       method: 'PUT',
       headers: {
         'Content-Type' : 'application/json',
@@ -4784,7 +4784,7 @@ const deleteambherproduct = async (e) => {
     }
 
     try{
-      const response = await fetch(`${apiUrl}/api/ambherinventoryproduct/${selectedambherproduct.ambherinventoryproductid}`,{
+      const response = await fetch(`/api/ambherinventoryproduct/${selectedambherproduct.ambherinventoryproductid}`,{
         method: 'DELETE',
         headers: {
           'Authorization' : `Bearer ${currentusertoken}`
@@ -5031,7 +5031,7 @@ useEffect(() => {
           
             const fetchbautistaproducts = async () => {
               try{
-                const response = await fetch(`${apiUrl}/api/bautistainventoryproduct`, {
+                const response = await fetch(`/api/bautistainventoryproduct`, {
                   headers:{
                     'Authorization' : `Bearer ${currentusertoken}`
                   }
@@ -5096,7 +5096,7 @@ useEffect(() => {
               }
           
               console.log(bautistainventoryproductdata);
-              const response = await fetch(`${apiUrl}/api/bautistainventoryproduct`,{
+              const response = await fetch(`/api/bautistainventoryproduct`,{
                 method: 'POST',
                 headers: {
                   'Content-Type' : 'application/json',
@@ -5167,7 +5167,7 @@ useEffect(() => {
               }
           
           
-              const response = await fetch(`${apiUrl}/api/bautistainventoryproduct/${selectedbautistaproduct.bautistainventoryproductid}`,{
+              const response = await fetch(`/api/bautistainventoryproduct/${selectedbautistaproduct.bautistainventoryproductid}`,{
                 method: 'PUT',
                 headers: {
                   'Content-Type' : 'application/json',
@@ -5216,7 +5216,7 @@ useEffect(() => {
               }
           
               try{
-                const response = await fetch(`${apiUrl}/api/bautistainventoryproduct/${selectedbautistaproduct.bautistainventoryproductid}`,{
+                const response = await fetch(`/api/bautistainventoryproduct/${selectedbautistaproduct.bautistainventoryproductid}`,{
                   method: 'DELETE',
                   headers: {
                     'Authorization' : `Bearer ${currentusertoken}`
@@ -5657,14 +5657,14 @@ useEffect(() => {
 
     try {
       // Check if email exists
-      const checkRes = await fetch(`${apiUrl}/api/patientaccounts/check-email/${orderambherEmail}`);
+      const checkRes = await fetch(`/api/patientaccounts/check-email/${orderambherEmail}`);
       const checkData = await checkRes.json();
 
       if (checkData.exists) {
         setorderambheremailError(false);
 
         // Get full name info
-        const patientRes = await fetch(`${apiUrl}/api/patientaccounts/get-by-email/${orderambherEmail}`);
+        const patientRes = await fetch(`/api/patientaccounts/get-by-email/${orderambherEmail}`);
         const patient = await patientRes.json();
 
         const fullName = `${patient.patientfirstname} ${patient.patientmiddlename || ""} ${patient.patientlastname}`.trim();
@@ -5682,7 +5682,7 @@ useEffect(() => {
 
     // Fetch patient demographic data
     const demographicResponse = await fetch(
-      `${apiUrl}/api/patientdemographics/patientemail/${orderambherEmail}`,
+      `/api/patientdemographics/patientemail/${orderambherEmail}`,
       {
         headers: {
            'Authorization' : `Bearer ${currentusertoken}`
@@ -5762,14 +5762,14 @@ useEffect(() => {
 
     try {
       // Check if email exists
-      const checkRes = await fetch(`${apiUrl}/api/patientaccounts/check-email/${orderbautistaEmail}`);
+      const checkRes = await fetch(`/api/patientaccounts/check-email/${orderbautistaEmail}`);
       const checkData = await checkRes.json();
 
       if (checkData.exists) {
         setorderbautistaemailError(false);
 
         // Get full name info
-        const patientRes = await fetch(`${apiUrl}/api/patientaccounts/get-by-email/${orderbautistaEmail}`);
+        const patientRes = await fetch(`/api/patientaccounts/get-by-email/${orderbautistaEmail}`);
         const patient = await patientRes.json();
 
         const fullName = `${patient.patientfirstname} ${patient.patientmiddlename || ""} ${patient.patientlastname}`.trim();
@@ -5787,7 +5787,7 @@ useEffect(() => {
 
     // Fetch patient demographic data
     const demographicResponse = await fetch(
-      `${apiUrl}/api/patientdemographics/patientemail/${orderbautistaEmail}`,
+      `/api/patientdemographics/patientemail/${orderbautistaEmail}`,
       {
         headers: {
            'Authorization' : `Bearer ${currentusertoken}`
@@ -5845,7 +5845,7 @@ useEffect(() => {
     const fetchambherOrders = async () => {
       try {
         
-        const response = await fetch(`${apiUrl}/api/patientorderambher`, {
+        const response = await fetch(`/api/patientorderambher`, {
           headers: {
             'Authorization': `Bearer ${currentusertoken}`
            
@@ -5890,7 +5890,7 @@ useEffect(() => {
       const fetchbautistaOrders = async () => {
       try {
         
-        const response = await fetch(`${apiUrl}/api/patientorderbautista`, {
+        const response = await fetch(`/api/patientorderbautista`, {
           headers: {
             'Authorization': `Bearer ${currentusertoken}`
            
@@ -6061,7 +6061,7 @@ const submitpatientorderambher = async (e) => {
     console.log('Submitting order:', orderData);
 
     // Submit order using admin token
-    const response = await fetch(`${apiUrl}/api/patientorderambher`, {
+    const response = await fetch(`/api/patientorderambher`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -6081,7 +6081,7 @@ const submitpatientorderambher = async (e) => {
     const productId = selectedorderambherproduct?.ambherinventoryproductid;
     const quantityOrdered = ambhercount;
     
-    const updateResponse = await fetch(`${apiUrl}/api/ambherinventoryproduct/${productId}`, {
+    const updateResponse = await fetch(`/api/ambherinventoryproduct/${productId}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -6112,7 +6112,7 @@ const submitpatientorderambher = async (e) => {
 
  try {
 
-  const deletewishlistResponse = await fetch(`${apiUrl}/api/patientwishlistinventoryproduct/admin-delete`, {
+  const deletewishlistResponse = await fetch(`/api/patientwishlistinventoryproduct/admin-delete`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -6236,7 +6236,7 @@ const submitpatientorderbautista = async (e) => {
     console.log('Submitting order:', orderData);
 
     // Submit order using admin token
-    const response = await fetch(`${apiUrl}/api/patientorderbautista`, {
+    const response = await fetch(`/api/patientorderbautista`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -6256,7 +6256,7 @@ const submitpatientorderbautista = async (e) => {
     const productId = selectedorderbautistaproduct?.bautistainventoryproductid;
     const quantityOrdered = bautistacount;
     
-    const updateResponse = await fetch(`${apiUrl}/api/bautistainventoryproduct/${productId}`, {
+    const updateResponse = await fetch(`/api/bautistainventoryproduct/${productId}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -6287,7 +6287,7 @@ const submitpatientorderbautista = async (e) => {
 
  try {
 
-  const deletewishlistResponse = await fetch(`${apiUrl}/api/patientwishlistinventoryproduct/admin-delete`, {
+  const deletewishlistResponse = await fetch(`/api/patientwishlistinventoryproduct/admin-delete`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -6415,7 +6415,7 @@ const submitpatientpendingorderambher = async (e) => {
     console.log('Submitting order:', orderData);
 
     // Submit order using admin token
-    const response = await fetch(`${apiUrl}/api/patientorderambher`, {
+    const response = await fetch(`/api/patientorderambher`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -6530,7 +6530,7 @@ const submitpatientpendingorderbautista = async (e) => {
     console.log('Submitting order:', orderData);
 
     // Submit order using admin token
-    const response = await fetch(`${apiUrl}/api/patientorderbautista`, {
+    const response = await fetch(`/api/patientorderbautista`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

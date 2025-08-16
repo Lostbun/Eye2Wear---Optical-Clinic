@@ -344,11 +344,11 @@ const submitpatientdemographic = async (e) => {
         : demographicformdata.patientprofilepicture
     };
 
-    let endpoint = `${apiUrl}/api/patientdemographics`;
+    let endpoint = `/api/patientdemographics`;
     let method = "POST";
     
     if(isexistingdemographic) {
-      endpoint = `${apiUrl}/api/patientdemographics/${demographicid}`;
+      endpoint = `/api/patientdemographics/${demographicid}`;
       method = "PUT";
     }
 

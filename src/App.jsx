@@ -83,7 +83,7 @@ function PatientChatButton() {
     const token = localStorage.getItem('token');
     if (!token) return;
 
-    socket.current = io(`${apiUrl}`, {
+    socket.current = io(``, {
       auth: {
         token: token
       },
@@ -171,7 +171,7 @@ function PatientChatButton() {
     const token = localStorage.getItem('token');
     if (!token) return;
 
-    const response = await fetch(`${apiUrl}/api/messages/conversations`, {
+    const response = await fetch(`/api/messages/conversations`, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
 
@@ -212,7 +212,7 @@ function PatientChatButton() {
                     localStorage.getItem('ownerid');
       const role = localStorage.getItem('role');
 
-      const response = await fetch(`${apiUrl}/api/messages/conversations`, {
+      const response = await fetch(`/api/messages/conversations`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -273,7 +273,7 @@ const loadMessages = async (convId) => {
     const token = localStorage.getItem('token');
     if (!token) return;
 
-    const response = await fetch(`${apiUrl}/api/messages/${convId}`, {
+    const response = await fetch(`/api/messages/${convId}`, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
 
@@ -362,7 +362,7 @@ const loadMessages = async (convId) => {
 
 
 
-      const response = await fetch(`${apiUrl}/api/messages`, {
+      const response = await fetch(`/api/messages`, {
         method: "POST",
         headers: { 
           "Authorization": `Bearer ${token}` 
@@ -417,7 +417,7 @@ const loadMessages = async (convId) => {
       const token = localStorage.getItem('token');
       if (!token) return;
 
-      const response = await fetch(`${apiUrl}/api/patientaccounts`, {
+      const response = await fetch(`/api/patientaccounts`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -429,7 +429,7 @@ const loadMessages = async (convId) => {
 
       const patientsData = await response.json();
       
-      const conversationsResponse = await fetch(`${apiUrl}/api/messages/conversations`, {
+      const conversationsResponse = await fetch(`/api/messages/conversations`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -449,7 +449,7 @@ const loadMessages = async (convId) => {
           
           if (!patientConversation) return { ...patient, latestMessage: null };
           
-          const messagesResponse = await fetch(`${apiUrl}/api/messages/${patientConversation._id}`, {
+          const messagesResponse = await fetch(`/api/messages/${patientConversation._id}`, {
             headers: {
               'Authorization': `Bearer ${token}`
             }
@@ -492,11 +492,11 @@ const loadMessages = async (convId) => {
         )}
         {msg.imageUrl && (
           <img 
-            src={`${apiUrl}${msg.imageUrl}`} 
+            src={`${msg.imageUrl}`} 
             alt="Uploaded content" 
             className="max-w-full max-h-60 rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
             onClick={() => {
-              setSelectedImageForModal(`${apiUrl}${msg.imageUrl}`);
+              setSelectedImageForModal(`${msg.imageUrl}`);
               setModalOpen(true);
             }}
             onError={(e) => {
@@ -509,7 +509,7 @@ const loadMessages = async (convId) => {
           <div className="mt-2 p-2 bg-gray-100 rounded-lg flex items-center w-full">
             <img src={filesent} className="w-6 h-6 mr-2 flex-shrink-0" />
             <a 
-              href={`${apiUrl}${msg.documentUrl}`} 
+              href={`${msg.documentUrl}`} 
               target="_blank" 
               rel="noopener noreferrer"
               className="text-blue-600 hover:underline break-all"
