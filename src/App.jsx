@@ -513,7 +513,7 @@ socket.current.on('newMessage', (newMessage) => {
         return;
       }
 
-      // Check if messages are already cached (for both prefetch and non-prefetch)
+
       const cachedMessages = messagesByConversation[convId];
       if (cachedMessages && cachedMessages.length > 0 && isPrefetch) {
         console.log(`Using cached messages for conversation ${convId}: ${cachedMessages.length} messages`);
@@ -546,7 +546,6 @@ socket.current.on('newMessage', (newMessage) => {
       const loadedMessages = await response.json();
       console.log(`Loaded ${loadedMessages.length} messages for conversation ${convId}`);
       
-      // Update messagesByConversation state
       setMessagesByConversation(prev => ({
         ...prev,
         [convId]: loadedMessages
