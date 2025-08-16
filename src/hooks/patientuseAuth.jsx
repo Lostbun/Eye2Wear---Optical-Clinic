@@ -77,7 +77,7 @@ localStorage.removeItem('patienttoken');
 
         try{
   
-          const response = await axios.get(`http://localhost:3000/api/patientaccounts/me`, {
+          const response = await axios.get(`/api/patientaccounts/me`, {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("patienttoken")}`},
           });
@@ -100,7 +100,7 @@ localStorage.removeItem('patienttoken');
     const fetchpatientdemographicbyemail = useCallback(async (email) => {
         try{
             const response = await axios.get(
-                `http://localhost:3000/api/patientdemographics/patientemail/${email}`,
+                `/api/patientdemographics/patientemail/${email}`,
                 {
                     headers: {
                         Authorization: `Bearer ${localStorage.getItem("patienttoken")}`
