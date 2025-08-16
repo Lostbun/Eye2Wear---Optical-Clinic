@@ -66,7 +66,7 @@ export const useAuth = () => {
 
         try{
   
-          const response = await axios.get("http://localhost:3000/api/adminaccounts/me", {
+          const response = await axios.get("/api/adminaccounts/me", {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("admintoken")}`},
           });
