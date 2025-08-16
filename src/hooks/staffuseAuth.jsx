@@ -72,7 +72,7 @@ export const useAuth = () => {
 
         try{
   
-          const response = await axios.get("http://localhost:3000/api/staffaccounts/me", {
+          const response = await axios.get("/api/staffaccounts/me", {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("stafftoken")}`},
           });
