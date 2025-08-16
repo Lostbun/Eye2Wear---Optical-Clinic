@@ -22,10 +22,13 @@ export const useAuth = () => {
         if(localStorage.getItem("patienttoken")){
             if (window.confirm("Are you sure you want to log out?")){
         
-localStorage.removeItem('patienttoken');
+        localStorage.removeItem('patienttoken');
   localStorage.removeItem('patientdetails');
   localStorage.removeItem('patientid');
   localStorage.removeItem('patientemail');
+  localStorage.removeItem('patientfirstname');
+  localStorage.removeItem('patientlastname');
+  localStorage.removeItem('patientname');
   localStorage.removeItem('role');
   localStorage.removeItem('token');
   navigate('/userlogin');

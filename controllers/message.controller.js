@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 import Message from "../models/message.js";
 import Conversation from "../models/conversation.js";
 import multer from 'multer';
@@ -11,19 +12,25 @@ export const getConversations = async (req, res) => {
     
     let conversations;
     if (role === 'patient') {
+      // Patients see conversations they're part of
       conversations = await Conversation.find({
         'participants.userId': userId,
         'participants.role': role
-      }).populate('lastMessage');
-    } else {
+      }).populate('lastMessage').sort({ updatedAt: -1 });
+    } else if (role === 'staff' || role === 'owner') {
+      // Staff/owners see conversations involving their clinic
       conversations = await Conversation.find({
         $or: [
+          { 'participants.userId': userId, 'participants.role': role },
           { 'participants.clinic': clinic },
-          { clinic: clinic }
+          { clinic: clinic },
+          // Also include conversations where staff/owner is a participant
+          { 'participants': { $elemMatch: { userId: userId, role: role } } }
         ]
-      }).populate('lastMessage');
+      }).populate('lastMessage').sort({ updatedAt: -1 });
     }
 
+    console.log(`Found ${conversations.length} conversations for ${role} ${userId}`);
     res.status(200).json(conversations);
   } catch (error) {
     console.error('Error fetching conversations:', error);
@@ -121,6 +128,81 @@ export const upload = multer({
   limits: { fileSize: 10 * 1024 * 1024 } // 10MB limit
 });
 
+// Create a new conversation
+export const createConversation = async (req, res) => {
+  try {
+    const { clinic, participants } = req.body;
+    const { userId, role, name } = req.user;
+
+    // Validate required fields
+    if (!clinic || !participants || !Array.isArray(participants)) {
+      return res.status(400).json({ message: 'Clinic and participants array are required' });
+    }
+
+    // Check if conversation already exists
+    let existingConversation;
+    if (role === 'patient') {
+      existingConversation = await Conversation.findOne({
+        clinic: clinic,
+        'participants.userId': userId,
+        'participants.role': role
+      });
+    } else {
+      // For staff/owner, check if conversation with patient exists
+      const patientParticipant = participants.find(p => p.role === 'patient');
+      if (patientParticipant) {
+        // First try to find conversation with exact clinic match
+        existingConversation = await Conversation.findOne({
+          clinic: clinic,
+          'participants.userId': patientParticipant.userId,
+          'participants.role': 'patient'
+        });
+        
+        // If not found, try to find any conversation with this patient
+        if (!existingConversation) {
+          existingConversation = await Conversation.findOne({
+            'participants.userId': patientParticipant.userId,
+            'participants.role': 'patient'
+          });
+        }
+      } else {
+        // For clinic-to-clinic conversations
+        const clinicParticipant = participants.find(p => p.role === 'clinic');
+        if (clinicParticipant) {
+          existingConversation = await Conversation.findOne({
+            clinic: clinic,
+            'participants.role': 'clinic',
+            'participants.clinic': clinicParticipant.clinic
+          });
+        }
+      }
+    }
+
+    if (existingConversation) {
+      return res.status(200).json(existingConversation);
+    }
+
+    // Create new conversation
+    const conversation = new Conversation({
+      participants,
+      clinic
+    });
+
+    await conversation.save();
+    
+    console.log('Created new conversation:', {
+      id: conversation._id,
+      clinic: conversation.clinic,
+      participants: conversation.participants
+    });
+
+    res.status(201).json(conversation);
+  } catch (error) {
+    console.error('Error creating conversation:', error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
 export const createMessage = async (req, res) => {
   try {
     const { conversationId, text, patientId, targetClinic, senderName } = req.body;
@@ -186,7 +268,17 @@ export const createMessage = async (req, res) => {
     }
 
 
+    // Use the senderName from the request body, or fallback to user name
     const finalSenderName = senderName || (isClinicMessagingClinic ? clinic : name || 'Unknown');
+    
+    console.log('Message sender details:', {
+      senderName,
+      finalSenderName,
+      role,
+      userId,
+      name,
+      isClinicMessagingClinic
+    });
 
     // Create the message
     const message = new Message({
