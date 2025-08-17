@@ -1363,8 +1363,10 @@ socket.current.on('newMessage', (newMessage) => {
                     )}
                   </div>
                 </div>
-
-                <div className="flex flex-col rounded-2xl h-full w-[70%] border-1">
+{selectedPatient === null && selectedClinic === null ? (
+           <div className="flex  flex-col rounded-2xl h-full w-[70%] border-1">
+          </div>
+):(                <div className="flex  flex-col rounded-2xl h-full w-[70%] border-1">
                   <div className="shadow-md pt-0.5 pb-0.5 pl-3 rounded-t-2xl border-1 h-[11%] w-full flex item-center justify-start">
                     <div className="flex items-center justify-center">
                       <img 
@@ -1567,7 +1569,8 @@ socket.current.on('newMessage', (newMessage) => {
                       </div>
                     )}
                   </div>
-                </div>
+                </div>)}
+
               </div>
             </div>
           )}
@@ -1744,7 +1747,10 @@ socket.current.on('newMessage', (newMessage) => {
                     )}
                   </div>
                 </div>
-
+{selectedPatient === null && selectedClinic === null ? (
+           <div className="flex  flex-col rounded-2xl h-full w-[70%] border-1">
+          </div>
+):(   
                 <div className="flex flex-col rounded-2xl h-full w-[70%] border-1">
                   <div className="shadow-md pt-0.5 pb-0.5 pl-3 rounded-t-2xl border-1 h-[11%] w-full flex item-center justify-start">
                     <div className="flex items-center justify-center">
@@ -1949,7 +1955,7 @@ jsxtransition-all duration-300 ease-in-out flex-shrink-0"
                       </div>
                     )}
                   </div>
-                </div>
+                </div>)}
               </div>
             </div>
           )}
