@@ -1,6 +1,5 @@
-import { useEffect } from "react";
+import { useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-//import { jwtDecode } from "jwt-decode";
 import axios from "axios";
 
 
@@ -13,7 +12,7 @@ export const useAuth = () => {
 
     
 
-    const stafflogout = () => {
+    const stafflogout = useCallback(() => {
         if (window.confirm("Are you sure you want to logout?")) {
             localStorage.removeItem("stafftoken");
             localStorage.removeItem("staffdetails");
@@ -25,7 +24,7 @@ export const useAuth = () => {
             localStorage.removeItem("role");
             navigate("/userlogin");
         }
-    };
+    }, [navigate]);
 
 
 
@@ -66,24 +65,53 @@ export const useAuth = () => {
 
 
 
-    const fetchstaffdetails = async () => {
+    const cacheRef = useRef({
+        staffDetails: null,
+        lastFetchTime: 0,
+        lastToken: null
+    });
 
-        //if(!monitortokenexpiration()) return null;
+    const fetchstaffdetails = useCallback(async (force = false) => {
+        const token = localStorage.getItem("stafftoken");
+        const now = Date.now();
+        
+        // Check if we should use cached data
+        if (!force && 
+            cacheRef.current.staffDetails && 
+            token === cacheRef.current.lastToken && 
+            now - cacheRef.current.lastFetchTime < 300000) { // Cache for 5 minutes
+            return cacheRef.current.staffDetails;
+        }
 
-        try{
-  
-          const response = await axios.get("/api/staffaccounts/me", {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("stafftoken")}`},
-          });
-
-          return response.data;
-  
-        } catch (error) {
-            console.error("Failed to fetch: ",error);
+        if (!token) {
+            navigate("/userlogin");
             return null;
         }
-    };
+
+        try {
+            const response = await axios.get("/api/staffaccounts/me", {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Cache-Control': 'max-age=300' // 5 minutes cache
+                }
+            });
+            
+            // Update cache only if the data is different
+            if (JSON.stringify(cacheRef.current.staffDetails) !== JSON.stringify(response.data)) {
+                cacheRef.current.staffDetails = response.data;
+                cacheRef.current.lastFetchTime = now;
+                cacheRef.current.lastToken = token;
+            }
+            
+            return response.data;
+        } catch (error) {
+            if (error.response?.status === 401) {
+                stafflogout();
+            }
+            console.error("Failed to fetch staff details:", error);
+            return null;
+        }
+    }, [navigate, stafflogout]);
 
 
 

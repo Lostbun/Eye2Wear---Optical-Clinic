@@ -1,4 +1,4 @@
-import { useEffect, useCallback  } from "react";
+import { useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
@@ -17,27 +17,24 @@ export const useAuth = () => {
 
     
 
-    const handlelogout = () => {
-
+    const handlelogout = useCallback(() => {
         if(localStorage.getItem("patienttoken")){
             if (window.confirm("Are you sure you want to log out?")){
-        
-        localStorage.removeItem('patienttoken');
-  localStorage.removeItem('patientdetails');
-  localStorage.removeItem('patientid');
-  localStorage.removeItem('patientemail');
-  localStorage.removeItem('patientfirstname');
-  localStorage.removeItem('patientlastname');
-  localStorage.removeItem('patientname');
-  localStorage.removeItem('role');
-  localStorage.removeItem('token');
-  navigate('/userlogin');
-          
-            }}else{
-              navigate("/userlogin");
+                localStorage.removeItem('patienttoken');
+                localStorage.removeItem('patientdetails');
+                localStorage.removeItem('patientid');
+                localStorage.removeItem('patientemail');
+                localStorage.removeItem('patientfirstname');
+                localStorage.removeItem('patientlastname');
+                localStorage.removeItem('patientname');
+                localStorage.removeItem('role');
+                localStorage.removeItem('token');
+                navigate('/userlogin');
             }
-        
-    };
+        } else {
+            navigate("/userlogin");
+        }
+    }, [navigate]);
 
 
 
@@ -74,24 +71,48 @@ export const useAuth = () => {
 
 
 
-    const fetchpatientdetails = useCallback( async () => {
+    const cacheRef = useRef({
+        patientDetailsCache: null,
+        lastFetchTime: 0
+    });
+    const CACHE_DURATION = 5000; // Cache for 5 seconds
 
-       /* if(!monitortokenexpiration()) return null;*/
+    const fetchpatientdetails = useCallback(async () => {
+        const now = Date.now();
+        
+        // Return cached data if it's still valid
+        if (cacheRef.current.patientDetailsCache && 
+            (now - cacheRef.current.lastFetchTime < CACHE_DURATION)) {
+            return cacheRef.current.patientDetailsCache;
+        }
 
-        try{
-  
-          const response = await axios.get(`/api/patientaccounts/me`, {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("patienttoken")}`},
-          });
-
-          return response.data;
-  
-        } catch (error) {
-            console.error("Failed to fetch: ",error);
+        const token = localStorage.getItem("patienttoken");
+        if (!token) {
+            navigate("/userlogin");
             return null;
         }
-    }, []);
+
+        try {
+            const response = await axios.get("/api/patientaccounts/me", {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Cache-Control': 'max-age=5'
+                }
+            });
+            
+            // Update cache
+            cacheRef.current.patientDetailsCache = response.data;
+            cacheRef.current.lastFetchTime = now;
+            
+            return response.data;
+        } catch (error) {
+            if (error.response?.status === 401) {
+                handlelogout();
+            }
+            console.error("Failed to fetch patient details:", error);
+            return null;
+        }
+    }, [navigate, handlelogout]);
 
 
 
@@ -100,27 +121,52 @@ export const useAuth = () => {
 
 
 
-    const fetchpatientdemographicbyemail = useCallback(async (email) => {
-        try{
+    const demographicCacheRef = useRef({});
+
+    const fetchpatientdemographicbyemail = useCallback(async (email, force = false) => {
+        const token = localStorage.getItem("patienttoken");
+        const now = Date.now();
+        
+        // Check cache first
+        if (!force && 
+            demographicCacheRef.current[email]?.data && 
+            demographicCacheRef.current[email]?.token === token && 
+            now - demographicCacheRef.current[email]?.time < 300000) {
+            return demographicCacheRef.current[email].data;
+        }
+
+        try {
             const response = await axios.get(
                 `/api/patientdemographics/patientemail/${email}`,
                 {
                     headers: {
-                        Authorization: `Bearer ${localStorage.getItem("patienttoken")}`
+                        'Authorization': `Bearer ${token}`,
+                        'Cache-Control': 'max-age=300'
                     }
                 }
             );
 
+            // Update cache only if data changed
+            if (JSON.stringify(demographicCacheRef.current[email]?.data) !== JSON.stringify(response.data)) {
+                demographicCacheRef.current[email] = {
+                    data: response.data,
+                    time: now,
+                    token: token
+                };
+            }
+            
             return response.data;
-        
-        }catch(error){
-            if(error.response?.status === 404) {
+        } catch (error) {
+            if (error.response?.status === 404) {
                 return null;
+            }
+            if (error.response?.status === 401) {
+                handlelogout();
             }
             console.error("Failed to fetch demographic data: ", error);
             return null;
         }
-    }, []);
+    }, [handlelogout]);
 
 
  
