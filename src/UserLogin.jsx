@@ -15,12 +15,15 @@ import axios from "axios";
 
 
 function UserLogin(){
-
   const apiUrl = import.meta.env.VITE_API_URL;
 
-  
+  // Clear localStorage when component mounts
+  React.useEffect(() => {
+    localStorage.clear();
+    console.log('LocalStorage cleared on login page');
+  }, []);
 
-          const [logindetails, setlogindetails] = useState({
+  const [logindetails, setlogindetails] = useState({
             loginemail:'',
             loginpassword:''
          });
