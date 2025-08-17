@@ -45,7 +45,9 @@ function PatientChatButton() {
   const socket = useRef(null);
   const messagesEndRef = useRef(null);
   const fileInputRef = useRef(null);
+  const messagesCache = useRef({});
   const [, forceUpdate] = useState();
+  const [hasUnreadMessages, setHasUnreadMessages] = useState(false);
   const patientId = localStorage.getItem("patientid");
   const patientEmail = localStorage.getItem("patientemail");
   const patientName = localStorage.getItem("patientname");
@@ -97,12 +99,22 @@ function PatientChatButton() {
   // Improved fetchConversations function
 const fetchConversations = useCallback(async () => {
   try {
+    // Check if we already have conversations in memory
+    if (conversations.length > 0) {
+      console.log('Using existing conversations from memory');
+      setLoadingConversations(false); // Ensure loading is false when using cached data
+      return;
+    }
+
     if (loadingConversations) {
       console.log('Conversations already loading, skipping fetch');
       return;
     }
 
-    setLoadingConversations(true);
+    // Only show loading state if we actually need to fetch
+    if (conversations.length === 0) {
+      setLoadingConversations(true);
+    }
     const token = localStorage.getItem('token');
     if (!token) return;
 
@@ -315,6 +327,11 @@ socket.current.on('newMessage', (newMessage) => {
       return new Date(b.lastMessage.createdAt) - new Date(a.lastMessage.createdAt);
     });
   });
+
+  // Update unread messages state if the chat is not open
+  if (!showpatientchatdashboard && newMessage.sender !== patientId) {
+    setHasUnreadMessages(true);
+  }
 });
 
     return () => {
@@ -795,6 +812,20 @@ socket.current.on('newMessage', (newMessage) => {
     }
   }, [showpatientchatdashboard]); // Removed fetchPatients dependency to prevent unnecessary re-renders
 
+  // Cleanup effect for chat state
+  useEffect(() => {
+    if (!showpatientchatdashboard) {
+      // Clear active chat state but preserve conversations
+      setMessage("");
+      setSelectedFile(null);
+      setSelectedClinic(null);
+      setSelectedPatient(null);
+      // Reset loading states
+      setLoadingConversations(false);
+      setLoading(false);
+    }
+  }, [showpatientchatdashboard]);
+
   // Start conversation for patients when chat dashboard opens
   useEffect(() => {
     if (showpatientchatdashboard && localStorage.getItem("role") === "patient") {
@@ -988,8 +1019,19 @@ socket.current.on('newMessage', (newMessage) => {
                       <div className="flex gap-3">
                         <div 
                           onClick={() => {
-                            setLoading(true);
+                            console.log('Opening chat dashboard (Ambher)');
                             setshowpatientambherConversation(true);
+                            
+                            // Only fetch if we actually need to
+                            if (conversations.length === 0) {
+                              fetchConversationsRef.current();
+                            }
+                            
+                            // Only reconnect socket if needed
+                            if (socket.current && !socket.current.connected) {
+                              console.log('Reconnecting socket when chat dashboard opens (Ambher)');
+                              socket.current.connect();
+                            }
                           }} 
                           className="hover:shadow-md hover:bg-[#d8fdf0] hover:scale-105 transition-all duration-300 ease-in-out gap-2 cursor-pointer flex flex-col justify-center items-center w-40 h-40 rounded-md border-1">
                           <img src={ambherlogo} className="w-23 px-2 py-1"/>
@@ -997,8 +1039,19 @@ socket.current.on('newMessage', (newMessage) => {
                         </div>
                         <div 
                           onClick={() => {
-                            setLoading(true);
+                            console.log('Opening chat dashboard (Bautista)');
                             setshowpatientbautistaConversation(true);
+                            
+                            // Only fetch if we actually need to
+                            if (conversations.length === 0) {
+                              fetchConversationsRef.current();
+                            }
+                            
+                            // Only reconnect socket if needed
+                            if (socket.current && !socket.current.connected) {
+                              console.log('Reconnecting socket when chat dashboard opens (Bautista)');
+                              socket.current.connect();
+                            }
                           }} 
                           className="hover:shadow-md hover:bg-[#d8f1fd] hover:scale-105 transition-all duration-300 ease-in-out gap-2 cursor-pointer flex flex-col justify-center items-center w-40 h-40 rounded-md border-1">
                           <img src={bautistalogo} className="w-23 px-2 py-1"/>
@@ -1200,13 +1253,16 @@ socket.current.on('newMessage', (newMessage) => {
             {showpatientchatdashboard ? (
               <div 
                 onClick={() => {
+                  // Just hide the UI elements without clearing data
                   setshowpatientbautistaConversation(false);
                   setshowpatientambherConversation(false);
                   setshowpatientchatdashboard(false);
-                  setMessages([]);
-                  setSelectedImage(null); 
+                  setSelectedClinic(null);
+                  setSelectedPatient(null);
+                  // Only clear the active message box
+                  setMessage("");
                   setSelectedFile(null);
-                  fetchConversationsRef.current();
+                  // Don't clear conversations or refetch
                 }} 
                 className="motion-preset-slide-down hover:scale-105 ease-in-out duration-300 transition-all cursor-pointer flex justify-center items-center w-[60px] h-[60px] rounded-full bg-[#1583b3]"
               >
@@ -1596,15 +1652,18 @@ socket.current.on('newMessage', (newMessage) => {
                 onClick={() => {
                   console.log('Opening chat dashboard (Ambher)');
                   setshowpatientchatdashboard(true);
-                  setLoadingConversations(true);
                   
-                  // Ensure socket is connected when chat dashboard opens
+                  // Only fetch conversations if we don't have any
+                  if (conversations.length === 0) {
+                    setLoadingConversations(true);
+                    fetchConversationsRef.current();
+                  }
+                  
+                  // Only reconnect socket if needed
                   if (socket.current && !socket.current.connected) {
                     console.log('Reconnecting socket when chat dashboard opens (Ambher)');
                     socket.current.connect();
                   }
-                  
-                  fetchConversationsRef.current();
                 }} 
                 className="motion-preset-slide-down hover:scale-105 ease-in-out duration-300 transition-all cursor-pointer flex justify-center items-center w-[60px] h-[60px] rounded-full bg-[#39715f]"
               >
@@ -1964,13 +2023,12 @@ jsxtransition-all duration-300 ease-in-out flex-shrink-0"
             {showpatientchatdashboard ? (
               <div 
                 onClick={() => {
+                  // Just hide the UI elements without clearing data
                   setshowpatientbautistaConversation(false);
                   setshowpatientambherConversation(false);
                   setshowpatientchatdashboard(false);
                   setSelectedClinic(null);
                   setSelectedPatient(null);
-                  setMessages([]);
-                  fetchConversationsRef.current();
                 }} 
                 className="motion-preset-slide-down hover:scale-105 ease-in-out duration-300 transition-all cursor-pointer flex justify-center items-center w-[60px] h-[60px] rounded-full bg-[#0a4277]"
               >
@@ -1981,19 +2039,26 @@ jsxtransition-all duration-300 ease-in-out flex-shrink-0"
                 onClick={() => {
                   console.log('Opening chat dashboard (Bautista)');
                   setshowpatientchatdashboard(true);
-                  setLoadingConversations(true);
+                  setHasUnreadMessages(false); // Clear unread messages indicator when opening chat
                   
-                  // Ensure socket is connected when chat dashboard opens
+                  // Only fetch conversations if we don't have any
+                  if (conversations.length === 0) {
+                    setLoadingConversations(true);
+                    fetchConversationsRef.current();
+                  }
+                  
+                  // Only reconnect socket if needed
                   if (socket.current && !socket.current.connected) {
                     console.log('Reconnecting socket when chat dashboard opens (Bautista)');
                     socket.current.connect();
                   }
-                  
-                  fetchConversationsRef.current();
                 }} 
-                className="motion-preset-slide-down hover:scale-105 ease-in-out duration-300 transition-all cursor-pointer flex justify-center items-center w-[60px] h-[60px] rounded-full bg-[#0a4277]"
+                className="motion-preset-slide-down hover:scale-105 ease-in-out duration-300 transition-all cursor-pointer flex justify-center items-center w-[60px] h-[60px] rounded-full bg-[#0a4277] relative"
               >
                 <img src={chat} alt="logo" className="select-none motion-preset-seesaw w-10 h-10 p-2" />
+                {hasUnreadMessages && (
+                  <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full border-2 border-white"></div>
+                )}
               </div>
             )}
           </div>
