@@ -373,13 +373,9 @@ socket.current.on('newMessage', (newMessage) => {
         return { ...conv, lastMessage: newMessage };
       }
       return conv;
-<<<<<<< HEAD
-    }).sort((a, b) => {
-=======
     });
     
     return updatedConversations.sort((a, b) => {
->>>>>>> 24aec97 (after4 days nag pagluluksa gumana na si bro chat)
       if (!a.lastMessage && !b.lastMessage) return 0;
       if (!a.lastMessage) return 1;
       if (!b.lastMessage) return -1;
@@ -664,31 +660,6 @@ const startConversation = useCallback(async (clinic, patientId = null) => {
       if (socket.current && socket.current.connected) {
         socket.current.emit('joinConversation', existingConversation._id);
       }
-<<<<<<< HEAD
-      
-      if (!isPrefetch) {
-        // Check if we're just updating with new messages
-        const existingMessages = messagesByConversation[convId] || [];
-        const isJustUpdate = existingMessages.length > 0 && 
-                           loadedMessages.length >= existingMessages.length;
-
-        // Don't show loading state for updates
-        if (!isJustUpdate) {
-          setLoadingMessages(prev => ({ ...prev, [convId]: false }));
-        }
-
-        setMessages(loadedMessages);
-        
-        // Auto-scroll to bottom after loading messages
-        setTimeout(() => {
-          scrollToBottom();
-        }, 100);
-      }
-    } catch (error) {
-      console.error(`Error loading messages for conversation ${convId}:`, error);
-      if (!isPrefetch) setLoadingMessages(prev => ({ ...prev, [convId]: false }));
-=======
->>>>>>> 24aec97 (after4 days nag pagluluksa gumana na si bro chat)
     }
 
     // Set the active conversation
@@ -967,28 +938,6 @@ const startConversation = useCallback(async (clinic, patientId = null) => {
     }
   }, [showpatientchatdashboard]); // Removed fetchPatients dependency to prevent unnecessary re-renders
 
-<<<<<<< HEAD
-  // Cleanup effect for chat state
-  useEffect(() => {
-    if (!showpatientchatdashboard) {
-      // Clear active chat state but preserve conversations
-      setMessage("");
-      setSelectedFile(null);
-      setSelectedClinic(null);
-      setSelectedPatient(null);
-      // Reset loading states
-      setLoadingConversations(false);
-      setLoading(false);
-    }
-  }, [showpatientchatdashboard]);
-
-  // Start conversation for patients when chat dashboard opens
-  useEffect(() => {
-    if (showpatientchatdashboard && localStorage.getItem("role") === "patient") {
-      const clinic = showpatientambherConversation ? "Ambher Optical" : "Bautista Eye Center";
-      if (clinic) {
-        console.log('Starting patient conversation with clinic:', clinic);
-=======
 useEffect(() => {
   if (showpatientchatdashboard && localStorage.getItem("role") === "patient") {
     const clinic = showpatientambherConversation ? "Ambher Optical" : showpatientbautistaConversation ? "Bautista Eye Center" : null;
@@ -998,7 +947,6 @@ useEffect(() => {
       if (socket.current && !socket.current.connected) {
         console.log('Reconnecting socket when chat dashboard opens (patient)');
         socket.current.connect();
->>>>>>> 24aec97 (after4 days nag pagluluksa gumana na si bro chat)
         
         setTimeout(() => {
           startConversation(clinic);
@@ -1118,33 +1066,6 @@ useEffect(() => {
     setactiveambhermessageslist(ambhermessageslistid);
   };
 
-<<<<<<< HEAD
-  const handlePatientSelect = (patient) => {
-    console.log('Selecting patient:', patient);
-    setSelectedPatient(patient);
-    setSelectedClinic(null); // Clear clinic selection when selecting a patient
-    
-    const clinic = localStorage.getItem('staffclinic') || localStorage.getItem('ownerclinic');
-    console.log('Starting conversation with patient:', { patientId: patient._id, clinic });
-
-    // Find existing conversation with this patient
-    const existingConv = conversations.find(conv => {
-      return conv.participants.some(p => p.userId === patient._id);
-    });
-
-    if (existingConv) {
-      // Use existing conversation
-      setConversationId(existingConv._id);
-      setMessages([]);
-      loadMessages(existingConv._id);
-    } else {
-      // Clear conversation state for new conversation
-      setConversationId(null);
-      setMessages([]);
-      // Don't show loading state immediately since we'll create conversation on first message
-    }
-  };
-=======
 
 
 const handlePatientSelect = (patient) => {
@@ -1171,7 +1092,6 @@ const handlePatientSelect = (patient) => {
 
 
 
->>>>>>> 24aec97 (after4 days nag pagluluksa gumana na si bro chat)
 
   return (
     <>
@@ -2240,12 +2160,9 @@ jsxtransition-all duration-300 ease-in-out flex-shrink-0"
                   setshowpatientchatdashboard(false);
                   setSelectedClinic(null);
                   setSelectedPatient(null);
-<<<<<<< HEAD
-=======
                   setMessages([]);
                   setConversationId(null);
                   fetchConversationsRef.current();
->>>>>>> 24aec97 (after4 days nag pagluluksa gumana na si bro chat)
                 }} 
                 className="motion-preset-slide-down hover:scale-105 ease-in-out duration-300 transition-all cursor-pointer flex justify-center items-center w-[60px] h-[60px] rounded-full bg-[#0a4277]"
               >
