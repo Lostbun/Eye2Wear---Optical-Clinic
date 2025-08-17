@@ -96,7 +96,7 @@ function PatientChatButton() {
     };
   };
 
-  // Improved fetchConversations function
+// Improved fetchConversations function
 const fetchConversations = useCallback(async () => {
   try {
     // Check if we already have conversations in memory
@@ -140,32 +140,85 @@ const fetchConversations = useCallback(async () => {
 
     // Update latest messages state
     const latestMsgs = {};
-    sortedConversations.forEach(conv => {
+    const newMessagesByConversation = {};
+    
+    // Process each conversation and pre-load messages
+    for (const conv of sortedConversations) {
       if (conv.lastMessage) {
         latestMsgs[conv._id] = conv.lastMessage;
       }
-    });
-    setLatestMessagesByConversation(latestMsgs);
-
-    // Pre-fetch messages for all conversations
-    if (sortedConversations.length > 0) {
-      const conversationsToLoad = sortedConversations.filter(conv => 
-        !messagesByConversation[conv._id] || messagesByConversation[conv._id].length === 0
-      );
       
-      if (conversationsToLoad.length > 0) {
-        console.log(`Pre-loading messages for ${conversationsToLoad.length} conversations`);
-        await Promise.all(conversationsToLoad.map(async conv => {
-          await loadMessages(conv._id, true);
-        }));
+      // Load messages for each conversation
+      try {
+        console.log(`Pre-loading messages for conversation ${conv._id}`);
+        const messagesResponse = await fetch(`${apiUrl}/api/messages/${conv._id}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (messagesResponse.ok) {
+          const messagesData = await messagesResponse.json();
+          newMessagesByConversation[conv._id] = messagesData;
+          console.log(`Loaded ${messagesData.length} messages for conversation ${conv._id}`);
+        }
+      } catch (error) {
+        console.error(`Error loading messages for conversation ${conv._id}:`, error);
       }
     }
+    
+    setLatestMessagesByConversation(latestMsgs);
+    setMessagesByConversation(newMessagesByConversation);
+    
   } catch (error) {
     console.error("Error fetching conversations:", error);
   } finally {
     setLoadingConversations(false);
   }
 }, [apiUrl]);
+
+
+
+useEffect(() => {
+  const role = localStorage.getItem('role');
+  
+  // Fix missing ownerid by extracting from ownerdetails
+  if (role === 'owner' && !localStorage.getItem('ownerid')) {
+    const ownerdetails = localStorage.getItem('ownerdetails');
+    if (ownerdetails) {
+      try {
+        const ownerData = JSON.parse(ownerdetails);
+        const ownerId = ownerData._id || ownerData.id;
+        if (ownerId) {
+          localStorage.setItem('ownerid', ownerId);
+          console.log('Fixed missing ownerid:', ownerId);
+          forceUpdate({}); // Force re-render after fixing
+        }
+      } catch (error) {
+        console.error('Error parsing ownerdetails:', error);
+      }
+    }
+  }
+  
+  // Fix missing staffid by extracting from staffdetails
+  if (role === 'staff' && !localStorage.getItem('staffid')) {
+    const staffdetails = localStorage.getItem('staffdetails');
+    if (staffdetails) {
+      try {
+        const staffData = JSON.parse(staffdetails);
+        const staffId = staffData._id || staffData.id;
+        if (staffId) {
+          localStorage.setItem('staffid', staffId);
+          console.log('Fixed missing staffid:', staffId);
+          forceUpdate({}); // Force re-render after fixing
+        }
+      } catch (error) {
+        console.error('Error parsing staffdetails:', error);
+      }
+    }
+  }
+}, [location.pathname]); // Add location.pathname as dependency to run on route changes
+
+
+
 
 
   // Initialize debounced fetchConversations
@@ -273,6 +326,7 @@ socket.current.on('connect', () => {
     });
 
     // Handle new messages
+// Handle new messages
 socket.current.on('newMessage', (newMessage) => {
   console.log('Received new message:', newMessage);
   
@@ -292,13 +346,14 @@ socket.current.on('newMessage', (newMessage) => {
     setPendingMessageId(null);
   }
 
-  // Update messagesByConversation state
+  // Update messagesByConversation state (don't filter here)
   setMessagesByConversation(prev => {
     const conversationMessages = prev[newMessage.conversationId] || [];
     if (!conversationMessages.some(msg => msg._id === newMessage._id || msg.temporaryId === newMessage.temporaryId)) {
+      const updatedMessages = [...conversationMessages, newMessage];
       return {
         ...prev,
-        [newMessage.conversationId]: [...conversationMessages, newMessage]
+        [newMessage.conversationId]: updatedMessages
       };
     }
     return prev;
@@ -318,7 +373,13 @@ socket.current.on('newMessage', (newMessage) => {
         return { ...conv, lastMessage: newMessage };
       }
       return conv;
+<<<<<<< HEAD
     }).sort((a, b) => {
+=======
+    });
+    
+    return updatedConversations.sort((a, b) => {
+>>>>>>> 24aec97 (after4 days nag pagluluksa gumana na si bro chat)
       if (!a.lastMessage && !b.lastMessage) return 0;
       if (!a.lastMessage) return 1;
       if (!b.lastMessage) return -1;
@@ -380,204 +441,230 @@ socket.current.on('newMessage', (newMessage) => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, []);
 
-  // Improved startConversation function
-  const startConversation = useCallback(async (clinic, patientId = null) => {
-    try {
-      setLoading(true);
-      setMessages([]);
-      setSelectedClinic(clinic);
-      setSelectedPatient(patientId ? patients.find(p => p._id === patientId) : null);
 
-      // Add timeout to clear loading state if it takes too long
-      const loadingTimeout = setTimeout(() => {
-        console.warn('Conversation loading timeout, clearing loading state');
-        setLoading(false);
-      }, 10000); // 10 seconds timeout
 
-      const token = localStorage.getItem('token');
-      if (!token) {
-        console.error('No token found');
-        setLoading(false);
-        return;
+
+
+// Improved loadMessages function
+const loadMessages = useCallback(async (targetConversationId, skipStateUpdate = false) => {
+  try {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      console.error('No token found');
+      return;
+    }
+
+    console.log('Fetching messages for conversation:', targetConversationId);
+    const response = await fetch(`${apiUrl}/api/messages/${targetConversationId}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
       }
+    });
 
-      const userId = localStorage.getItem('patientid') || 
-                    localStorage.getItem('staffid') || 
-                    localStorage.getItem('ownerid');
-      const role = localStorage.getItem('role');
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Failed to fetch messages:', response.status, errorText);
+      throw new Error(`Failed to fetch messages: ${errorText}`);
+    }
 
-      // Find existing conversation based on role and context
-      let existingConversation = null;
+    const data = await response.json();
+    console.log('Fetched messages:', data);
+    
+    // Always update messagesByConversation
+    setMessagesByConversation(prev => ({
+      ...prev,
+      [targetConversationId]: data
+    }));
+    
+    // Only update current messages if this is the active conversation and not skipping
+    if (!skipStateUpdate) {
+      setMessages(data);
+    }
+    
+    return data;
+  } catch (error) {
+    console.error('Error loading messages:', error);
+    if (!skipStateUpdate) {
+      setMessages([]);
+    }
+    return [];
+  }
+}, [apiUrl]);
+
+
+
+
+
+
+
+  // Improved startConversation function
+// Improved startConversation function
+// Add this debug function at the top of your PatientChatButton component
+const debugLocalStorage = () => {
+  console.log('LocalStorage debug:', {
+    role: localStorage.getItem('role'),
+    patientid: localStorage.getItem('patientid'),
+    staffid: localStorage.getItem('staffid'),
+    ownerid: localStorage.getItem('ownerid'),
+    ownername: localStorage.getItem('ownername'),
+    ownerclinic: localStorage.getItem('ownerclinic'),
+    token: localStorage.getItem('token') ? 'exists' : 'missing'
+  });
+};
+
+// Update the startConversation function to better handle userId retrieval
+const startConversation = useCallback(async (clinic, patientId = null) => {
+  try {
+    setLoading(true);
+    setMessages([]);
+    setSelectedClinic(clinic);
+    setSelectedPatient(patientId ? patients.find(p => p._id === patientId) : null);
+
+    // Debug localStorage
+    debugLocalStorage();
+
+    const loadingTimeout = setTimeout(() => {
+      console.warn('Conversation loading timeout, clearing loading state');
+      setLoading(false);
+    }, 10000);
+
+    const token = localStorage.getItem('token');
+    if (!token) {
+      console.error('No token found');
+      setLoading(false);
+      clearTimeout(loadingTimeout);
+      return;
+    }
+
+    const role = localStorage.getItem('role');
+    const userId = localStorage.getItem(`${role}id`) || 
+                   localStorage.getItem('patientid') || 
+                   localStorage.getItem('staffid') || 
+                   localStorage.getItem('ownerid');
+    const userClinic = localStorage.getItem('staffclinic') || localStorage.getItem('ownerclinic');
+
+    if (!userId) {
+      console.error('No userId found for role:', role);
+      setLoading(false);
+      clearTimeout(loadingTimeout);
+      return;
+    }
+
+    console.log('User identification:', { role, userId, patientId, userClinic });
+
+    // Find existing conversation based on the scenario
+    let existingConversation = null;
+    const isClinicToClinic = !patientId && (role === 'staff' || role === 'owner') && clinic !== userClinic;
+
+    if (role === 'patient') {
+      // Patient messaging a clinic
+      existingConversation = conversations.find(conv => 
+        conv.participants.some(p => 
+          p.userId === userId && p.role === 'patient'
+        ) && 
+        conv.participants.some(p => 
+          p.role === 'clinic' && p.clinic === clinic
+        )
+      );
+      console.log('Patient conversation search:', { 
+        clinic, 
+        userId, 
+        role, 
+        found: !!existingConversation, 
+        conversationId: existingConversation?._id 
+      });
+    } else if (patientId) {
+      // Staff/owner messaging a patient
+      existingConversation = conversations.find(conv => 
+        conv.participants.some(p => 
+          p.userId === patientId && p.role === 'patient'
+        ) && 
+        conv.participants.some(p => 
+          (p.userId === userId && p.role === role) || 
+          (p.role === 'clinic' && p.clinic === userClinic)
+        )
+      );
+      console.log('Staff/owner patient conversation search:', { 
+        clinic: userClinic, 
+        patientId, 
+        userId, 
+        role, 
+        found: !!existingConversation,
+        conversationId: existingConversation?._id 
+      });
+    } else if (isClinicToClinic) {
+      // Clinic-to-clinic conversation
+      existingConversation = conversations.find(conv => 
+        conv.participants.some(p => 
+          p.role === 'clinic' && p.clinic === userClinic
+        ) && 
+        conv.participants.some(p => 
+          p.role === 'clinic' && p.clinic === clinic
+        )
+      );
+      console.log('Clinic-to-clinic conversation search:', { 
+        userClinic, 
+        targetClinic: clinic, 
+        found: !!existingConversation,
+        conversationId: existingConversation?._id 
+      });
+    }
+
+    if (!existingConversation) {
+      // Create new conversation with appropriate participants
+      const participants = [];
       
       if (role === 'patient') {
-        // Patient looking for conversation with a specific clinic
-        existingConversation = conversations.find(conv => 
-          conv.clinic === clinic &&
-          conv.participants.some(p => p.userId === userId && p.role === role)
+        // Patient + clinic
+        participants.push(
+          { userId, role: 'patient' },
+          { role: 'clinic', clinic }
         );
-        console.log('Patient conversation search:', { clinic, userId, role, found: !!existingConversation });
-      } else if (role === 'staff' || role === 'owner') {
-        if (patientId) {
-          // Staff/owner looking for conversation with a specific patient
-          // First try to find by exact clinic and patient match
-          existingConversation = conversations.find(conv => 
-            conv.clinic === clinic &&
-            conv.participants.some(p => p.userId === patientId && p.role === 'patient') &&
-            conv.participants.some(p => p.userId === userId && p.role === role)
-          );
-          
-          // If not found, try to find any conversation with this patient
-          if (!existingConversation) {
-            existingConversation = conversations.find(conv => 
-              conv.participants.some(p => p.userId === patientId && p.role === 'patient')
-            );
-          }
-          
-          console.log('Staff/owner patient conversation search:', { 
-            clinic, 
-            patientId, 
-            userId, 
-            role, 
-            found: !!existingConversation,
-            conversationId: existingConversation?._id 
-          });
-        } else {
-          // Staff/owner looking for clinic-to-clinic conversation
-          const otherClinic = clinic === "Ambher Optical" ? "Bautista Eye Center" : "Ambher Optical";
-          existingConversation = conversations.find(conv => 
-            (conv.clinic === clinic || conv.clinic === otherClinic) &&
-            conv.participants.some(p => p.role === 'clinic' && p.clinic === clinic) &&
-            conv.participants.some(p => p.role === 'clinic' && p.clinic === otherClinic)
-          );
-          console.log('Clinic-to-clinic conversation search:', { clinic, otherClinic, found: !!existingConversation });
-        }
+      } else if (patientId) {
+        // Staff/owner + patient
+        participants.push(
+          { userId: patientId, role: 'patient' },
+          { userId, role, clinic: userClinic }
+        );
+      } else if (isClinicToClinic) {
+        // Clinic + clinic
+        participants.push(
+          { role: 'clinic', clinic: userClinic },
+          { role: 'clinic', clinic }
+        );
       }
 
-      // If no conversation found, create one if needed
-      if (!existingConversation) {
-        if (patientId || role === 'patient') {
-          const participants = patientId ? [
-            { userId: patientId, role: 'patient' },
-            { userId, role }
-          ] : [
-            { userId, role },
-            { role: 'clinic', clinic }
-          ];
+      console.log('Creating new conversation with participants:', participants);
 
-          console.log('Creating new conversation with participants:', participants);
-          
-          const createResponse = await fetch(`${apiUrl}/api/messages/conversations`, {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-              clinic,
-              participants
-            })
-          });
-
-          if (!createResponse.ok) {
-            console.error('Failed to create conversation:', createResponse.status, createResponse.statusText);
-            setLoading(false);
-            return;
-          }
-
-          existingConversation = await createResponse.json();
-          console.log('Created new conversation:', existingConversation);
-          setConversations(prev => [existingConversation, ...prev]); // Add to beginning of list
-          
-          // Ensure socket is connected for new conversation
-          if (socket.current && !socket.current.connected) {
-            console.log('Reconnecting socket for new conversation');
-            socket.current.connect();
-          }
-        }
-      }
-
-      if (existingConversation) {
-        console.log('Found existing conversation:', existingConversation._id);
-        setConversationId(existingConversation._id);
-        
-        // Check if socket is connected before emitting
-        if (socket.current && socket.current.connected) {
-          socket.current.emit('joinConversation', existingConversation._id);
-        } else {
-          console.warn('Socket not connected, will join conversation when socket connects');
-        }
-        
-        await loadMessages(existingConversation._id);
-        clearTimeout(loadingTimeout); // Clear the timeout
-        setLoading(false); // Clear loading state after conversation is loaded
-      } else {
-        console.warn(`No conversation found for clinic: ${clinic}, userId: ${userId}, role: ${role}, patientId: ${patientId}`);
-        setConversationId(null);
-        setMessages([]);
-        clearTimeout(loadingTimeout); // Clear the timeout
-        setLoading(false);
-      }
-    } catch (error) {
-      console.error("Error starting conversation:", error);
-      clearTimeout(loadingTimeout); // Clear the timeout
-      setLoading(false);
-    }
-  }, [apiUrl, conversations, patients]);
-
-  // Improved loadMessages function
-  const loadMessages = useCallback(async (convId, isPrefetch = false) => {
-    try {
-      if (!convId) {
-        console.warn('No conversation ID provided to loadMessages');
-        return;
-      }
-
-
-      const cachedMessages = messagesByConversation[convId];
-      if (cachedMessages && cachedMessages.length > 0 && isPrefetch) {
-        console.log(`Using cached messages for conversation ${convId}: ${cachedMessages.length} messages`);
-        return;
-      }
-
-      if (!isPrefetch) {
-        setLoadingMessages(prev => ({ ...prev, [convId]: true }));
-        setMessages([]);
-      }
-
-      const token = localStorage.getItem('token');
-      if (!token) {
-        console.error('No token found');
-        if (!isPrefetch) setLoadingMessages(prev => ({ ...prev, [convId]: false }));
-        return;
-      }
-
-      console.log(`Loading messages for conversation: ${convId}`);
-      const response = await fetch(`${apiUrl}/api/messages/${convId}`, {
-        headers: { 'Authorization': `Bearer ${token}` }
+      const createResponse = await fetch(`${apiUrl}/api/messages/conversations`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          clinic: patientId ? userClinic : clinic,
+          participants
+        })
       });
 
-      if (!response.ok) {
-        console.error(`Failed to load messages for conversation ${convId}: ${response.status} ${response.statusText}`);
-        if (!isPrefetch) setLoadingMessages(prev => ({ ...prev, [convId]: false }));
-        throw new Error('Failed to load messages');
+      if (!createResponse.ok) {
+        const errorText = await createResponse.text();
+        console.error('Failed to create conversation:', createResponse.status, errorText);
+        throw new Error(`Failed to create conversation: ${errorText}`);
       }
+
+      existingConversation = await createResponse.json();
+      console.log('Created new conversation:', existingConversation);
       
-      const loadedMessages = await response.json();
-      console.log(`Loaded ${loadedMessages.length} messages for conversation ${convId}`);
-      
-      setMessagesByConversation(prev => ({
-        ...prev,
-        [convId]: loadedMessages
-      }));
-      
-      // Update latest message for this conversation
-      if (loadedMessages.length > 0) {
-        const latestMessage = loadedMessages[loadedMessages.length - 1];
-        setLatestMessagesByConversation(prev => ({
-          ...prev,
-          [convId]: latestMessage
-        }));
+      // Add new conversation to local state
+      setConversations(prev => [existingConversation, ...prev]);
+
+      // Join conversation via socket if connected
+      if (socket.current && socket.current.connected) {
+        socket.current.emit('joinConversation', existingConversation._id);
       }
+<<<<<<< HEAD
       
       if (!isPrefetch) {
         // Check if we're just updating with new messages
@@ -600,8 +687,27 @@ socket.current.on('newMessage', (newMessage) => {
     } catch (error) {
       console.error(`Error loading messages for conversation ${convId}:`, error);
       if (!isPrefetch) setLoadingMessages(prev => ({ ...prev, [convId]: false }));
+=======
+>>>>>>> 24aec97 (after4 days nag pagluluksa gumana na si bro chat)
     }
-  }, [apiUrl, scrollToBottom]);
+
+    // Set the active conversation
+    setConversationId(existingConversation._id);
+    
+    // Load messages for this conversation
+    await loadMessages(existingConversation._id);
+    
+    clearTimeout(loadingTimeout);
+    setLoading(false);
+  } catch (error) {
+    console.error("Error starting conversation:", error);
+    setLoading(false);
+    setConversationId(null);
+    setMessages([]);
+  }
+}, [apiUrl, conversations, patients, loadMessages]);
+
+
 
   // Improved handleSendMessage function
   const handleSendMessage = useCallback(async () => {
@@ -861,6 +967,7 @@ socket.current.on('newMessage', (newMessage) => {
     }
   }, [showpatientchatdashboard]); // Removed fetchPatients dependency to prevent unnecessary re-renders
 
+<<<<<<< HEAD
   // Cleanup effect for chat state
   useEffect(() => {
     if (!showpatientchatdashboard) {
@@ -881,22 +988,29 @@ socket.current.on('newMessage', (newMessage) => {
       const clinic = showpatientambherConversation ? "Ambher Optical" : "Bautista Eye Center";
       if (clinic) {
         console.log('Starting patient conversation with clinic:', clinic);
+=======
+useEffect(() => {
+  if (showpatientchatdashboard && localStorage.getItem("role") === "patient") {
+    const clinic = showpatientambherConversation ? "Ambher Optical" : showpatientbautistaConversation ? "Bautista Eye Center" : null;
+    if (clinic) {
+      console.log('Starting patient conversation with clinic:', clinic);
+      
+      if (socket.current && !socket.current.connected) {
+        console.log('Reconnecting socket when chat dashboard opens (patient)');
+        socket.current.connect();
+>>>>>>> 24aec97 (after4 days nag pagluluksa gumana na si bro chat)
         
-        // Ensure socket is connected when chat dashboard opens
-        if (socket.current && !socket.current.connected) {
-          console.log('Reconnecting socket when chat dashboard opens (patient)');
-          socket.current.connect();
-          
-          // Wait a bit for socket to connect before starting conversation
-          setTimeout(() => {
-            startConversation(clinic);
-          }, 500);
-        } else {
+        setTimeout(() => {
           startConversation(clinic);
-        }
+          fetchConversationsRef.current();
+        }, 500);
+      } else {
+        startConversation(clinic);
+        fetchConversationsRef.current();
       }
     }
-  }, [showpatientchatdashboard, showpatientambherConversation, showpatientbautistaConversation]); // Removed startConversation dependency
+  }
+}, [showpatientchatdashboard, showpatientambherConversation, showpatientbautistaConversation]);
 
   const renderMessageContent = (msg, isCurrentUser) => {
     return (
@@ -1004,6 +1118,7 @@ socket.current.on('newMessage', (newMessage) => {
     setactiveambhermessageslist(ambhermessageslistid);
   };
 
+<<<<<<< HEAD
   const handlePatientSelect = (patient) => {
     console.log('Selecting patient:', patient);
     setSelectedPatient(patient);
@@ -1029,6 +1144,34 @@ socket.current.on('newMessage', (newMessage) => {
       // Don't show loading state immediately since we'll create conversation on first message
     }
   };
+=======
+
+
+const handlePatientSelect = (patient) => {
+  console.log('Selecting patient:', patient);
+  
+  // Debug current user info
+  debugLocalStorage();
+  
+  setLoading(true);
+  setMessages([]);
+  setSelectedPatient(patient);
+  setSelectedClinic(null);
+  setConversationId(null);
+  const clinic = localStorage.getItem('staffclinic') || localStorage.getItem('ownerclinic');
+  console.log('Starting conversation with patient:', { patientId: patient._id, clinic });
+  startConversation(clinic, patient._id);
+};
+
+
+
+
+
+
+
+
+
+>>>>>>> 24aec97 (after4 days nag pagluluksa gumana na si bro chat)
 
   return (
     <>
@@ -1707,6 +1850,7 @@ socket.current.on('newMessage', (newMessage) => {
                   setSelectedClinic(null);
                   setSelectedPatient(null);
                   setMessages([]);
+                  setConversationId(null);
                   fetchConversationsRef.current();
                 }} 
                 className="motion-preset-slide-down hover:scale-105 ease-in-out duration-300 transition-all cursor-pointer flex justify-center items-center w-[60px] h-[60px] rounded-full bg-[#39715f]"
@@ -2096,6 +2240,12 @@ jsxtransition-all duration-300 ease-in-out flex-shrink-0"
                   setshowpatientchatdashboard(false);
                   setSelectedClinic(null);
                   setSelectedPatient(null);
+<<<<<<< HEAD
+=======
+                  setMessages([]);
+                  setConversationId(null);
+                  fetchConversationsRef.current();
+>>>>>>> 24aec97 (after4 days nag pagluluksa gumana na si bro chat)
                 }} 
                 className="motion-preset-slide-down hover:scale-105 ease-in-out duration-300 transition-all cursor-pointer flex justify-center items-center w-[60px] h-[60px] rounded-full bg-[#0a4277]"
               >

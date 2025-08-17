@@ -5,32 +5,52 @@ import multer from 'multer';
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 
+
+// Get all conversations for a user or clinic
 // Get all conversations for a user or clinic
 export const getConversations = async (req, res) => {
   try {
     const { userId, role, clinic } = req.user;
     
-    let conversations;
+    let query = {};
+
     if (role === 'patient') {
-      // Patients see conversations they're part of
-      conversations = await Conversation.find({
-        'participants.userId': userId,
-        'participants.role': role
-      }).populate('lastMessage').sort({ updatedAt: -1 });
+      // Patients see all conversations where they are a participant
+      query = {
+        'participants': {
+          $elemMatch: { userId: userId, role: 'patient' }
+        }
+      };
     } else if (role === 'staff' || role === 'owner') {
       // Staff/owners see conversations involving their clinic
-      conversations = await Conversation.find({
+      query = {
         $or: [
-          { 'participants.userId': userId, 'participants.role': role },
+          // Conversations where they are direct participants
+          { 'participants': { $elemMatch: { userId: userId, role: role } } },
+          // Conversations involving their clinic (either as clinic participant or clinic field)
           { 'participants.clinic': clinic },
           { clinic: clinic },
-          // Also include conversations where staff/owner is a participant
-          { 'participants': { $elemMatch: { userId: userId, role: role } } }
+          // Clinic-to-clinic conversations where they represent their clinic
+          { 
+            'participants': { 
+              $elemMatch: { 
+                role: 'clinic',
+                clinic: clinic 
+              } 
+            } 
+          }
         ]
-      }).populate('lastMessage').sort({ updatedAt: -1 });
+      };
     }
 
-    console.log(`Found ${conversations.length} conversations for ${role} ${userId}`);
+    const conversations = await Conversation.find(query)
+      .populate('lastMessage')
+      .sort({ updatedAt: -1 });
+
+    console.log(`Found ${conversations.length} conversations for ${role} ${userId} at clinic ${clinic}`);
+    console.log('Query used:', JSON.stringify(query, null, 2));
+    console.log('Sample conversation participants:', conversations[0]?.participants);
+    
     res.status(200).json(conversations);
   } catch (error) {
     console.error('Error fetching conversations:', error);
@@ -38,23 +58,48 @@ export const getConversations = async (req, res) => {
   }
 };
 
+
+// Get messages in a conversation
 // Get messages in a conversation
 export const getMessages = async (req, res) => {
   try {
     const { conversationId } = req.params;
     const { userId, role, clinic } = req.user;
 
-    // Verify conversation access
+    // Verify conversation exists
     const conversation = await Conversation.findById(conversationId);
     if (!conversation) {
       return res.status(404).json({ message: 'Conversation not found' });
     }
 
     // Check if user has access to the conversation
-    const hasAccess = conversation.participants.some(p => 
-      (p.userId === userId && p.role === role) || 
-      (p.role === 'clinic' && p.clinic === clinic)
-    );
+    let hasAccess = false;
+    
+    if (role === 'patient') {
+      // Patient can access if they are a participant
+      hasAccess = conversation.participants.some(p => 
+        p.userId === userId && p.role === 'patient'
+      );
+    } else if (role === 'staff' || role === 'owner') {
+      // Staff/owner can access if:
+      // 1. They are a direct participant
+      // 2. Their clinic is involved in the conversation
+      // 3. The conversation clinic matches their clinic
+      hasAccess = conversation.participants.some(p => 
+        (p.userId === userId && (p.role === role || p.role === 'clinic')) || 
+        (p.clinic === clinic && ['staff', 'owner', 'clinic'].includes(p.role))
+      ) || conversation.clinic === clinic;
+    }
+
+    console.log('Access check details:', {
+      userId,
+      role,
+      clinic,
+      conversationId,
+      hasAccess,
+      participants: conversation.participants,
+      conversationClinic: conversation.clinic
+    });
 
     if (!hasAccess) {
       return res.status(403).json({ message: 'Unauthorized access to conversation' });
@@ -68,7 +113,7 @@ export const getMessages = async (req, res) => {
       { 
         conversationId,
         'readBy.userId': { $ne: userId },
-        senderId: { $ne: userId } // Don't mark own messages as read
+        senderId: { $ne: userId }
       },
       {
         $push: {
@@ -82,8 +127,10 @@ export const getMessages = async (req, res) => {
       }
     );
 
+    console.log(`Fetched ${messages.length} messages for conversation ${conversationId} by ${role} ${userId}`);
     res.status(200).json(messages);
   } catch (error) {
+    console.error('Error fetching messages:', error);
     res.status(500).json({ message: error.message });
   }
 };
@@ -128,84 +175,131 @@ export const upload = multer({
   limits: { fileSize: 10 * 1024 * 1024 } // 10MB limit
 });
 
+
+// Create a new conversation
+// Create a new conversation
+// Create a new conversation
 // Create a new conversation
 export const createConversation = async (req, res) => {
   try {
     const { clinic, participants } = req.body;
-    const { userId, role, name } = req.user;
+    const { userId, role, clinic: userClinic } = req.user;
+
+    console.log('Creating conversation request:', { clinic, participants, userId, role, userClinic });
 
     // Validate required fields
-    if (!clinic || !participants || !Array.isArray(participants)) {
-      return res.status(400).json({ message: 'Clinic and participants array are required' });
+    if (!participants || !Array.isArray(participants)) {
+      return res.status(400).json({ message: 'Participants array is required' });
     }
 
-    // Check if conversation already exists
-    let existingConversation;
+    // For clinic-to-clinic, ensure both clinics are represented
+    const isClinicToClinic = participants.some(p => p.role === 'clinic');
+    const targetClinic = isClinicToClinic 
+      ? participants.find(p => p.role === 'clinic' && p.clinic !== userClinic)?.clinic
+      : null;
+
+    // Build query to find existing conversation
+    let query;
     if (role === 'patient') {
-      existingConversation = await Conversation.findOne({
-        clinic: clinic,
-        'participants.userId': userId,
-        'participants.role': role
-      });
+      // Patient looking for conversation with specific clinic
+      // Search for ANY conversation between this patient and the target clinic
+      query = {
+        $and: [
+          { 'participants': { $elemMatch: { userId: userId, role: 'patient' } } },
+          { 
+            $or: [
+              // Direct clinic participant
+              { 'participants': { $elemMatch: { role: 'clinic', clinic: clinic } } },
+              // Staff/owner from that clinic
+              { 'participants': { $elemMatch: { clinic: clinic, role: { $in: ['staff', 'owner'] } } } },
+              // Conversation clinic field matches
+              { clinic: clinic }
+            ]
+          }
+        ]
+      };
+    } else if (isClinicToClinic) {
+      // Clinic-to-clinic conversation
+      query = {
+        $and: [
+          {
+            $or: [
+              { 'participants': { $elemMatch: { role: 'clinic', clinic: userClinic } } },
+              { 'participants': { $elemMatch: { clinic: userClinic, role: { $in: ['staff', 'owner'] } } } }
+            ]
+          },
+          {
+            $or: [
+              { 'participants': { $elemMatch: { role: 'clinic', clinic: targetClinic } } },
+              { 'participants': { $elemMatch: { clinic: targetClinic, role: { $in: ['staff', 'owner'] } } } }
+            ]
+          }
+        ]
+      };
     } else {
-      // For staff/owner, check if conversation with patient exists
-      const patientParticipant = participants.find(p => p.role === 'patient');
-      if (patientParticipant) {
-        // First try to find conversation with exact clinic match
-        existingConversation = await Conversation.findOne({
-          clinic: clinic,
-          'participants.userId': patientParticipant.userId,
-          'participants.role': 'patient'
-        });
-        
-        // If not found, try to find any conversation with this patient
-        if (!existingConversation) {
-          existingConversation = await Conversation.findOne({
-            'participants.userId': patientParticipant.userId,
-            'participants.role': 'patient'
-          });
-        }
-      } else {
-        // For clinic-to-clinic conversations
-        const clinicParticipant = participants.find(p => p.role === 'clinic');
-        if (clinicParticipant) {
-          existingConversation = await Conversation.findOne({
-            clinic: clinic,
-            'participants.role': 'clinic',
-            'participants.clinic': clinicParticipant.clinic
-          });
-        }
+      // Staff/owner messaging patient - ensure conversation is specific to their clinic
+      const patient = participants.find(p => p.role === 'patient');
+      if (!patient) {
+        return res.status(400).json({ message: 'Patient participant required' });
       }
+      
+      query = {
+        $and: [
+          { 'participants': { $elemMatch: { userId: patient.userId, role: 'patient' } } },
+          {
+            $or: [
+              // Direct user participant
+              { 'participants': { $elemMatch: { userId: userId, role: role } } },
+              // Clinic participant from same clinic
+              { 'participants': { $elemMatch: { role: 'clinic', clinic: userClinic } } },
+              // Staff/owner from same clinic
+              { 'participants': { $elemMatch: { clinic: userClinic, role: { $in: ['staff', 'owner'] } } } },
+              // Conversation clinic matches
+              { clinic: userClinic }
+            ]
+          }
+        ]
+      };
     }
 
-    if (existingConversation) {
-      return res.status(200).json(existingConversation);
+    console.log('Searching for existing conversation with query:', JSON.stringify(query, null, 2));
+
+    // Check for existing conversation
+    let conversation = await Conversation.findOne(query);
+    console.log('Found existing conversation:', conversation);
+
+    if (!conversation) {
+      // Clean participants for new conversation
+      const cleanedParticipants = participants.map(p => {
+        if (p.role === 'clinic') {
+          return { role: 'clinic', clinic: p.clinic };
+        } else if (p.role === 'patient') {
+          return { userId: p.userId, role: 'patient', clinic: null };
+        } else {
+          return { userId: p.userId, role: p.role, clinic: userClinic };
+        }
+      });
+
+      conversation = new Conversation({
+        participants: cleanedParticipants,
+        clinic: isClinicToClinic ? userClinic : (clinic || userClinic)
+      });
+      await conversation.save();
+      console.log('Created new conversation:', conversation);
+    } else {
+      console.log('Using existing conversation:', conversation._id);
     }
 
-    // Create new conversation
-    const conversation = new Conversation({
-      participants,
-      clinic
-    });
-
-    await conversation.save();
-    
-    console.log('Created new conversation:', {
-      id: conversation._id,
-      clinic: conversation.clinic,
-      participants: conversation.participants
-    });
-
-    res.status(201).json(conversation);
+    res.status(conversation ? 200 : 201).json(conversation);
   } catch (error) {
     console.error('Error creating conversation:', error);
     res.status(500).json({ message: error.message });
   }
 };
-
+// Create a new message
 export const createMessage = async (req, res) => {
   try {
-    const { conversationId, text, patientId, targetClinic, senderName } = req.body;
+    const { conversationId, text, patientId, targetClinic, senderName, temporaryId } = req.body;
     const { userId, role, clinic, name } = req.user;
 
     let imageUrl = null;
@@ -232,6 +326,13 @@ export const createMessage = async (req, res) => {
       if (!conversation) {
         return res.status(404).json({ message: 'Conversation not found' });
       }
+      // Validate that the conversation matches the clinic
+      if (role === 'staff' || role === 'owner') {
+        const hasClinicParticipant = conversation.participants.some(p => p.clinic === clinic);
+        if (!hasClinicParticipant) {
+          return res.status(403).json({ message: 'Conversation does not belong to your clinic' });
+        }
+      }
     } else {
       // Create new conversation
       const participants = [{
@@ -241,32 +342,64 @@ export const createMessage = async (req, res) => {
       }];
 
       if (isPatientMessagingClinic) {
-        // Patient to clinic
         participants.push({
           role: 'clinic',
           clinic: req.body.clinic
         });
       } else if (isStaffMessagingPatient) {
-        // Staff/owner to patient
         participants.push({
           userId: patientId,
           role: 'patient',
           clinic: null
         });
       } else if (isClinicMessagingClinic) {
-        // Clinic to clinic
-        participants[0] = { role: 'clinic', clinic: clinic }; // Sender is the clinic
-        participants.push({ role: 'clinic', clinic: targetClinic }); // Recipient is the target clinic
+        participants[0] = { role: 'clinic', clinic: clinic };
+        participants.push({ role: 'clinic', clinic: targetClinic });
       }
 
-      conversation = new Conversation({
-        participants,
-        clinic: isClinicMessagingClinic ? clinic : req.body.clinic || targetClinic
-      });
+      // Check for existing conversation to avoid duplicates
+      let existingConversation;
+      if (isStaffMessagingPatient) {
+        existingConversation = await Conversation.findOne({
+          clinic: clinic,
+          participants: {
+            $all: [
+              { $elemMatch: { userId: patientId, role: 'patient' } },
+              { $elemMatch: { role: { $in: ['staff', 'owner', 'clinic'] }, clinic } }
+            ]
+          }
+        });
+      } else if (isPatientMessagingClinic) {
+        existingConversation = await Conversation.findOne({
+          clinic: req.body.clinic,
+          participants: {
+            $all: [
+              { $elemMatch: { userId: userId, role: 'patient' } },
+              { $elemMatch: { role: 'clinic', clinic: req.body.clinic } }
+            ]
+          }
+        });
+      } else if (isClinicMessagingClinic) {
+        existingConversation = await Conversation.findOne({
+          participants: {
+            $all: [
+              { $elemMatch: { role: 'clinic', clinic } },
+              { $elemMatch: { role: 'clinic', clinic: targetClinic } }
+            ]
+          }
+        });
+      }
 
-      await conversation.save();
+      if (existingConversation) {
+        conversation = existingConversation;
+      } else {
+        conversation = new Conversation({
+          participants,
+          clinic: isClinicMessagingClinic ? clinic : req.body.clinic || targetClinic
+        });
+        await conversation.save();
+      }
     }
-
 
     // Use the senderName from the request body, or fallback to user name
     const finalSenderName = senderName || (isClinicMessagingClinic ? clinic : name || 'Unknown');
@@ -291,7 +424,8 @@ export const createMessage = async (req, res) => {
       text,
       imageUrl,
       documentUrl,
-      documentName: req.file?.originalname
+      documentName: req.file?.originalname,
+      temporaryId
     });
 
     await message.save();

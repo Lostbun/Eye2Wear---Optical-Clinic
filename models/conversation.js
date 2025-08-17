@@ -1,11 +1,10 @@
 import mongoose from "mongoose";
+
 const ConversationSchema = new mongoose.Schema({
   participants: [{
     userId: {
       type: String,
-      required: function() {
-        return this.role !== 'clinic'; // userId is not required for clinic role
-      }
+      required: function() { return this.role !== 'clinic'; }
     },
     role: {
       type: String,
@@ -14,14 +13,14 @@ const ConversationSchema = new mongoose.Schema({
     },
     clinic: {
       type: String,
-      enum: ['Ambher Optical', 'Bautista Eye Center', null],
-      default: null
+      required: function() { return this.role === 'clinic'; },
+      enum: ['Ambher Optical', 'Bautista Eye Center']
     }
   }],
   clinic: {
     type: String,
     enum: ['Ambher Optical', 'Bautista Eye Center'],
-    required: false // Make optional for clinic-to-clinic conversations
+    required: false
   },
   lastMessage: {
     type: mongoose.Schema.Types.ObjectId,
@@ -30,4 +29,19 @@ const ConversationSchema = new mongoose.Schema({
 }, {
   timestamps: true
 });
+// Add validation middleware
+ConversationSchema.pre('save', function(next) {
+  // Validate that non-clinic participants have userId
+  for (let participant of this.participants) {
+    if (participant.role !== 'clinic' && !participant.userId) {
+      return next(new Error(`userId is required for ${participant.role} participants`));
+    }
+    // Remove userId from clinic participants
+    if (participant.role === 'clinic' && participant.userId !== undefined) {
+      participant.userId = undefined;
+    }
+  }
+  next();
+});
+
 export default mongoose.model("Conversation", ConversationSchema);
