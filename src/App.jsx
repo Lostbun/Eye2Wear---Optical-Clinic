@@ -304,6 +304,7 @@ socket.current.on('newMessage', (newMessage) => {
     return prev;
   });
 
+  // Immediately update UI without loading states
   // Update latest message for this conversation
   setLatestMessagesByConversation(prev => ({
     ...prev,
@@ -317,15 +318,16 @@ socket.current.on('newMessage', (newMessage) => {
         return { ...conv, lastMessage: newMessage };
       }
       return conv;
-    });
-    
-    // Sort conversations by last message timestamp, most recent first
-    return updatedConversations.sort((a, b) => {
+    }).sort((a, b) => {
       if (!a.lastMessage && !b.lastMessage) return 0;
       if (!a.lastMessage) return 1;
       if (!b.lastMessage) return -1;
       return new Date(b.lastMessage.createdAt) - new Date(a.lastMessage.createdAt);
     });
+    
+    // Don't trigger loading state for updates
+    setLoadingConversations(false);
+    return updatedConversations;
   });
 
   // Update unread messages state if the chat is not open
@@ -578,8 +580,17 @@ socket.current.on('newMessage', (newMessage) => {
       }
       
       if (!isPrefetch) {
+        // Check if we're just updating with new messages
+        const existingMessages = messagesByConversation[convId] || [];
+        const isJustUpdate = existingMessages.length > 0 && 
+                           loadedMessages.length >= existingMessages.length;
+
+        // Don't show loading state for updates
+        if (!isJustUpdate) {
+          setLoadingMessages(prev => ({ ...prev, [convId]: false }));
+        }
+
         setMessages(loadedMessages);
-        setLoadingMessages(prev => ({ ...prev, [convId]: false }));
         
         // Auto-scroll to bottom after loading messages
         setTimeout(() => {
@@ -709,9 +720,47 @@ socket.current.on('newMessage', (newMessage) => {
       const data = JSON.parse(responseText);
       console.log('Server response:', data);
       
+      // Update messages in the current conversation
       setMessages(prev => prev.map(msg => 
         msg.temporaryId === temporaryId ? { ...msg, ...data, temporaryId: undefined } : msg
       ));
+
+      const newConversationId = data.conversationId || conversationId;
+
+      // Update or create conversation in the list
+      setConversations(prev => {
+        const existingConvIndex = prev.findIndex(conv => conv._id === newConversationId);
+        
+        if (existingConvIndex >= 0) {
+          // Update existing conversation
+          const updatedConvs = [...prev];
+          updatedConvs[existingConvIndex] = {
+            ...updatedConvs[existingConvIndex],
+            lastMessage: data
+          };
+          return updatedConvs;
+        } else {
+          // Create new conversation
+          const newConversation = {
+            _id: newConversationId,
+            clinic: selectedClinic || (showpatientambherConversation ? "Ambher Optical" : "Bautista Eye Center"),
+            participants: [
+              { userId: localStorage.getItem("staffid") || localStorage.getItem("ownerid"), 
+                role: localStorage.getItem("role") },
+              { userId: selectedPatient?._id, 
+                role: 'patient' }
+            ],
+            lastMessage: data
+          };
+          return [newConversation, ...prev];
+        }
+      });
+      
+      // Update latest messages state
+      setLatestMessagesByConversation(prev => ({
+        ...prev,
+        [newConversationId]: data
+      }));
 
       // Update conversationId if a new conversation was created
       if (data.conversationId && data.conversationId !== conversationId) {
@@ -957,13 +1006,28 @@ socket.current.on('newMessage', (newMessage) => {
 
   const handlePatientSelect = (patient) => {
     console.log('Selecting patient:', patient);
-    setLoading(true);
-    setMessages([]);
     setSelectedPatient(patient);
     setSelectedClinic(null); // Clear clinic selection when selecting a patient
+    
     const clinic = localStorage.getItem('staffclinic') || localStorage.getItem('ownerclinic');
     console.log('Starting conversation with patient:', { patientId: patient._id, clinic });
-    startConversation(clinic, patient._id);
+
+    // Find existing conversation with this patient
+    const existingConv = conversations.find(conv => {
+      return conv.participants.some(p => p.userId === patient._id);
+    });
+
+    if (existingConv) {
+      // Use existing conversation
+      setConversationId(existingConv._id);
+      setMessages([]);
+      loadMessages(existingConv._id);
+    } else {
+      // Clear conversation state for new conversation
+      setConversationId(null);
+      setMessages([]);
+      // Don't show loading state immediately since we'll create conversation on first message
+    }
   };
 
   return (
@@ -1067,12 +1131,13 @@ socket.current.on('newMessage', (newMessage) => {
                 <div className="flex flex-col items-end w-full h-[530px] rounded-b-2xl">
                   <div 
                     id="conversationmessages" 
-                    className="px-3 pb-3 pt-10 overflow-y-auto w-full flex-grow" 
+                    className="px-3 pb-3 pt-10 overflow-y-auto w-full flex-grow relative" 
                     style={{ maxHeight: '430px' }}
                   >
-                    {loading ? (
-                      <div className="w-full flex justify-center items-center h-full text-gray-500">
-                        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#1583b3]"></div>
+                    {loading || loadingMessages[conversationId] ? (
+                      <div className="absolute inset-0 flex flex-col justify-center items-center bg-white bg-opacity-90 z-10">
+                        <div className="animate-spin rounded-full h-12 w-12 border-4 border-[#1583b3] border-t-transparent mb-2"></div>
+                        <p className="text-[#1583b3] font-medium">Loading messages...</p>
                       </div>
                     ) : messages.length > 0 ? (
                       messages.map((msg, index) => {
@@ -1446,10 +1511,11 @@ socket.current.on('newMessage', (newMessage) => {
                     </div>
                   </div>
                   <div className="pb-2 h-full w-full overflow-y-auto" style={{ maxHeight: '400px' }}>
-                    <div className="px-3 pt-10 h-[100%] w-full overflow-y-auto" style={{ maxHeight: '400px' }}>
-                      {loading ? (
-                        <div className="w-full flex justify-center items-center h-full text-gray-500">
-                          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#39715f]"></div>
+                    <div className="px-3 pt-10 h-[100%] w-full overflow-y-auto relative" style={{ maxHeight: '400px' }}>
+                      {(loading || loadingMessages[conversationId]) ? (
+                        <div className="absolute inset-0 flex flex-col justify-center items-center bg-white bg-opacity-90 z-10">
+                          <div className="animate-spin rounded-full h-12 w-12 border-4 border-[#39715f] border-t-transparent mb-2"></div>
+                          <p className="text-[#39715f] font-medium">Loading messages...</p>
                         </div>
                       ) : messages.length > 0 ? (
                         messages.map((msg, index) => {
@@ -1834,10 +1900,11 @@ socket.current.on('newMessage', (newMessage) => {
                     </div>
                   </div>
                   <div className="pb-2 h-full w-full overflow-y-auto" style={{ maxHeight: '400px' }}>
-                    <div className="px-3 pt-10 h-[100%] w-full overflow-y-auto" style={{ maxHeight: '400px' }}>
-                      {loading ? (
-                        <div className="w-full flex justify-center items-center h-full text-gray-500">
-                          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#0a4277]"></div>
+                    <div className="px-3 pt-10 h-[100%] w-full overflow-y-auto relative" style={{ maxHeight: '400px' }}>
+                      {(loading || loadingMessages[conversationId]) ? (
+                        <div className="absolute inset-0 flex flex-col justify-center items-center bg-white bg-opacity-90 z-10">
+                          <div className="animate-spin rounded-full h-12 w-12 border-4 border-[#0a4277] border-t-transparent mb-2"></div>
+                          <p className="text-[#0a4277] font-medium">Loading messages...</p>
                         </div>
                       ) : messages.length > 0 ? (
                         messages.map((msg, index) => {
