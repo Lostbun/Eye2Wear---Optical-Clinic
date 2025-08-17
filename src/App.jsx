@@ -220,6 +220,66 @@ useEffect(() => {
 
 
 
+// Add this effect to detect user changes and clear data
+useEffect(() => {
+  const currentRole = localStorage.getItem('role');
+  const currentUserId = localStorage.getItem('patientid') || 
+                       localStorage.getItem('staffid') || 
+                       localStorage.getItem('ownerid');
+  const currentClinic = localStorage.getItem('staffclinic') || 
+                       localStorage.getItem('ownerclinic');
+
+  // Create a unique user identifier
+  const currentUser = `${currentRole}-${currentUserId}-${currentClinic}`;
+  const lastUser = sessionStorage.getItem('lastChatUser');
+
+  // If user has changed, clear all chat data
+  if (lastUser && lastUser !== currentUser) {
+    console.log('User changed, clearing chat data:', { lastUser, currentUser });
+    
+    // Clear all chat-related state
+    setConversations([]);
+    setMessages([]);
+    setMessagesByConversation({});
+    setLatestMessagesByConversation({});
+    setConversationId(null);
+    setSelectedPatient(null);
+    setSelectedClinic(null);
+    setPatients([]);
+    setshowpatientchatdashboard(false);
+    setshowpatientambherConversation(false);
+    setshowpatientbautistaConversation(false);
+    setLoadingConversations(false);
+    
+    // Clear message cache
+    messagesCache.current = {};
+    
+    // Disconnect socket to ensure clean reconnection
+    if (socket.current) {
+      socket.current.disconnect();
+      socket.current = null;
+    }
+  }
+
+  // Update the last user
+  if (currentUser) {
+    sessionStorage.setItem('lastChatUser', currentUser);
+  }
+}, [location.pathname]); // Trigger on route changes which often happen after login
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   // Initialize debounced fetchConversations
   useEffect(() => {
