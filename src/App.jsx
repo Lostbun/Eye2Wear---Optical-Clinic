@@ -1338,7 +1338,9 @@ useEffect(() => {
     
     // Mark Ambher conversation as read when selected
     const ambherConv = conversations.find(conv => 
-      conv.participants.some(p => p.role === 'clinic' && p.clinic === "Ambher Optical")
+      conv.participants.some(p => p.role === 'clinic' && p.clinic === "Ambher Optical") ||
+      conv.clinic === "Ambher Optical" ||
+      conv.participants.some(p => p.clinic === "Ambher Optical")
     );
     if (ambherConv) {
       setUnreadMessagesByConversation(prev => ({
@@ -1357,9 +1359,11 @@ useEffect(() => {
       }
     }
     
+    // Always ensure we have the latest conversations before showing individual clinic chats
     if (conversations.length === 0) {
-      fetchConversations(true); // Force refresh if no conversations
+      fetchConversations(true);
     }
+    
     if (socket.current && !socket.current.connected) {
       console.log('Reconnecting socket when chat dashboard opens (Ambher)');
       socket.current.connect();
@@ -1368,10 +1372,33 @@ useEffect(() => {
   className="hover:shadow-md hover:bg-[#d8fdf0] hover:scale-105 transition-all duration-300 ease-in-out gap-2 cursor-pointer flex flex-col justify-center items-center w-40 h-40 rounded-md border-1 relative"
 >
   {(() => {
+    console.log('Checking Ambher unread status:', { 
+      conversations: conversations.length, 
+      unreadMessages: unreadMessagesByConversation,
+      conversationDetails: conversations.map(conv => ({
+        id: conv._id,
+        clinic: conv.clinic,
+        participants: conv.participants
+      }))
+    });
+    
+    // Try multiple ways to find the Ambher conversation
     const ambherConv = conversations.find(conv => 
-      conv.participants.some(p => p.role === 'clinic' && p.clinic === "Ambher Optical")
+      conv.participants.some(p => p.role === 'clinic' && p.clinic === "Ambher Optical") ||
+      conv.clinic === "Ambher Optical" ||
+      conv.participants.some(p => p.clinic === "Ambher Optical")
     );
-    return ambherConv && hasUnreadMessages(ambherConv._id) ? (
+    
+    const hasUnread = ambherConv && hasUnreadMessages(ambherConv._id);
+    console.log('Ambher conversation:', { 
+      found: !!ambherConv, 
+      convId: ambherConv?._id, 
+      hasUnread,
+      conversationClinic: ambherConv?.clinic,
+      participants: ambherConv?.participants
+    });
+    
+    return hasUnread ? (
       <div className="absolute flex justify-center items-center top-1 right-1 bg-[#e93f3f] rounded-full w-4.5 h-4.5"></div>
     ) : null;
   })()}
@@ -1387,7 +1414,9 @@ useEffect(() => {
     
     // Mark Bautista conversation as read when selected
     const bautistaConv = conversations.find(conv => 
-      conv.participants.some(p => p.role === 'clinic' && p.clinic === "Bautista Eye Center")
+      conv.participants.some(p => p.role === 'clinic' && p.clinic === "Bautista Eye Center") ||
+      conv.clinic === "Bautista Eye Center" ||
+      conv.participants.some(p => p.clinic === "Bautista Eye Center")
     );
     if (bautistaConv) {
       setUnreadMessagesByConversation(prev => ({
@@ -1406,9 +1435,11 @@ useEffect(() => {
       }
     }
     
+    // Always ensure we have the latest conversations before showing individual clinic chats
     if (conversations.length === 0) {
-      fetchConversations(true); // Force refresh if no conversations
+      fetchConversations(true);
     }
+    
     if (socket.current && !socket.current.connected) {
       console.log('Reconnecting socket when chat dashboard opens (Bautista)');
       socket.current.connect();
@@ -1417,10 +1448,33 @@ useEffect(() => {
   className="hover:shadow-md hover:bg-[#d8f1fd] hover:scale-105 transition-all duration-300 ease-in-out gap-2 cursor-pointer flex flex-col justify-center items-center w-40 h-40 rounded-md border-1 relative"
 >
   {(() => {
+    console.log('Checking Bautista unread status:', { 
+      conversations: conversations.length, 
+      unreadMessages: unreadMessagesByConversation,
+      conversationDetails: conversations.map(conv => ({
+        id: conv._id,
+        clinic: conv.clinic,
+        participants: conv.participants
+      }))
+    });
+    
+    // Try multiple ways to find the Bautista conversation
     const bautistaConv = conversations.find(conv => 
-      conv.participants.some(p => p.role === 'clinic' && p.clinic === "Bautista Eye Center")
+      conv.participants.some(p => p.role === 'clinic' && p.clinic === "Bautista Eye Center") ||
+      conv.clinic === "Bautista Eye Center" ||
+      conv.participants.some(p => p.clinic === "Bautista Eye Center")
     );
-    return bautistaConv && hasUnreadMessages(bautistaConv._id) ? (
+    
+    const hasUnread = bautistaConv && hasUnreadMessages(bautistaConv._id);
+    console.log('Bautista conversation:', { 
+      found: !!bautistaConv, 
+      convId: bautistaConv?._id, 
+      hasUnread,
+      conversationClinic: bautistaConv?.clinic,
+      participants: bautistaConv?.participants
+    });
+    
+    return hasUnread ? (
       <div className="absolute flex justify-center items-center top-1 right-1 bg-[#e93f3f] rounded-full w-4.5 h-4.5"></div>
     ) : null;
   })()}
@@ -1645,19 +1699,15 @@ useEffect(() => {
     console.log('Opening chat dashboard');
     setshowpatientchatdashboard(true);
     
-    // Only set loading if we don't have conversations already
-    if (conversations.length === 0) {
-      setLoadingConversations(true);
-    }
+    // Always fetch conversations when opening dashboard to ensure we have the latest data
+    fetchConversations(true);
     
     if (socket.current && !socket.current.connected) {
       console.log('Reconnecting socket when chat dashboard opens');
       socket.current.connect();
       setTimeout(() => {
-        fetchConversations(true); // Force refresh
+        fetchConversations(true);
       }, 500);
-    } else {
-      fetchConversations(true); // Force refresh
     }
   }} 
   className="motion-preset-slide-down hover:scale-105 ease-in-out duration-300 transition-all cursor-pointer flex justify-center items-center w-[60px] h-[60px] rounded-full bg-[#1583b3]">
