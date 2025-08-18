@@ -73,6 +73,18 @@ function PatientChatButton() {
   const isInitializedRef = useRef(false);
   const conversationsFetchedRef = useRef(false);
 
+
+
+  const conversationIdRef = useRef(conversationId);
+  useEffect(() => {
+    conversationIdRef.current = conversationId;
+  }, [conversationId]);
+
+
+
+
+
+
   // 1. UTILITY FUNCTIONS (No dependencies)
   const debounce = (func, wait) => {
     let timeout;
@@ -1017,25 +1029,31 @@ useEffect(() => {
         forceNew: false
       });
 
-socket.current.on('connect', () => {
-  console.log('Socket.IO connected successfully');
-  const userId = localStorage.getItem('patientid') || 
-                localStorage.getItem('staffid') || 
-                localStorage.getItem('ownerid');
-  const role = localStorage.getItem('role');
-  const clinic = localStorage.getItem('staffclinic') || 
-                localStorage.getItem('ownerclinic');
+      socket.current.on('connect', () => {
+        console.log('Socket.IO connected successfully');
+        const userId = localStorage.getItem('patientid') || 
+                      localStorage.getItem('staffid') || 
+                      localStorage.getItem('ownerid');
+        const role = localStorage.getItem('role');
+        const clinic = localStorage.getItem('staffclinic') || 
+                      localStorage.getItem('ownerclinic');
 
-  if (userId && role) {
-    console.log('Joining conversations for user:', { userId, role, clinic });
-    socket.current.emit('joinConversations', userId, role, clinic);
-    
-    // ALWAYS fetch conversations on connect (background fetch)
-    setTimeout(() => {
-      fetchConversations(true);
-    }, 1000);
-  }
-});
+        if (userId && role) {
+          console.log('Joining conversations for user:', { userId, role, clinic });
+          socket.current.emit('joinConversations', userId, role, clinic);
+          
+          // Join current conversation if active
+          if (conversationIdRef.current) {
+            console.log('Re-joining current conversation:', conversationIdRef.current);
+            socket.current.emit('joinConversation', conversationIdRef.current);
+          }
+          
+          // ALWAYS fetch conversations on connect (background fetch)
+          setTimeout(() => {
+            fetchConversations(true);
+          }, 1000);
+        }
+      });
 
       socket.current.on('connect_error', (error) => {
         console.error('Socket.IO connection error:', error);
@@ -1058,52 +1076,56 @@ socket.current.on('connect', () => {
 
         if (userId && role) {
           socket.current.emit('joinConversations', userId, role, clinic);
-          if (conversationId) {
-            console.log('Re-joining conversation after reconnect:', conversationId);
-            socket.current.emit('joinConversation', conversationId);
+          if (conversationIdRef.current) {
+            console.log('Re-joining conversation after reconnect:', conversationIdRef.current);
+            socket.current.emit('joinConversation', conversationIdRef.current);
           }
         }
       });
 
+      // --- Real-time fix: use conversationIdRef in handler ---
       socket.current.on('newMessage', (newMessage) => {
         console.log('Received new message:', newMessage);
-        
-        const currentUserId = localStorage.getItem('patientid') || 
-                             localStorage.getItem('staffid') || 
-                             localStorage.getItem('ownerid');
-        
-        if (newMessage.conversationId === conversationId) {
-          setMessages(prev => {
-            if (!prev.some(msg => msg._id === newMessage._id || msg.temporaryId === newMessage.temporaryId)) {
-              if (pendingMessageId && newMessage.temporaryId === pendingMessageId) {
-                return prev.map(msg => 
-                  msg.temporaryId === pendingMessageId ? { ...msg, ...newMessage, temporaryId: undefined } : msg
-                );
-              }
-              return [...prev, newMessage];
-            }
-            return prev;
-          });
-          setPendingMessageId(null);
-        }
 
+        const currentUserId = localStorage.getItem('patientid') ||
+          localStorage.getItem('staffid') ||
+          localStorage.getItem('ownerid');
+
+        // Always update messagesByConversation
         setMessagesByConversation(prev => {
           const conversationMessages = prev[newMessage.conversationId] || [];
-          if (!conversationMessages.some(msg => msg._id === newMessage._id || msg.temporaryId === newMessage.temporaryId)) {
-            const updatedMessages = [...conversationMessages, newMessage];
+          const messageExists = conversationMessages.some(msg => msg._id === newMessage._id || msg.temporaryId === newMessage.temporaryId);
+          if (!messageExists) {
             return {
               ...prev,
-              [newMessage.conversationId]: updatedMessages
+              [newMessage.conversationId]: [...conversationMessages, newMessage]
             };
           }
           return prev;
         });
 
+        // Use the ref here!
+        if (newMessage.conversationId === conversationIdRef.current) {
+          setMessages(prev => {
+            const messageExists = prev.some(msg => msg._id === newMessage._id || msg.temporaryId === newMessage.temporaryId);
+            if (!messageExists) {
+              return [...prev, newMessage];
+            }
+            return prev;
+          });
+          setPendingMessageId(null);
+          setTimeout(() => {
+            scrollToBottom();
+          }, 100);
+        }
+
+        // Update latest message for conversation list
         setLatestMessagesByConversation(prev => ({
           ...prev,
           [newMessage.conversationId]: newMessage
         }));
 
+        // Update conversations list with new message
         setConversations(prev => {
           const updatedConversations = prev.map(conv => {
             if (conv._id === newMessage.conversationId) {
@@ -1111,7 +1133,7 @@ socket.current.on('connect', () => {
             }
             return conv;
           });
-          
+          // Sort conversations by last message time
           return updatedConversations.sort((a, b) => {
             if (!a.lastMessage && !b.lastMessage) return 0;
             if (!a.lastMessage) return 1;
@@ -1120,25 +1142,19 @@ socket.current.on('connect', () => {
           });
         });
 
+        // Handle unread status
         if (newMessage.senderId !== currentUserId) {
-          if (newMessage.conversationId !== conversationId) {
-            console.log('New message from another user in inactive conversation, setting unread status');
-            setHasGlobalUnreadMessages(true);
-            
-            setUnreadMessagesByConversation(prev => ({
-              ...prev,
-              [newMessage.conversationId]: true
-            }));
-          } else {
-            console.log('New message received in active conversation, marking as read');
-            markConversationAsRead(newMessage.conversationId);
-          }
+          setUnreadMessagesByConversation(prev => ({
+            ...prev,
+            [newMessage.conversationId]: newMessage.conversationId !== conversationIdRef.current
+          }));
+          setHasGlobalUnreadMessages(true);
         }
-        
         setLoadingConversations(false);
       });
+      // --------------------------------------------------------
     }
-  }, [apiUrl]); // Only depend on apiUrl
+  }, [apiUrl]);// Only depend on apiUrl
 
   // 8. OTHER EFFECTS (in order of importance)
 
@@ -1171,15 +1187,32 @@ socket.current.on('connect', () => {
     };
   }, [showpatientchatdashboard]);
 
-  // Join conversation when conversationId changes
-  useEffect(() => {
-    if (conversationId && socket.current && socket.current.connected) {
-      console.log('Joining conversation via Socket.IO:', conversationId);
-      socket.current.emit('joinConversation', conversationId);
-    } else if (conversationId && socket.current && !socket.current.connected) {
-      console.log('Socket not connected, will join conversation when socket connects');
+
+
+
+// Replace the conversation joining effect (around line 850)
+useEffect(() => {
+  if (conversationId && socket.current && socket.current.connected) {
+    console.log('Joining conversation via Socket.IO:', conversationId);
+    socket.current.emit('joinConversation', conversationId);
+    
+    // Also ensure we're listening for messages in this conversation
+    const currentUserId = localStorage.getItem('patientid') || 
+                         localStorage.getItem('staffid') || 
+                         localStorage.getItem('ownerid');
+    const role = localStorage.getItem('role');
+    
+    if (currentUserId && role) {
+      socket.current.emit('joinConversations', currentUserId, role);
     }
-  }, [conversationId]);
+  } else if (conversationId && socket.current && !socket.current.connected) {
+    console.log('Socket not connected, will join conversation when socket connects');
+  }
+}, [conversationId]);
+
+
+
+
 
   // Start conversation when clinic selection changes
   useEffect(() => {
@@ -1331,6 +1364,7 @@ useEffect(() => {
     <>
       <p className="text-[20px] font-albertsans font-semibold text-gray-800">Chat with us</p>
       <div className="flex gap-3">
+// For Ambher Optical:
 <div
   onClick={() => {
     console.log('Opening chat dashboard (Ambher)');
@@ -1359,10 +1393,8 @@ useEffect(() => {
       }
     }
     
-    // Always ensure we have the latest conversations before showing individual clinic chats
-    if (conversations.length === 0) {
-      fetchConversations(true);
-    }
+    // Force refresh conversations to get latest messages
+    fetchConversations(true);
     
     if (socket.current && !socket.current.connected) {
       console.log('Reconnecting socket when chat dashboard opens (Ambher)');
@@ -1435,10 +1467,8 @@ useEffect(() => {
       }
     }
     
-    // Always ensure we have the latest conversations before showing individual clinic chats
-    if (conversations.length === 0) {
-      fetchConversations(true);
-    }
+    // Force refresh conversations to get latest messages
+    fetchConversations(true);
     
     if (socket.current && !socket.current.connected) {
       console.log('Reconnecting socket when chat dashboard opens (Bautista)');
