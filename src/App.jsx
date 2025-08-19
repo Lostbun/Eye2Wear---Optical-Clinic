@@ -162,31 +162,35 @@ useEffect(() => {
     return false;
   }, [messagesByConversation, conversations, unreadMessagesByConversation]);
 
-  const checkGlobalUnreadMessages = useCallback(() => {
-    // Check unreadMessagesByConversation first
-    const hasUnreadInState = Object.values(unreadMessagesByConversation).some(isUnread => isUnread);
-    if (hasUnreadInState) return true;
 
-    // Fallback: check conversations
-    const currentUserId = localStorage.getItem('patientid') || 
+const checkGlobalUnreadMessages = useCallback(() => {
+  // Check unreadMessagesByConversation first
+  const hasUnreadInState = Object.values(unreadMessagesByConversation).some(isUnread => isUnread);
+  if (hasUnreadInState) return true;
+
+  // Fallback: check conversations
+  const currentUserId = localStorage.getItem('patientid') || 
                          localStorage.getItem('staffid') || 
                          localStorage.getItem('ownerid');
-    const currentRole = localStorage.getItem('role');
-    
-    return conversations.some(conv => {
-      if (conv.lastMessage) {
-        const lastMsg = conv.lastMessage;
-        const isFromCurrentUser = lastMsg.senderId === currentUserId;
-        
-        if (!isFromCurrentUser) {
-          const isRead = lastMsg.readBy && Array.isArray(lastMsg.readBy) && 
-                        lastMsg.readBy.some(read => read.userId === currentUserId && read.role === currentRole);
-          return !isRead;
-        }
+  const currentRole = localStorage.getItem('role');
+  
+  return conversations.some(conv => {
+    if (conv.lastMessage) {
+      const lastMsg = conv.lastMessage;
+      const isFromCurrentUser = lastMsg.senderId === currentUserId;
+      
+      if (!isFromCurrentUser) {
+        const isRead = lastMsg.readBy && Array.isArray(lastMsg.readBy) && 
+                      lastMsg.readBy.some(read => read.userId === currentUserId && read.role === currentRole);
+        return !isRead;
       }
-      return false;
-    });
-  }, [conversations, unreadMessagesByConversation]);
+    }
+    return false;
+  });
+},[conversations, unreadMessagesByConversation]);
+
+
+
 
   // 3. CONVERSATION MANAGEMENT FUNCTIONS
   const markConversationAsRead = useCallback(async (conversationId) => {
@@ -375,8 +379,6 @@ const fetchConversations = useCallback(async (forceRefresh = false) => {
     setLoadingConversations(false);
   }
 }, [apiUrl, showpatientchatdashboard, conversations.length]);
-
-
 
 
 
@@ -1362,6 +1364,21 @@ socket.current.on('newMessage', (newMessage) => {
       if (shouldMarkUnread) {
         setHasGlobalUnreadMessages(true);
         console.log('🔴 Set global unread to true');
+      } else {
+        // Check if there are any other unread conversations
+        setTimeout(() => {
+          let hasOtherUnread = false;
+           for (const convId in unreadMessagesByConversation) {
+              if (convId !== newMessage.conversationId && unreadMessagesByConversation[convId]) {
+                hasOtherUnread = true;
+                break;
+              }
+           }
+          if (!hasOtherUnread) {
+            setHasGlobalUnreadMessages(false);
+            console.log('✅ No other unread messages, clearing global unread');
+          }
+        }, 100);
       }
       
       console.log('📊 Unread status updated:', { 
@@ -1369,9 +1386,12 @@ socket.current.on('newMessage', (newMessage) => {
         unread: shouldMarkUnread,
         senderClinic: newMessage.senderClinic
       });
+    } else {
+      console.log('Message from current user, not setting unread status');
     }
   });
 });
+
       // --------------------------------------------------------
     }
   }, [apiUrl]);// Only depend on apiUrl
@@ -1708,7 +1728,6 @@ useEffect(() => {
 }, [conversationId, messagesByConversation]);
 
 
-
 // Add this new effect for periodic room re-joining - Add around line 1650
 useEffect(() => {
   const role = localStorage.getItem('role');
@@ -1736,6 +1755,66 @@ useEffect(() => {
     return () => clearInterval(interval);
   }
 }, [showpatientchatdashboard, conversations.length]);
+
+
+
+useEffect(() => {
+  const role = localStorage.getItem('role');
+  
+  // For patients: periodically check for unread messages
+  if (role === 'patient' && showpatientchatdashboard) {
+    const interval = setInterval(() => {
+      console.log('Periodic check for unread messages (patient)');
+      
+      // Check unread messages and update global state
+      const hasUnread = checkGlobalUnreadMessages();
+      setHasGlobalUnreadMessages(hasUnread);
+      
+      console.log('Periodic unread check result:', hasUnread);
+    }, 5000); // Every 5 seconds
+    
+    return () => clearInterval(interval);
+  }
+}, [showpatientchatdashboard, checkGlobalUnreadMessages]);
+
+
+
+
+
+useEffect(() => {
+  // Sync messages when conversation changes
+  if (conversationId && messagesByConversation[conversationId]) {
+    console.log('Syncing messages for conversation:', conversationId, 'Role:', localStorage.getItem('role'));
+    const conversationMessages = messagesByConversation[conversationId];
+    setMessages(conversationMessages);
+  }
+}, [conversationId, messagesByConversation]);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
