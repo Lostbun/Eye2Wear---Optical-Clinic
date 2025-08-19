@@ -280,7 +280,7 @@ const fetchConversations = useCallback(async (forceRefresh = false) => {
       if (conv.lastMessage) {
         latestMsgs[conv._id] = conv.lastMessage;
         
-        // Check if the last message is unread
+        // ENHANCED: Check if the last message is unread
         const lastMsg = conv.lastMessage;
         const isFromCurrentUser = lastMsg.senderId === currentUserId;
         
@@ -291,9 +291,10 @@ const fetchConversations = useCallback(async (forceRefresh = false) => {
           if (!isRead) {
             unreadByConversation[conv._id] = true;
             hasGlobalUnread = true;
-            console.log(`Found unread conversation ${conv._id} - last message from ${lastMsg.senderName || lastMsg.senderClinic}`);
+            console.log(`🔴 Found unread conversation ${conv._id} - last message from ${lastMsg.senderName || lastMsg.senderClinic} (${lastMsg.senderClinic})`);
           } else {
             unreadByConversation[conv._id] = false;
+            console.log(`✅ Conversation ${conv._id} is read - last message from ${lastMsg.senderName || lastMsg.senderClinic}`);
           }
         } else {
           unreadByConversation[conv._id] = false;
@@ -374,7 +375,6 @@ const fetchConversations = useCallback(async (forceRefresh = false) => {
     setLoadingConversations(false);
   }
 }, [apiUrl, showpatientchatdashboard, conversations.length]);
-
 
 
 
@@ -1212,22 +1212,12 @@ socket.current.on('connect', () => {
 socket.current.on('newMessage', (newMessage) => {
   console.log('📨 NEW MESSAGE RECEIVED:', newMessage);
   console.log('🎯 Current conversation ID (ref):', conversationIdRef.current);
-  console.log('🎯 Current conversation ID (state):', conversationId);
 
   const currentUserId = localStorage.getItem('patientid') ||
                         localStorage.getItem('staffid') ||
                         localStorage.getItem('ownerid');
   const currentRole = localStorage.getItem('role');
   const currentClinic = localStorage.getItem('staffclinic') || localStorage.getItem('ownerclinic');
-
-  console.log('👤 Current User Info:', { currentUserId, currentRole, currentClinic });
-  console.log('📧 Message Info:', { 
-    messageConvId: newMessage.conversationId, 
-    senderId: newMessage.senderId,
-    senderRole: newMessage.senderRole,
-    senderClinic: newMessage.senderClinic,
-    sentToClinic: newMessage.sentToClinic 
-  });
 
   unstable_batchedUpdates(() => {
     // Check if this message is for the currently active conversation
@@ -1334,11 +1324,35 @@ socket.current.on('newMessage', (newMessage) => {
       });
     });
 
-    // Handle unread status
+    // ENHANCED UNREAD MESSAGE DETECTION FOR PATIENTS
     if (newMessage.senderId !== currentUserId) {
       console.log('🔔 Setting unread status for conversation:', newMessage.conversationId);
       
-      const shouldMarkUnread = !isForActiveConversation;
+      // For patients: Mark as unread if not the active conversation OR if dashboard is closed
+      let shouldMarkUnread = false;
+      
+      if (currentRole === 'patient') {
+        // Patient should see unread notifications if:
+        // 1. The message is not for the currently active conversation
+        // 2. OR the chat dashboard is not open
+        // 3. OR the specific clinic conversation is not open
+        const isDashboardOpen = showpatientchatdashboard;
+        const isSpecificClinicOpen = (newMessage.senderClinic === "Ambher Optical" && showpatientambherConversation) ||
+                                    (newMessage.senderClinic === "Bautista Eye Center" && showpatientbautistaConversation);
+        
+        shouldMarkUnread = !isForActiveConversation || !isDashboardOpen || !isSpecificClinicOpen;
+        
+        console.log('👤 Patient unread check:', {
+          senderClinic: newMessage.senderClinic,
+          isDashboardOpen,
+          isSpecificClinicOpen,
+          isForActiveConversation,
+          shouldMarkUnread
+        });
+      } else {
+        // For staff/owner: existing logic
+        shouldMarkUnread = !isForActiveConversation;
+      }
       
       setUnreadMessagesByConversation(prev => ({
         ...prev,
@@ -1347,11 +1361,13 @@ socket.current.on('newMessage', (newMessage) => {
       
       if (shouldMarkUnread) {
         setHasGlobalUnreadMessages(true);
+        console.log('🔴 Set global unread to true');
       }
       
       console.log('📊 Unread status updated:', { 
         conversationId: newMessage.conversationId, 
-        unread: shouldMarkUnread 
+        unread: shouldMarkUnread,
+        senderClinic: newMessage.senderClinic
       });
     }
   });
@@ -1802,14 +1818,15 @@ useEffect(() => {
       <div className="flex gap-3">
 
 
+
 <div
   onClick={async () => {
     console.log('Switching to Ambher Optical conversation');
     // Reset states for clinic switch
     setshowpatientambherConversation(true);
     setshowpatientbautistaConversation(false);
-    setMessages([]); // Clear current messages
-    setConversationId(null); // Reset conversation ID
+    setMessages([]);
+    setConversationId(null);
     conversationIdRef.current = null;
 
     try {
@@ -1819,26 +1836,26 @@ useEffect(() => {
         conv.clinic === "Ambher Optical"
       );
 
-      console.log('Ambher conversation lookup:', {
-        found: !!ambherConv,
-        conversationId: ambherConv?._id,
-        participants: ambherConv?.participants,
-        clinic: ambherConv?.clinic
-      });
-
       if (ambherConv) {
         // Set conversation ID
         setConversationId(ambherConv._id);
         conversationIdRef.current = ambherConv._id;
 
-        // Leave previous conversation room if necessary
-        if (socket.current && socket.current.connected && previousConversationIdRef.current) {
-          console.log('Leaving previous conversation:', previousConversationIdRef.current);
-          socket.current.emit('leaveConversation', previousConversationIdRef.current);
-        }
-        previousConversationIdRef.current = ambherConv._id;
+        // IMMEDIATELY mark as read to clear notification
+        setUnreadMessagesByConversation(prev => ({
+          ...prev,
+          [ambherConv._id]: false
+        }));
 
-        // Join new conversation room
+        // Check if there are still other unread conversations
+        setTimeout(() => {
+          const hasOtherUnread = Object.entries(unreadMessagesByConversation).some(([convId, isUnread]) => 
+            convId !== ambherConv._id && isUnread
+          );
+          setHasGlobalUnreadMessages(hasOtherUnread);
+        }, 100);
+
+        // Join conversation via socket
         if (socket.current && socket.current.connected) {
           console.log('Joining Ambher conversation:', ambherConv._id);
           socket.current.emit('joinConversation', ambherConv._id);
@@ -1846,9 +1863,6 @@ useEffect(() => {
           if (patientId) {
             socket.current.emit('joinConversations', patientId, 'patient', null);
           }
-        } else {
-          console.log('Socket not connected, attempting to reconnect');
-          socket.current?.connect();
         }
 
         // Load messages
@@ -1857,50 +1871,43 @@ useEffect(() => {
           setMessages(messagesByConversation[ambherConv._id]);
         } else {
           console.log('Fetching Ambher messages from server');
-          setLoadingMessages(prev => ({ ...prev, [ambherConv._id]: true }));
           await loadMessages(ambherConv._id);
-          setLoadingMessages(prev => ({ ...prev, [ambherConv._id]: false }));
         }
-
-        // Mark conversation as read
-        setUnreadMessagesByConversation(prev => ({
-          ...prev,
-          [ambherConv._id]: false
-        }));
-        setHasGlobalUnreadMessages(
-          Object.values(unreadMessagesByConversation).some(unread => unread)
-        );
       } else {
         console.log('No Ambher conversation found, starting new one');
         await startConversation("Ambher Optical");
       }
     } catch (error) {
       console.error('Error switching to Ambher Optical:', error);
-    } finally {
-      // Ensure conversations are re-fetched after switching
-      fetchConversations(true);
     }
   }}
   className="hover:shadow-md hover:bg-[#d8f1fd] hover:scale-105 transition-all duration-300 ease-in-out gap-2 cursor-pointer flex flex-col justify-center items-center w-40 h-40 rounded-md border-1 relative"
 >
+  {/* Red notification dot for Ambher Optical */}
   {(() => {
     const ambherConv = conversations.find(conv =>
       conv.participants.some(p => p.role === 'clinic' && p.clinic === "Ambher Optical") ||
       conv.clinic === "Ambher Optical"
     );
-    const hasUnread = ambherConv && hasUnreadMessages(ambherConv._id);
-    console.log('Ambher conversation status:', {
-      found: !!ambherConv,
-      convId: ambherConv?._id,
-      hasUnread
-    });
-    return hasUnread ? (
-      <div className="absolute flex justify-center items-center top-1 right-1 bg-[#e93f3f] rounded-full w-4.5 h-4.5"></div>
+    return ambherConv && hasUnreadMessages(ambherConv._id) ? (
+      <div className="absolute top-2 right-2 flex justify-center items-center bg-[#e93f3f] rounded-full w-4 h-4"></div>
     ) : null;
   })()}
-  <img src={ambherlogo} className="w-23 px-2 py-1" />
-  <p className="font-albertsans font-semibold text-[15px] text-[#0a4277]">Ambher Optical</p>
+  
+  {/* Ambher Optical Logo */}
+  <img 
+    src={ambherlogo} 
+    alt="Ambher Optical Logo" 
+    className="w-20 h-20 object-contain mb-2"
+  />
+  
+  {/* Ambher Optical Name */}
+  <p className="font-albertsans font-semibold text-[16px] text-[#39715f] text-center">
+    Ambher Optical
+  </p>
 </div>
+
+
 
 <div
   onClick={async () => {
@@ -1908,8 +1915,8 @@ useEffect(() => {
     // Reset states for clinic switch
     setshowpatientbautistaConversation(true);
     setshowpatientambherConversation(false);
-    setMessages([]); // Clear current messages
-    setConversationId(null); // Reset conversation ID
+    setMessages([]);
+    setConversationId(null);
     conversationIdRef.current = null;
 
     try {
@@ -1919,26 +1926,26 @@ useEffect(() => {
         conv.clinic === "Bautista Eye Center"
       );
 
-      console.log('Bautista conversation lookup:', {
-        found: !!bautistaConv,
-        conversationId: bautistaConv?._id,
-        participants: bautistaConv?.participants,
-        clinic: bautistaConv?.clinic
-      });
-
       if (bautistaConv) {
         // Set conversation ID
         setConversationId(bautistaConv._id);
         conversationIdRef.current = bautistaConv._id;
 
-        // Leave previous conversation room if necessary
-        if (socket.current && socket.current.connected && previousConversationIdRef.current) {
-          console.log('Leaving previous conversation:', previousConversationIdRef.current);
-          socket.current.emit('leaveConversation', previousConversationIdRef.current);
-        }
-        previousConversationIdRef.current = bautistaConv._id;
+        // IMMEDIATELY mark as read to clear notification
+        setUnreadMessagesByConversation(prev => ({
+          ...prev,
+          [bautistaConv._id]: false
+        }));
 
-        // Join new conversation room
+        // Check if there are still other unread conversations
+        setTimeout(() => {
+          const hasOtherUnread = Object.entries(unreadMessagesByConversation).some(([convId, isUnread]) => 
+            convId !== bautistaConv._id && isUnread
+          );
+          setHasGlobalUnreadMessages(hasOtherUnread);
+        }, 100);
+
+        // Join conversation via socket
         if (socket.current && socket.current.connected) {
           console.log('Joining Bautista conversation:', bautistaConv._id);
           socket.current.emit('joinConversation', bautistaConv._id);
@@ -1946,9 +1953,6 @@ useEffect(() => {
           if (patientId) {
             socket.current.emit('joinConversations', patientId, 'patient', null);
           }
-        } else {
-          console.log('Socket not connected, attempting to reconnect');
-          socket.current?.connect();
         }
 
         // Load messages
@@ -1957,49 +1961,40 @@ useEffect(() => {
           setMessages(messagesByConversation[bautistaConv._id]);
         } else {
           console.log('Fetching Bautista messages from server');
-          setLoadingMessages(prev => ({ ...prev, [bautistaConv._id]: true }));
           await loadMessages(bautistaConv._id);
-          setLoadingMessages(prev => ({ ...prev, [bautistaConv._id]: false }));
         }
-
-        // Mark conversation as read
-        setUnreadMessagesByConversation(prev => ({
-          ...prev,
-          [bautistaConv._id]: false
-        }));
-        setHasGlobalUnreadMessages(
-          Object.values(unreadMessagesByConversation).some(unread => unread)
-        );
       } else {
         console.log('No Bautista conversation found, starting new one');
         await startConversation("Bautista Eye Center");
       }
     } catch (error) {
       console.error('Error switching to Bautista Eye Center:', error);
-    } finally {
-      // Ensure conversations are re-fetched after switching
-      fetchConversations(true);
     }
   }}
   className="hover:shadow-md hover:bg-[#d8f1fd] hover:scale-105 transition-all duration-300 ease-in-out gap-2 cursor-pointer flex flex-col justify-center items-center w-40 h-40 rounded-md border-1 relative"
 >
+  {/* Red notification dot for Bautista Eye Center */}
   {(() => {
     const bautistaConv = conversations.find(conv =>
       conv.participants.some(p => p.role === 'clinic' && p.clinic === "Bautista Eye Center") ||
       conv.clinic === "Bautista Eye Center"
     );
-    const hasUnread = bautistaConv && hasUnreadMessages(bautistaConv._id);
-    console.log('Bautista conversation status:', {
-      found: !!bautistaConv,
-      convId: bautistaConv?._id,
-      hasUnread
-    });
-    return hasUnread ? (
-      <div className="absolute flex justify-center items-center top-1 right-1 bg-[#e93f3f] rounded-full w-4.5 h-4.5"></div>
+    return bautistaConv && hasUnreadMessages(bautistaConv._id) ? (
+      <div className="absolute top-2 right-2 flex justify-center items-center bg-[#e93f3f] rounded-full w-4 h-4"></div>
     ) : null;
   })()}
-  <img src={bautistalogo} className="w-23 px-2 py-1" />
-  <p className="font-albertsans font-semibold text-[15px] text-[#0a4277]">Bautista Eye Center</p>
+  
+  {/* Bautista Eye Center Logo */}
+  <img 
+    src={bautistalogo} 
+    alt="Bautista Eye Center Logo" 
+    className="w-20 h-20 object-contain mb-2"
+  />
+  
+  {/* Bautista Eye Center Name */}
+  <p className="font-albertsans font-semibold text-[16px] text-[#0a4277] text-center">
+    Bautista Eye Center
+  </p>
 </div>
 
 
