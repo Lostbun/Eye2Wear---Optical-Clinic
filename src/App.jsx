@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { useState, useEffect, useRef, useCallback } from "react";
+import { unstable_batchedUpdates } from "react-dom";
 import chat from "../src/assets/images/chat.png";
 import close from "../src/assets/images/close.png";
 import PatientRegistration from "./PatientRegistration";
@@ -72,13 +73,20 @@ function PatientChatButton() {
   const [hasGlobalUnreadMessages, setHasGlobalUnreadMessages] = useState(false);
   const isInitializedRef = useRef(false);
   const conversationsFetchedRef = useRef(false);
+const previousConversationIdRef = useRef(null);
 
 
-
-  const conversationIdRef = useRef(conversationId);
-  useEffect(() => {
-    conversationIdRef.current = conversationId;
-  }, [conversationId]);
+const conversationIdRef = useRef(conversationId);
+useEffect(() => {
+  console.log('Updating conversationIdRef from', conversationIdRef.current, 'to', conversationId);
+  conversationIdRef.current = conversationId;
+  
+  // Also join the conversation via socket when conversation changes
+  if (conversationId && socket.current && socket.current.connected) {
+    console.log('Joining conversation via Socket.IO:', conversationId);
+    socket.current.emit('joinConversation', conversationId);
+  }
+}, [conversationId]);
 
 
 
@@ -206,7 +214,11 @@ function PatientChatButton() {
     }
   }, [unreadMessagesByConversation]);
 
-// Replace the fetchConversations function (around line 169)
+
+
+
+  
+
 const fetchConversations = useCallback(async (forceRefresh = false) => {
   try {
     // Don't prevent fetches when we need to check for notifications
@@ -324,6 +336,33 @@ const fetchConversations = useCallback(async (forceRefresh = false) => {
       conversationCount: sortedConversations.length 
     });
     
+    // CRITICAL: Force join ALL conversations for staff/owner after fetch
+    if ((role === 'staff' || role === 'owner') && socket.current && socket.current.connected) {
+      const userId = localStorage.getItem('staffid') || localStorage.getItem('ownerid');
+      const userClinic = localStorage.getItem('staffclinic') || localStorage.getItem('ownerclinic');
+      
+      if (userId && userClinic) {
+        console.log(`FORCE joining ALL conversations after fetch for ${role} (${userClinic})`);
+        
+        // Join general conversations
+        socket.current.emit('joinConversations', userId, role, userClinic);
+        
+        // Force join EVERY conversation regardless of participants
+        sortedConversations.forEach(conv => {
+          console.log(`FORCE joining conversation ${conv._id} for ${userClinic} after fetch`);
+          socket.current.emit('joinConversation', conv._id);
+          socket.current.emit('joinRoom', `conversation-${conv._id}`);
+          socket.current.emit('joinRoom', `clinic-${userClinic}-conversation-${conv._id}`);
+        });
+        
+        // Join clinic-specific rooms
+        socket.current.emit('joinRoom', `clinic-${userClinic}`);
+        socket.current.emit('joinRoom', `clinic-${userClinic}-all`);
+        
+        console.log(`${role} (${userClinic}) force-joined ${sortedConversations.length} conversations after fetch`);
+      }
+    }
+    
     // Reset the fetch flag only for successful fetches
     conversationsFetchedRef.current = false;
     
@@ -335,7 +374,15 @@ const fetchConversations = useCallback(async (forceRefresh = false) => {
     setLoadingConversations(false);
   }
 }, [apiUrl, showpatientchatdashboard, conversations.length]);
-  const loadMessages = useCallback(async (targetConversationId, skipStateUpdate = false) => {
+
+
+
+
+
+
+
+
+const loadMessages = useCallback(async (targetConversationId, skipStateUpdate = false) => {
     try {
       const token = localStorage.getItem('token');
       if (!token) {
@@ -577,34 +624,70 @@ const fetchPatients = useCallback(async () => {
   }
 }, [apiUrl]);
 
-  const handlePatientSelect = (patient) => {
-    console.log('Selecting patient:', patient);
+const handlePatientSelect = (patient) => {
+  console.log('👤 Selecting patient:', patient);
+  
+  debugLocalStorage();
+  
+  setLoading(true);
+  setMessages([]);
+  setSelectedPatient(patient);
+  setSelectedClinic(null);
+  setConversationId(null);
+  conversationIdRef.current = null;
+  
+  const clinic = localStorage.getItem('staffclinic') || localStorage.getItem('ownerclinic');
+  const userId = localStorage.getItem('staffid') || localStorage.getItem('ownerid');
+  const role = localStorage.getItem('role');
+  
+  console.log('🏥 Starting conversation with patient:', { patientId: patient._id, clinic });
+  
+  // Find existing conversation
+  const patientConversation = conversations.find(conv => 
+    conv.participants.some(p => p.userId === patient._id && p.role === 'patient')
+  );
+  
+  if (patientConversation) {
+    console.log('📞 Found existing conversation:', patientConversation._id);
     
-    debugLocalStorage();
+    // Immediately set conversation ID and join room
+    setConversationId(patientConversation._id);
+    conversationIdRef.current = patientConversation._id;
     
-    setLoading(true);
-    setMessages([]);
-    setSelectedPatient(patient);
-    setSelectedClinic(null);
-    setConversationId(null);
-    const clinic = localStorage.getItem('staffclinic') || localStorage.getItem('ownerclinic');
-    console.log('Starting conversation with patient:', { patientId: patient._id, clinic });
+    // Mark conversation as read
+    markConversationAsRead(patientConversation._id);
     
-    // Mark conversation as read when selected
-    const patientConversation = conversations.find(conv => 
-      conv.participants.some(p => p.userId === patient._id && p.role === 'patient')
-    );
-    if (patientConversation) {
-      markConversationAsRead(patientConversation._id);
+    // IMMEDIATELY join this specific conversation via multiple methods
+    if (socket.current && socket.current.connected) {
+      console.log('🔌 Staff/Owner immediately joining patient conversation:', patientConversation._id);
+      socket.current.emit('joinConversation', patientConversation._id);
+      socket.current.emit('joinRoom', `conversation-${patientConversation._id}`);
+      socket.current.emit('joinRoom', `clinic-${clinic}-conversation-${patientConversation._id}`);
+      socket.current.emit('joinConversations', userId, role, clinic);
     }
     
+    // Load messages from cache if available, otherwise fetch
+    if (messagesByConversation[patientConversation._id]) {
+      console.log('💾 Setting messages from cache for staff/owner');
+      setMessages(messagesByConversation[patientConversation._id]);
+      setLoading(false);
+    } else {
+      console.log('🔄 Loading messages from server');
+      loadMessages(patientConversation._id).then(() => {
+        setLoading(false);
+      });
+    }
+  } else {
+    console.log('🆕 No existing conversation found, creating new one');
     startConversation(clinic, patient._id);
-  };
+  }
+};
 
   // 4. MESSAGE HANDLING FUNCTIONS
   const handleSendMessage = useCallback(async () => {
     if (!message.trim() && !selectedFile) return;
 
+    let temporaryId = Date.now().toString() + Math.random().toString(36).substr(2, 9);
     setIsSending(true);
     try {
       const token = localStorage.getItem('token');
@@ -618,7 +701,7 @@ const fetchPatients = useCallback(async () => {
       const userClinic = localStorage.getItem('staffclinic') || localStorage.getItem('ownerclinic');
       const targetClinic = userClinic === "Ambher Optical" ? "Bautista Eye Center" : "Ambher Optical";
       
-      const temporaryId = Date.now().toString() + Math.random().toString(36).substr(2, 9);
+      // temporaryId is already defined above
 
       let senderName;
       if (role === 'patient') {
@@ -1029,31 +1112,74 @@ useEffect(() => {
         forceNew: false
       });
 
-      socket.current.on('connect', () => {
-        console.log('Socket.IO connected successfully');
-        const userId = localStorage.getItem('patientid') || 
-                      localStorage.getItem('staffid') || 
-                      localStorage.getItem('ownerid');
-        const role = localStorage.getItem('role');
-        const clinic = localStorage.getItem('staffclinic') || 
-                      localStorage.getItem('ownerclinic');
+socket.current.on('connect', () => {
+  console.log('🔌 Socket.IO connected successfully');
+  const userId = localStorage.getItem('patientid') || 
+                localStorage.getItem('staffid') || 
+                localStorage.getItem('ownerid');
+  const role = localStorage.getItem('role');
+  const clinic = localStorage.getItem('staffclinic') || 
+                localStorage.getItem('ownerclinic');
 
-        if (userId && role) {
-          console.log('Joining conversations for user:', { userId, role, clinic });
-          socket.current.emit('joinConversations', userId, role, clinic);
-          
-          // Join current conversation if active
-          if (conversationIdRef.current) {
-            console.log('Re-joining current conversation:', conversationIdRef.current);
-            socket.current.emit('joinConversation', conversationIdRef.current);
-          }
-          
-          // ALWAYS fetch conversations on connect (background fetch)
-          setTimeout(() => {
-            fetchConversations(true);
-          }, 1000);
-        }
+  if (userId && role) {
+    console.log('🏠 Joining conversations for user:', { userId, role, clinic });
+    socket.current.emit('joinConversations', userId, role, clinic);
+    
+    // Join current conversation if active
+    if (conversationIdRef.current) {
+      console.log('🔄 Re-joining current conversation:', conversationIdRef.current);
+      socket.current.emit('joinConversation', conversationIdRef.current);
+      socket.current.emit('joinRoom', `conversation-${conversationIdRef.current}`);
+      if (clinic) {
+        socket.current.emit('joinRoom', `clinic-${clinic}-conversation-${conversationIdRef.current}`);
+      }
+    }
+    
+    // CRITICAL: For staff/owner, FORCE join ALL conversation rooms
+    if ((role === 'staff' || role === 'owner') && clinic) {
+      console.log(`🏥 ${role} from ${clinic} FORCE joining ALL rooms on socket connect`);
+      
+      // Join general clinic rooms with multiple patterns
+      socket.current.emit('joinRoom', `clinic-${clinic}`);
+      socket.current.emit('joinRoom', `clinic-${clinic}-all`);
+      socket.current.emit('joinRoom', `clinic-${clinic}-patients`);
+      socket.current.emit('joinRoom', `all-conversations`);
+      
+      // Immediate force join of existing conversations
+      console.log('⚡ Immediately force joining existing conversations:', conversations.length);
+      conversations.forEach(conv => {
+        console.log(`⚡ ${role} (${clinic}) IMMEDIATE join conversation ${conv._id}`);
+        socket.current.emit('joinConversation', conv._id);
+        socket.current.emit('joinRoom', `conversation-${conv._id}`);
+        socket.current.emit('joinRoom', `clinic-${clinic}-conversation-${conv._id}`);
+        socket.current.emit('joinRoom', `patient-conversation-${conv._id}`);
+        socket.current.emit('joinRoom', `global-conversation-${conv._id}`);
       });
+      
+      // Delayed fetch and join for new conversations
+      setTimeout(() => {
+        console.log('⏰ Delayed fetch and join for new conversations');
+        fetchConversations(true).then(() => {
+          setTimeout(() => {
+            conversations.forEach(conv => {
+              console.log(`⏰ ${role} (${clinic}) delayed join conversation ${conv._id}`);
+              socket.current.emit('joinConversation', conv._id);
+              socket.current.emit('joinRoom', `conversation-${conv._id}`);
+              socket.current.emit('joinRoom', `clinic-${clinic}-conversation-${conv._id}`);
+              socket.current.emit('joinRoom', `patient-conversation-${conv._id}`);
+              socket.current.emit('joinRoom', `global-conversation-${conv._id}`);
+            });
+          }, 300);
+        });
+      }, 800);
+    }
+    
+    // ALWAYS fetch conversations on connect
+    setTimeout(() => {
+      fetchConversations(true);
+    }, 1000);
+  }
+});
 
       socket.current.on('connect_error', (error) => {
         console.error('Socket.IO connection error:', error);
@@ -1083,78 +1209,207 @@ useEffect(() => {
         }
       });
 
-      // --- Real-time fix: use conversationIdRef in handler ---
-      socket.current.on('newMessage', (newMessage) => {
-        console.log('Received new message:', newMessage);
+socket.current.on('newMessage', (newMessage) => {
+  console.log('📨 NEW MESSAGE RECEIVED:', newMessage);
+  console.log('🎯 Current conversation ID (ref):', conversationIdRef.current);
+  console.log('🎯 Current conversation ID (state):', conversationId);
 
-        const currentUserId = localStorage.getItem('patientid') ||
-          localStorage.getItem('staffid') ||
-          localStorage.getItem('ownerid');
+  const currentUserId = localStorage.getItem('patientid') ||
+                        localStorage.getItem('staffid') ||
+                        localStorage.getItem('ownerid');
+  const currentRole = localStorage.getItem('role');
+  const currentClinic = localStorage.getItem('staffclinic') || localStorage.getItem('ownerclinic');
 
-        // Always update messagesByConversation
-        setMessagesByConversation(prev => {
-          const conversationMessages = prev[newMessage.conversationId] || [];
-          const messageExists = conversationMessages.some(msg => msg._id === newMessage._id || msg.temporaryId === newMessage.temporaryId);
-          if (!messageExists) {
-            return {
-              ...prev,
-              [newMessage.conversationId]: [...conversationMessages, newMessage]
-            };
-          }
-          return prev;
-        });
+  console.log('👤 Current User Info:', { currentUserId, currentRole, currentClinic });
+  console.log('📧 Message Info:', { 
+    messageConvId: newMessage.conversationId, 
+    senderId: newMessage.senderId,
+    senderRole: newMessage.senderRole,
+    senderClinic: newMessage.senderClinic,
+    sentToClinic: newMessage.sentToClinic 
+  });
 
-        // Use the ref here!
-        if (newMessage.conversationId === conversationIdRef.current) {
-          setMessages(prev => {
-            const messageExists = prev.some(msg => msg._id === newMessage._id || msg.temporaryId === newMessage.temporaryId);
-            if (!messageExists) {
-              return [...prev, newMessage];
-            }
-            return prev;
-          });
-          setPendingMessageId(null);
-          setTimeout(() => {
-            scrollToBottom();
-          }, 100);
-        }
+  unstable_batchedUpdates(() => {
+    // Check if this message is for the currently active conversation
+    const isForActiveConversation = newMessage.conversationId === conversationIdRef.current;
+    console.log('✅ Is message for active conversation?', isForActiveConversation);
 
-        // Update latest message for conversation list
-        setLatestMessagesByConversation(prev => ({
+    // ALWAYS update messagesByConversation first
+    setMessagesByConversation(prev => {
+      const conversationMessages = prev[newMessage.conversationId] || [];
+      const messageExists = conversationMessages.some(msg => 
+        msg._id === newMessage._id || 
+        (msg.temporaryId && msg.temporaryId === newMessage.temporaryId)
+      );
+      
+      if (!messageExists) {
+        console.log('💾 Adding message to messagesByConversation cache:', newMessage.conversationId);
+        const updatedMessages = [...conversationMessages, newMessage];
+        return {
           ...prev,
-          [newMessage.conversationId]: newMessage
-        }));
+          [newMessage.conversationId]: updatedMessages
+        };
+      }
+      return prev;
+    });
 
-        // Update conversations list with new message
-        setConversations(prev => {
-          const updatedConversations = prev.map(conv => {
-            if (conv._id === newMessage.conversationId) {
-              return { ...conv, lastMessage: newMessage };
-            }
-            return conv;
-          });
-          // Sort conversations by last message time
-          return updatedConversations.sort((a, b) => {
-            if (!a.lastMessage && !b.lastMessage) return 0;
-            if (!a.lastMessage) return 1;
-            if (!b.lastMessage) return -1;
-            return new Date(b.lastMessage.createdAt) - new Date(a.lastMessage.createdAt);
-          });
+    // CRITICAL: Update active messages if it's for the current conversation
+    if (isForActiveConversation) {
+      console.log('🔄 UPDATING ACTIVE MESSAGES for current conversation - Role:', currentRole);
+      setMessages(prev => {
+        const messageExists = prev.some(msg => {
+          if (msg._id && newMessage._id && msg._id === newMessage._id) return true;
+          if (msg.temporaryId && newMessage.temporaryId && msg.temporaryId === newMessage.temporaryId) return true;
+          if (msg.text === newMessage.text && 
+              msg.senderId === newMessage.senderId && 
+              Math.abs(new Date(msg.createdAt) - new Date(newMessage.createdAt)) < 1000) return true;
+          return false;
         });
-
-        // Handle unread status
-        if (newMessage.senderId !== currentUserId) {
-          setUnreadMessagesByConversation(prev => ({
-            ...prev,
-            [newMessage.conversationId]: newMessage.conversationId !== conversationIdRef.current
-          }));
-          setHasGlobalUnreadMessages(true);
+        
+        if (!messageExists) {
+          console.log('✨ ADDING NEW MESSAGE TO ACTIVE CHAT for', currentRole, '- Message:', newMessage.text);
+          const updatedMessages = [...prev, newMessage];
+          
+          // Force scroll to bottom
+          setTimeout(() => {
+            console.log('📜 Scrolling to bottom after new message');
+            messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+          }, 100);
+          
+          return updatedMessages;
         }
-        setLoadingConversations(false);
+        
+        console.log('⚠️ Message already exists in active conversation');
+        return prev;
       });
+    } else {
+      console.log('❌ Message NOT for active conversation');
+      
+      // CRITICAL: For staff/owner, if message is relevant to their clinic, force refresh
+      if ((currentRole === 'staff' || currentRole === 'owner') && showpatientchatdashboard) {
+        const isRelevantToClinic = 
+          newMessage.sentToClinic === currentClinic ||
+          newMessage.senderClinic === currentClinic ||
+          (newMessage.senderRole === 'patient' && newMessage.sentToClinic === currentClinic);
+        
+        if (isRelevantToClinic) {
+          console.log('🔄 Message relevant to clinic, refreshing conversations');
+          setTimeout(() => {
+            fetchConversations(true);
+          }, 200);
+        }
+      }
+    }
+
+    // Update latest message for the conversation list
+    setLatestMessagesByConversation(prev => ({
+      ...prev,
+      [newMessage.conversationId]: newMessage
+    }));
+
+    // Update conversations list with the new message
+    setConversations(prev => {
+      let conversationUpdated = false;
+      const updatedConversations = prev.map(conv => {
+        if (conv._id === newMessage.conversationId) {
+          conversationUpdated = true;
+          return { ...conv, lastMessage: newMessage };
+        }
+        return conv;
+      });
+
+      // If conversation not found, add it or fetch all
+      if (!conversationUpdated && (currentRole === 'staff' || currentRole === 'owner')) {
+        console.log('🆕 New conversation detected, fetching all conversations');
+        setTimeout(() => {
+          fetchConversations(true);
+        }, 100);
+      }
+
+      return updatedConversations.sort((a, b) => {
+        if (!a.lastMessage && !b.lastMessage) return 0;
+        if (!a.lastMessage) return 1;
+        if (!b.lastMessage) return -1;
+        return new Date(b.lastMessage.createdAt) - new Date(a.lastMessage.createdAt);
+      });
+    });
+
+    // Handle unread status
+    if (newMessage.senderId !== currentUserId) {
+      console.log('🔔 Setting unread status for conversation:', newMessage.conversationId);
+      
+      const shouldMarkUnread = !isForActiveConversation;
+      
+      setUnreadMessagesByConversation(prev => ({
+        ...prev,
+        [newMessage.conversationId]: shouldMarkUnread
+      }));
+      
+      if (shouldMarkUnread) {
+        setHasGlobalUnreadMessages(true);
+      }
+      
+      console.log('📊 Unread status updated:', { 
+        conversationId: newMessage.conversationId, 
+        unread: shouldMarkUnread 
+      });
+    }
+  });
+});
       // --------------------------------------------------------
     }
   }, [apiUrl]);// Only depend on apiUrl
+
+
+
+
+
+// KEEP THIS ONE - Enhanced Staff/Owner Socket Room Management
+useEffect(() => {
+  const role = localStorage.getItem('role');
+  
+  // For staff/owner: ensure they stay connected to all relevant conversations
+  if ((role === 'staff' || role === 'owner') && socket.current && socket.current.connected && conversations.length > 0) {
+    console.log('🔥 Staff/Owner FORCE joining ALL conversations for real-time updates');
+    
+    const userId = localStorage.getItem('staffid') || localStorage.getItem('ownerid');
+    const userClinic = localStorage.getItem('staffclinic') || localStorage.getItem('ownerclinic');
+    
+    if (userId && userClinic) {
+      // Join general conversations for this clinic
+      socket.current.emit('joinConversations', userId, role, userClinic);
+      
+      // CRITICAL: Join EVERY SINGLE conversation regardless of participants
+      conversations.forEach(conv => {
+        console.log(`🎯 ${role} (${userClinic}) FORCE joining conversation ${conv._id} for real-time updates`);
+        
+        // Multiple join patterns to ensure coverage
+        socket.current.emit('joinConversation', conv._id);
+        socket.current.emit('joinRoom', `conversation-${conv._id}`);
+        socket.current.emit('joinRoom', `clinic-${userClinic}-conversation-${conv._id}`);
+        socket.current.emit('joinRoom', `patient-conversation-${conv._id}`);
+        socket.current.emit('joinRoom', `global-conversation-${conv._id}`);
+      });
+      
+      // Join general clinic rooms with multiple patterns
+      socket.current.emit('joinRoom', `clinic-${userClinic}`);
+      socket.current.emit('joinRoom', `clinic-${userClinic}-all`);
+      socket.current.emit('joinRoom', `clinic-${userClinic}-patients`);
+      socket.current.emit('joinRoom', `all-conversations`);
+      
+      console.log(`🚀 ${role} from ${userClinic} FORCE joined ${conversations.length} conversations with multiple room patterns`);
+    }
+  }
+}, [conversations, socket.current?.connected]);
+
+
+
+
+
+
+
+
+
 
   // 8. OTHER EFFECTS (in order of importance)
 
@@ -1226,6 +1481,9 @@ useEffect(() => {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+
+
 
   // Fetch patients when chat dashboard opens for staff/owner
   useEffect(() => {
@@ -1301,6 +1559,184 @@ useEffect(() => {
 
 
 
+useEffect(() => {
+  const role = localStorage.getItem('role');
+  const token = localStorage.getItem('token');
+  
+  // For staff/owner: ensure socket is connected and joined to conversations on route change
+  if ((role === 'staff' || role === 'owner') && token) {
+    console.log(`Auto-connecting socket for ${role} on route change`);
+    
+    const timer = setTimeout(() => {
+      // Ensure socket is connected
+      if (socket.current && !socket.current.connected) {
+        console.log('Reconnecting socket for staff/owner on route change');
+        socket.current.connect();
+      }
+      
+      // Fetch conversations and patients
+      fetchConversations(true);
+      fetchPatients();
+      
+      // After a delay, join all relevant conversations
+      setTimeout(() => {
+        if (socket.current && socket.current.connected && conversations.length > 0) {
+          const userId = localStorage.getItem('staffid') || localStorage.getItem('ownerid');
+          const userClinic = localStorage.getItem('staffclinic') || localStorage.getItem('ownerclinic');
+          
+          if (userId && userClinic) {
+            console.log(`${role} from ${userClinic} joining conversations after route change`);
+            socket.current.emit('joinConversations', userId, role, userClinic);
+            
+            conversations.forEach(conv => {
+              const isClinicInvolved = conv.participants.some(p => 
+                (p.role === 'clinic' && p.clinic === userClinic) ||
+                (p.userId === userId && (p.role === 'staff' || p.role === 'owner'))
+              ) || conv.clinic === userClinic;
+              
+              if (isClinicInvolved) {
+                socket.current.emit('joinConversation', conv._id);
+              }
+            });
+          }
+        }
+      }, 2000);
+    }, 1000);
+    
+    return () => clearTimeout(timer);
+  }
+}, [location.pathname, fetchConversations, fetchPatients]);
+
+
+
+
+
+
+useEffect(() => {
+  console.log('Messages state changed:', {
+    messagesCount: messages.length,
+    conversationId,
+    conversationIdRef: conversationIdRef.current,
+    lastMessage: messages[messages.length - 1]?.text || 'No messages'
+  });
+}, [messages, conversationId]);
+
+useEffect(() => {
+  console.log('ConversationId state changed:', {
+    oldId: 'previous',
+    newId: conversationId,
+    refValue: conversationIdRef.current
+  });
+}, [conversationId]);
+
+
+
+
+
+
+useEffect(() => {
+  console.log('Messages state updated:', {
+    messagesCount: messages.length,
+    conversationId,
+    conversationIdRef: conversationIdRef.current,
+    role: localStorage.getItem('role'),
+    lastMessage: messages[messages.length - 1]?.text || 'No messages',
+    lastMessageSender: messages[messages.length - 1]?.senderName || 'Unknown'
+  });
+}, [messages]);
+
+
+// Add this effect after your existing useEffect hooks:
+useEffect(() => {
+  // Sync messages when conversation changes
+  if (conversationId && messagesByConversation[conversationId]) {
+    console.log('Syncing messages for conversation:', conversationId, 'Role:', localStorage.getItem('role'));
+    const conversationMessages = messagesByConversation[conversationId];
+    setMessages(conversationMessages);
+  }
+}, [conversationId, messagesByConversation]);
+
+
+
+
+
+// Replace your existing sync effect with this enhanced version:
+useEffect(() => {
+  const role = localStorage.getItem('role');
+  
+  // Sync messages when conversation changes
+  if (conversationId && messagesByConversation[conversationId]) {
+    console.log('Syncing messages for conversation:', conversationId, 'Role:', role);
+    const conversationMessages = messagesByConversation[conversationId];
+    
+    // For all roles, ensure messages are synced
+    setMessages(prevMessages => {
+      // Check if messages need updating
+      const needsUpdate = prevMessages.length !== conversationMessages.length ||
+                         JSON.stringify(prevMessages.map(m => m._id)) !== JSON.stringify(conversationMessages.map(m => m._id));
+      
+      if (needsUpdate) {
+        console.log(`Messages synced for ${role}:`, conversationMessages.length, 'messages');
+        
+        // Auto-scroll to bottom for new messages
+        setTimeout(() => {
+          messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+        }, 100);
+        
+        return conversationMessages;
+      }
+      
+      return prevMessages;
+    });
+  }
+}, [conversationId, messagesByConversation]);
+
+
+
+// Add this new effect for periodic room re-joining - Add around line 1650
+useEffect(() => {
+  const role = localStorage.getItem('role');
+  
+  // For staff/owner: periodically ensure they're in all conversation rooms
+  if ((role === 'staff' || role === 'owner') && showpatientchatdashboard) {
+    const interval = setInterval(() => {
+      if (socket.current && socket.current.connected && conversations.length > 0) {
+        const userId = localStorage.getItem('staffid') || localStorage.getItem('ownerid');
+        const userClinic = localStorage.getItem('staffclinic') || localStorage.getItem('ownerclinic');
+        
+        if (userId && userClinic) {
+          console.log(`Periodic room re-join for ${role} (${userClinic})`);
+          
+          // Re-join all conversations
+          conversations.forEach(conv => {
+            socket.current.emit('joinConversation', conv._id);
+            socket.current.emit('joinRoom', `conversation-${conv._id}`);
+            socket.current.emit('joinRoom', `clinic-${userClinic}-conversation-${conv._id}`);
+          });
+        }
+      }
+    }, 10000); // Every 10 seconds
+    
+    return () => clearInterval(interval);
+  }
+}, [showpatientchatdashboard, conversations.length]);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1364,146 +1800,204 @@ useEffect(() => {
     <>
       <p className="text-[20px] font-albertsans font-semibold text-gray-800">Chat with us</p>
       <div className="flex gap-3">
+<<<<<<< HEAD
 // For Ambher Optical:
+=======
+
+
+>>>>>>> 76f6f9b (Fixed real time messaging notifications nalang ung papaluin ng sinturon)
 <div
-  onClick={() => {
-    console.log('Opening chat dashboard (Ambher)');
+  onClick={async () => {
+    console.log('Switching to Ambher Optical conversation');
+    // Reset states for clinic switch
     setshowpatientambherConversation(true);
-    
-    // Mark Ambher conversation as read when selected
-    const ambherConv = conversations.find(conv => 
-      conv.participants.some(p => p.role === 'clinic' && p.clinic === "Ambher Optical") ||
-      conv.clinic === "Ambher Optical" ||
-      conv.participants.some(p => p.clinic === "Ambher Optical")
-    );
-    if (ambherConv) {
-      setUnreadMessagesByConversation(prev => ({
-        ...prev,
-        [ambherConv._id]: false
-      }));
-      
-      // Check if there are still other unread conversations
-      const hasOtherUnread = Object.entries(unreadMessagesByConversation).some(([convId, isUnread]) => 
-        convId !== ambherConv._id && isUnread
-      );
-      
-      // If no other unread conversations, clear global unread
-      if (!hasOtherUnread) {
-        setHasGlobalUnreadMessages(false);
-      }
-    }
-    
-    // Force refresh conversations to get latest messages
-    fetchConversations(true);
-    
-    if (socket.current && !socket.current.connected) {
-      console.log('Reconnecting socket when chat dashboard opens (Ambher)');
-      socket.current.connect();
-    }
-  }}
-  className="hover:shadow-md hover:bg-[#d8fdf0] hover:scale-105 transition-all duration-300 ease-in-out gap-2 cursor-pointer flex flex-col justify-center items-center w-40 h-40 rounded-md border-1 relative"
->
-  {(() => {
-    console.log('Checking Ambher unread status:', { 
-      conversations: conversations.length, 
-      unreadMessages: unreadMessagesByConversation,
-      conversationDetails: conversations.map(conv => ({
-        id: conv._id,
-        clinic: conv.clinic,
-        participants: conv.participants
-      }))
-    });
-    
-    // Try multiple ways to find the Ambher conversation
-    const ambherConv = conversations.find(conv => 
-      conv.participants.some(p => p.role === 'clinic' && p.clinic === "Ambher Optical") ||
-      conv.clinic === "Ambher Optical" ||
-      conv.participants.some(p => p.clinic === "Ambher Optical")
-    );
-    
-    const hasUnread = ambherConv && hasUnreadMessages(ambherConv._id);
-    console.log('Ambher conversation:', { 
-      found: !!ambherConv, 
-      convId: ambherConv?._id, 
-      hasUnread,
-      conversationClinic: ambherConv?.clinic,
-      participants: ambherConv?.participants
-    });
-    
-    return hasUnread ? (
-      <div className="absolute flex justify-center items-center top-1 right-1 bg-[#e93f3f] rounded-full w-4.5 h-4.5"></div>
-    ) : null;
-  })()}
-  <img src={ambherlogo} className="w-23 px-2 py-1" />
-  <p className="font-albertsans font-semibold text-[15px] text-[#0a774a]">Ambher Optical</p>
-</div>
+    setshowpatientbautistaConversation(false);
+    setMessages([]); // Clear current messages
+    setConversationId(null); // Reset conversation ID
+    conversationIdRef.current = null;
 
-
-<div
-  onClick={() => {
-    console.log('Opening chat dashboard (Bautista)');
-    setshowpatientbautistaConversation(true);
-    
-    // Mark Bautista conversation as read when selected
-    const bautistaConv = conversations.find(conv => 
-      conv.participants.some(p => p.role === 'clinic' && p.clinic === "Bautista Eye Center") ||
-      conv.clinic === "Bautista Eye Center" ||
-      conv.participants.some(p => p.clinic === "Bautista Eye Center")
-    );
-    if (bautistaConv) {
-      setUnreadMessagesByConversation(prev => ({
-        ...prev,
-        [bautistaConv._id]: false
-      }));
-      
-      // Check if there are still other unread conversations
-      const hasOtherUnread = Object.entries(unreadMessagesByConversation).some(([convId, isUnread]) => 
-        convId !== bautistaConv._id && isUnread
+    try {
+      // Find Ambher conversation
+      const ambherConv = conversations.find(conv =>
+        conv.participants.some(p => p.role === 'clinic' && p.clinic === "Ambher Optical") ||
+        conv.clinic === "Ambher Optical"
       );
-      
-      // If no other unread conversations, clear global unread
-      if (!hasOtherUnread) {
-        setHasGlobalUnreadMessages(false);
+
+      console.log('Ambher conversation lookup:', {
+        found: !!ambherConv,
+        conversationId: ambherConv?._id,
+        participants: ambherConv?.participants,
+        clinic: ambherConv?.clinic
+      });
+
+      if (ambherConv) {
+        // Set conversation ID
+        setConversationId(ambherConv._id);
+        conversationIdRef.current = ambherConv._id;
+
+        // Leave previous conversation room if necessary
+        if (socket.current && socket.current.connected && previousConversationIdRef.current) {
+          console.log('Leaving previous conversation:', previousConversationIdRef.current);
+          socket.current.emit('leaveConversation', previousConversationIdRef.current);
+        }
+        previousConversationIdRef.current = ambherConv._id;
+
+        // Join new conversation room
+        if (socket.current && socket.current.connected) {
+          console.log('Joining Ambher conversation:', ambherConv._id);
+          socket.current.emit('joinConversation', ambherConv._id);
+          const patientId = localStorage.getItem('patientid');
+          if (patientId) {
+            socket.current.emit('joinConversations', patientId, 'patient', null);
+          }
+        } else {
+          console.log('Socket not connected, attempting to reconnect');
+          socket.current?.connect();
+        }
+
+        // Load messages
+        if (messagesByConversation[ambherConv._id]) {
+          console.log('Loading Ambher messages from cache:', messagesByConversation[ambherConv._id].length);
+          setMessages(messagesByConversation[ambherConv._id]);
+        } else {
+          console.log('Fetching Ambher messages from server');
+          setLoadingMessages(prev => ({ ...prev, [ambherConv._id]: true }));
+          await loadMessages(ambherConv._id);
+          setLoadingMessages(prev => ({ ...prev, [ambherConv._id]: false }));
+        }
+
+        // Mark conversation as read
+        setUnreadMessagesByConversation(prev => ({
+          ...prev,
+          [ambherConv._id]: false
+        }));
+        setHasGlobalUnreadMessages(
+          Object.values(unreadMessagesByConversation).some(unread => unread)
+        );
+      } else {
+        console.log('No Ambher conversation found, starting new one');
+        await startConversation("Ambher Optical");
       }
-    }
-    
-    // Force refresh conversations to get latest messages
-    fetchConversations(true);
-    
-    if (socket.current && !socket.current.connected) {
-      console.log('Reconnecting socket when chat dashboard opens (Bautista)');
-      socket.current.connect();
+    } catch (error) {
+      console.error('Error switching to Ambher Optical:', error);
+    } finally {
+      // Ensure conversations are re-fetched after switching
+      fetchConversations(true);
     }
   }}
   className="hover:shadow-md hover:bg-[#d8f1fd] hover:scale-105 transition-all duration-300 ease-in-out gap-2 cursor-pointer flex flex-col justify-center items-center w-40 h-40 rounded-md border-1 relative"
 >
   {(() => {
-    console.log('Checking Bautista unread status:', { 
-      conversations: conversations.length, 
-      unreadMessages: unreadMessagesByConversation,
-      conversationDetails: conversations.map(conv => ({
-        id: conv._id,
-        clinic: conv.clinic,
-        participants: conv.participants
-      }))
-    });
-    
-    // Try multiple ways to find the Bautista conversation
-    const bautistaConv = conversations.find(conv => 
-      conv.participants.some(p => p.role === 'clinic' && p.clinic === "Bautista Eye Center") ||
-      conv.clinic === "Bautista Eye Center" ||
-      conv.participants.some(p => p.clinic === "Bautista Eye Center")
+    const ambherConv = conversations.find(conv =>
+      conv.participants.some(p => p.role === 'clinic' && p.clinic === "Ambher Optical") ||
+      conv.clinic === "Ambher Optical"
     );
-    
-    const hasUnread = bautistaConv && hasUnreadMessages(bautistaConv._id);
-    console.log('Bautista conversation:', { 
-      found: !!bautistaConv, 
-      convId: bautistaConv?._id, 
-      hasUnread,
-      conversationClinic: bautistaConv?.clinic,
-      participants: bautistaConv?.participants
+    const hasUnread = ambherConv && hasUnreadMessages(ambherConv._id);
+    console.log('Ambher conversation status:', {
+      found: !!ambherConv,
+      convId: ambherConv?._id,
+      hasUnread
     });
-    
+    return hasUnread ? (
+      <div className="absolute flex justify-center items-center top-1 right-1 bg-[#e93f3f] rounded-full w-4.5 h-4.5"></div>
+    ) : null;
+  })()}
+  <img src={ambherlogo} className="w-23 px-2 py-1" />
+  <p className="font-albertsans font-semibold text-[15px] text-[#0a4277]">Ambher Optical</p>
+</div>
+
+<div
+  onClick={async () => {
+    console.log('Switching to Bautista Eye Center conversation');
+    // Reset states for clinic switch
+    setshowpatientbautistaConversation(true);
+    setshowpatientambherConversation(false);
+    setMessages([]); // Clear current messages
+    setConversationId(null); // Reset conversation ID
+    conversationIdRef.current = null;
+
+    try {
+      // Find Bautista conversation
+      const bautistaConv = conversations.find(conv =>
+        conv.participants.some(p => p.role === 'clinic' && p.clinic === "Bautista Eye Center") ||
+        conv.clinic === "Bautista Eye Center"
+      );
+
+      console.log('Bautista conversation lookup:', {
+        found: !!bautistaConv,
+        conversationId: bautistaConv?._id,
+        participants: bautistaConv?.participants,
+        clinic: bautistaConv?.clinic
+      });
+
+      if (bautistaConv) {
+        // Set conversation ID
+        setConversationId(bautistaConv._id);
+        conversationIdRef.current = bautistaConv._id;
+
+        // Leave previous conversation room if necessary
+        if (socket.current && socket.current.connected && previousConversationIdRef.current) {
+          console.log('Leaving previous conversation:', previousConversationIdRef.current);
+          socket.current.emit('leaveConversation', previousConversationIdRef.current);
+        }
+        previousConversationIdRef.current = bautistaConv._id;
+
+        // Join new conversation room
+        if (socket.current && socket.current.connected) {
+          console.log('Joining Bautista conversation:', bautistaConv._id);
+          socket.current.emit('joinConversation', bautistaConv._id);
+          const patientId = localStorage.getItem('patientid');
+          if (patientId) {
+            socket.current.emit('joinConversations', patientId, 'patient', null);
+          }
+        } else {
+          console.log('Socket not connected, attempting to reconnect');
+          socket.current?.connect();
+        }
+
+        // Load messages
+        if (messagesByConversation[bautistaConv._id]) {
+          console.log('Loading Bautista messages from cache:', messagesByConversation[bautistaConv._id].length);
+          setMessages(messagesByConversation[bautistaConv._id]);
+        } else {
+          console.log('Fetching Bautista messages from server');
+          setLoadingMessages(prev => ({ ...prev, [bautistaConv._id]: true }));
+          await loadMessages(bautistaConv._id);
+          setLoadingMessages(prev => ({ ...prev, [bautistaConv._id]: false }));
+        }
+
+        // Mark conversation as read
+        setUnreadMessagesByConversation(prev => ({
+          ...prev,
+          [bautistaConv._id]: false
+        }));
+        setHasGlobalUnreadMessages(
+          Object.values(unreadMessagesByConversation).some(unread => unread)
+        );
+      } else {
+        console.log('No Bautista conversation found, starting new one');
+        await startConversation("Bautista Eye Center");
+      }
+    } catch (error) {
+      console.error('Error switching to Bautista Eye Center:', error);
+    } finally {
+      // Ensure conversations are re-fetched after switching
+      fetchConversations(true);
+    }
+  }}
+  className="hover:shadow-md hover:bg-[#d8f1fd] hover:scale-105 transition-all duration-300 ease-in-out gap-2 cursor-pointer flex flex-col justify-center items-center w-40 h-40 rounded-md border-1 relative"
+>
+  {(() => {
+    const bautistaConv = conversations.find(conv =>
+      conv.participants.some(p => p.role === 'clinic' && p.clinic === "Bautista Eye Center") ||
+      conv.clinic === "Bautista Eye Center"
+    );
+    const hasUnread = bautistaConv && hasUnreadMessages(bautistaConv._id);
+    console.log('Bautista conversation status:', {
+      found: !!bautistaConv,
+      convId: bautistaConv?._id,
+      hasUnread
+    });
     return hasUnread ? (
       <div className="absolute flex justify-center items-center top-1 right-1 bg-[#e93f3f] rounded-full w-4.5 h-4.5"></div>
     ) : null;
@@ -1511,6 +2005,10 @@ useEffect(() => {
   <img src={bautistalogo} className="w-23 px-2 py-1" />
   <p className="font-albertsans font-semibold text-[15px] text-[#0a4277]">Bautista Eye Center</p>
 </div>
+
+
+
+
       </div>
     </>
   )}
@@ -1530,90 +2028,106 @@ useEffect(() => {
                         <p className="text-[#1583b3] font-medium">Loading messages...</p>
                       </div>
                     ) : messages.length > 0 ? (
-                      messages.map((msg, index) => {
-                        const isCurrentUser = msg.senderRole === localStorage.getItem('role') && 
-                                             msg.senderId === localStorage.getItem('patientid');
-                        
-                        const isSameSenderAsPrevious = index > 0 && 
-                          messages[index - 1].senderId === msg.senderId;
-                        const isSameSenderAsNext = index < messages.length - 1 && 
-                          messages[index + 1].senderId === msg.senderId;
-                        
-                        const isDifferentSenderFromPrevious = index > 0 && 
-                          messages[index - 1].senderId !== msg.senderId;
+messages.map((msg, index) => {
+  const isCurrentUser = (() => {
+    const role = localStorage.getItem('role');
+    const userId = localStorage.getItem('patientid') || 
+                  localStorage.getItem('staffid') || 
+                  localStorage.getItem('ownerid');
+    
+    // For patients: check both role and ID
+    if (role === 'patient') {
+      return msg.senderRole === 'patient' && msg.senderId === userId;
+    }
+    
+    // For staff/owner: check role and ID
+    if (role === 'staff' || role === 'owner') {
+      return msg.senderRole === role && msg.senderId === userId;
+    }
+    
+    return false;
+  })();
+  
+  const isSameSenderAsPrevious = index > 0 && 
+    messages[index - 1].senderId === msg.senderId;
+  const isSameSenderAsNext = index < messages.length - 1 && 
+    messages[index + 1].senderId === msg.senderId;
+  
+  const isDifferentSenderFromPrevious = index > 0 && 
+    messages[index - 1].senderId !== msg.senderId;
 
-                        let borderRadiusClasses = '';
-                        if (isCurrentUser) {
-                          borderRadiusClasses = !isSameSenderAsPrevious && !isSameSenderAsNext ? 'rounded-2xl' :
-                            !isSameSenderAsPrevious ? 'rounded-tl-2xl rounded-bl-2xl rounded-tr-2xl' :
-                            !isSameSenderAsNext ? 'rounded-tl-2xl rounded-bl-2xl rounded-br-2xl' :
-                            'rounded-tl-2xl rounded-bl-2xl';
-                        } else {
-                          borderRadiusClasses = !isSameSenderAsPrevious && !isSameSenderAsNext ? 'rounded-2xl' :
-                            !isSameSenderAsPrevious ? 'rounded-tr-2xl rounded-br-2xl rounded-tl-2xl' :
-                            !isSameSenderAsNext ? 'rounded-tr-2xl rounded-br-2xl rounded-bl-2xl' :
-                            'rounded-tr-2xl rounded-br-2xl';
-                        }
+  let borderRadiusClasses = '';
+  if (isCurrentUser) {
+    borderRadiusClasses = !isSameSenderAsPrevious && !isSameSenderAsNext ? 'rounded-2xl' :
+      !isSameSenderAsPrevious ? 'rounded-tl-2xl rounded-bl-2xl rounded-tr-2xl' :
+      !isSameSenderAsNext ? 'rounded-tl-2xl rounded-bl-2xl rounded-br-2xl' :
+      'rounded-tl-2xl rounded-bl-2xl';
+  } else {
+    borderRadiusClasses = !isSameSenderAsPrevious && !isSameSenderAsNext ? 'rounded-2xl' :
+      !isSameSenderAsPrevious ? 'rounded-tr-2xl rounded-br-2xl rounded-tl-2xl' :
+      !isSameSenderAsNext ? 'rounded-tr-2xl rounded-br-2xl rounded-bl-2xl' :
+      'rounded-tr-2xl rounded-br-2xl';
+  }
 
-                        const isImageOnly = msg.imageUrl && !msg.text && !msg.documentUrl;
-                        const isLastInSequence = !isSameSenderAsNext;
-                        const profilePicture = isCurrentUser 
-                          ? (currentuserprofilepicture || profileuser)
-                          : (msg.senderClinic === "Ambher Optical" ? ambherlogo : bautistalogo);
+  const isImageOnly = msg.imageUrl && !msg.text && !msg.documentUrl;
+  const isLastInSequence = !isSameSenderAsNext;
+  const profilePicture = isCurrentUser 
+    ? (currentuserprofilepicture || profileuser)
+    : (msg.senderClinic === "Ambher Optical" ? ambherlogo : bautistalogo);
 
-                        return (
-                          <div 
-                            key={msg._id || msg.temporaryId}
-                            className={`w-full flex ${isCurrentUser ? 'justify-end' : 'justify-start'} ${
-                              isDifferentSenderFromPrevious ? 'mt-4' : ''
-                            }`}
-                          >
-                            <div className={`flex-shrink-0 ${isCurrentUser ? 'order-1 ml-2' : 'order-0 mr-2'} ${isLastInSequence ? 'visible' : 'invisible'}`}>
-                              {!isCurrentUser && (
-                                <img 
-                                  src={profilePicture} 
-                                  alt="Profile picture"
-                                  className="w-8 h-8 self-end rounded-full object-cover"
-                                  onError={(e) => { e.target.src = profileuser }}
-                                />
-                              )}
-                            </div>
+  return (
+    <div 
+      key={msg._id || msg.temporaryId}
+      className={`w-full flex ${isCurrentUser ? 'justify-end' : 'justify-start'} ${
+        isDifferentSenderFromPrevious ? 'mt-4' : ''
+      }`}
+    >
+      <div className={`flex-shrink-0 ${isCurrentUser ? 'order-1 ml-2' : 'order-0 mr-2'} ${isLastInSequence ? 'visible' : 'invisible'}`}>
+        {!isCurrentUser && (
+          <img 
+            src={profilePicture} 
+            alt="Profile picture"
+            className="w-8 h-8 self-end rounded-full object-cover"
+            onError={(e) => { e.target.src = profileuser }}
+          />
+        )}
+      </div>
 
-                            <div className={`max-w-[80%] ${isCurrentUser ? 'order-0' : 'order-1'}`}>
-                              {!isSameSenderAsPrevious && !isCurrentUser && (
-                                <div className={`flex ${isCurrentUser ? 'justify-end' : 'justify-start'}`}>
-                                  <p className="text-xs font-semibold text-gray-600 mb-1">
-                                    {msg.senderName}
-                                  </p>
-                                </div>
-                              )}
-                              {isImageOnly ? (
-                                renderMessageContent(msg, isCurrentUser)
-                              ) : (
-                                <div 
-                                  className={`flex flex-col px-5 py-2 ${
-                                    isCurrentUser ? (showpatientbautistaConversation ? 'bg-[#d8f1fd]' : 'bg-[#c0eed6]') : 'bg-[#e0e0e0]'
-                                  } ${borderRadiusClasses} relative group`}
-                                  style={{
-                                    wordWrap: 'break-word',
-                                    overflowWrap: 'break-word',
-                                    whiteSpace: 'pre-wrap'
-                                  }}
-                                >
-                                  {renderMessageContent(msg, isCurrentUser)}
-                                </div>
-                              )}
-                              {index === messages.length - 1 && (
-                                <div className={`mt-1 w-full flex ${isCurrentUser ? 'justify-end' : 'justify-start'}`}>
-                                  <p className="text-[12px] text-[#565656]">
-                                    {formatDate(msg.createdAt)} at {new Date(msg.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
-                                  </p>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        );
-                      })
+      <div className={`max-w-[80%] ${isCurrentUser ? 'order-0' : 'order-1'}`}>
+        {!isSameSenderAsPrevious && !isCurrentUser && (
+          <div className={`flex ${isCurrentUser ? 'justify-end' : 'justify-start'}`}>
+            <p className="text-xs font-semibold text-gray-600 mb-1">
+              {msg.senderName}
+            </p>
+          </div>
+        )}
+        {isImageOnly ? (
+          renderMessageContent(msg, isCurrentUser)
+        ) : (
+          <div 
+            className={`flex flex-col px-5 py-2 ${
+              isCurrentUser ? (showpatientbautistaConversation ? 'bg-[#d8f1fd]' : 'bg-[#c0eed6]') : 'bg-[#e0e0e0]'
+            } ${borderRadiusClasses} relative group`}
+            style={{
+              wordWrap: 'break-word',
+              overflowWrap: 'break-word',
+              whiteSpace: 'pre-wrap'
+            }}
+          >
+            {renderMessageContent(msg, isCurrentUser)}
+          </div>
+        )}
+        {index === messages.length - 1 && (
+          <div className={`mt-1 w-full flex ${isCurrentUser ? 'justify-end' : 'justify-start'}`}>
+            <p className="text-[12px] text-[#565656]">
+              {formatDate(msg.createdAt)} at {new Date(msg.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+            </p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+})
                     ) : (
                       <div className="w-full text-center text-gray-500 h-full flex items-center justify-center">
                         {selectedPatient ? `Start a conversation with ${selectedPatient.patientfirstname} ${selectedPatient.patientlastname}!` : ' No messages'}
@@ -2139,20 +2653,67 @@ useEffect(() => {
   <img src={close} alt="logo" className="select-none motion-preset-shake w-10 h-10 p-2" />
 </div>
             ) : (
+// For Ambher Optical staff/owner
+// Enhanced Ambher Optical dashboard opening - Replace around line 2850
 <div 
   onClick={() => {
     console.log('Opening chat dashboard (Ambher)');
     setshowpatientchatdashboard(true);
     
-    // DON'T fetch conversations if we already have them
-    // Only fetch patients if we don't have them already
-    if (patients.length === 0) {
-      fetchPatients();
+    // FORCE socket connection and room joining
+    const userId = localStorage.getItem('staffid') || localStorage.getItem('ownerid');
+    const role = localStorage.getItem('role');
+    const clinic = 'Ambher Optical';
+    
+    if (socket.current && socket.current.connected) {
+      console.log(`${role} from ${clinic} FORCE joining ALL conversations on dashboard open`);
+      
+      // Join general conversations
+      socket.current.emit('joinConversations', userId, role, clinic);
+      
+      // Join clinic-specific rooms
+      socket.current.emit('joinRoom', `clinic-${clinic}`);
+      socket.current.emit('joinRoom', `clinic-${clinic}-all`);
+      
+      // FORCE join EVERY conversation without filtering
+      conversations.forEach(conv => {
+        console.log(`${role} (${clinic}) FORCE joining conversation ${conv._id} on dashboard open`);
+        socket.current.emit('joinConversation', conv._id);
+        socket.current.emit('joinRoom', `conversation-${conv._id}`);
+        socket.current.emit('joinRoom', `clinic-${clinic}-conversation-${conv._id}`);
+      });
+      
+      // Fetch latest conversations and join new ones
+      setTimeout(() => {
+        fetchConversations(true).then(() => {
+          // Join any new conversations found
+          setTimeout(() => {
+            conversations.forEach(conv => {
+              console.log(`${role} (${clinic}) joining new conversation ${conv._id} after fetch`);
+              socket.current.emit('joinConversation', conv._id);
+              socket.current.emit('joinRoom', `conversation-${conv._id}`);
+              socket.current.emit('joinRoom', `clinic-${clinic}-conversation-${conv._id}`);
+            });
+          }, 500);
+        });
+      }, 500);
+    } else {
+      console.log('Socket not connected, reconnecting for', clinic);
+      socket.current?.connect();
+      
+      setTimeout(() => {
+        if (socket.current?.connected) {
+          socket.current.emit('joinConversations', userId, role, clinic);
+          socket.current.emit('joinRoom', `clinic-${clinic}`);
+          socket.current.emit('joinRoom', `clinic-${clinic}-all`);
+        }
+        fetchConversations(true);
+      }, 1000);
     }
     
-    if (socket.current && !socket.current.connected) {
-      console.log('Reconnecting socket when chat dashboard opens (Ambher)');
-      socket.current.connect();
+    // Fetch patients if needed
+    if (patients.length === 0) {
+      fetchPatients();
     }
   }} 
   className="motion-preset-slide-down hover:scale-105 ease-in-out duration-300 transition-all cursor-pointer flex justify-center items-center w-[60px] h-[60px] rounded-full bg-[#39715f]">
@@ -2571,24 +3132,70 @@ jsxtransition-all duration-300 ease-in-out flex-shrink-0"
   <img src={close} alt="logo" className="select-none motion-preset-shake w-10 h-10 p-2" />
 </div>
             ) : (
+// Enhanced Bautista Eye Center dashboard opening - Replace around line 3350
 <div 
   onClick={() => {
     console.log('Opening chat dashboard (Bautista)');
     setshowpatientchatdashboard(true);
+    
+    // FORCE socket connection and room joining
+    const userId = localStorage.getItem('staffid') || localStorage.getItem('ownerid');
+    const role = localStorage.getItem('role');
+    const clinic = 'Bautista Eye Center';
+    
+    if (socket.current && socket.current.connected) {
+      console.log(`${role} from ${clinic} FORCE joining ALL conversations on dashboard open`);
+      
+      // Join general conversations
+      socket.current.emit('joinConversations', userId, role, clinic);
+      
+      // Join clinic-specific rooms
+      socket.current.emit('joinRoom', `clinic-${clinic}`);
+      socket.current.emit('joinRoom', `clinic-${clinic}-all`);
+      
+      // FORCE join EVERY conversation without filtering
+      conversations.forEach(conv => {
+        console.log(`${role} (${clinic}) FORCE joining conversation ${conv._id} on dashboard open`);
+        socket.current.emit('joinConversation', conv._id);
+        socket.current.emit('joinRoom', `conversation-${conv._id}`);
+        socket.current.emit('joinRoom', `clinic-${clinic}-conversation-${conv._id}`);
+      });
+      
+      // Fetch latest conversations and join new ones
+      setTimeout(() => {
+        fetchConversations(true).then(() => {
+          // Join any new conversations found
+          setTimeout(() => {
+            conversations.forEach(conv => {
+              console.log(`${role} (${clinic}) joining new conversation ${conv._id} after fetch`);
+              socket.current.emit('joinConversation', conv._id);
+              socket.current.emit('joinRoom', `conversation-${conv._id}`);
+              socket.current.emit('joinRoom', `clinic-${clinic}-conversation-${conv._id}`);
+            });
+          }, 500);
+        });
+      }, 500);
+    } else {
+      console.log('Socket not connected, reconnecting for', clinic);
+      socket.current?.connect();
+      
+      setTimeout(() => {
+        if (socket.current?.connected) {
+          socket.current.emit('joinConversations', userId, role, clinic);
+          socket.current.emit('joinRoom', `clinic-${clinic}`);
+          socket.current.emit('joinRoom', `clinic-${clinic}-all`);
+        }
+        fetchConversations(true);
+      }, 1000);
+    }
 
-    // DON'T fetch conversations if we already have them
-    // Only fetch patients if we don't have them already
+    // Fetch patients if needed
     if (patients.length === 0) {
       fetchPatients();
     }
-    
-    if (socket.current && !socket.current.connected) {
-      console.log('Reconnecting socket when chat dashboard opens (Bautista)');
-      socket.current.connect();
-    }
   }} 
   className="motion-preset-slide-down hover:scale-105 ease-in-out duration-300 transition-all cursor-pointer flex justify-center items-center w-[60px] h-[60px] rounded-full bg-[#0a4277]">
-      {hasGlobalUnreadMessages && (
+  {hasGlobalUnreadMessages && (
     <div className="flex justify-center items-center absolute top-0 right-0 bg-[#e93f3f] rounded-full w-4.5 h-4.5"></div>
   )}
   <img src={chat} alt="logo" className="select-none motion-preset-seesaw w-10 h-10 p-2" />
