@@ -191,7 +191,6 @@ const checkGlobalUnreadMessages = useCallback(() => {
 
 
 
-
   // 3. CONVERSATION MANAGEMENT FUNCTIONS
   const markConversationAsRead = useCallback(async (conversationId) => {
     try {
@@ -1696,36 +1695,7 @@ useEffect(() => {
 
 
 
-// Replace your existing sync effect with this enhanced version:
-useEffect(() => {
-  const role = localStorage.getItem('role');
-  
-  // Sync messages when conversation changes
-  if (conversationId && messagesByConversation[conversationId]) {
-    console.log('Syncing messages for conversation:', conversationId, 'Role:', role);
-    const conversationMessages = messagesByConversation[conversationId];
-    
-    // For all roles, ensure messages are synced
-    setMessages(prevMessages => {
-      // Check if messages need updating
-      const needsUpdate = prevMessages.length !== conversationMessages.length ||
-                         JSON.stringify(prevMessages.map(m => m._id)) !== JSON.stringify(conversationMessages.map(m => m._id));
-      
-      if (needsUpdate) {
-        console.log(`Messages synced for ${role}:`, conversationMessages.length, 'messages');
-        
-        // Auto-scroll to bottom for new messages
-        setTimeout(() => {
-          messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-        }, 100);
-        
-        return conversationMessages;
-      }
-      
-      return prevMessages;
-    });
-  }
-}, [conversationId, messagesByConversation]);
+
 
 
 // Add this new effect for periodic room re-joining - Add around line 1650
@@ -1791,7 +1761,11 @@ useEffect(() => {
 }, [conversationId, messagesByConversation]);
 
 
-
+useEffect(() => {
+  if (conversationId && messagesByConversation[conversationId]) {
+    setMessages(messagesByConversation[conversationId]);
+  }
+}, [conversationId, messagesByConversation]);
 
 
 
