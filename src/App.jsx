@@ -1800,12 +1800,8 @@ useEffect(() => {
     <>
       <p className="text-[20px] font-albertsans font-semibold text-gray-800">Chat with us</p>
       <div className="flex gap-3">
-<<<<<<< HEAD
-// For Ambher Optical:
-=======
 
 
->>>>>>> 76f6f9b (Fixed real time messaging notifications nalang ung papaluin ng sinturon)
 <div
   onClick={async () => {
     console.log('Switching to Ambher Optical conversation');
