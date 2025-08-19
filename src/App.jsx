@@ -163,15 +163,15 @@ useEffect(() => {
   }, [messagesByConversation, conversations, unreadMessagesByConversation]);
 
 
-const checkGlobalUnreadMessages = useCallback(() => {
+  const checkGlobalUnreadMessages = useCallback(() => {
   // Check unreadMessagesByConversation first
   const hasUnreadInState = Object.values(unreadMessagesByConversation).some(isUnread => isUnread);
   if (hasUnreadInState) return true;
 
   // Fallback: check conversations
   const currentUserId = localStorage.getItem('patientid') || 
-                         localStorage.getItem('staffid') || 
-                         localStorage.getItem('ownerid');
+                       localStorage.getItem('staffid') || 
+                       localStorage.getItem('ownerid');
   const currentRole = localStorage.getItem('role');
   
   return conversations.some(conv => {
@@ -187,41 +187,44 @@ const checkGlobalUnreadMessages = useCallback(() => {
     }
     return false;
   });
-},[conversations, unreadMessagesByConversation]);
+}, [conversations, unreadMessagesByConversation]);
+
 
 
 
   // 3. CONVERSATION MANAGEMENT FUNCTIONS
-  const markConversationAsRead = useCallback(async (conversationId) => {
-    try {
-      console.log('Marking conversation as read locally:', conversationId);
+const markConversationAsRead = useCallback(async (conversationId) => {
+  try {
+    console.log('🔴 Marking conversation as read locally:', conversationId);
+    
+    // IMMEDIATELY and SYNCHRONOUSLY update both states
+    setUnreadMessagesByConversation(prev => {
+      const updated = { ...prev, [conversationId]: false };
       
-      setUnreadMessagesByConversation(prev => ({
-        ...prev,
-        [conversationId]: false
-      }));
+      // Calculate and set global unread state immediately
+      const hasOtherUnread = Object.values(updated).some(isUnread => isUnread);
       
-      // Check if there are still other unread conversations
-      setTimeout(() => {
-        const hasOtherUnread = Object.entries(unreadMessagesByConversation).some(([convId, isUnread]) => 
-          convId !== conversationId && isUnread
-        );
-        
-        if (!hasOtherUnread) {
-          setHasGlobalUnreadMessages(false);
-        }
-      }, 100);
+      // Use a microtask to ensure this happens after the current render
+      Promise.resolve().then(() => {
+        setHasGlobalUnreadMessages(hasOtherUnread);
+      });
       
-    } catch (error) {
-      console.error("Error marking conversation as read:", error);
-    }
-  }, [unreadMessagesByConversation]);
-
-
+      console.log('✅ Updated unread state:', { 
+        conversationId, 
+        hasOtherUnread,
+        updated: updated[conversationId] 
+      });
+      
+      return updated;
+    });
+    
+  } catch (error) {
+    console.error("Error marking conversation as read:", error);
+  }
+}, []);
 
 
   
-
 const fetchConversations = useCallback(async (forceRefresh = false) => {
   try {
     // Don't prevent fetches when we need to check for notifications
@@ -283,21 +286,64 @@ const fetchConversations = useCallback(async (forceRefresh = false) => {
       if (conv.lastMessage) {
         latestMsgs[conv._id] = conv.lastMessage;
         
-        // ENHANCED: Check if the last message is unread
+        // ENHANCED: Check if the last message is unread FOR THIS SPECIFIC CLINIC
         const lastMsg = conv.lastMessage;
         const isFromCurrentUser = lastMsg.senderId === currentUserId;
         
         if (!isFromCurrentUser) {
-          const isRead = lastMsg.readBy && Array.isArray(lastMsg.readBy) && 
-                        lastMsg.readBy.some(read => read.userId === currentUserId && read.role === role);
+          // CRITICAL: For staff/owner, only mark as unread if the message is RELEVANT to their clinic
+          let shouldBeUnread = false;
           
-          if (!isRead) {
+          if (role === 'staff' || role === 'owner') {
+            const currentClinic = localStorage.getItem('staffclinic') || localStorage.getItem('ownerclinic');
+            
+            // Check if this message is relevant to the current clinic
+            const isRelevantToCurrentClinic = 
+              lastMsg.sentToClinic === currentClinic ||
+              lastMsg.senderClinic === currentClinic ||
+              (lastMsg.senderRole === 'patient' && lastMsg.sentToClinic === currentClinic) ||
+              conv.participants.some(p => 
+                (p.role === 'clinic' && p.clinic === currentClinic) ||
+                (p.userId === currentUserId && (p.role === 'staff' || p.role === 'owner'))
+              );
+            
+            if (isRelevantToCurrentClinic) {
+              const isRead = lastMsg.readBy && Array.isArray(lastMsg.readBy) && 
+                            lastMsg.readBy.some(read => read.userId === currentUserId && read.role === role);
+              shouldBeUnread = !isRead;
+              
+              console.log(`🔍 Clinic relevance check for ${currentClinic}:`, {
+                conversationId: conv._id,
+                lastMessageFrom: lastMsg.senderName || lastMsg.senderClinic,
+                sentToClinic: lastMsg.sentToClinic,
+                senderClinic: lastMsg.senderClinic,
+                senderRole: lastMsg.senderRole,
+                isRelevant: isRelevantToCurrentClinic,
+                isRead: !shouldBeUnread,
+                shouldBeUnread
+              });
+            } else {
+              console.log(`❌ Message not relevant to ${currentClinic}:`, {
+                conversationId: conv._id,
+                lastMessageFrom: lastMsg.senderName || lastMsg.senderClinic,
+                sentToClinic: lastMsg.sentToClinic,
+                senderClinic: lastMsg.senderClinic
+              });
+            }
+          } else {
+            // For patients: use existing logic
+            const isRead = lastMsg.readBy && Array.isArray(lastMsg.readBy) && 
+                          lastMsg.readBy.some(read => read.userId === currentUserId && read.role === role);
+            shouldBeUnread = !isRead;
+          }
+          
+          if (shouldBeUnread) {
             unreadByConversation[conv._id] = true;
             hasGlobalUnread = true;
-            console.log(`🔴 Found unread conversation ${conv._id} - last message from ${lastMsg.senderName || lastMsg.senderClinic} (${lastMsg.senderClinic})`);
+            console.log(`🔴 Found unread conversation ${conv._id} for ${role} - last message from ${lastMsg.senderName || lastMsg.senderClinic}`);
           } else {
             unreadByConversation[conv._id] = false;
-            console.log(`✅ Conversation ${conv._id} is read - last message from ${lastMsg.senderName || lastMsg.senderClinic}`);
+            console.log(`✅ Conversation ${conv._id} is read or not relevant for ${role}`);
           }
         } else {
           unreadByConversation[conv._id] = false;
@@ -330,14 +376,29 @@ const fetchConversations = useCallback(async (forceRefresh = false) => {
       setMessagesByConversation(newMessagesByConversation);
     }
     
-    // ALWAYS set unread status based on conversation data
-    setUnreadMessagesByConversation(unreadByConversation);
-    setHasGlobalUnreadMessages(hasGlobalUnread);
-    
-    console.log(`Updated unread status for ${role}:`, { 
-      unreadByConversation, 
-      hasGlobalUnread,
-      conversationCount: sortedConversations.length 
+    // FIXED: Immediate synchronous update instead of setTimeout
+    setUnreadMessagesByConversation(prev => {
+      const updated = { ...prev };
+      
+      // Only update unread status if not manually marked as read
+      for (const [convId, isUnread] of Object.entries(unreadByConversation)) {
+        // If conversation was manually marked as read, don't override it
+        if (prev[convId] !== false) {
+          updated[convId] = isUnread;
+        }
+      }
+      
+      // Update global unread status immediately and synchronously
+      const hasUnread = Object.values(updated).some(isUnread => isUnread);
+      setHasGlobalUnreadMessages(hasUnread);
+      
+      console.log(`Updated unread status for ${role}:`, { 
+        unreadByConversation: updated, 
+        hasGlobalUnread: hasUnread,
+        conversationCount: sortedConversations.length 
+      });
+      
+      return updated;
     });
     
     // CRITICAL: Force join ALL conversations for staff/owner after fetch
@@ -377,9 +438,7 @@ const fetchConversations = useCallback(async (forceRefresh = false) => {
     // Always clear loading state
     setLoadingConversations(false);
   }
-}, [apiUrl, showpatientchatdashboard, conversations.length]);
-
-
+}, [apiUrl, showpatientchatdashboard, conversations.length, unreadMessagesByConversation]);
 
 
 
@@ -1273,23 +1332,6 @@ socket.current.on('newMessage', (newMessage) => {
         console.log('⚠️ Message already exists in active conversation');
         return prev;
       });
-    } else {
-      console.log('❌ Message NOT for active conversation');
-      
-      // CRITICAL: For staff/owner, if message is relevant to their clinic, force refresh
-      if ((currentRole === 'staff' || currentRole === 'owner') && showpatientchatdashboard) {
-        const isRelevantToClinic = 
-          newMessage.sentToClinic === currentClinic ||
-          newMessage.senderClinic === currentClinic ||
-          (newMessage.senderRole === 'patient' && newMessage.sentToClinic === currentClinic);
-        
-        if (isRelevantToClinic) {
-          console.log('🔄 Message relevant to clinic, refreshing conversations');
-          setTimeout(() => {
-            fetchConversations(true);
-          }, 200);
-        }
-      }
     }
 
     // Update latest message for the conversation list
@@ -1325,18 +1367,14 @@ socket.current.on('newMessage', (newMessage) => {
       });
     });
 
-    // ENHANCED UNREAD MESSAGE DETECTION FOR PATIENTS
+    // ENHANCED UNREAD MESSAGE DETECTION - FIXED TO ONLY SHOW FOR RELEVANT CLINICS
     if (newMessage.senderId !== currentUserId) {
-      console.log('🔔 Setting unread status for conversation:', newMessage.conversationId);
+      console.log('🔔 Checking unread status for conversation:', newMessage.conversationId);
       
-      // For patients: Mark as unread if not the active conversation OR if dashboard is closed
       let shouldMarkUnread = false;
       
       if (currentRole === 'patient') {
-        // Patient should see unread notifications if:
-        // 1. The message is not for the currently active conversation
-        // 2. OR the chat dashboard is not open
-        // 3. OR the specific clinic conversation is not open
+        // Patient logic remains the same
         const isDashboardOpen = showpatientchatdashboard;
         const isSpecificClinicOpen = (newMessage.senderClinic === "Ambher Optical" && showpatientambherConversation) ||
                                     (newMessage.senderClinic === "Bautista Eye Center" && showpatientbautistaConversation);
@@ -1350,9 +1388,25 @@ socket.current.on('newMessage', (newMessage) => {
           isForActiveConversation,
           shouldMarkUnread
         });
-      } else {
-        // For staff/owner: existing logic
-        shouldMarkUnread = !isForActiveConversation;
+      } else if (currentRole === 'staff' || currentRole === 'owner') {
+        // CRITICAL FIX: Only mark as unread if message is RELEVANT to current clinic
+        const isRelevantToCurrentClinic = 
+          newMessage.sentToClinic === currentClinic ||
+          newMessage.senderClinic === currentClinic ||
+          (newMessage.senderRole === 'patient' && newMessage.sentToClinic === currentClinic);
+        
+        // Only mark as unread if relevant to clinic AND not active conversation
+        shouldMarkUnread = isRelevantToCurrentClinic && !isForActiveConversation;
+        
+        console.log('🏥 Clinic unread check:', {
+          currentClinic,
+          senderClinic: newMessage.senderClinic,
+          sentToClinic: newMessage.sentToClinic,
+          senderRole: newMessage.senderRole,
+          isRelevantToCurrentClinic,
+          isForActiveConversation,
+          shouldMarkUnread
+        });
       }
       
       setUnreadMessagesByConversation(prev => ({
@@ -1362,20 +1416,14 @@ socket.current.on('newMessage', (newMessage) => {
       
       if (shouldMarkUnread) {
         setHasGlobalUnreadMessages(true);
-        console.log('🔴 Set global unread to true');
+        console.log('🔴 Set global unread to true for', currentRole, currentClinic);
       } else {
         // Check if there are any other unread conversations
         setTimeout(() => {
-          let hasOtherUnread = false;
-           for (const convId in unreadMessagesByConversation) {
-              if (convId !== newMessage.conversationId && unreadMessagesByConversation[convId]) {
-                hasOtherUnread = true;
-                break;
-              }
-           }
+          const hasOtherUnread = Object.values(unreadMessagesByConversation).some(isUnread => isUnread);
           if (!hasOtherUnread) {
             setHasGlobalUnreadMessages(false);
-            console.log('✅ No other unread messages, clearing global unread');
+            console.log('✅ No other unread messages, clearing global unread for', currentRole, currentClinic);
           }
         }, 100);
       }
@@ -1383,7 +1431,8 @@ socket.current.on('newMessage', (newMessage) => {
       console.log('📊 Unread status updated:', { 
         conversationId: newMessage.conversationId, 
         unread: shouldMarkUnread,
-        senderClinic: newMessage.senderClinic
+        senderClinic: newMessage.senderClinic,
+        currentClinic
       });
     } else {
       console.log('Message from current user, not setting unread status');
@@ -1681,18 +1730,6 @@ useEffect(() => {
 }, [messages]);
 
 
-// Add this effect after your existing useEffect hooks:
-useEffect(() => {
-  // Sync messages when conversation changes
-  if (conversationId && messagesByConversation[conversationId]) {
-    console.log('Syncing messages for conversation:', conversationId, 'Role:', localStorage.getItem('role'));
-    const conversationMessages = messagesByConversation[conversationId];
-    setMessages(conversationMessages);
-  }
-}, [conversationId, messagesByConversation]);
-
-
-
 
 
 
@@ -1728,37 +1765,6 @@ useEffect(() => {
 
 
 
-useEffect(() => {
-  const role = localStorage.getItem('role');
-  
-  // For patients: periodically check for unread messages
-  if (role === 'patient' && showpatientchatdashboard) {
-    const interval = setInterval(() => {
-      console.log('Periodic check for unread messages (patient)');
-      
-      // Check unread messages and update global state
-      const hasUnread = checkGlobalUnreadMessages();
-      setHasGlobalUnreadMessages(hasUnread);
-      
-      console.log('Periodic unread check result:', hasUnread);
-    }, 5000); // Every 5 seconds
-    
-    return () => clearInterval(interval);
-  }
-}, [showpatientchatdashboard, checkGlobalUnreadMessages]);
-
-
-
-
-
-useEffect(() => {
-  // Sync messages when conversation changes
-  if (conversationId && messagesByConversation[conversationId]) {
-    console.log('Syncing messages for conversation:', conversationId, 'Role:', localStorage.getItem('role'));
-    const conversationMessages = messagesByConversation[conversationId];
-    setMessages(conversationMessages);
-  }
-}, [conversationId, messagesByConversation]);
 
 
 useEffect(() => {
@@ -1766,10 +1772,6 @@ useEffect(() => {
     setMessages(messagesByConversation[conversationId]);
   }
 }, [conversationId, messagesByConversation]);
-
-
-
-
 
 
 
@@ -2762,7 +2764,7 @@ messages.map((msg, index) => {
   }} 
   className="motion-preset-slide-down hover:scale-105 ease-in-out duration-300 transition-all cursor-pointer flex justify-center items-center w-[60px] h-[60px] rounded-full bg-[#39715f]">
   {hasGlobalUnreadMessages && (
-    <div className="flex justify-center items-center absolute top-0 right-0 bg-[#e93f3f] rounded-full w-4.5 h-4.5"></div>
+    <div id="rednotificationofambher" className="flex justify-center items-center absolute top-0 right-0 bg-[#e93f3f] rounded-full w-4.5 h-4.5"></div>
   )}
   <img src={chat} alt="logo" className="select-none motion-preset-seesaw w-10 h-10 p-2" />
 </div>
@@ -3240,7 +3242,7 @@ jsxtransition-all duration-300 ease-in-out flex-shrink-0"
   }} 
   className="motion-preset-slide-down hover:scale-105 ease-in-out duration-300 transition-all cursor-pointer flex justify-center items-center w-[60px] h-[60px] rounded-full bg-[#0a4277]">
   {hasGlobalUnreadMessages && (
-    <div className="flex justify-center items-center absolute top-0 right-0 bg-[#e93f3f] rounded-full w-4.5 h-4.5"></div>
+    <div id="rednotificationofbautista"  className="flex justify-center items-center absolute top-0 right-0 bg-[#e93f3f] rounded-full w-4.5 h-4.5"></div>
   )}
   <img src={chat} alt="logo" className="select-none motion-preset-seesaw w-10 h-10 p-2" />
 </div>
