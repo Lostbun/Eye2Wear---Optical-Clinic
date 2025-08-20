@@ -28,6 +28,154 @@ import starimage from "../src/assets/images/star.png"
 
 
 
+// Skeleton Loading Components
+const TableRowSkeleton = () => (
+  <tr className="animate-pulse">
+    <td className="py-3 px-6 text-center">
+      <div className="h-4 bg-gray-300 rounded w-12 mx-auto"></div>
+    </td>
+    <td className="py-3 px-6 text-center">
+      <div className="flex justify-center">
+        <div className="h-12 w-12 bg-gray-300 rounded-full"></div>
+      </div>
+    </td>
+    <td className="py-3 px-6 text-center">
+      <div className="h-4 bg-gray-300 rounded w-20 mx-auto"></div>
+    </td>
+    <td className="py-3 px-6 text-center">
+      <div className="h-4 bg-gray-300 rounded w-24 mx-auto"></div>
+    </td>
+    <td className="py-3 px-6 text-center">
+      <div className="h-4 bg-gray-300 rounded w-20 mx-auto"></div>
+    </td>
+    <td className="py-3 px-6 text-center">
+      <div className="h-4 bg-gray-300 rounded w-32 mx-auto"></div>
+    </td>
+    <td className="py-3 px-6 text-center">
+      <div className="h-6 bg-gray-300 rounded-full w-16 mx-auto"></div>
+    </td>
+    <td className="py-3 px-6 text-center">
+      <div className="h-4 bg-gray-300 rounded w-20 mx-auto"></div>
+    </td>
+    <td className="py-3 px-6 text-center">
+      <div className="flex justify-center space-x-2">
+        <div className="h-8 w-16 bg-gray-300 rounded-2xl"></div>
+        <div className="h-8 w-16 bg-gray-300 rounded-2xl"></div>
+      </div>
+    </td>
+  </tr>
+);
+
+const CategoryTableSkeleton = () => (
+  <tr className="animate-pulse hover:bg-gray-50 transition-all ease-in-out duration-300 border-b-2">
+    <td className="px-5 text-center">
+      <div className="h-4 bg-gray-300 rounded w-24 mx-auto"></div>
+    </td>
+    <td className="px-5 text-center">
+      <div className="flex items-center justify-center">
+        <div className="h-12 w-12 bg-gray-300 rounded-full mr-3"></div>
+        <div>
+          <div className="h-4 bg-gray-300 rounded w-32 mb-1"></div>
+          <div className="h-3 bg-gray-300 rounded w-16"></div>
+        </div>
+      </div>
+    </td>
+    <td className="px-5 text-center">
+      <div className="h-4 bg-gray-300 rounded w-20 mx-auto"></div>
+    </td>
+    <td className="px-5 py-4 text-center">
+      <div className="flex justify-center">
+        <div className="h-8 w-16 bg-gray-300 rounded-2xl"></div>
+      </div>
+    </td>
+  </tr>
+);
+
+const CardSkeleton = () => (
+  <div className="animate-pulse bg-white rounded-2xl p-4 shadow-md">
+    <div className="h-40 bg-gray-300 rounded-lg mb-4"></div>
+    <div className="h-4 bg-gray-300 rounded w-3/4 mb-2"></div>
+    <div className="h-4 bg-gray-300 rounded w-1/2 mb-2"></div>
+    <div className="h-6 bg-gray-300 rounded w-1/4"></div>
+  </div>
+);
+
+const AppointmentSkeleton = () => (
+  <tr className="animate-pulse hover:bg-gray-50 transition-all ease-in-out duration-300 border-b-2">
+    <td className="py-3 px-6 text-center">
+      <div className="h-4 bg-gray-300 rounded w-16 mx-auto"></div>
+    </td>
+    <td className="py-3 px-6 text-center">
+      <div className="flex items-center whitespace-nowrap">
+        <div className="h-12 w-12 bg-gray-300 rounded-full mr-3"></div>
+        <div className="h-4 bg-gray-300 rounded w-32"></div>
+      </div>
+    </td>
+    <td className="py-3 px-6 text-center">
+      <div className="h-4 bg-gray-300 rounded w-20 mx-auto"></div>
+    </td>
+    <td className="py-3 px-6 text-center">
+      <div className="flex justify-center items-center whitespace-nowrap">
+        <div className="h-4 bg-gray-300 rounded w-24 mr-2"></div>
+        <div className="h-4 bg-gray-300 rounded w-16 mr-3"></div>
+        <div className="h-6 bg-gray-300 rounded-full w-20"></div>
+      </div>
+    </td>
+    <td className="py-3 px-6 text-center">
+      <div className="flex justify-center items-center whitespace-nowrap">
+        <div className="h-4 bg-gray-300 rounded w-24 mr-2"></div>
+        <div className="h-4 bg-gray-300 rounded w-16 mr-3"></div>
+        <div className="h-6 bg-gray-300 rounded-full w-20"></div>
+      </div>
+    </td>
+    <td className="py-3 px-6 text-center">
+      <div className="flex justify-center space-x-2">
+        <div className="h-8 w-16 bg-gray-300 rounded-2xl"></div>
+      </div>
+    </td>
+  </tr>
+);
+
+const ProfileSkeleton = () => (
+  <div className="animate-pulse bg-white shadow-lg w-[316px] h-[120px] rounded-3xl">
+    <div className="flex justify-center items-center h-full">
+      <div className="w-[125px] h-full flex justify-center items-center">
+        <div className="h-18 w-18 bg-gray-300 rounded-full"></div>
+      </div>
+      <div className="flex flex-col justify-center items-start pl-2 pr-2 w-full h-full">
+        <div className="h-4 bg-gray-300 rounded w-3/4 mb-2"></div>
+        <div className="h-3 bg-gray-300 rounded w-1/2"></div>
+      </div>
+    </div>
+  </div>
+);
+
+const InventorySkeleton = () => (
+  <div className="animate-pulse flex flex-col items-start justify-start w-[220px] h-auto shadow-md bg-white rounded-2xl mr-3 mb-3">
+    <div className="h-45 bg-gray-300 rounded-tr-2xl rounded-tl-2xl w-full"></div>
+    <div className="mx-1 w-fit rounded-md py-1 px-2 bg-gray-200 mt-2">
+      <div className="h-3 bg-gray-300 rounded w-16"></div>
+    </div>
+    <div className="w-full h-auto ml-2 mt-2">
+      <div className="h-4 bg-gray-300 rounded w-3/4"></div>
+    </div>
+    <div className="w-fit h-auto ml-2 mt-1">
+      <div className="h-5 bg-gray-300 rounded w-20"></div>
+    </div>
+    <div className="w-full h-auto ml-2 mt-5 mb-1">
+      <div className="h-4 bg-gray-300 rounded w-1/2"></div>
+    </div>
+    <div className="w-full h-auto ml-2 mb-1 flex items-center">
+      <div className="h-4 bg-gray-300 rounded w-20"></div>
+    </div>
+    <div className="w-full h-auto ml-2 mb-3 flex items-center">
+      <div className="h-4 bg-gray-300 rounded w-16"></div>
+    </div>
+  </div>
+);
+
+
+
 
 function AdminDashboard(){
 
@@ -232,6 +380,7 @@ function AdminDashboard(){
   const [emailerror, setemailerror] = useState(false);
   const emailcharacters = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   const [issubmitting, setissubmitting] = useState(false);
+  const [isdeletingpatient, setisdeletingpatient] = useState(false);
   const [message, setmessage] = useState({ text:'', type:''});
 
 
@@ -315,8 +464,10 @@ function AdminDashboard(){
 
   if (loadingpatients) {
     return (
-      <div className="flex justify-center items-center p-8">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      <div className="space-y-4">
+        {[...Array(5)].map((_, index) => (
+          <TableRowSkeleton key={index} />
+        ))}
       </div>
     );
   }
@@ -347,8 +498,8 @@ function AdminDashboard(){
       <table className="w-full rounded-tl-2xl  rounded-tr-2xl shadow-lg">
         <thead className="rounded-tl-2xl rounded-tr-2xl">
           <tr className="text-[#ffffff] font-albertsans font-bold bg-[#2781af] rounded-tl-2xl rounded-tr-2xl ">
-            <th className="pb-3 pt-3 pl-2 pr-2 text-center  rounded-tl-2xl">Id</th>
-            <th className="pb-3 pt-3 pl-5 pr-5 text-center"></th>
+            <th className="pb-3 pt-3 pl-2 pr-2 text-center rounded-tl-2xl">Id</th>
+            <th className="pb-3 pt-3 pl-5 pr-5 text-center">Profile</th>
             <th className="pb-3 pt-3 pl-2 pr-2 text-center">Lastname</th>
             <th className="pb-3 pt-3 pl-2 pr-2 text-center">Firstname</th>
             <th className="pb-3 pt-3 pl-2 pr-2 text-center">Middlename</th>
@@ -357,7 +508,7 @@ function AdminDashboard(){
             <th className="pb-3 pt-3 pl-2 pr-2 text-center">isVerified</th>
             <th className="pb-3 pt-3 pl-2 pr-2 text-center">Date Created</th>
             <th className="pb-3 pt-3 text-center pr-3"></th>
-            <th className="pb-3 pt-3 text-center pr-3  rounded-tr-2xl"></th>
+            <th className="pb-3 pt-3 text-center pr-3 rounded-tr-2xl"></th>
 
           </tr>
         </thead>
@@ -366,7 +517,7 @@ function AdminDashboard(){
         {patientstorender.map((patient) => (
             <tr key={patient._id}  className="hover:bg-gray-100  transition-all duration-300 ease-in-out hover:cursor-pointer ">
               <td  className="py-3 px-6 text-[#3a3a3a] font-albertsans font-medium ">#{patient.patientId}</td>
-              <td  className="px-6 py-3 text-center">
+              <td  className="py-3 px-6 text-center">
                 <div className="flex justify-center">
                 <img 
                   src={patient.patientprofilepicture} 
@@ -392,11 +543,11 @@ function AdminDashboard(){
                   {patient.isVerified ? 'Active' : 'Pending'}
                 </span>
               </td>
-              <td  className="py-3 px-6 text-[#171717] text-center font-albertsans font-medium">
+              <td  className="py-3 px-6 text-[#171717] text-center font-albertsans font-medium whitespace-nowrap">
                 {new Date(patient.createdAt).toLocaleDateString('en-US',{
-                  year:'numeric',
                   month: 'short',
-                  day:'numeric'
+                  day: 'numeric',
+                  year: 'numeric'
                 })}
               </td>
               <td><div onClick={() =>  {
@@ -688,6 +839,8 @@ function AdminDashboard(){
       try{
         if(!selectedpatientaccount) return;
 
+        setisdeletingpatient(true);
+
         const response = await fetch(`/api/patientaccounts/${selectedpatientaccount.id}`,{
           method: 'DELETE',
           headers:{
@@ -727,6 +880,8 @@ function AdminDashboard(){
         
       }catch (error){
         console.error("Failed deleting patient: ", error);
+      } finally {
+        setisdeletingpatient(false);
       }
     };
 
@@ -837,6 +992,7 @@ const [showaddstaffdialog, setshowaddstaffdialog] = useState(false);
   const [staffemailerror, setstaffemailerror] = useState(false);
   const staffemailcharacters = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   const [staffissubmitting, setstaffissubmitting] = useState(false);
+  const [isdeletingstaff, setisdeletingstaff] = useState(false);
   const [staffmessage, setstaffmessage] = useState({ text:'', type:''});
 
 
@@ -922,8 +1078,10 @@ const [showaddstaffdialog, setshowaddstaffdialog] = useState(false);
 
   if (loadingstaffs) {
     return (
-      <div className="flex justify-center items-center p-8">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      <div className="space-y-4">
+        {[...Array(5)].map((_, index) => (
+          <TableRowSkeleton key={index} />
+        ))}
       </div>
     );
   }
@@ -954,18 +1112,18 @@ const [showaddstaffdialog, setshowaddstaffdialog] = useState(false);
       <table className="w-full rounded-tl-2xl  rounded-tr-2xl shadow-lg">
         <thead className="rounded-tl-2xl rounded-tr-2xl">
           <tr className="text-[#ffffff] font-albertsans font-bold bg-[#2781af] rounded-tl-2xl rounded-tr-2xl ">
-            <th className="pb-3 pt-3 pl-2 pr-2 text-center  rounded-tl-2xl">Id</th>
-            <th className="pb-3 pt-3 pl-2 pr-2 text-center"></th>
+            <th className="pb-3 pt-3 pl-2 pr-2 text-center rounded-tl-2xl">Id</th>
+            <th className="pb-3 pt-3 pl-5 pr-5 text-center">Profile</th>
             <th className="pb-3 pt-3 pl-2 pr-2 text-center">Lastname</th>
-            <th className="pb-3 pt-3 pl-2 pr-2  text-center">Firstname</th>
+            <th className="pb-3 pt-3 pl-2 pr-2 text-center">Firstname</th>
             <th className="pb-3 pt-3 pl-2 pr-2 text-center">Middlename</th>
-            <th className="pb-3 pt-3  pl-2 pr-2 text-center">Email</th>
-            <th className="pb-3 pt-3  pl-2 pr-2 text-center">Clinic</th>
-            <th className="pb-3 pt-3  pl-2 pr-2 text-center">Eye Specialist</th>
+            <th className="pb-3 pt-3 pl-2 pr-2 text-center">Email</th>
+            <th className="pb-3 pt-3 pl-2 pr-2 text-center">Clinic</th>
+            <th className="pb-3 pt-3 pl-2 pr-2 text-center">Eye Specialist</th>
             <th className="pb-3 pt-3 pl-2 pr-2 text-center">isVerified</th>
             <th className="pb-3 pt-3 pl-2 pr-2 text-center">Date Created</th>
             <th className="pb-3 pt-3 text-center pr-3"></th>
-            <th className="pb-3 pt-3 text-center pr-3  rounded-tr-2xl"></th>
+            <th className="pb-3 pt-3 text-center pr-3 rounded-tr-2xl"></th>
 
           </tr>
         </thead>
@@ -974,7 +1132,7 @@ const [showaddstaffdialog, setshowaddstaffdialog] = useState(false);
         {staffstorender.map((staff) => (
             <tr key={staff._id}  className="hover:bg-gray-100  transition-all duration-300 ease-in-out hover:cursor-pointer ">
               <td  className="py-3 px-6 text-[#3a3a3a] font-albertsans font-medium ">#{staff.staffId}</td>
-              <td  className="px-6 py-3 text-center">
+              <td  className="py-3 px-6 text-center">
               <div className="flex justify-center">
                 <img 
                   src={staff.staffprofilepicture} 
@@ -996,18 +1154,18 @@ const [showaddstaffdialog, setshowaddstaffdialog] = useState(false);
                 </a>
 
               </td>
-              <td  className="py-3 px-6 text-[#171717] text-center font-albertsans font-medium">{staff.staffclinic}</td>
+              <td  className="py-3 px-6 text-[#171717] text-center font-albertsans font-medium whitespace-nowrap">{staff.staffclinic}</td>
               <td  className="py-3 px-6 text-[#171717] text-center font-albertsans font-medium">{staff.staffiseyespecialist}</td>
               <td  className="py-3 px-6 text-[#171717] text-center font-albertsans font-medium">
                 <span className={`rounded-2xl text-xs px-5 py-4 ${staff.isVerified ? 'text-green-800 bg-green-100' : 'text-yellow-800 bg-yellow-100'}`}>
                   {staff.isVerified ? 'Active' : 'Pending'}
                 </span>
               </td>
-              <td  className="py-3 px-6 text-[#171717] text-center font-albertsans font-medium">
+              <td  className="py-3 px-6 text-[#171717] text-center font-albertsans font-medium whitespace-nowrap">
                 {new Date(staff.createdAt).toLocaleDateString('en-US',{
-                  year:'numeric',
                   month: 'short',
-                  day:'numeric'
+                  day: 'numeric',
+                  year: 'numeric'
                 })}
               </td>
               <td><div onClick={() =>  {
@@ -1313,6 +1471,8 @@ const [showaddstaffdialog, setshowaddstaffdialog] = useState(false);
       try{
         if(!selectedstaffaccount) return;
 
+        setisdeletingstaff(true);
+
         const response = await fetch(`/api/staffaccounts/${selectedstaffaccount.id}`,{
           method: 'DELETE',
           headers:{
@@ -1350,6 +1510,8 @@ const [showaddstaffdialog, setshowaddstaffdialog] = useState(false);
         
       }catch (error){
         console.error("Failed deleting staff: ", error);
+      } finally {
+        setisdeletingstaff(false);
       }
     };
 
@@ -1450,6 +1612,7 @@ const [showaddstaffdialog, setshowaddstaffdialog] = useState(false);
     const [owneremailerror, setowneremailerror] = useState(false);
     const owneremailcharacters = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const [ownerissubmitting, setownerissubmitting] = useState(false);
+    const [isdeletingowner, setisdeletingowner] = useState(false);
     const [ownermessage, setownermessage] = useState({ text:'', type:''});
   
   
@@ -1536,8 +1699,10 @@ const [showaddstaffdialog, setshowaddstaffdialog] = useState(false);
   
     if (loadingowners) {
       return (
-        <div className="flex justify-center items-center p-8">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+        <div className="space-y-4">
+          {[...Array(5)].map((_, index) => (
+            <TableRowSkeleton key={index} />
+          ))}
         </div>
       );
     }
@@ -1566,20 +1731,20 @@ const [showaddstaffdialog, setshowaddstaffdialog] = useState(false);
     return (
       <div className="overflow-x-auto w-full h-full">
         <table className="w-full rounded-tl-2xl  rounded-tr-2xl shadow-lg">
-          <thead className="rounded-tl-2xl  rounded-tr-2xl">
+          <thead className="rounded-tl-2xl rounded-tr-2xl">
             <tr className="text-[#ffffff] font-albertsans font-bold bg-[#2781af] rounded-tl-2xl rounded-tr-2xl ">
               <th className="pb-3 pt-3 pl-2 pr-2 text-center rounded-tl-2xl">Id</th>
-              <th className="pb-3 pt-3 pl-12 pr-12 text-center"></th>
+              <th className="pb-3 pt-3 pl-5 pr-5 text-center">Profile</th>
               <th className="pb-3 pt-3 pl-2 pr-2 text-center">Lastname</th>
               <th className="pb-3 pt-3 pl-2 pr-2 text-center">Firstname</th>
               <th className="pb-3 pt-3 pl-2 pr-2 text-center">Middlename</th>
               <th className="pb-3 pt-3 pl-2 pr-2 text-center">Email</th>
-              <th className="pb-3 pt-3 pl-2 pr-2  text-center">Clinic</th>
-              <th className="pb-3 pt-3 pl-2 pr-2  text-center">Eye Specialist</th>
+              <th className="pb-3 pt-3 pl-2 pr-2 text-center">Clinic</th>
+              <th className="pb-3 pt-3 pl-2 pr-2 text-center">Eye Specialist</th>
               <th className="pb-3 pt-3 pl-2 pr-2 text-center">isVerified</th>
               <th className="pb-3 pt-3 pl-2 pr-2 text-center">Date Created</th>
               <th className="pb-3 pt-3 text-center pr-3"></th>
-              <th className="pb-3 pt-3 text-center pr-3  rounded-tr-2xl"></th>
+              <th className="pb-3 pt-3 text-center pr-3 rounded-tr-2xl"></th>
   
             </tr>
           </thead>
@@ -1588,7 +1753,7 @@ const [showaddstaffdialog, setshowaddstaffdialog] = useState(false);
           {ownerstorender.map((owner) => (
               <tr key={owner._id}  className="hover:bg-gray-100  transition-all duration-300 ease-in-out hover:cursor-pointer ">
                 <td  className="py-3 px-6 text-[#3a3a3a] font-albertsans font-medium ">#{owner.ownerId}</td>
-                <td  className="px-6 py-3 text-center">
+                <td  className="py-3 px-6 text-center">
                   <div className="flex justify-center">
                   <img 
                     src={owner.ownerprofilepicture} 
@@ -1609,18 +1774,18 @@ const [showaddstaffdialog, setshowaddstaffdialog] = useState(false);
                   </a>
   
                 </td>
-                <td  className="py-3 px-6 text-[#171717] text-center font-albertsans font-medium">{owner.ownerclinic}</td>
+                <td  className="py-3 px-6 text-[#171717] text-center font-albertsans font-medium whitespace-nowrap">{owner.ownerclinic}</td>
                 <td  className="py-3 px-6 text-[#171717] text-center font-albertsans font-medium">{owner.owneriseyespecialist}</td>
                 <td  className="py-3 px-6 text-[#171717] text-center font-albertsans font-medium">
                   <span className={`rounded-2xl text-xs px-5 py-4 ${owner.isVerified ? 'text-green-800 bg-green-100' : 'text-yellow-800 bg-yellow-100'}`}>
                     {owner.isVerified ? 'Active' : 'Pending'}
                   </span>
                 </td>
-                <td  className="py-3 px-6 text-[#171717] text-center font-albertsans font-medium">
+                <td  className="py-3 px-6 text-[#171717] text-center font-albertsans font-medium whitespace-nowrap">
                   {new Date(owner.createdAt).toLocaleDateString('en-US',{
-                    year:'numeric',
                     month: 'short',
-                    day:'numeric'
+                    day: 'numeric',
+                    year: 'numeric'
                   })}
                 </td>
                 <td><div onClick={() =>  {
@@ -1927,6 +2092,8 @@ const [showaddstaffdialog, setshowaddstaffdialog] = useState(false);
       const deleteowneraccount = async () => {
         try{
           if(!selectedowneraccount) return;
+
+          setisdeletingowner(true);
   
           const response = await fetch(`/api/owneraccounts/${selectedowneraccount.id}`,{
             method: 'DELETE',
@@ -1963,6 +2130,8 @@ const [showaddstaffdialog, setshowaddstaffdialog] = useState(false);
           
         }catch (error){
           console.error("Failed deleting owner: ", error);
+        } finally {
+          setisdeletingowner(false);
         }
       };
   
@@ -2068,6 +2237,7 @@ const [admincheckemail, setadmincheckemail] = useState(false);
 const [adminemailerror, setadminemailerror] = useState(false);
 const adminemailcharacters = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const [adminissubmitting, setadminissubmitting] = useState(false);
+const [isdeletingadmin, setisdeletingadmin] = useState(false);
 const [adminmessage, setadminmessage] = useState({ text:'', type:''});
 
 
@@ -2151,8 +2321,10 @@ const adminstorender = searchadmins ? filteredadmins : admins;
 
 if (loadingadmins) {
   return (
-    <div className="flex justify-center items-center p-8">
-      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+    <div className="space-y-4">
+      {[...Array(5)].map((_, index) => (
+        <TableRowSkeleton key={index} />
+      ))}
     </div>
   );
 }
@@ -2181,10 +2353,10 @@ if(searchadmins && filteredadmins.length == 0){
 return (
   <div className="overflow-x-auto w-full h-full">
     <table className="w-full rounded-tl-2xl  rounded-tr-2xl shadow-lg">
-      <thead className="rounded-tl-2xl  rounded-tr-2xl">
+      <thead className="rounded-tl-2xl rounded-tr-2xl">
         <tr className="text-[#ffffff] font-albertsans font-bold bg-[#2781af] rounded-tl-2xl rounded-tr-2xl ">
           <th className="pb-3 pt-3 pl-2 pr-2 text-center rounded-tl-2xl">Id</th>
-          <th className="pb-3 pt-3 pl-12 pr-12 text-center"></th>
+          <th className="pb-3 pt-3 pl-5 pr-5 text-center">Profile</th>
           <th className="pb-3 pt-3 pl-2 pr-2 text-center">Lastname</th>
           <th className="pb-3 pt-3 pl-2 pr-2 text-center">Firstname</th>
           <th className="pb-3 pt-3 pl-2 pr-2 text-center">Middlename</th>
@@ -2192,7 +2364,7 @@ return (
           <th className="pb-3 pt-3 pl-2 pr-2 text-center">isVerified</th>
           <th className="pb-3 pt-3 pl-2 pr-2 text-center">Date Created</th>
           <th className="pb-3 pt-3 text-center pr-3"></th>
-          <th className="pb-3 pt-3 text-center pr-3  rounded-tr-2xl"></th>
+          <th className="pb-3 pt-3 text-center pr-3 rounded-tr-2xl"></th>
 
         </tr>
       </thead>
@@ -2201,7 +2373,7 @@ return (
       {adminstorender.map((admin) => (
           <tr key={admin._id}  className="hover:bg-gray-100  transition-all duration-300 ease-in-out hover:cursor-pointer ">
             <td  className="py-3 px-6 text-[#3a3a3a] font-albertsans font-medium ">#{admin.adminId}</td>
-            <td  className="px-6 py-3 text-center">
+            <td  className="py-3 px-6 text-center">
               <div className="flex justify-center">
               <img 
                 src={admin.adminprofilepicture} 
@@ -2227,11 +2399,11 @@ return (
                 {admin.isVerified ? 'Active' : 'Pending'}
               </span>
             </td>
-            <td  className="py-3 px-6 text-[#171717] text-center font-albertsans font-medium">
+            <td  className="py-3 px-6 text-[#171717] text-center font-albertsans font-medium whitespace-nowrap">
               {new Date(admin.createdAt).toLocaleDateString('en-US',{
-                year:'numeric',
                 month: 'short',
-                day:'numeric'
+                day: 'numeric',
+                year: 'numeric'
               })}
             </td>
             <td><div onClick={() =>  {
@@ -2529,6 +2701,8 @@ const adminhandlechange = (e) => {
     try{
       if(!selectedadminaccount) return;
 
+      setisdeletingadmin(true);
+
       const response = await fetch(`/api/adminaccounts/${selectedadminaccount.id}`,{
         method: 'DELETE',
         headers:{
@@ -2565,6 +2739,8 @@ const adminhandlechange = (e) => {
       
     }catch (error){
       console.error("Failed deleting admin: ", error);
+    } finally {
+      setisdeletingadmin(false);
     }
   };
 
@@ -2774,8 +2950,10 @@ const renderpatientprofiles = () => {
 
   if(loadingpatientdemographics) {
     return(
-      <div className="flex justiy-center p-8 items-center">
-        <div className="animate-spin rounded-full border-t-2 border-b-2 border-blue-500 h-12 w-12"></div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {[...Array(6)].map((_, index) => (
+          <ProfileSkeleton key={index} />
+        ))}
       </div>
     );
   }
@@ -7117,8 +7295,15 @@ const submitpatientpendingorderbautista = async (e) => {
                                   
                                        
                                      
-                                        <button type="submit" disabled={issubmitting} className="submit-btn mt-12 w-full" style={{ backgroundColor: "#2b2b44", fontSize: "20px", padding: "10px 20px", color: "white", borderRadius: "20px",   }}>
-                                          {issubmitting ? "Creating Account..." : "Create Account"}
+                                        <button type="submit" disabled={issubmitting} className="submit-btn mt-12 w-full flex items-center justify-center" style={{ backgroundColor: "#2b2b44", fontSize: "20px", padding: "10px 20px", color: "white", borderRadius: "20px",   }}>
+                                          {issubmitting ? (
+                                            <>
+                                              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                                              Creating Account...
+                                            </>
+                                          ) : (
+                                            "Create Account"
+                                          )}
                                         </button>
                                      
 
@@ -7157,7 +7342,22 @@ const submitpatientpendingorderbautista = async (e) => {
                                   </div>        
                                   <div className="pr-5 flex justify-end  items-center  h-[80px] w-full">
                                     <div className="hover:cursor-pointer mr-2 bg-[#292929] hover:bg-[#414141]   rounded-2xl h-fit w-fit px-7 py-3 hover:scale-105 transition-all duration-300 ease-in-out" onClick={() => {setshowdeletepatientdialog(false); setselectedpatientaccount(null);}}><p className=" text-[#ffffff]">Cancel</p></div>
-                                    <div className="hover:cursor-pointer bg-[#4e0f0f] hover:bg-[#7f1a1a] ml-2 rounded-2xl h-fit w-fit px-7 py-3 hover:scale-105 transition-all duration-300 ease-in-out" onClick={deletepatientaccount}><p className=" text-[#ffffff]">Delete</p></div>
+                                    <div className={`ml-2 rounded-2xl h-fit w-fit px-7 py-3 transition-all duration-300 ease-in-out ${
+                                      isdeletingpatient 
+                                        ? 'bg-[#4e0f0f] cursor-not-allowed opacity-50' 
+                                        : 'hover:cursor-pointer bg-[#4e0f0f] hover:bg-[#7f1a1a] hover:scale-105'
+                                    }`} onClick={isdeletingpatient ? undefined : deletepatientaccount}>
+                                      <p className="text-[#ffffff] flex items-center">
+                                        {isdeletingpatient ? (
+                                          <>
+                                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                                            Deleting...
+                                          </>
+                                        ) : (
+                                          'Delete'
+                                        )}
+                                      </p>
+                                    </div>
                                   </div>
                               </div>
 
@@ -7249,8 +7449,15 @@ const submitpatientpendingorderbautista = async (e) => {
                                                      
                                                           
                                                         
-                                         <button type="submit" disabled={issubmitting} className="submit-btn mt-12 w-full" style={{ backgroundColor: "#2b2b44", fontSize: "20px", padding: "10px 20px", color: "white", borderRadius: "20px",   }}>
-                                           {issubmitting ? "Saving..." : "Save"}
+                                         <button type="submit" disabled={issubmitting} className="submit-btn mt-12 w-full flex items-center justify-center" style={{ backgroundColor: "#2b2b44", fontSize: "20px", padding: "10px 20px", color: "white", borderRadius: "20px",   }}>
+                                           {issubmitting ? (
+                                             <>
+                                               <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                                               Saving...
+                                             </>
+                                           ) : (
+                                             "Save"
+                                           )}
                                          </button> 
                                                         
                    
@@ -7362,8 +7569,15 @@ const submitpatientpendingorderbautista = async (e) => {
                       </div>
                      
                    
-                      <button type="submit" disabled={staffissubmitting} className="submit-btn mt-12 w-full" style={{ backgroundColor: "#2b2b44", fontSize: "20px", padding: "10px 20px", color: "white", borderRadius: "20px",   }}>
-                        {staffissubmitting ? "Creating Account..." : "Create Account"}
+                      <button type="submit" disabled={staffissubmitting} className="submit-btn mt-12 w-full flex items-center justify-center" style={{ backgroundColor: "#2b2b44", fontSize: "20px", padding: "10px 20px", color: "white", borderRadius: "20px",   }}>
+                        {staffissubmitting ? (
+                          <>
+                            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                            Creating Account...
+                          </>
+                        ) : (
+                          "Create Account"
+                        )}
                       </button>
                    
 
@@ -7398,7 +7612,22 @@ const submitpatientpendingorderbautista = async (e) => {
                 </div>        
                 <div className="pr-5 flex justify-end  items-center  h-[80px] w-full">
                   <div className="hover:cursor-pointer mr-2 bg-[#292929] hover:bg-[#414141]   rounded-2xl h-fit w-fit px-7 py-3 hover:scale-105 transition-all duration-300 ease-in-out" onClick={() => {setshowdeletestaffdialog(false); setselectedstaffaccount(null);}}><p className=" text-[#ffffff]">Cancel</p></div>
-                  <div className="hover:cursor-pointer bg-[#4e0f0f] hover:bg-[#7f1a1a] ml-2 rounded-2xl h-fit w-fit px-7 py-3 hover:scale-105 transition-all duration-300 ease-in-out" onClick={deletestaffaccount}><p className=" text-[#ffffff]">Delete</p></div>
+                  <div className={`ml-2 rounded-2xl h-fit w-fit px-7 py-3 transition-all duration-300 ease-in-out ${
+                    isdeletingstaff 
+                      ? 'bg-[#4e0f0f] cursor-not-allowed opacity-50' 
+                      : 'hover:cursor-pointer bg-[#4e0f0f] hover:bg-[#7f1a1a] hover:scale-105'
+                  }`} onClick={isdeletingstaff ? undefined : deletestaffaccount}>
+                    <p className="text-[#ffffff] flex items-center">
+                      {isdeletingstaff ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                          Deleting...
+                        </>
+                      ) : (
+                        'Delete'
+                      )}
+                    </p>
+                  </div>
                 </div>
             </div>
 
@@ -7494,8 +7723,15 @@ const submitpatientpendingorderbautista = async (e) => {
                       <div className="ml-4"><StaffeyespecialistYesorNoBox value={staffformdata.staffiseyespecialist} onChange={staffhandlechange} /></div>
                       </div>
                                       
-                       <button type="submit" disabled={staffissubmitting} className="submit-btn mt-12 w-full" style={{ backgroundColor: "#2b2b44", fontSize: "20px", padding: "10px 20px", color: "white", borderRadius: "20px",   }}>
-                         {staffissubmitting ? "Saving..." : "Save"}
+                       <button type="submit" disabled={staffissubmitting} className="submit-btn mt-12 w-full flex items-center justify-center" style={{ backgroundColor: "#2b2b44", fontSize: "20px", padding: "10px 20px", color: "white", borderRadius: "20px",   }}>
+                         {staffissubmitting ? (
+                           <>
+                             <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                             Saving...
+                           </>
+                         ) : (
+                           "Save"
+                         )}
                        </button>
                                       
  
@@ -7615,8 +7851,15 @@ const submitpatientpendingorderbautista = async (e) => {
         
                      
                    
-                      <button type="submit" disabled={ownerissubmitting} className="submit-btn mt-6 w-full" style={{ backgroundColor: "#2b2b44", fontSize: "20px", padding: "10px 20px", color: "white", borderRadius: "20px",   }}>
-                        {ownerissubmitting ? "Creating Account..." : "Create Account"}
+                      <button type="submit" disabled={ownerissubmitting} className="submit-btn mt-6 w-full flex items-center justify-center" style={{ backgroundColor: "#2b2b44", fontSize: "20px", padding: "10px 20px", color: "white", borderRadius: "20px",   }}>
+                        {ownerissubmitting ? (
+                          <>
+                            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                            Creating Account...
+                          </>
+                        ) : (
+                          "Create Account"
+                        )}
                       </button>
                    
 
@@ -7651,7 +7894,22 @@ const submitpatientpendingorderbautista = async (e) => {
                 </div>        
                 <div className="pr-5 flex justify-end  items-center  h-[80px] w-full">
                   <div className="hover:cursor-pointer mr-2 bg-[#292929] hover:bg-[#414141]   rounded-2xl h-fit w-fit px-7 py-3 hover:scale-105 transition-all duration-300 ease-in-out" onClick={() => {setshowdeleteownerdialog(false); setselectedowneraccount(null);}}><p className=" text-[#ffffff]">Cancel</p></div>
-                  <div className="hover:cursor-pointer bg-[#4e0f0f] hover:bg-[#7f1a1a] ml-2 rounded-2xl h-fit w-fit px-7 py-3 hover:scale-105 transition-all duration-300 ease-in-out" onClick={deleteowneraccount}><p className=" text-[#ffffff]">Delete</p></div>
+                  <div className={`ml-2 rounded-2xl h-fit w-fit px-7 py-3 transition-all duration-300 ease-in-out ${
+                    isdeletingowner 
+                      ? 'bg-[#4e0f0f] cursor-not-allowed opacity-50' 
+                      : 'hover:cursor-pointer bg-[#4e0f0f] hover:bg-[#7f1a1a] hover:scale-105'
+                  }`} onClick={isdeletingowner ? undefined : deleteowneraccount}>
+                    <p className="text-[#ffffff] flex items-center">
+                      {isdeletingowner ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                          Deleting...
+                        </>
+                      ) : (
+                        'Delete'
+                      )}
+                    </p>
+                  </div>
                 </div>
             </div>
 
@@ -7752,8 +8010,15 @@ const submitpatientpendingorderbautista = async (e) => {
                       </div>        
                                         
                                   
-                       <button type="submit" disabled={ownerissubmitting} className="submit-btn mt-12 w-full" style={{ backgroundColor: "#2b2b44", fontSize: "20px", padding: "10px 20px", color: "white", borderRadius: "20px",   }}>
-                         {ownerissubmitting ? "Saving..." : "Save"}
+                       <button type="submit" disabled={ownerissubmitting} className="submit-btn mt-12 w-full flex items-center justify-center" style={{ backgroundColor: "#2b2b44", fontSize: "20px", padding: "10px 20px", color: "white", borderRadius: "20px",   }}>
+                         {ownerissubmitting ? (
+                           <>
+                             <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                             Saving...
+                           </>
+                         ) : (
+                           "Save"
+                         )}
                        </button>
                                       
  
@@ -7863,8 +8128,15 @@ const submitpatientpendingorderbautista = async (e) => {
 
                      
                    
-                      <button type="submit" disabled={adminissubmitting} className="submit-btn mt-12 w-full" style={{ backgroundColor: "#2b2b44", fontSize: "20px", padding: "10px 20px", color: "white", borderRadius: "20px",   }}>
-                        {adminissubmitting ? "Creating Account..." : "Create Account"}
+                      <button type="submit" disabled={adminissubmitting} className="submit-btn mt-12 w-full flex items-center justify-center" style={{ backgroundColor: "#2b2b44", fontSize: "20px", padding: "10px 20px", color: "white", borderRadius: "20px",   }}>
+                        {adminissubmitting ? (
+                          <>
+                            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                            Creating Account...
+                          </>
+                        ) : (
+                          "Create Account"
+                        )}
                       </button>
                    
 
@@ -7899,7 +8171,22 @@ const submitpatientpendingorderbautista = async (e) => {
                 </div>        
                 <div className="pr-5 flex justify-end  items-center  h-[80px] w-full">
                   <div className="hover:cursor-pointer mr-2 bg-[#292929] hover:bg-[#414141]   rounded-2xl h-fit w-fit px-7 py-3 hover:scale-105 transition-all duration-300 ease-in-out" onClick={() => {setshowdeleteadmindialog(false); setselectedadminaccount(null);}}><p className=" text-[#ffffff]">Cancel</p></div>
-                  <div className="hover:cursor-pointer bg-[#4e0f0f] hover:bg-[#7f1a1a] ml-2 rounded-2xl h-fit w-fit px-7 py-3 hover:scale-105 transition-all duration-300 ease-in-out" onClick={deleteadminaccount}><p className=" text-[#ffffff]">Delete</p></div>
+                  <div className={`ml-2 rounded-2xl h-fit w-fit px-7 py-3 transition-all duration-300 ease-in-out ${
+                    isdeletingadmin 
+                      ? 'bg-[#4e0f0f] cursor-not-allowed opacity-50' 
+                      : 'hover:cursor-pointer bg-[#4e0f0f] hover:bg-[#7f1a1a] hover:scale-105'
+                  }`} onClick={isdeletingadmin ? undefined : deleteadminaccount}>
+                    <p className="text-[#ffffff] flex items-center">
+                      {isdeletingadmin ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                          Deleting...
+                        </>
+                      ) : (
+                        'Delete'
+                      )}
+                    </p>
+                  </div>
                 </div>
             </div>
 
@@ -7990,8 +8277,15 @@ const submitpatientpendingorderbautista = async (e) => {
                                                     
                                         
                                   
-                       <button type="submit" disabled={adminissubmitting} className="submit-btn mt-12 w-full" style={{ backgroundColor: "#2b2b44", fontSize: "20px", padding: "10px 20px", color: "white", borderRadius: "20px",   }}>
-                         {adminissubmitting ? "Saving..." : "Save"}
+                       <button type="submit" disabled={adminissubmitting} className="submit-btn mt-12 w-full flex items-center justify-center" style={{ backgroundColor: "#2b2b44", fontSize: "20px", padding: "10px 20px", color: "white", borderRadius: "20px",   }}>
+                         {adminissubmitting ? (
+                           <>
+                             <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                             Saving...
+                           </>
+                         ) : (
+                           "Save"
+                         )}
                        </button>
                                       
  
@@ -8471,10 +8765,12 @@ const submitpatientpendingorderbautista = async (e) => {
       </div>
 
       {loadingappointmens ? (
-      <div className="flex justiy-center p-8 items-center">
-      <div className="animate-spin rounded-full border-t-2 border-b-2 border-blue-500 h-12 w-12"></div>
-    </div>
-  ) : errorloadingappointments ? (
+      <div className="space-y-4 p-4">
+        {[...Array(4)].map((_, index) => (
+          <AppointmentSkeleton key={index} />
+        ))}
+      </div>
+    ) : errorloadingappointments ? (
     <div className="rounded-lg p-4 bg-red-50 text-red-600">
     Error: {errorloadingappointments}
   </div>
@@ -8501,11 +8797,11 @@ const submitpatientpendingorderbautista = async (e) => {
               key={appointment._id}
               className="hover:bg-gray-50 transition-all ease-in-out duration-300 border-b-2"
             >
-              <td className="py-3 px-6 text-[#171717] text-[15px] text-center font-albertsans font-medium  ">
+              <td className="py-3 px-6 text-[#171717] text-[15px] text-center font-albertsans font-medium whitespace-nowrap">
                 #{appointment.patientappointmentid}
               </td>
-              <td className="py-3 px-6 text-[#171717] text-center font-albertsans font-medium ">
-                     <div className="flex  items-center">
+              <td className="py-3 px-6 text-[#171717] text-center font-albertsans font-medium whitespace-nowrap">
+                     <div className="flex  items-center whitespace-nowrap">
                   <img 
                     src={appointment.patientappointmentprofilepicture} 
                     alt="Profile" 
@@ -8514,12 +8810,12 @@ const submitpatientpendingorderbautista = async (e) => {
                       e.target.src = 'default-profile-url';
                     }}
                   />
-                  <h1 className="py-3 px-6 text-[#171717] text-[15px] text-center font-albertsans font-medium ">{appointment.patientappointmentfirstname} {appointment.patientappointmentlastname}</h1>
+                  <h1 className="py-3 px-6 text-[#171717] text-[15px] text-center font-albertsans font-medium whitespace-nowrap">{appointment.patientappointmentfirstname} {appointment.patientappointmentlastname}</h1>
                   </div>
               </td>
 
-              <td className="py-3 px-6 text-[#171717] text-center font-albertsans font-medium ">
-                  <span className="py-3 px-6 text-[#171717] text-[15px]  text-center font-albertsans font-medium ">
+              <td className="py-3 px-6 text-[#171717] text-center font-albertsans font-medium whitespace-nowrap">
+                  <span className="py-3 px-6 text-[#171717] text-[15px]  text-center font-albertsans font-medium whitespace-nowrap">
                     {new Date(appointment.createdAt).toLocaleDateString('en-US',{
                       month: 'short',
                       day: 'numeric',
@@ -8528,11 +8824,11 @@ const submitpatientpendingorderbautista = async (e) => {
                   </span>          
               </td>
 
-              <td className="py-3 px-6 text-[#171717] text-center font-albertsans font-medium ">
+              <td className="py-3 px-6 text-[#171717] text-center font-albertsans font-medium whitespace-nowrap">
                 {appointment.patientambherappointmentdate && (
-                  <div className="font-albertsans text-[#171717] font-medium flex  justify-center items-center">
-                    <span className="font-albertsans text-[#171717] text-[15px] font-medium">{formatappointmatedates(appointment.patientambherappointmentdate)} </span> 
-                    <span className="ml-1 font-albertsans text-[#171717] text-[15px] font-medium">({formatappointmenttime(appointment.patientambherappointmenttime)})</span> 
+                  <div className="font-albertsans text-[#171717] font-medium flex  justify-center items-center whitespace-nowrap">
+                    <span className="font-albertsans text-[#171717] text-[15px] font-medium whitespace-nowrap">{formatappointmatedates(appointment.patientambherappointmentdate)} </span> 
+                    <span className="ml-1 font-albertsans text-[#171717] text-[15px] font-medium whitespace-nowrap">({formatappointmenttime(appointment.patientambherappointmenttime)})</span> 
                     <span className={`ml-3 font-albertsans font-semibold rounded-full text-[15px] leading-5 px-4 py-2 inline-flex
   ${appointment.patientambherappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] text-[#421a10]':
     appointment.patientambherappointmentstatus === 'Pending' ? 'bg-yellow-100 text-yellow-800':
@@ -8543,11 +8839,11 @@ const submitpatientpendingorderbautista = async (e) => {
                 )}
               </td>
 
-              <td className="py-3 px-6 w-auto  text-center font-albertsans text-[#171717] font-medium ">
+              <td className="py-3 px-6 w-auto  text-center font-albertsans text-[#171717] font-medium whitespace-nowrap">
                 {appointment.patientbautistaappointmentdate && (
-                  <div className="font-albertsans text-[#171717] font-medium flex justify-center items-center">
-                    <span className="font-albertsans text-[15px]  text-[#171717] font-medium">{formatappointmatedates(appointment.patientbautistaappointmentdate)}</span> 
-                    <span className="ml-1 font-albertsans  text-[15px] text-[#171717] font-medium">({formatappointmenttime(appointment.patientbautistaappointmenttime)})</span> 
+                  <div className="font-albertsans text-[#171717] font-medium flex justify-center items-center whitespace-nowrap">
+                    <span className="font-albertsans text-[15px]  text-[#171717] font-medium whitespace-nowrap">{formatappointmatedates(appointment.patientbautistaappointmentdate)}</span> 
+                    <span className="ml-1 font-albertsans  text-[15px] text-[#171717] font-medium whitespace-nowrap">({formatappointmenttime(appointment.patientbautistaappointmenttime)})</span> 
                     
 <span className={` ml-3 font-albertsans font-semibold rounded-full text-[15px] leading-5 px-4 py-2 inline-flex
   ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] text-[#421a10]':
@@ -9143,10 +9439,12 @@ const submitpatientpendingorderbautista = async (e) => {
     </div>
 
     {loadingappointmens ? (
-    <div className="flex justiy-center p-8 items-center">
-    <div className="animate-spin rounded-full border-t-2 border-b-2 border-blue-500 h-12 w-12"></div>
-  </div>
-) : errorloadingappointments ? (
+    <div className="space-y-4 p-4">
+      {[...Array(4)].map((_, index) => (
+        <AppointmentSkeleton key={index} />
+      ))}
+    </div>
+  ) : errorloadingappointments ? (
   <div className="rounded-lg p-4 bg-red-50 text-red-600">
   Error: {errorloadingappointments}
 </div>
@@ -9182,11 +9480,11 @@ const submitpatientpendingorderbautista = async (e) => {
             key={appointment._id}
             className="hover:bg-gray-50 transition-all ease-in-out duration-300 border-b-2"
           >
-            <td className="py-3 px-6 text-[#171717] text-center font-albertsans font-medium ">
+            <td className="py-3 px-6 text-[#171717] text-center font-albertsans font-medium whitespace-nowrap">
               #{appointment.patientappointmentid}
             </td>
-            <td className="py-3 px-6 text-[#171717] text-center font-albertsans font-medium ">
-                   <div className="flex  items-center">
+            <td className="py-3 px-6 text-[#171717] text-center font-albertsans font-medium whitespace-nowrap">
+                   <div className="flex  items-center whitespace-nowrap">
                 <img 
                   src={appointment.patientappointmentprofilepicture} 
                   alt="Profile" 
@@ -9195,12 +9493,12 @@ const submitpatientpendingorderbautista = async (e) => {
                     e.target.src = 'default-profile-url';
                   }}
                 />
-                <h1 className="font-albertsans text-[#171717]font-medium ">{appointment.patientappointmentfirstname} {appointment.patientappointmentlastname}</h1>
+                <h1 className="font-albertsans text-[#171717]font-medium whitespace-nowrap">{appointment.patientappointmentfirstname} {appointment.patientappointmentlastname}</h1>
                 </div>
             </td>
 
-            <td className="py-3 px-6  text-center font-albertsans text-[#171717] font-medium ">
-                <span className="font-albertsans text-[#171717]font-medium">
+            <td className="py-3 px-6  text-center font-albertsans text-[#171717] font-medium whitespace-nowrap">
+                <span className="font-albertsans text-[#171717]font-medium whitespace-nowrap">
                   {new Date(appointment.createdAt).toLocaleDateString('en-US',{
                     month: 'short',
                     day: 'numeric',
@@ -9209,11 +9507,11 @@ const submitpatientpendingorderbautista = async (e) => {
                 </span>          
             </td>
 
-            <td className="">
+            <td className="whitespace-nowrap">
               {appointment.patientambherappointmentdate && (
-                <div className=" font-albertsans text-[#171717] font-medium flex  justify-center items-center">
-                  <span className="font-albertsans text-[#171717]font-medium">{formatappointmatedates(appointment.patientambherappointmentdate)} </span> 
-                  <span className="ml-1 font-albertsans text-[#171717]font-medium">({formatappointmenttime(appointment.patientambherappointmenttime)})</span> 
+                <div className=" font-albertsans text-[#171717] font-medium flex  justify-center items-center whitespace-nowrap">
+                  <span className="font-albertsans text-[#171717]font-medium whitespace-nowrap">{formatappointmatedates(appointment.patientambherappointmentdate)} </span> 
+                  <span className="ml-1 font-albertsans text-[#171717]font-medium whitespace-nowrap">({formatappointmenttime(appointment.patientambherappointmenttime)})</span> 
                   <span className={`ml-3 font-albertsans font-semibold rounded-full text-[15px] leading-5 px-4 py-2 inline-flex
 ${appointment.patientambherappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] text-[#421a10]':
   appointment.patientambherappointmentstatus === 'Pending' ? 'bg-yellow-100 text-yellow-800':
@@ -9547,10 +9845,12 @@ ${selectedpatientappointment.patientambherappointmentstatus === 'Cancelled' ? 'b
     </div>
 
     {loadingappointmens ? (
-    <div className="flex justiy-center p-8 items-center">
-    <div className="animate-spin rounded-full border-t-2 border-b-2 border-blue-500 h-12 w-12"></div>
-  </div>
-) : errorloadingappointments ? (
+    <div className="space-y-4 p-4">
+      {[...Array(4)].map((_, index) => (
+        <AppointmentSkeleton key={index} />
+      ))}
+    </div>
+  ) : errorloadingappointments ? (
   <div className="rounded-lg p-4 bg-red-50 text-red-600">
   Error: {errorloadingappointments}
 </div>
@@ -9583,11 +9883,11 @@ ${selectedpatientappointment.patientambherappointmentstatus === 'Cancelled' ? 'b
             key={appointment._id}
             className="hover:bg-gray-50 transition-all ease-in-out duration-300 border-b-2"
           >
-            <td className="py-3 px-6  text-center font-albertsans text-[#171717]font-medium ">
+            <td className="py-3 px-6  text-center font-albertsans text-[#171717]font-medium whitespace-nowrap">
               #{appointment.patientappointmentid}
             </td>
-            <td className="py-3 px-6 text-[#171717] text-center font-albertsans font-medium ">
-                   <div className="flex  items-center">
+            <td className="py-3 px-6 text-[#171717] text-center font-albertsans font-medium whitespace-nowrap">
+                   <div className="flex  items-center whitespace-nowrap">
                 <img 
                   src={appointment.patientappointmentprofilepicture} 
                   alt="Profile" 
@@ -9596,12 +9896,12 @@ ${selectedpatientappointment.patientambherappointmentstatus === 'Cancelled' ? 'b
                     e.target.src = 'default-profile-url';
                   }}
                 />
-                <h1 className="font-albertsans text-[#171717]font-medium">{appointment.patientappointmentfirstname} {appointment.patientappointmentlastname}</h1>
+                <h1 className="font-albertsans text-[#171717]font-medium whitespace-nowrap">{appointment.patientappointmentfirstname} {appointment.patientappointmentlastname}</h1>
                 </div>
             </td>
 
-            <td className="py-3 px-6 text-[#171717] text-center font-albertsans font-medium ">
-                <span className="font-albertsans text-[#171717]font-medium">
+            <td className="py-3 px-6 text-[#171717] text-center font-albertsans font-medium whitespace-nowrap">
+                <span className="font-albertsans text-[#171717]font-medium whitespace-nowrap">
                   {new Date(appointment.createdAt).toLocaleDateString('en-US',{
                     month: 'short',
                     day: 'numeric',
@@ -9612,11 +9912,11 @@ ${selectedpatientappointment.patientambherappointmentstatus === 'Cancelled' ? 'b
 
 
 
-            <td className="py-3 px-6 text-[#171717] text-center font-albertsans font-medium ">
+            <td className="py-3 px-6 text-[#171717] text-center font-albertsans font-medium whitespace-nowrap">
               {appointment.patientbautistaappointmentdate && (
-                <div className="font-albertsans text-[#171717] font-medium flex justify-center items-center">
-                  <span className="font-albertsans text-[#171717] font-medium">{formatappointmatedates(appointment.patientbautistaappointmentdate)}</span> 
-                  <span className="ml-1 font-albertsans text-[#171717] font-medium">({formatappointmenttime(appointment.patientbautistaappointmenttime)})</span> 
+                <div className="font-albertsans text-[#171717] font-medium flex justify-center items-center whitespace-nowrap">
+                  <span className="font-albertsans text-[#171717] font-medium whitespace-nowrap">{formatappointmatedates(appointment.patientbautistaappointmentdate)}</span> 
+                  <span className="ml-1 font-albertsans text-[#171717] font-medium whitespace-nowrap">({formatappointmenttime(appointment.patientbautistaappointmenttime)})</span> 
                   
 <span className={`ml-3 font-albertsans font-semibold rounded-full text-[15px] leading-5 px-4 py-2 inline-flex
 ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] text-[#421a10]':
@@ -9990,10 +10290,12 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
       </div>
 
     {loadingappointmens ? (
-    <div className="flex justiy-center p-8 items-center">
-    <div className="animate-spin rounded-full border-t-2 border-b-2 border-blue-500 h-12 w-12"></div>
-  </div>
-) : errorloadingappointments ? (
+    <div className="space-y-4 p-4">
+      {[...Array(4)].map((_, index) => (
+        <AppointmentSkeleton key={index} />
+      ))}
+    </div>
+  ) : errorloadingappointments ? (
   <div className="rounded-lg p-4 bg-red-50 text-red-600">
   Error: {errorloadingappointments}
 </div>
@@ -10638,7 +10940,11 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
 
               <div className="flex flex-wrap p-4">
                 {ambherloadingproducts ? (
-                  <div>Loading Ambher Products...</div> 
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 w-full">
+                    {[...Array(8)].map((_, index) => (
+                      <InventorySkeleton key={index} />
+                    ))}
+                  </div>
                 ): ambherinventoryproducts.length === 0 ? (
                   <div>No Products Found...</div> 
                 ):(
@@ -10730,13 +11036,11 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
 
       <tbody className="divide-y divide-gray-200 bg-white">
   {loadingambherinventorycategorylist ? (
-    <tr>
-
-        <div className="flex justify-center items-center p-8">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-        </div>
-
-    </tr>
+    <>
+      {[...Array(5)].map((_, index) => (
+        <CategoryTableSkeleton key={index} />
+      ))}
+    </>
   ): (
     ambherinventorycategorylist.map((category) => (
 
@@ -11121,7 +11425,11 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
 
               <div className="flex flex-wrap p-4">
                 {bautistaloadingproducts ? (
-                  <div>Loading Bautista Products...</div> 
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 w-full">
+                    {[...Array(8)].map((_, index) => (
+                      <InventorySkeleton key={index} />
+                    ))}
+                  </div>
                 ): bautistainventoryproducts.length === 0 ? (
                   <div>No Products Found...</div> 
                 ):(
@@ -11210,13 +11518,11 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
 
       <tbody className="divide-y divide-gray-200 bg-white">
   {loadingbautistainventorycategorylist ? (
-    <tr>
-
-        <div className="flex justify-center items-center p-8">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-        </div>
-
-    </tr>
+    <>
+      {[...Array(5)].map((_, index) => (
+        <CategoryTableSkeleton key={index} />
+      ))}
+    </>
   ): (
     bautistainventorycategorylist.map((category) => (
 
@@ -11670,7 +11976,11 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
                                   <div className="ml-2 flex justify-center items-center"><h2 className="font-albertsans font-bold text-[18px] text-[#383838] mr-3 ">Search: </h2><div className="relative flex items-center justify-center gap-3"><i className="bx bx-search absolute left-3 text-2xl text-gray-500"></i><input onChange={(e) => setsearchpatientorderambherTerm(e.target.value)} value={searchpatientorderambherTerm} type="text" placeholder="Enter product name..."   className="transition-all duration-300 ease-in-out py-2 pl-10  rounded-2xl  bg-[#e4e4e4] focus:bg-slate-100 focus:outline-sky-500"></input></div></div>
                                 <div className="mt-2 p-2 w-full max-h-138 overflow-y-auto  "> 
                 {ambherloadingproducts ? (
-                  <div>Loading Ambher Products...</div> 
+                  <div className="space-y-4">
+                    {[...Array(4)].map((_, index) => (
+                      <InventorySkeleton key={index} />
+                    ))}
+                  </div>
                 ): ambherinventoryproducts.length === 0 ? (
                   <div>No Products Found...</div> 
                 ):(
@@ -12389,7 +12699,11 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
                                   <div className="ml-2 flex justify-center items-center"><h2 className="font-albertsans font-bold text-[18px] text-[#383838] mr-3 ">Search: </h2><div className="relative flex items-center justify-center gap-3"><i className="bx bx-search absolute left-3 text-2xl text-gray-500"></i><input onChange={(e) => setsearchpatientorderbautistaTerm(e.target.value)} value={searchpatientorderbautistaTerm} type="text" placeholder="Enter product name..."   className="transition-all duration-300 ease-in-out py-2 pl-10  rounded-2xl  bg-[#e4e4e4] focus:bg-slate-100 focus:outline-sky-500"></input></div></div>
                                 <div className="mt-2 p-2 w-full max-h-138 overflow-y-auto  "> 
                 {bautistaloadingproducts ? (
-                  <div>Loading bautista Products...</div> 
+                  <div className="space-y-4">
+                    {[...Array(4)].map((_, index) => (
+                      <InventorySkeleton key={index} />
+                    ))}
+                  </div>
                 ): bautistainventoryproducts.length === 0 ? (
                   <div>No Products Found...</div> 
                 ):(

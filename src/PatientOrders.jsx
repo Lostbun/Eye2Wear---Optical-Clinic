@@ -1,8 +1,10 @@
-import React, {useState, useEffect} from "react";
+import React, {useState, useEffect, useCallback} from "react";
 import {Link} from "react-router-dom";
 import navlogo from  "../src/assets/images/navlogo.png";
 
 import { useAuth } from "./hooks/patientuseAuth";
+import useApiService from "./hooks/useApiService";
+import useSmartCache from "./hooks/useSmartCache";
 
 import profileuser from "../src/assets/images/profile-user.png";
 import logout from "../src/assets/images/logout.png";
@@ -11,6 +13,78 @@ import logout from "../src/assets/images/logout.png";
 
 import Rating from '@mui/material/Rating';
 import Stack from '@mui/material/Stack';
+
+// Skeleton component for order items
+const OrderSkeleton = () => (
+  <div className="pb-7 shadow-md rounded-2xl py-3.25 px-3.25 mb-3 border-1 flex items-center w-full h-auto animate-pulse">
+    {/* Product image skeleton - matches w-35 h-35 */}
+    <div className="mr-5 w-35 h-35 bg-gray-300 rounded-2xl"></div>
+    
+    <div className="mt-2 h-auto w-full flex flex-col items-start">
+      {/* Product name and status skeleton - matches flex justify-between */}
+      <div className="flex justify-between w-full">
+        <div className="h-6 bg-gray-300 rounded w-80"></div>
+        <div className="h-8 bg-gray-200 rounded-full w-28 px-4 py-2"></div>
+      </div>
+      
+      {/* Order details section skeleton - matches mt-5 justify-between w-full flex items-center */}
+      <div className="mt-5 justify-between w-full flex items-center">
+        {/* Date Ordered - matches actual structure */}
+        <div className="flex items-center gap-1">
+          <div className="w-5 h-5 bg-gray-300 rounded"></div>
+          <div>
+            <div className="h-3 bg-gray-300 rounded w-24 mb-1"></div>
+            <div className="h-4 bg-gray-300 rounded w-28"></div>
+          </div>
+        </div>
+        
+        {/* Pickup info - matches actual structure */}
+        <div className="flex items-center gap-1">
+          <div className="w-5 h-5 bg-gray-300 rounded"></div>
+          <div>
+            <div className="h-3 bg-gray-300 rounded w-36 mb-1"></div>
+            <div className="h-4 bg-gray-300 rounded w-32"></div>
+          </div>
+        </div>
+        
+        {/* Quantity - matches actual structure */}
+        <div className="flex items-center gap-1">
+          <div className="w-5 h-5 bg-gray-300 rounded"></div>
+          <div>
+            <div className="h-3 bg-gray-300 rounded w-16 mb-1"></div>
+            <div className="h-4 bg-gray-300 rounded w-6"></div>
+          </div>
+        </div>
+        
+        {/* Amount - matches actual structure */}
+        <div className="flex items-center gap-1">
+          <div className="w-5 h-5 bg-gray-300 rounded"></div>
+          <div>
+            <div className="h-3 bg-gray-300 rounded w-28 mb-1"></div>
+            <div className="h-4 bg-gray-300 rounded w-24"></div>
+          </div>
+        </div>
+      </div>
+      
+      {/* Total price section skeleton - matches border-t-2 w-full h-10 mt-5 */}
+      <div className="flex items-center justify-between border-t-2 w-full h-10 mt-5">
+        <div></div>
+        <div className="flex items-center gap-3 mt-5 h-auto">
+          <div className="h-5 bg-gray-300 rounded w-24"></div>
+          <div className="h-7 bg-gray-300 rounded w-32"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
+const OrderListSkeleton = () => (
+  <div className="space-y-3">
+    {[...Array(5)].map((_, index) => (
+      <OrderSkeleton key={index} />
+    ))}
+  </div>
+);
 
 
 
@@ -52,6 +126,14 @@ function PatientOrders(){
 
 
  const {handlelogout, fetchpatientdetails} = useAuth();
+ const { 
+   fetchAmbherOrders, 
+   fetchBautistaOrders,
+   invalidateOrderData 
+ } = useApiService();
+ 
+ // Smart caching with real-time updates
+ const { smartFetch, realtimeUpdates, CACHE_DURATIONS } = useSmartCache();
 
   //Retrieveing Data from useAuth Hook
   useEffect(() => {
@@ -168,53 +250,57 @@ const handleSearch = (term) => {
 
 
 
-//FETCHING PATIENT ORDERS 
-useEffect(() => {
-    if (patientemail) {
-      fetchpatientorders();
-    }
-  }, [patientemail, activeorderstable]);
-
-
- const fetchpatientorders = async () => {
-
+//FETCHING PATIENT ORDERS WITH SMART CACHING
+const fetchpatientorders = useCallback(async (forceRefresh = false) => {
   try {
     setLoading(true);
 
     if (activeorderstable === 'ambherorderstable') {
-      const response = await fetch(`/api/patientorderambher/email/${patientemail}`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('patienttoken')}`
-        }
-      });
-
-
-      if (response.ok) {
-        const data = await response.json();
-        setAmbherOrders(data);
-        setfilteredambherOrders(data); 
-      }
+      // Smart cached Ambher orders fetching
+      const data = await smartFetch(
+        `ambherOrders_${patientemail}`,
+        () => fetchAmbherOrders(patientemail),
+        CACHE_DURATIONS.orders,
+        forceRefresh
+      );
+      setAmbherOrders(data || []);
+      setfilteredambherOrders(data || []); 
 
     } else {
-      const response = await fetch(`/api/patientorderbautista/email/${patientemail}`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('patienttoken')}`
-        }
-      });
-      const data = await response.json();
-      setBautistaOrders(data);
-      setfilteredbautistaOrders(data); 
+      // Smart cached Bautista orders fetching
+      const data = await smartFetch(
+        `bautistaOrders_${patientemail}`,
+        () => fetchBautistaOrders(patientemail),
+        CACHE_DURATIONS.orders,
+        forceRefresh
+      );
+      setBautistaOrders(data || []);
+      setfilteredbautistaOrders(data || []); 
     }
-
-
 
   } catch (error) {
     console.error('Error fetching orders:', error);
-
   } finally {
     setLoading(false);
   }
-};
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [activeorderstable, patientemail, smartFetch, CACHE_DURATIONS]);
+
+useEffect(() => {
+    if (patientemail) {
+      fetchpatientorders();
+    }
+  }, [patientemail, activeorderstable, fetchpatientorders]);
+
+// Listen for real-time order updates
+useEffect(() => {
+  if (realtimeUpdates.has('orders')) {
+    console.log('📦 Real-time orders update detected, refreshing data...');
+    if (patientemail) {
+      fetchpatientorders(true); // Force refresh on real-time update
+    }
+  }
+}, [realtimeUpdates, patientemail, fetchpatientorders]);
 
 
 
@@ -385,13 +471,23 @@ useEffect(() => {
     {localStorage.getItem("patienttoken") ? (
       <div id="profilecard" className="relative items-center justify-center flex">
         <div id="profile" onClick={showlogout} className="ml-3 flex justify-center items-center bg-[#fbfbfb00] border-2 border-gray-200 shadow-lg rounded-full hover:cursor-pointer hover:scale-105 transition-all">
-          <img src={patientprofilepicture || 'default-profile.png'} alt="Profile" className="h-13 w-13 rounded-full"/>
+          {!patientprofilepicture ? (
+            // Skeleton loading for navbar profile picture
+            <div className="h-13 w-13 rounded-full bg-gray-300 animate-pulse"></div>
+          ) : (
+            <img src={patientprofilepicture || 'default-profile.png'} alt="Profile" className="h-13 w-13 rounded-full"/>
+          )}
         </div>
 
         {showlogoutbtn && (
           <div className="w-75 flex-col p-5 motion-preset-fade absolute top-full mt-2 z-[9999] flex justify-center items-start bg-[#ffffff] rounded-2xl hover:cursor-pointer transition-all shadow-lg">
             <div className="hover:bg-[#f7f7f7] transition-all duration-300 ease-in-out py-2 px-1 rounded-2xl gap-3 flex items-center h-auto w-full">
-              <img src={patientprofilepicture} className="w-12 rounded-full"/>
+              {!patientprofilepicture ? (
+                // Skeleton loading for dropdown profile picture
+                <div className="w-12 h-12 rounded-full bg-gray-300 animate-pulse"></div>
+              ) : (
+                <img src={patientprofilepicture} className="w-12 rounded-full"/>
+              )}
               <h1 className="font-albertsans font-semibold text-[19px]">{patientfirstname}</h1>
             </div>
             <div className="border-b-2 rounded-full border-[#747474] h-1 w-full my-1"></div>
@@ -501,7 +597,7 @@ useEffect(() => {
                       
                       
                       {loading ? (
-                        <div>Loading orders...</div>
+                        <OrderListSkeleton />
                       ) : filteredambherOrders.length === 0 ? (
                         <div>No orders found</div>
                       ) : (
@@ -556,7 +652,7 @@ useEffect(() => {
                       
                       
                       {loading ? (
-                        <div>Loading orders...</div>
+                        <OrderListSkeleton />
                       ) : filteredbautistaOrders.length === 0 ? (
                         <div>No orders found</div>
                       ) : (

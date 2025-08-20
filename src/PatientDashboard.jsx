@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useRef} from "react";
+import React, {useState, useEffect, useRef, useCallback} from "react";
 import {Link} from "react-router-dom";
 import navlogo from  "../src/assets/images/navlogo.png";
 
@@ -8,12 +8,74 @@ import bautistalogo from '../src/assets/images/bautistalogo.png';
 import darklogo from "../src/assets/images/darklogo.png";
 import defaultimageplaceholder from "../src/assets/images/defaultimageplaceholder.png";
 import { useAuth } from "./hooks/patientuseAuth";
+import useApiService from "./hooks/useApiService";
+import useSmartCache from "./hooks/useSmartCache";
 import imageCompression from "browser-image-compression";
 import Rating from '@mui/material/Rating';
 import Stack from '@mui/material/Stack';
 
 import profileuser from "../src/assets/images/profile-user.png";
 import logout from "../src/assets/images/logout.png";
+
+// Skeleton Loading Components for Appointments
+const AppointmentRowSkeleton = () => (
+  <tr className="hover:bg-gray-50 transition-all ease-in-out duration-100 border-b-2 animate-pulse">
+    {/* Date Created column */}
+    <td className="py-3 px-6 text-center">
+      <div className="h-5 bg-gray-300 rounded w-24 mx-auto"></div>
+    </td>
+    
+    {/* Ambher Appointment column */}
+    <td className="py-3 px-6 text-center">
+      <div className="flex justify-center items-center">
+        <div className="h-5 bg-gray-300 rounded w-20 mr-1"></div>
+        <div className="h-5 bg-gray-300 rounded w-16 mr-3"></div>
+        <div className="h-8 bg-gray-200 rounded-full w-20 px-4 py-2"></div>
+      </div>
+    </td>
+    
+    {/* Empty column */}
+    <td className="py-3 px-6 text-center"></td>
+    
+    {/* Bautista Appointment column */}
+    <td className="py-3 px-6 text-center">
+      <div className="flex justify-center items-center">
+        <div className="h-5 bg-gray-300 rounded w-20 mr-1"></div>
+        <div className="h-5 bg-gray-300 rounded w-16 mr-3"></div>
+        <div className="h-8 bg-gray-200 rounded-full w-20 px-4 py-2"></div>
+      </div>
+    </td>
+    
+    {/* Actions column */}
+    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+      <div className="flex justify-center items-center">
+        <div className="h-9 bg-gray-300 rounded-2xl w-16 mr-2"></div>
+        <div className="h-9 bg-gray-300 rounded-2xl w-20"></div>
+      </div>
+    </td>
+  </tr>
+);
+
+const AppointmentTableSkeleton = () => (
+  <div className="overflow-x-auto rounded-2xl shadow-lg w-full h-full mt-">
+    <table className="min-w-full divide-y divide-gray-200">
+      <thead className="bg-">
+        <tr className="text-[#ffffff] font-albertsans font-bold bg-[#2781af] rounded-tl-2xl rounded-tr-2xl">
+          <th className="pb-3 pt-3 pl-2 pr-2 text-center">Date Created</th> 
+          <th className="pb-3 pt-3 pl-2 pr-2 text-center">Ambher Appointment</th>
+          <th className="pb-3 pt-3 pl-2 pr-2 text-center"></th>
+          <th className="pb-3 pt-3 pl-2 pr-2 text-center">Bautista Appointment</th>
+          <th className="pb-3 pt-3 pl-2 pr-2 text-center">Actions</th>
+        </tr>
+      </thead>
+      <tbody className="divide-y divide-gray-200 bg-white">
+        {[...Array(5)].map((_, index) => (
+          <AppointmentRowSkeleton key={index} />
+        ))}
+      </tbody>
+    </table>
+  </div>
+);
 function PatientDashboard(){
 
   const apiUrl = import.meta.env.VITE_API_URL;
@@ -48,6 +110,13 @@ function PatientDashboard(){
 
 
  const {handlelogout, fetchpatientdetails, fetchpatientdemographicbyemail} = useAuth();
+ const { 
+   fetchPatientAppointments, 
+   invalidateAppointmentData 
+ } = useApiService();
+
+ // Smart caching with real-time updates for appointments
+ const { smartFetch, realtimeUpdates, CACHE_DURATIONS } = useSmartCache();
 
   //Retrieveing Data from useAuth Hook
   useEffect(() => {
@@ -243,8 +312,18 @@ const patientsubmitappointment = async (formData) => {
     const result = await response.json();
     console.log('Patient Appointment Successfull Submitted for Review', result);
 
-    setadditionaldetails('');
+    // Invalidate appointment cache and refresh the list
+    invalidateAppointmentData();
+    
+    // Switch to appointment list and refresh cached data
     setactiveappointmenttable('appointmentlist');
+    
+    // Force refresh cached appointment data to show new appointment
+    setTimeout(() => {
+      fetchAppointmentData(true);
+    }, 100);
+
+    setadditionaldetails('');
     setappointmentpreviewimage(defaultimageplaceholder);
   }catch(error) {
     console.error('Error Submitting Patient Appointment: ', error);
@@ -489,38 +568,51 @@ const handleviewappointment = (appointment) => {
  const [deletepatientappointment, setdeletepatientappointment] = useState(false);
 
  
- useEffect(() => {
-   const fetchingpatientappointmentsbyemail = async () => {
-     setloadingappointments(true);
- 
-     try{
-       const email = localStorage.getItem("patientemail");
-       const response = await fetch(
-        `/api/patientappointments/appointments/email/${email}`,
-         {
-           headers: {
-               Authorization: `Bearer ${localStorage.getItem('patienttoken')}`
-           }
-         }
-       );
- 
-       if(!response.ok) throw new Error("Failed to fetch patient appointments");
- 
-       const data = await response.json();
-       setpatientappointments(data);
- 
- 
-     }catch(error){
-       seterrorloadingappointments(error.message);
-     }finally{
-       setloadingappointments(false);
+ // Smart cached appointment fetching with real-time updates
+ const fetchAppointmentData = useCallback(async (forceRefresh = false) => {
+   setloadingappointments(true);
+   seterrorloadingappointments(null);
+
+   try {
+     const email = localStorage.getItem("patientemail");
+     if (!email) {
+       throw new Error("Patient email not found");
      }
-   };
- 
-   if(activeappointmenttable === 'appointmentlist') {
-     fetchingpatientappointmentsbyemail();
+     
+     console.log('📅 Fetching appointment data...', { forceRefresh });
+     
+     // Use smart cached appointment fetching
+     const data = await smartFetch(
+       `appointmentData_${email}`,
+       () => fetchPatientAppointments(email),
+       CACHE_DURATIONS.appointments,
+       forceRefresh
+     );
+     
+     console.log('📅 Appointment data received:', data?.length || 0, 'appointments');
+     setpatientappointments(data || []);
+
+   } catch (error) {
+     console.error("Error fetching appointments: ", error);
+     seterrorloadingappointments(error.message);
+   } finally {
+     setloadingappointments(false);
    }
- }, [activeappointmenttable]);
+ }, [smartFetch, CACHE_DURATIONS, fetchPatientAppointments]);
+
+ useEffect(() => {
+   if (activeappointmenttable === 'appointmentlist') {
+     fetchAppointmentData();
+   }
+ }, [activeappointmenttable, fetchAppointmentData]);
+
+ // Listen for real-time appointment updates
+ useEffect(() => {
+   if (realtimeUpdates.has('appointment')) {
+     console.log('📅 Real-time appointment update detected, refreshing data...');
+     fetchAppointmentData(true); // Force refresh on real-time update
+   }
+ }, [realtimeUpdates, fetchAppointmentData]);
  
 
  
@@ -564,9 +656,14 @@ const handledeleteappointment = async (appointmentId) => {
 
       if(!response.ok) throw new Error('Failed to Delete Appointment');
  
+    // Remove from local state immediately
     setpatientappointments(prev =>
       prev.filter(appt => appt.patientappointmentid !== appointmentId)
     );
+
+    // Refresh cached data to ensure consistency
+    console.log('📅 Appointment deleted, refreshing cache...');
+    fetchAppointmentData(true);
 
     }catch(error){
       console.error("Appointment deletion failed: ", error);
@@ -953,7 +1050,12 @@ useEffect(() => {
       
     <div id="profilecard" className="relative items-center justify-center flex">
     <div id="profile" onClick={showlogout}  className="ml-3  flex justify-center items-center bg-[#fbfbfb00] border-2 border-gray-200  shadow-lg  rounded-full hover:cursor-pointer hover:scale-105 transition-all">
-     <img src={patientprofilepicture || 'default-profile.png'} alt="Profile" className="h-13 w-13 rounded-full"></img>
+     {!patientprofilepicture ? (
+       // Skeleton loading for navbar profile picture
+       <div className="h-13 w-13 rounded-full bg-gray-300 animate-pulse"></div>
+     ) : (
+       <img src={patientprofilepicture || 'default-profile.png'} alt="Profile" className="h-13 w-13 rounded-full"></img>
+     )}
     </div>
 
 {showlogoutbtn && (
@@ -961,7 +1063,12 @@ useEffect(() => {
 
 
       <div className="hover:bg-[#f7f7f7] transition-all duration-300 ease-in-out py-2 px-1 rounded-2xl  gap-3 flex items-center h-auto w-full ">
-        <img src={patientprofilepicture}  className="w-12 rounded-full"/>
+        {!patientprofilepicture ? (
+          // Skeleton loading for dropdown profile picture
+          <div className="w-12 h-12 rounded-full bg-gray-300 animate-pulse"></div>
+        ) : (
+          <img src={patientprofilepicture}  className="w-12 rounded-full"/>
+        )}
         <h1 className="font-albertsans font-semibold text-[19px]">{patientfirstname}</h1>
       </div>
       <div className="border-b-2 rounded-full border-[#747474] h-1 w-full my-1">
@@ -1046,16 +1153,31 @@ useEffect(() => {
                 <div className="flex items-center"><i className="bx bxs-calendar text-[#184d85] text-[25px] mr-2"/> <h1 className=" font-albertsans font-bold text-[#184d85] text-[25px]">Appointments</h1></div>
 
                                  <div className="flex justify-between items-center mt-8 h-[60px]">
-                <Link to="/patientinformation"><div id="patientcard"  className=" flex justify-center items-start border-1 hover:scale-105 hover:cursor-pointer bg-white transition-all duration-100 ease-in-out  rounded-2xl shadow-md w-[290px] h-[80px]">
-                        <div className="w-[125px] h-full  rounded-2xl flex justify-center items-center">
-                        <img  src={patientdemographics?.patientprofilepicture || defaultprofilepic}  alt="Profile" className="h-18 w-18 rounded-full object-cover"></img>
-                        </div>
-                        <div className="bg-white min-w-0 flex flex-col justify-center items-start pl-2 pr-2 w-full h-full  rounded-3xl">
-                          <h1 className="font-albertsans font-bold text-[17px] truncate w-full text-[#2d3744]"> {patientdemographics?.patientfirstname || ''} {patientdemographics?.patientlastname || ''}</h1>
-                          <p className="text-[13px] truncate w-full text-[#535354]">            {patientdemographics?.patientemail || ''}</p>
-                        </div>
+                <Link to="/patientinformation">
+                {!patientdemographics ? (
+                  // Skeleton Loading State
+                  <div id="patientcard" className="flex justify-center items-start border-1 bg-white rounded-2xl shadow-md w-[290px] h-[80px] animate-pulse">
+                    <div className="w-[125px] h-full rounded-2xl flex justify-center items-center">
+                      <div className="h-18 w-18 rounded-full bg-gray-300"></div>
                     </div>
-                    </Link> 
+                    <div className="bg-white min-w-0 flex flex-col justify-center items-start pl-2 pr-2 w-full h-full rounded-3xl">
+                      <div className="h-5 bg-gray-300 rounded w-3/4 mb-2"></div>
+                      <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                    </div>
+                  </div>
+                ) : (
+                  // Actual Patient Card
+                  <div id="patientcard" className="flex justify-center items-start border-1 hover:scale-105 hover:cursor-pointer bg-white transition-all duration-100 ease-in-out rounded-2xl shadow-md w-[290px] h-[80px]">
+                    <div className="w-[125px] h-full rounded-2xl flex justify-center items-center">
+                      <img src={patientdemographics?.patientprofilepicture || defaultprofilepic} alt="Profile" className="h-18 w-18 rounded-full object-cover"></img>
+                    </div>
+                    <div className="bg-white min-w-0 flex flex-col justify-center items-start pl-2 pr-2 w-full h-full rounded-3xl">
+                      <h1 className="font-albertsans font-bold text-[17px] truncate w-full text-[#2d3744]">{patientdemographics?.patientfirstname || ''} {patientdemographics?.patientlastname || ''}</h1>
+                      <p className="text-[13px] truncate w-full text-[#535354]">{patientdemographics?.patientemail || ''}</p>
+                    </div>
+                  </div>
+                )}
+                </Link> 
                    <div className="flex justify-center items-center">
                   <div onClick={() => showappointmenttable('bookappointment')}  className={`hover:cursor-pointer hover:rounded-2xl mr-5 transition-all duration-100 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 pb-3 pt-3 text-center flex justify-center items-center ${activeappointmenttable==='bookappointment' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d] ${activeappointmenttable ==='bookappointment' ? 'text-white' : ''}`}>Book Appointment</h1></div>
                   <div onClick={() => showappointmenttable('appointmentlist')}  className={`hover:cursor-pointer hover:rounded-2xl ml-5 transition-all duration-100 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 pb-3 pt-3 text-center flex justify-center items-center ${activeappointmenttable ==='appointmentlist' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d] ${activeappointmenttable ==='appointmentlist' ? 'text-white' : ''}`}>Appointment List</h1></div>
@@ -1351,10 +1473,8 @@ useEffect(() => {
                 <div className=" flex justify-center items-start h-[500px] w-full rounded-3xl ">
 
       {loadingappointmens ? (
-      <div className="flex justiy-center p-8 items-center">
-      <div className="animate-spin rounded-full border-t-2 border-b-2 border-blue-500 h-12 w-12"></div>
-    </div>
-  ) : errorloadingappointments ? (
+        <AppointmentTableSkeleton />
+      ) : errorloadingappointments ? (
     <div className="w-full h-[40px] rounded-tl-2xl rounded-tr-2xl flex justify-center items-center bg-red-50 text-red-600 font-semibold font-albertsans">
     Error: {errorloadingappointments}
   </div>

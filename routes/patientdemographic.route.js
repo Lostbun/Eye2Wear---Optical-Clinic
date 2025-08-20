@@ -10,6 +10,8 @@
         deletepatientdemographic
         } from "../controllers/patientdemographic.controller.js";
 
+    import {verifyloggedinpatientacc} from "../controllers/patientaccount.controller.js";
+
 
 
 
@@ -30,7 +32,7 @@
     patientdemographicrouter.get("/", getpatientdemographics);
     patientdemographicrouter.get("/id/:id", getpatientdemographicbyid);
     patientdemographicrouter.get("/patientlastname/:patientlastname", getpatientdemographicbylastname);
-    patientdemographicrouter.get("/patientemail/:patientemail", getpatientdemographicbyemail)
+    patientdemographicrouter.get("/patientemail/:patientemail", verifyloggedinpatientacc, getpatientdemographicbyemail)
 
 
 

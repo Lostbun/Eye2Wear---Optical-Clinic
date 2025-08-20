@@ -1,8 +1,10 @@
-import React, {useState, useEffect} from "react";
+import React, {useState, useEffect, useCallback} from "react";
 import {Link} from "react-router-dom";
 import navlogo from  "../src/assets/images/navlogo.png";
 
 import { useAuth } from "./hooks/patientuseAuth";
+import useApiService from "./hooks/useApiService";
+import useSmartCache from "./hooks/useSmartCache";
 import starimage from "../src/assets/images/star.png"
 import defaultimageplaceholder from "../src/assets/images/defaultimageplaceholder.png";
 import heartblack from "../src/assets/images/heartblack.png";
@@ -19,6 +21,53 @@ import { AmbherinventorycategoryBox } from "./components/Ambherinventorycategory
 import { BautistainventorycategoryBox } from "./components/BautistainventorycategoryBox";
 import Rating from '@mui/material/Rating';
 import Stack from '@mui/material/Stack';
+
+// Skeleton Loading Components
+const ProductCardSkeleton = () => (
+  <div className="mr-3 mb-3 flex flex-col items-start justify-start w-[220px] h-auto shadow-md bg-white rounded-2xl animate-pulse">
+    {/* Product image skeleton - matches h-45 */}
+    <div className="w-full h-45 bg-gray-300 rounded-t-2xl"></div>
+    
+    {/* Category tag skeleton - matches bg-[#F0F6FF] rounded style */}
+    <div className="mx-1 w-fit rounded-md py-1 px-2 mt-2 bg-gray-200 h-6 min-w-[60px]"></div>
+    
+    {/* Product name skeleton - matches ml-2 mt-2 layout */}
+    <div className="w-full h-auto ml-2 mt-2 mr-2">
+      <div className="h-5 bg-gray-300 rounded w-full max-w-[180px]"></div>
+    </div>
+    
+    {/* Price skeleton - matches font-bold text-[18px] */}
+    <div className="w-fit h-auto ml-2 mt-1">
+      <div className="h-6 bg-gray-300 rounded w-20"></div>
+    </div>
+    
+    {/* Sold count skeleton - matches mt-5 mb-5 */}
+    <div className="w-full h-auto ml-2 mt-5 mb-5">
+      <div className="h-4 bg-gray-300 rounded w-16"></div>
+    </div>
+  </div>
+);
+
+const CategorySkeleton = () => (
+  <div className="animate-pulse">
+    {/* Multiple category button skeletons matching the real layout */}
+    {[...Array(5)].map((_, index) => (
+      <div key={index} className="mt-3 border-2 rounded-3xl py-2 text-center flex justify-center items-center bg-gray-100">
+        <div className="h-5 bg-gray-300 rounded w-20"></div>
+        <div className="bg-gray-200 h-5 w-6 rounded-full ml-2"></div>
+      </div>
+    ))}
+  </div>
+);
+
+const ProductGridSkeleton = () => (
+  <div className="flex flex-wrap p-4">
+    {[...Array(8)].map((_, index) => (
+      <ProductCardSkeleton key={index} />
+    ))}
+  </div>
+);
+
 function PatientProducts(){
 
 
@@ -47,6 +96,15 @@ function PatientProducts(){
 
 
  const {handlelogout, fetchpatientdetails} = useAuth();
+ const { 
+   fetchAmbherCategories, 
+   fetchBautistaCategories, 
+   fetchAmbherProducts, 
+   fetchBautistaProducts 
+ } = useApiService();
+
+ // Smart caching with real-time updates
+ const { smartFetch, realtimeUpdates, CACHE_DURATIONS } = useSmartCache();
 
   //Retrieveing Data from useAuth Hook
   useEffect(() => {
@@ -69,7 +127,7 @@ function PatientProducts(){
 
     }
    }; loadpatient();
-  }, [fetchpatientdetails]);
+  }, []);
 
 
 
@@ -118,6 +176,7 @@ const showambherinventorycategory = (ambherinventorycategorytableid) => {
 };
 
 const [ambherinventorycategorylist, setambherinventorycategorylist] = useState([]);
+const [ambherloadingcategories, setambherloadingcategories] = useState(true);
 
   const [ambherinventoryproducts, setambherinventoryproducts] = useState([]);
   const [ambherloadingproducts, setambherloadingproducts] = useState(true);
@@ -151,58 +210,64 @@ useEffect(() => {
 
 
 
-const fetchambherinventorycategories = async () => {
+const fetchambherinventorycategories = useCallback(async () => {
   try{
-    const response = await fetch(`/api/ambherinventorycategory`);
-    if(!response.ok) throw new Error("Failed to retrieve ambher inventory categories");
-
-    const data = await response.json();
-    setambherinventorycategorylist(data);
+    setambherloadingcategories(true);
+    // Use cached category fetching
+    const data = await fetchAmbherCategories();
+    setambherinventorycategorylist(data || []);
   }catch(error){
     console.error("Fetching ambherinventorycategory failed", error);
+  } finally {
+    setambherloadingcategories(false);
   }
-};
+}, []);
 
 useEffect(() => {
   fetchambherinventorycategories();
 }, []);
+
+          const [selectedambherproduct, setselectedambherproduct] = useState(null);
 
 
 
 
        
           
-          //FETCHING PRODUCTS
+          //FETCHING PRODUCTS WITH SMART CACHING
           
-            const fetchambherproducts = async () => {
+            const fetchambherproducts = useCallback(async (forceRefresh = false) => {
               try{
-                const response = await fetch(`/api/ambherinventoryproduct`, {
-                  headers:{
-                    'Authorization' : `Bearer ${localStorage.getItem("patienttoken")}`
-                  }
-                });
-                
-                if(!response.ok) throw new Error("Failed to fetch products");
-          
-                const data = await response.json();
-                setambherinventoryproducts(data);
-                 setambherloadingproducts(false);
-                
-              //Fetch product wishlist counts
-                const productIds = data.map(p => p.ambherinventoryproductid).join(',');
-                const count = await fetchWishlistCounts(productIds, 'ambher');
-                setWishlistCounts(prev => ({...prev, [selectedambherproduct?.ambherinventoryproductid]:count}));
+                setambherloadingproducts(true);
+                // Use smart cached product fetching
+                const data = await smartFetch(
+                  'ambherProducts',
+                  () => fetchAmbherProducts(),
+                  CACHE_DURATIONS.products,
+                  forceRefresh
+                );
+                setambherinventoryproducts(data || []);
+                setambherloadingproducts(false);
 
               }catch(error){
                 console.error("Failed fetching products: ", error);
                 setambherloadingproducts(false);
               }
-            };
+              // eslint-disable-next-line react-hooks/exhaustive-deps
+            }, [smartFetch, CACHE_DURATIONS]);
           
           
             useEffect(() => {
               fetchambherproducts();
-            }, []);
+            }, [fetchambherproducts]);
+
+// Listen for real-time product updates
+useEffect(() => {
+  if (realtimeUpdates.has('products')) {
+    console.log('🛍️ Real-time products update detected, refreshing data...');
+    fetchambherproducts(true); // Force refresh on real-time update
+  }
+}, [realtimeUpdates, fetchambherproducts]);
           
           
           
@@ -223,7 +288,6 @@ useEffect(() => {
           const [addambherinventoryproductquantity, setaddambherinventoryproductquantity] = useState();
           const [addambherinventoryproductimagepreviewimages, setaddambherinventoryproductimagepreviewimages] = useState([]);
           const [ambhercurrentimageindex, setambhercurrentimageindex] = useState(0);
-          const [selectedambherproduct, setselectedambherproduct] = useState(null);
   
 
 
@@ -287,6 +351,7 @@ const showbautistainventorycategory = (bautistainventorycategorytableid) => {
 };
 
 const [bautistainventorycategorylist, setbautistainventorycategorylist] = useState([]);
+const [bautistaloadingcategories, setbautistaloadingcategories] = useState(true);
 
           const[showpatientbautistaviewproduct, setshowpatientbautistaviewproduct] = useState(false);
           const[showpatientorderbautistascheduleandreview, setshowpatientorderbautistascheduleandreview] = useState(false);
@@ -299,7 +364,6 @@ const [bautistainventorycategorylist, setbautistainventorycategorylist] = useSta
           const [addbautistainventoryproductquantity, setaddbautistainventoryproductquantity] = useState();
           const [addbautistainventoryproductimagepreviewimages, setaddbautistainventoryproductimagepreviewimages] = useState([]);
           const [bautistacurrentimageindex, setbautistacurrentimageindex] = useState(0);
-          const [selectedbautistaproduct, setselectedbautistaproduct] = useState(null);
   
   const [bautistainventoryproducts, setbautistainventoryproducts] = useState([]);
   const [bautistaloadingproducts, setbautistaloadingproducts] = useState(true);
@@ -331,21 +395,24 @@ useEffect(() => {
 
 
 
-const fetchbautistainventorycategories = async () => {
+const fetchbautistainventorycategories = useCallback(async () => {
   try{
-    const response = await fetch(`/api/bautistainventorycategory`);
-    if(!response.ok) throw new Error("Failed to retrieve bautista inventory categories");
-
-    const data = await response.json();
-    setbautistainventorycategorylist(data);
+    setbautistaloadingcategories(true);
+    // Use cached category fetching
+    const data = await fetchBautistaCategories();
+    setbautistainventorycategorylist(data || []);
   }catch(error){
     console.error("Fetching bautistainventorycategory failed", error);
+  } finally {
+    setbautistaloadingcategories(false);
   }
-};
+}, []);
 
 useEffect(() => {
   fetchbautistainventorycategories();
 }, []);
+
+          const [selectedbautistaproduct, setselectedbautistaproduct] = useState(null);
 
 
 
@@ -354,31 +421,18 @@ useEffect(() => {
           
           //FETCHING PRODUCTS
           
-            const fetchbautistaproducts = async () => {
+            const fetchbautistaproducts = useCallback(async () => {
               try{
-                const response = await fetch(`/api/bautistainventoryproduct`, {
-                  headers:{
-                    'Authorization' : `Bearer ${localStorage.getItem("patienttoken")}`
-                  }
-                });
-                
-                if(!response.ok) throw new Error("Failed to fetch products");
-          
-                const data = await response.json();
-                setbautistainventoryproducts(data);
-                 setbautistaloadingproducts(false);
-
-                 //Fetch product wishlist counts
-                const productIds = data.map(p => p.bautistainventoryproductid).join(',');
-                const count = await fetchWishlistCounts(productIds, 'bautista');
-                setWishlistCounts(prev => ({...prev, [selectedbautistaproduct?.bautistainventoryproductid]:count}));
-
+                // Use cached product fetching
+                const data = await fetchBautistaProducts();
+                setbautistainventoryproducts(data || []);
+                setbautistaloadingproducts(false);
 
               }catch(error){
                 console.error("Failed fetching products: ", error);
                 setbautistaloadingproducts(false);
               }
-            };
+            }, []);
           
           
             useEffect(() => {
@@ -531,7 +585,8 @@ useEffect(() => {
 
 
 const [wishlistItems, setWishlistItems] = useState([]);
-const [wishlistCounts, setWishlistCounts] = useState({});
+// Wishlist count feature temporarily disabled to prevent infinite loop
+// const [wishlistCounts, setWishlistCounts] = useState({});
 
 
 
@@ -569,7 +624,7 @@ useEffect(() => {
       console.error("Error fetching wishlist products:", error);
     }
   }; fetchWishlistItems();
-}, [showpatientambherviewproduct, showpatientbautistaviewproduct]);
+}, [showpatientambherviewproduct, showpatientbautistaviewproduct, patientemail, selectedambherproduct, selectedbautistaproduct]);
 
 
 
@@ -680,9 +735,9 @@ const toggleWishlist = async (e) => {
         setbautistashowtoastmessageClosing(false);
       }
 
-      // Update wishlist count
-      const newCount = await fetchWishlistCounts(productId, isAmbher ? 'ambher' : 'bautista');
-      setWishlistCounts(prev => ({...prev, [productId]: newCount}));
+      // Wishlist count feature temporarily disabled to prevent infinite loop  
+      // const newCount = await fetchWishlistCounts(productId, isAmbher ? 'ambher' : 'bautista');
+      // setWishlistCounts(prev => ({...prev, [productId]: newCount}));
 
     } else {
       // Add to wishlist
@@ -719,9 +774,9 @@ const toggleWishlist = async (e) => {
         setbautistashowtoastmessageClosing(false);
       }
 
-      // Update wishlist count
-      const newCount = await fetchWishlistCounts(productId, isAmbher ? 'ambher' : 'bautista');
-      setWishlistCounts(prev => ({...prev, [productId]: newCount}));
+      // Wishlist count feature temporarily disabled to prevent infinite loop
+      // const newCount = await fetchWishlistCounts(productId, isAmbher ? 'ambher' : 'bautista');
+      // setWishlistCounts(prev => ({...prev, [productId]: newCount}));
     }
 
   } catch(error) {
@@ -754,56 +809,59 @@ const toggleWishlist = async (e) => {
 
 
 
-const fetchWishlistCounts = async (productIds, clinicType) => {
-  try {
-    // Convert to string if it's an array
-    const idsParam = Array.isArray(productIds) ? productIds.join(',') : productIds;
+// Temporarily disable wishlist count fetching to prevent infinite loop
+// const fetchWishlistCounts = async (productIds, clinicType) => {
+//   try {
+//     // Convert to string if it's an array
+//     const idsParam = Array.isArray(productIds) ? productIds.join(',') : productIds;
     
-    const response = await fetch(
-      `/api/patientwishlistinventoryproduct/wishlist-count/${idsParam}/${clinicType}`,
-      {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('patienttoken')}`
-        }
-      }
-    );
+//     const response = await fetch(
+//       `/api/patientwishlistinventoryproduct/wishlist-count/${idsParam}/${clinicType}`,
+//       {
+//         headers: {
+//           'Authorization': `Bearer ${localStorage.getItem('patienttoken')}`
+//         }
+//       }
+//     );
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || "Failed to fetch wishlist counts");
-    }
+//     if (!response.ok) {
+//       const errorData = await response.json();
+//       throw new Error(errorData.message || "Failed to fetch wishlist counts");
+//     }
 
-    const data = await response.json();
-    return data.count || 0;
-  } catch(error) {
-    console.error("Error fetching wishlist counts:", error);
-    return 0;
-  }
-};
+//     const data = await response.json();
+//     return data.count || 0;
+//   } catch(error) {
+//     console.error("Error fetching wishlist counts:", error);
+//     return 0;
+//   }
+// };
 
 
 
 //Automatically counts the wishlisted count per product in Ambher Optical
-useEffect(() => {
-  if(selectedambherproduct) {
-    const fetchCount = async () => {
-      const count = await fetchWishlistCounts(selectedambherproduct.ambherinventoryproductid, 'ambher');
-      setWishlistCounts(prev => ({...prev, [selectedambherproduct.ambherinventoryproductid]: count}));
-    };
-    fetchCount();
-  }
-}, [selectedambherproduct]);
+// Temporarily disabled to prevent infinite loop
+// useEffect(() => {
+//   if(selectedambherproduct) {
+//     const fetchCount = async () => {
+//       const count = await fetchWishlistCounts(selectedambherproduct.ambherinventoryproductid, 'ambher');
+//       setWishlistCounts(prev => ({...prev, [selectedambherproduct.ambherinventoryproductid]: count}));
+//     };
+//     fetchCount();
+//   }
+// }, [selectedambherproduct]);
 
 //Automatically counts the wishlisted count per product in Bautista Eye Center
-useEffect(() => {
-  if(selectedbautistaproduct) {
-    const fetchCount = async () => {
-      const count = await fetchWishlistCounts(selectedbautistaproduct.bautistainventoryproductid, 'bautista');
-      setWishlistCounts(prev => ({...prev, [selectedbautistaproduct.bautistainventoryproductid]: count}));
-    };
-    fetchCount();
-  }
-}, [selectedbautistaproduct]);
+// Temporarily disabled to prevent infinite loop
+// useEffect(() => {
+//   if(selectedbautistaproduct) {
+//     const fetchCount = async () => {
+//       const count = await fetchWishlistCounts(selectedbautistaproduct.bautistainventoryproductid, 'bautista');
+//       setWishlistCounts(prev => ({...prev, [selectedbautistaproduct.bautistainventoryproductid]: count}));
+//     };
+//     fetchCount();
+//   }
+// }, [selectedbautistaproduct]);
 
 
 
@@ -1402,13 +1460,23 @@ useEffect(() => {
     {localStorage.getItem("patienttoken") ? (
       <div id="profilecard" className="relative items-center justify-center flex">
         <div id="profile" onClick={showlogout} className="ml-3 flex justify-center items-center bg-[#fbfbfb00] border-2 border-gray-200 shadow-lg rounded-full hover:cursor-pointer hover:scale-105 transition-all">
-          <img src={patientprofilepicture || 'default-profile.png'} alt="Profile" className="h-13 w-13 rounded-full"/>
+          {!patientprofilepicture ? (
+            // Skeleton loading for navbar profile picture
+            <div className="h-13 w-13 rounded-full bg-gray-300 animate-pulse"></div>
+          ) : (
+            <img src={patientprofilepicture || 'default-profile.png'} alt="Profile" className="h-13 w-13 rounded-full"/>
+          )}
         </div>
 
         {showlogoutbtn && (
           <div className="w-75 flex-col p-5 motion-preset-fade absolute top-full mt-2 z-[9999] flex justify-center items-start bg-[#ffffff] rounded-2xl hover:cursor-pointer transition-all shadow-lg">
             <div className="hover:bg-[#f7f7f7] transition-all duration-300 ease-in-out py-2 px-1 rounded-2xl gap-3 flex items-center h-auto w-full">
-              <img src={patientprofilepicture} className="w-12 rounded-full"/>
+              {!patientprofilepicture ? (
+                // Skeleton loading for dropdown profile picture
+                <div className="w-12 h-12 rounded-full bg-gray-300 animate-pulse"></div>
+              ) : (
+                <img src={patientprofilepicture} className="w-12 rounded-full"/>
+              )}
               <h1 className="font-albertsans font-semibold text-[19px]">{patientfirstname}</h1>
             </div>
             <div className="border-b-2 rounded-full border-[#747474] h-1 w-full my-1"></div>
@@ -1506,14 +1574,17 @@ useEffect(() => {
 
                 <div onClick={() => showambherinventorycategory('all')}  className={`mt-3 hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 py-2 text-center flex justify-center items-center ${activeambherinventorycategorytable ==='all' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#1f1f1f] ${activeambherinventorycategorytable ==='all' ? 'text-white' : ''}`}>All</h1><span className="bg-gray-200 text-gray-500 font-semibold px-2 rounded-full ml-2 text-sm">{ambherinventoryproducts.length}</span></div>
 
-
-                {ambherinventorycategorylist.map(category => {
-                  const productcount = ambherinventoryproducts.filter(product =>
-                    product.ambherinventoryproductcategory === category.ambherinventorycategoryname).length;
-                  return(
-                  <div key={category._id} onClick={() => setactiveambherinventorycategorytable(category.ambherinventorycategoryname)}  className={`mt-3 hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl  py-2 text-center flex justify-center items-center ${activeambherinventorycategorytable ===category.ambherinventorycategoryname ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#1f1f1f] ${activeambherinventorycategorytable ===category.ambherinventorycategoryname ? 'text-white' : 'text-[#1f1f1f]'}`}>{category.ambherinventorycategoryname}</h1><span className="bg-gray-200 text-gray-500 font-semibold px-2 rounded-full ml-2 text-sm">{productcount}</span></div>
-                  )
-                })}
+                {ambherloadingcategories ? (
+                  <CategorySkeleton />
+                ) : (
+                  ambherinventorycategorylist.map(category => {
+                    const productcount = ambherinventoryproducts.filter(product =>
+                      product.ambherinventoryproductcategory === category.ambherinventorycategoryname).length;
+                    return(
+                    <div key={category._id} onClick={() => setactiveambherinventorycategorytable(category.ambherinventorycategoryname)}  className={`mt-3 hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl  py-2 text-center flex justify-center items-center ${activeambherinventorycategorytable ===category.ambherinventorycategoryname ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#1f1f1f] ${activeambherinventorycategorytable ===category.ambherinventorycategoryname ? 'text-white' : 'text-[#1f1f1f]'}`}>{category.ambherinventorycategoryname}</h1><span className="bg-gray-200 text-gray-500 font-semibold px-2 rounded-full ml-2 text-sm">{productcount}</span></div>
+                    )
+                  })
+                )}
 
                 <div className=" pb-3 flex items center w-full mt-7"><i className="bx bx-filter font-albertsans font-semibold text-[#363636] text-[25px]" /><h1 className="ml-2 text-[16px] font-albertsans font-semibold text-[#363636]">Filter by price</h1></div>
                 <div onClick={() => setpricesortingProducts('Highesttolowest')}    className={`mt-3 hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl   py-2 text-center flex justify-center items-center ${pricesortingProducts === 'Highesttolowest' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#1f1f1f] ${pricesortingProducts === 'Highesttolowest' ? 'text-white' : 'text-[#1f1f1f]'}`}>Highest to Lowest</h1></div>
@@ -1527,9 +1598,11 @@ useEffect(() => {
               <div className=" w-[100%] rounded-2xl h-auto  flex flex-wrap content-start gap-3 pl-2 pt-2 ">
               <div className="flex flex-wrap p-4">
                 {ambherloadingproducts ? (
-                  <div>Loading Ambher Products...</div> 
+                  <ProductGridSkeleton />
                 ): ambherinventoryproducts.length === 0 ? (
-                  <div>No Products Found...</div> 
+                  <div className="w-full text-center py-8">
+                    <p className="text-gray-500 text-lg">No Products Found...</p>
+                  </div>
                 ):(
                     ambherfilteredproducts().sort((a, b) => {
                     if (a.ambherinventoryproductquantity === 0 && b.ambherinventoryproductquantity !== 0) return 1;
@@ -1638,7 +1711,7 @@ useEffect(() => {
 
                                 <div className="flex items-center justify-end">
                                  <img  src={getambherHeartImage()} onClick={ambherhearthandleClick} onMouseEnter={() => !ambherheartisClicked && setambherheartisHovered(true)} onMouseLeave={() => !ambherheartisClicked && setambherheartisHovered(false)}  className={` ease-in-out duration-300 transition-all  border-1  w-10 h-10 p-2 rounded-2xl cursor-pointer ${ambherheartisClicked ? "bg-red-400" : "hover:bg-red-400"}`}/>
-                                 <h1 className="ml-2 text-[17px] font-semibold text-[#383838]">Wishlist ({wishlistCounts[selectedambherproduct?.ambherinventoryproductid] || 0})</h1>     
+                                 <h1 className="ml-2 text-[17px] font-semibold text-[#383838]">Wishlist</h1>     
                                 </div>
                                  )}
 
@@ -1807,16 +1880,21 @@ useEffect(() => {
         
                 <div className=" pb-3 flex items center w-full mt-7"><i className="bx bx-filter font-albertsans font-semibold text-[#363636] text-[25px]" /><h1 className="ml-2 text-[16px] font-albertsans font-semibold text-[#363636]">Filter by category</h1></div>
 
-                <div onClick={() => showbautistainventorycategory('all')}  className={`mt-3 hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 py-2 text-center flex justify-center items-center ${activebautistainventorycategorytable ==='all' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#1f1f1f] ${activebautistainventorycategorytable ==='all' ? 'text-white' : ''}`}>All</h1><span className="bg-gray-200 text-gray-500 font-semibold px-2 rounded-full ml-2 text-sm">{bautistainventoryproducts.length}</span></div>
+                {bautistaloadingcategories ? (
+                  <CategorySkeleton />
+                ) : (
+                  <>
+                    <div onClick={() => showbautistainventorycategory('all')}  className={`mt-3 hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 py-2 text-center flex justify-center items-center ${activebautistainventorycategorytable ==='all' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#1f1f1f] ${activebautistainventorycategorytable ==='all' ? 'text-white' : ''}`}>All</h1><span className="bg-gray-200 text-gray-500 font-semibold px-2 rounded-full ml-2 text-sm">{bautistainventoryproducts.length}</span></div>
 
-
-                {bautistainventorycategorylist.map(category => {
-                  const productcount = bautistainventoryproducts.filter(product =>
-                    product.bautistainventoryproductcategory === category.bautistainventorycategoryname).length;
-                  return(
-                  <div key={category._id} onClick={() => setactivebautistainventorycategorytable(category.bautistainventorycategoryname)}  className={`mt-3 hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl    py-2 text-center flex justify-center items-center ${activebautistainventorycategorytable ===category.bautistainventorycategoryname ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#1f1f1f] ${activebautistainventorycategorytable ===category.bautistainventorycategoryname ? 'text-white' : 'text-[#1f1f1f]'}`}>{category.bautistainventorycategoryname}</h1><span className="bg-gray-200 text-gray-500 font-semibold px-2 rounded-full ml-2 text-sm">{productcount}</span></div>
-                  )
-                })}
+                    {bautistainventorycategorylist.map(category => {
+                      const productcount = bautistainventoryproducts.filter(product =>
+                        product.bautistainventoryproductcategory === category.bautistainventorycategoryname).length;
+                      return(
+                      <div key={category._id} onClick={() => setactivebautistainventorycategorytable(category.bautistainventorycategoryname)}  className={`mt-3 hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl    py-2 text-center flex justify-center items-center ${activebautistainventorycategorytable ===category.bautistainventorycategoryname ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#1f1f1f] ${activebautistainventorycategorytable ===category.bautistainventorycategoryname ? 'text-white' : 'text-[#1f1f1f]'}`}>{category.bautistainventorycategoryname}</h1><span className="bg-gray-200 text-gray-500 font-semibold px-2 rounded-full ml-2 text-sm">{productcount}</span></div>
+                      )
+                    })}
+                  </>
+                )}
 
 
                 <div className=" pb-3 flex items center w-full mt-7"><i className="bx bx-filter font-albertsans font-semibold text-[#363636] text-[25px]" /><h1 className="ml-2 text-[16px] font-albertsans font-semibold text-[#363636]">Filter by price</h1></div>
@@ -1838,9 +1916,11 @@ useEffect(() => {
 
               <div className="flex flex-wrap p-4">
                 {bautistaloadingproducts ? (
-                  <div>Loading bautista Products...</div> 
+                  <ProductGridSkeleton />
                 ): bautistainventoryproducts.length === 0 ? (
-                  <div>No Products Found...</div> 
+                  <div className="w-full text-center py-8">
+                    <p className="text-gray-500 text-lg">No Products Found...</p>
+                  </div>
                 ):(
                     bautistafilteredproducts().sort((a, b) => {
                     if (a.bautistainventoryproductquantity === 0 && b.bautistainventoryproductquantity !== 0) return 1;
@@ -1926,7 +2006,7 @@ useEffect(() => {
                                 <div className="flex items-center justify-end">
                                 
                                  <img  src={getbautistaHeartImage()} onClick={bautistahearthandleClick} onMouseEnter={() => !bautistaheartisClicked && setbautistaheartisHovered(true)} onMouseLeave={() => !bautistaheartisClicked && setbautistaheartisHovered(false)}  className={` ease-in-out duration-300 transition-all  border-1  w-10 h-10 p-2 rounded-2xl cursor-pointer ${bautistaheartisClicked ? "bg-red-400" : "hover:bg-red-400"}`}/>
-                                   <h1 className="ml-2 text-[17px] font-semibold text-[#383838]">Wishlist ({wishlistCounts[selectedbautistaproduct?.bautistainventoryproductid] || 0})</h1>         
+                                   <h1 className="ml-2 text-[17px] font-semibold text-[#383838]">Wishlist</h1>         
                                 </div>
                                 <img  className="mt-2 w-120 object-cover rounded-2xl h-120" src={(selectedbautistaproduct?.bautistainventoryproductimagepreviewimages?.[bautistacurrentimageindex]) || (addbautistainventoryproductimagepreviewimages?.[bautistacurrentimageindex]) || defaultimageplaceholder}/>
 

@@ -57,12 +57,15 @@
     //Get Appointment By Email
     export const getappointmentsbyemail = async (req, res) => {
         try{
+            // Optimized query with lean() for better performance
             const patientappointmentsbyemail = await PatientAppointment.find({
                 patientappointmentemail: req.params.email
-            }).sort({patientappointmentid: -1});
+            })
+            .sort({patientappointmentid: -1})
+            .lean(); // Returns plain JavaScript objects instead of Mongoose documents
 
 
-            if(!patientappointmentsbyemail || patientappointmentsbyemail === 0){
+            if(!patientappointmentsbyemail || patientappointmentsbyemail.length === 0){
                 return res.status(404).json({message: "No appointments found in this email"});  
             }
 

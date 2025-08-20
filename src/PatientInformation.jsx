@@ -207,6 +207,7 @@ function PatientInformation(){
 
   const [isexistingdemographic, setisexistingdemographic] = useState(false);
   const [demographicid, setdemographicid] = useState(null);
+  const [isloadingdemographic, setisloadingdemographic] = useState(true);
 
 
 
@@ -214,39 +215,53 @@ function PatientInformation(){
 //LOADING PATIENT DEMOGRAPHIC DATA OR IF NOT IT WILL BE A CREATION OF DEMOGRAPHIC DATA
   useEffect(() => {
     const loadpatientaccount = async () => {
-      const patientdata = await fetchpatientdetails();
+      try {
+        setisloadingdemographic(true);
+        console.log('Starting to load patient account...');
+        const patientdata = await fetchpatientdetails();
+        console.log('Patient data received:', patientdata);
 
-      if(patientdata){
-        setpatientfirstname(patientdata.patientfirstname || '');
-        setpatientprofilepicture(patientdata.patientprofilepicture || '');
-        setpatientemail(patientdata.patientemail || '');
+        if(patientdata){
+          setpatientfirstname(patientdata.patientfirstname || '');
+          setpatientprofilepicture(patientdata.patientprofilepicture || '');
+          setpatientemail(patientdata.patientemail || '');
 
-        const demographicdata = await fetchpatientdemographicbyemail(patientdata.patientemail);
-        if(demographicdata){
-          setdemographicid(demographicdata._id);
-          setisexistingdemographic(true);
-          setdemographicformdata(prev => ({
-            ...prev,
-            ...demographicdata,
-            patientemail: patientdata.patientemail,
-          }));
-
-
-          if(demographicdata.patientprofilepicture) {
-            setpreviewimage(demographicdata.patientprofilepicture);
-          }
+          console.log('Fetching demographic data for email:', patientdata.patientemail);
+          const demographicdata = await fetchpatientdemographicbyemail(patientdata.patientemail);
+          console.log('Demographic data received:', demographicdata);
           
-        }else{
-          setisexistingdemographic(false);
-          setdemographicformdata(prev => ({
-            ...prev,
-            patientemail: patientdata.patientemail,
-            patientfirstname: patientdata.patientfirstname || '',
-            patientlastname: patientdata.patientlastname || '',
-            patientmiddlename: patientdata.patientmiddlname || '',
-            patientprofilepicture: patientdata.patientprofilepicture || ''
-          }));
+          if(demographicdata){
+            setdemographicid(demographicdata._id);
+            setisexistingdemographic(true);
+            setdemographicformdata(prev => ({
+              ...prev,
+              ...demographicdata,
+              patientemail: patientdata.patientemail,
+            }));
+
+            if(demographicdata.patientprofilepicture) {
+              setpreviewimage(demographicdata.patientprofilepicture);
+            }
+            
+          }else{
+            console.log('No demographic data found, setting up for new profile creation');
+            setisexistingdemographic(false);
+            setdemographicformdata(prev => ({
+              ...prev,
+              patientemail: patientdata.patientemail,
+              patientfirstname: patientdata.patientfirstname || '',
+              patientlastname: patientdata.patientlastname || '',
+              patientmiddlename: patientdata.patientmiddlename || '',
+              patientprofilepicture: patientdata.patientprofilepicture || ''
+            }));
+          }
+        } else {
+          console.log('No patient data received');
         }
+      } catch (error) {
+        console.error('Error loading patient account:', error);
+      } finally {
+        setisloadingdemographic(false);
       }
     };
       loadpatientaccount();
@@ -485,7 +500,12 @@ const submitpatientdemographic = async (e) => {
       
     <div id="profilecard" className="relative items-center justify-center flex">
     <div id="profile" onClick={showlogout}  className="ml-3  flex justify-center items-center bg-[#fbfbfb00] border-2 border-gray-200  shadow-lg  rounded-full hover:cursor-pointer hover:scale-105 transition-all">
-     <img src={patientprofilepicture || 'default-profile.png'} alt="Profile" className="h-13 w-13 rounded-full"></img>
+     {!patientprofilepicture ? (
+       // Skeleton loading for navbar profile picture
+       <div className="h-13 w-13 rounded-full bg-gray-300 animate-pulse"></div>
+     ) : (
+       <img src={patientprofilepicture || 'default-profile.png'} alt="Profile" className="h-13 w-13 rounded-full"></img>
+     )}
     </div>
 
 {showlogoutbtn && (
@@ -493,7 +513,12 @@ const submitpatientdemographic = async (e) => {
 
 
       <div className="hover:bg-[#f7f7f7] transition-all duration-300 ease-in-out py-2 px-1 rounded-2xl  gap-3 flex items-center h-auto w-full ">
-        <img src={patientprofilepicture}  className="w-12 rounded-full"/>
+        {!patientprofilepicture ? (
+          // Skeleton loading for dropdown profile picture
+          <div className="w-12 h-12 rounded-full bg-gray-300 animate-pulse"></div>
+        ) : (
+          <img src={patientprofilepicture}  className="w-12 rounded-full"/>
+        )}
         <h1 className="font-albertsans font-semibold text-[19px]">{patientfirstname}</h1>
       </div>
       <div className="border-b-2 rounded-full border-[#747474] h-1 w-full my-1">
@@ -600,6 +625,88 @@ const submitpatientdemographic = async (e) => {
 {/* Patient Demographic Form */} {/* Patient Demographic Form */}  {/* Patient Demographic Form */}  {/* Patient Demographic Form */}  {/* Patient Demographic Form */} 
 
                     <div id="patientdemographicform" className=" h-[760px] mt-5 overflow-y-auto max-h-[750px]" style={{display: activeForm === "patientdemographic" ? "block" : "none"}}>
+                    
+                    {isloadingdemographic ? (
+                      // Skeleton Loading State
+                      <div className="animate-pulse">
+                        <div className="mt-5 flex">
+                          {/* Profile Picture Skeleton */}
+                          <div className="w-60 h-60 ml-10">
+                            <div className="h-60 w-60 bg-gray-300 rounded-full"></div>
+                            <div className="mt-5 h-12 bg-gray-300 rounded-2xl"></div>
+                          </div>
+
+                          {/* Form Fields Skeleton */}
+                          <div className="ml-15 flex-1">
+                            {/* Last Name Field */}
+                            <div className="h-fit form-group">
+                              <div className="h-6 w-32 bg-gray-300 rounded mb-2"></div>
+                              <div className="w-120 h-8 bg-gray-200 rounded"></div>
+                            </div>
+
+                            {/* First Name Field */}
+                            <div className="h-fit form-group mt-5">
+                              <div className="h-6 w-32 bg-gray-300 rounded mb-2"></div>
+                              <div className="w-120 h-8 bg-gray-200 rounded"></div>
+                            </div>
+
+                            {/* Middle Name Field */}
+                            <div className="h-fit form-group mt-5">
+                              <div className="h-6 w-36 bg-gray-300 rounded mb-2"></div>
+                              <div className="w-112 h-8 bg-gray-200 rounded"></div>
+                            </div>
+
+                            {/* Birthdate and Age Fields */}
+                            <div className="mt-5 flex items-center">
+                              <div className="">
+                                <div className="h-6 w-24 bg-gray-300 rounded mb-2"></div>
+                                <div className="w-38 h-8 bg-gray-200 rounded"></div>
+                              </div>
+                              <div className="ml-15">
+                                <div className="h-6 w-16 bg-gray-300 rounded mb-2"></div>
+                                <div className="w-32 h-8 bg-gray-200 rounded"></div>
+                              </div>
+                            </div>
+
+                            {/* Gender Field */}
+                            <div className="h-fit form-group mt-5">
+                              <div className="h-6 w-20 bg-gray-300 rounded mb-2"></div>
+                              <div className="w-48 h-8 bg-gray-200 rounded"></div>
+                            </div>
+
+                            {/* Contact Number Field */}
+                            <div className="h-fit form-group mt-5">
+                              <div className="h-6 w-40 bg-gray-300 rounded mb-2"></div>
+                              <div className="w-104 h-8 bg-gray-200 rounded"></div>
+                            </div>
+
+                            {/* Home Address Field */}
+                            <div className="h-fit form-group mt-5">
+                              <div className="h-6 w-36 bg-gray-300 rounded mb-2"></div>
+                              <div className="w-104 h-8 bg-gray-200 rounded"></div>
+                            </div>
+
+                            {/* Emergency Contact Name Field */}
+                            <div className="h-fit form-group mt-20">
+                              <div className="h-6 w-52 bg-gray-300 rounded mb-2"></div>
+                              <div className="w-90 h-8 bg-gray-200 rounded"></div>
+                            </div>
+
+                            {/* Emergency Contact Number Field */}
+                            <div className="h-fit form-group mt-5">
+                              <div className="h-6 w-56 bg-gray-300 rounded mb-2"></div>
+                              <div className="w-84 h-8 bg-gray-200 rounded"></div>
+                            </div>
+
+                            {/* Submit Button Skeleton */}
+                            <div className="mt-15">
+                              <div className="w-full h-12 bg-gray-300 rounded-2xl mt-12"></div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      // Actual Form
                     <form onSubmit={submitpatientdemographic}>
                     
                       <div className=" mt-5 flex ">
@@ -708,6 +815,7 @@ const submitpatientdemographic = async (e) => {
                     
   
                      </form>
+                     )}
                     </div>
 
 

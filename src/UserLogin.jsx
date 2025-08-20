@@ -1,6 +1,6 @@
 
 import React from "react";
-import {useState } from 'react';
+import {useState } from "react";
 import { useNavigate } from "react-router-dom";
 import landingbg2 from "../src/assets/images/landingbg2.png";
 import landinglogodark from  "../src/assets/images/landinglogodark.png";
@@ -56,18 +56,31 @@ const handleloginsubmit = async (e) => {
   setloginnotice({ text: '', type: '' });
 
   try {
-    // Use relative URLs
+    // Use relative URLs with proper error handling
     const patientemailcheck = await fetch(`/api/patientaccounts/check-email/${logindetails.loginemail}`);
-    const patientemailexist = await patientemailcheck.json();
+    if (!patientemailcheck.ok) {
+      console.error(`Patient email check failed: ${patientemailcheck.status}`);
+      // Skip patient check if server error, continue with other checks
+    }
+    const patientemailexist = patientemailcheck.ok ? await patientemailcheck.json() : { exists: false };
 
     const staffemailcheck = await fetch(`/api/staffaccounts/check-email/${logindetails.loginemail}`);
-    const staffemailexist = await staffemailcheck.json();
+    if (!staffemailcheck.ok) {
+      console.error(`Staff email check failed: ${staffemailcheck.status}`);
+    }
+    const staffemailexist = staffemailcheck.ok ? await staffemailcheck.json() : { exists: false };
 
     const owneremailcheck = await fetch(`/api/owneraccounts/check-email/${logindetails.loginemail}`);
-    const owneremailexist = await owneremailcheck.json();
+    if (!owneremailcheck.ok) {
+      console.error(`Owner email check failed: ${owneremailcheck.status}`);
+    }
+    const owneremailexist = owneremailcheck.ok ? await owneremailcheck.json() : { exists: false };
 
     const adminemailcheck = await fetch(`/api/adminaccounts/check-email/${logindetails.loginemail}`);
-    const adminemailexist = await adminemailcheck.json();
+    if (!adminemailcheck.ok) {
+      console.error(`Admin email check failed: ${adminemailcheck.status}`);
+    }
+    const adminemailexist = adminemailcheck.ok ? await adminemailcheck.json() : { exists: false };
 
     if (!patientemailexist.exists && !adminemailexist.exists && !staffemailexist.exists && !owneremailexist.exists) {
       throw new Error("Email does not exist");

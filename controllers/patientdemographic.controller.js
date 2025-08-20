@@ -1,6 +1,7 @@
   /* eslint-disable no-undef */   
   import Patientdemographic from "../models/patientdemographic.js";
   import Patientaccount from "../models/patientaccount.js";
+  import jwt from "jsonwebtoken";
   import dotenv from "dotenv";
   import { Trophy } from "lucide-react";
 
@@ -117,12 +118,19 @@
   export const getpatientdemographicbyemail = async (req, res) => {
     try{
       const {patientemail} = req.params;
+      
+      // Verify that the logged-in patient is requesting their own demographic data
+      if (req.patient.email !== patientemail) {
+        return res.status(403).json({
+          message: "Access denied. You can only access your own demographic data."
+        });
+      }
+      
       const patientdemo = await Patientdemographic.findOne({patientemail: patientemail});
 
-
       if(!patientdemo){
-        return res.status(400).json({
-          message:"Patient don't have an existing demographic profile"
+        return res.status(404).json({
+          message:"Patient doesn't have an existing demographic profile"
         });
       }
 

@@ -132,9 +132,11 @@ export const useAuth = () => {
             demographicCacheRef.current[email]?.data && 
             demographicCacheRef.current[email]?.token === token && 
             now - demographicCacheRef.current[email]?.time < 300000) {
+            console.log(`🚀 CACHE HIT: Patient demographics loaded instantly from cache for ${email}`);
             return demographicCacheRef.current[email].data;
         }
 
+        console.log(`📡 CACHE MISS: Fetching fresh patient demographics for ${email}`);
         try {
             const response = await axios.get(
                 `/api/patientdemographics/patientemail/${email}`,

@@ -270,4 +270,9 @@ PatientAppointmentSchema.post('save', function(error, doc, next){
         }
 });
 
+// Create indexes for better query performance
+PatientAppointmentSchema.index({ patientappointmentemail: 1 });
+PatientAppointmentSchema.index({ patientappointmentid: -1 });
+PatientAppointmentSchema.index({ patientappointmentemail: 1, patientappointmentid: -1 });
+
 export default mongoose.model("PatientAppointment", PatientAppointmentSchema);

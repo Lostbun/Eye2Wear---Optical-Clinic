@@ -1,8 +1,10 @@
-  import React, {useState, useEffect} from "react";
+  import React, {useState, useEffect, useCallback} from "react";
   import {Link} from "react-router-dom";
   import navlogo from  "../src/assets/images/navlogo.png";
   import heart from "../src/assets/images/heart.png";
   import { useAuth } from "./hooks/patientuseAuth";
+  import useApiService from "./hooks/useApiService";
+  import useSmartCache from "./hooks/useSmartCache";
   import starimage from "../src/assets/images/star.png"
   import defaultimageplaceholder from "../src/assets/images/defaultimageplaceholder.png";
   import heartblack from "../src/assets/images/heartblack.png";
@@ -19,6 +21,41 @@
   import Stack from '@mui/material/Stack';
 import inquire from "../src/assets/images/inquire.png";
 import find from "../src/assets/images/find.png";
+
+// Skeleton component for wishlist items
+const WishlistSkeleton = () => (
+  <div className="motion-preset-slide-up mr-3 mb-3 flex flex-col items-start justify-start w-[220px] h-auto shadow-md bg-white rounded-2xl animate-pulse relative">
+    {/* Product image skeleton - matches h-45 */}
+    <div className="w-full h-45 bg-gray-300 rounded-t-2xl"></div>
+    
+    {/* Heart icon skeleton in top-right */}
+    <div className="absolute right-0 w-10 h-10 p-2 rounded-2xl bg-gray-300"></div>
+    
+    {/* Category tag skeleton - matches bg-[#F0F6FF] style */}
+    <div className="mx-1 w-fit rounded-md py-1 px-2 mt-2 bg-gray-200 h-6 min-w-[60px]"></div>
+    
+    {/* Product name skeleton - matches ml-2 mt-2 layout */}
+    <div className="w-full h-auto ml-2 mt-2 mr-2">
+      <div className="h-5 bg-gray-300 rounded w-full max-w-[180px]"></div>
+    </div>
+    
+    {/* Price skeleton - matches font-bold text-[18px] */}
+    <div className="w-fit h-auto ml-2 mt-1">
+      <div className="h-6 bg-gray-300 rounded w-20"></div>
+    </div>
+    
+    {/* Bottom padding to match layout */}
+    <div className="mb-5"></div>
+  </div>
+);
+
+const WishlistGridSkeleton = () => (
+  <div className="flex flex-wrap p-4">
+    {[...Array(6)].map((_, index) => (
+      <WishlistSkeleton key={index} />
+    ))}
+  </div>
+);
 
 
 
@@ -43,6 +80,14 @@ import find from "../src/assets/images/find.png";
 
 
   const {handlelogout, fetchpatientdetails} = useAuth();
+
+  const {
+    fetchWishlist,
+    invalidateWishlistData
+  } = useApiService();
+
+  // Smart caching with real-time updates
+  const { smartFetch, realtimeUpdates, CACHE_DURATIONS } = useSmartCache();
 
     //Retrieveing Data from useAuth Hook
     useEffect(() => {
@@ -452,51 +497,67 @@ import find from "../src/assets/images/find.png";
 
 
   //Automatically counts the wishlisted count per product in Ambher Optical
-  useEffect(() => {
-    if(selectedambherproduct) {
-      const fetchCount = async () => {
-        const count = await fetchWishlistCounts(selectedambherproduct.ambherinventoryproductid, 'ambher');
-        setWishlistCounts(prev => ({...prev, [selectedambherproduct.ambherinventoryproductid]: count}));
-      };
-      fetchCount();
-    }
-  }, [selectedambherproduct]);
+  // DISABLED to prevent infinite loops - causing browser freeze
+  // useEffect(() => {
+  //   if(selectedambherproduct) {
+  //     const fetchCount = async () => {
+  //       const count = await fetchWishlistCounts(selectedambherproduct.ambherinventoryproductid, 'ambher');
+  //       setWishlistCounts(prev => ({...prev, [selectedambherproduct.ambherinventoryproductid]: count}));
+  //     };
+  //     fetchCount();
+  //   }
+  // }, [selectedambherproduct]);
 
   //Automatically counts the wishlisted count per product in Bautista Eye Center
-  useEffect(() => {
-    if(selectedbautistaproduct) {
-      const fetchCount = async () => {
-        const count = await fetchWishlistCounts(selectedbautistaproduct.bautistainventoryproductid, 'bautista');
-        setWishlistCounts(prev => ({...prev, [selectedbautistaproduct.bautistainventoryproductid]: count}));
-      };
-      fetchCount();
+  // DISABLED to prevent infinite loops - causing browser freeze
+  // useEffect(() => {
+  //   if(selectedbautistaproduct) {
+  //     const fetchCount = async () => {
+  //       const count = await fetchWishlistCounts(selectedbautistaproduct.bautistainventoryproductid, 'bautista');
+  //       setWishlistCounts(prev => ({...prev, [selectedbautistaproduct.bautistainventoryproductid]: count}));
+  //     };
+  //     fetchCount();
+  //   }
+  // }, [selectedbautistaproduct]);
+
+
+
+  // Smart cached wishlist fetching with real-time updates
+  const fetchWishlistData = useCallback(async (forceRefresh = false) => {
+    try {
+      setLoadingWishlist(true);
+      console.log('💙 Fetching wishlist data...', { forceRefresh });
+      
+      // Use smart cached wishlist fetching
+      const data = await smartFetch(
+        'wishlistData',
+        () => fetchWishlist(),
+        CACHE_DURATIONS.wishlist,
+        forceRefresh
+      );
+      
+      console.log('💙 Wishlist data received:', data?.length || 0, 'items');
+      setAmbherWishlist(data.filter(item => item.clinicType === "ambher"));
+      setBautistaWishlist(data.filter(item => item.clinicType === "bautista"));
+    } catch (error) {
+      console.error("Error fetching wishlist items: ", error);
+    } finally {
+      setLoadingWishlist(false);
     }
-  }, [selectedbautistaproduct]);
-
-
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [smartFetch, CACHE_DURATIONS]);
 
   useEffect(() => {
-    const fetchWishlist = async () => {
-      try {
-        const response = await fetch(`/api/patientwishlistinventoryproduct/email`, {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('patienttoken')}`
-          }
-        });
+    fetchWishlistData();
+  }, [fetchWishlistData]);
 
-        if(response.ok) {
-          const data = await response.json();
-          setAmbherWishlist(data.filter(item => item.clinicType === "ambher"));
-          setBautistaWishlist(data.filter(item => item.clinicType === "bautista"));
-        }
-      } catch (error) {
-        console.error("Error fetching wishlist items: ", error);
-      } finally {
-        setLoadingWishlist(false);
-      }
-    };
-    fetchWishlist();
-  }, []);
+  // Listen for real-time wishlist updates
+  useEffect(() => {
+    if (realtimeUpdates.has('wishlist')) {
+      console.log('❤️ Real-time wishlist update detected, refreshing data...');
+      fetchWishlistData(true); // Force refresh on real-time update
+    }
+  }, [realtimeUpdates, fetchWishlistData]);
 
 
 
@@ -521,6 +582,9 @@ import find from "../src/assets/images/find.png";
       } else {
         setBautistaWishlist(prev => prev.filter(item => item._id !== wishlistItemId));
       }
+      
+      // Invalidate wishlist cache to ensure fresh data
+      invalidateWishlistData();
       
       // Show success toast
       setambhershowtoastMessage("Removed from Wishlist");
@@ -902,10 +966,6 @@ import find from "../src/assets/images/find.png";
 
 
 
-
-
-
-
     return (
       <>
 
@@ -946,7 +1006,12 @@ import find from "../src/assets/images/find.png";
         
       <div id="profilecard" className="relative items-center justify-center flex">
       <div id="profile" onClick={showlogout}  className="ml-3  flex justify-center items-center bg-[#fbfbfb00] border-2 border-gray-200  shadow-lg  rounded-full hover:cursor-pointer hover:scale-105 transition-all">
-      <img src={patientprofilepicture || 'default-profile.png'} alt="Profile" className="h-13 w-13 rounded-full"></img>
+      {!patientprofilepicture ? (
+        // Skeleton loading for navbar profile picture
+        <div className="h-13 w-13 rounded-full bg-gray-300 animate-pulse"></div>
+      ) : (
+        <img src={patientprofilepicture || 'default-profile.png'} alt="Profile" className="h-13 w-13 rounded-full"></img>
+      )}
       </div>
 
   {showlogoutbtn && (
@@ -954,7 +1019,12 @@ import find from "../src/assets/images/find.png";
 
 
         <div className="hover:bg-[#f7f7f7] transition-all duration-300 ease-in-out py-2 px-1 rounded-2xl  gap-3 flex items-center h-auto w-full ">
-          <img src={patientprofilepicture}  className="w-12 rounded-full"/>
+          {!patientprofilepicture ? (
+            // Skeleton loading for dropdown profile picture
+            <div className="w-12 h-12 rounded-full bg-gray-300 animate-pulse"></div>
+          ) : (
+            <img src={patientprofilepicture}  className="w-12 rounded-full"/>
+          )}
           <h1 className="font-albertsans font-semibold text-[19px]">{patientfirstname}</h1>
         </div>
         <div className="border-b-2 rounded-full border-[#747474] h-1 w-full my-1">
@@ -1032,7 +1102,10 @@ import find from "../src/assets/images/find.png";
 
                 <div id="inventorymanagement" className="pl-5 pr-5 pb-4 pt-4  transition-all duration-300  ease-in-out  w-[100%] h-full bg-white " >   
 
-                <div className=" flex items-center mt-8"><img src={heart} className="w-7 mr-2"/><h1 className=" font-albertsans font-bold text-[#184d85] text-[25px]">My Wishlist</h1></div>
+                <div className=" flex items-center mt-8">
+                  <img src={heart} className="w-7 mr-2"/>
+                  <h1 className=" font-albertsans font-bold text-[#184d85] text-[25px]">My Wishlist</h1>
+                </div>
 
     <div className="flex justify-start items-center mt-3 h-[60px]">
   {/*<div onClick={() => showinventorytable('allinventorytable')}  className={`hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 pb-3 pt-3 text-center flex justify-center items-center ${activeinventorytable ==='allinventorytable' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d] ${activeinventorytable ==='allinventorytable' ? 'text-white' : ''}`}>All</h1></div>*/}
@@ -1058,7 +1131,7 @@ import find from "../src/assets/images/find.png";
 
                 <div className="flex flex-wrap p-4">
           {loadingWishlist ? (
-            <div>Loading Ambher Optical Wishlists...</div>
+            <WishlistGridSkeleton />
           ) : ambherWishlist.length === 0 ? (
             <div className="w-[90vw] h-[50vh] flex justify-center flex-col items-center "><img src={heartempty} className="w-17 h-17 mb-3"/><h1 className="font-semibold text-[25px]">Your wishlist is empty</h1><p className="text-[#4e4e4e] mb-5">Start adding items you love to keep track of them</p><Link to="/patientproducts"><div className="text-[15px] p-3 bg-[#2781af] text-white  hover:scale-105 rounded-md transition-all cursor-pointer">Continue Shopping</div></Link></div>
           ) : (
@@ -1329,7 +1402,7 @@ import find from "../src/assets/images/find.png";
 
                 <div className="flex flex-wrap p-4">
           {loadingWishlist ? (
-            <div>Loading Bautista Eye Center Wishlists...</div>
+            <WishlistGridSkeleton />
           ) : bautistaWishlist.length === 0 ? (
             <div className="w-[90vw] h-[50vh] flex justify-center flex-col items-center "><img src={heartempty} className="w-17 h-17 mb-3"/><h1 className="font-semibold text-[25px]">Your wishlist is empty</h1><p className="text-[#4e4e4e] mb-5">Start adding items you love to keep track of them</p><Link to="/patientproducts"><div className="text-[15px] p-3 bg-[#2781af] text-white  hover:scale-105 rounded-md transition-all cursor-pointer">Continue Shopping</div></Link></div>
           ) : (

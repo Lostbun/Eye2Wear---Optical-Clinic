@@ -110,13 +110,23 @@ function PatientLandingpage(){
     {localStorage.getItem("patienttoken") ? (
       <div id="profilecard" className="relative items-center justify-center flex">
         <div id="profile" onClick={showlogout} className="ml-3 flex justify-center items-center bg-[#fbfbfb00] border-2 border-gray-200 shadow-lg rounded-full hover:cursor-pointer hover:scale-105 transition-all">
-          <img src={patientprofilepicture || 'default-profile.png'} alt="Profile" className="h-13 w-13 rounded-full"/>
+          {!patientprofilepicture ? (
+            // Skeleton loading for navbar profile picture
+            <div className="h-13 w-13 rounded-full bg-gray-300 animate-pulse"></div>
+          ) : (
+            <img src={patientprofilepicture || 'default-profile.png'} alt="Profile" className="h-13 w-13 rounded-full"/>
+          )}
         </div>
 
         {showlogoutbtn && (
           <div className="w-75 flex-col p-5 motion-preset-fade absolute top-full mt-2 z-[9999] flex justify-center items-start bg-[#ffffff] rounded-2xl hover:cursor-pointer transition-all shadow-lg">
             <div className="hover:bg-[#f7f7f7] transition-all duration-300 ease-in-out py-2 px-1 rounded-2xl gap-3 flex items-center h-auto w-full">
-              <img src={patientprofilepicture} className="w-12 rounded-full"/>
+              {!patientprofilepicture ? (
+                // Skeleton loading for dropdown profile picture
+                <div className="w-12 h-12 rounded-full bg-gray-300 animate-pulse"></div>
+              ) : (
+                <img src={patientprofilepicture} className="w-12 rounded-full"/>
+              )}
               <h1 className="font-albertsans font-semibold text-[19px]">{patientfirstname}</h1>
             </div>
             <div className="border-b-2 rounded-full border-[#747474] h-1 w-full my-1"></div>
