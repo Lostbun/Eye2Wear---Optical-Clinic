@@ -15,7 +15,11 @@
   //Retrieve (All Patient Demographic) Controller
   export const getpatientdemographics = async (req, res) => {
     try {
-      const patientdemo = await Patientdemographic.find({});
+      // Optimized query with lean() and field selection for better performance
+      const patientdemo = await Patientdemographic.find()
+        .select('patientdemographicId patientemail patientfirstname patientmiddlename patientlastname patientage patientbirthdate patientgender patientcontactnumber patienthomeaddress patientemergencycontactname patientemergencycontactnumber patientprofilepicture createdAt')
+        .lean(); // Returns plain JavaScript objects instead of Mongoose documents
+      
       res.status(200).json(patientdemo);
     } catch (error) {
       res.status(500).json({ message: error.message });

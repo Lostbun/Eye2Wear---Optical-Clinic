@@ -23,7 +23,8 @@ import defaultimageplaceholder from "../src/assets/images/defaultimageplaceholde
 import { AmbherinventorycategoryBox } from "./components/AmbherinventorycategoryBox";
 import { BautistainventorycategoryBox } from "./components/BautistainventorycategoryBox";
 import cautionlowstockalert from "../src/assets/images/caution.png";
-import starimage from "../src/assets/images/star.png"
+import starimage from "../src/assets/images/star.png";
+import useSmartCache from './hooks/useSmartCache';
 
 
 
@@ -182,6 +183,9 @@ function AdminDashboard(){
   const apiUrl = import.meta.env.VITE_API_URL;
 
   const loggedinusertype = JSON.parse(localStorage.getItem('currentuser'));
+  
+  // Smart caching with real-time updates for admin data
+  const { smartFetch, realtimeUpdates, CACHE_DURATIONS } = useSmartCache();
   
 
 
@@ -2916,32 +2920,48 @@ const [demoformdata, setdemoformdata] = useState({
 
 
 //RETRIEVING THE PATIENT DEMOGRAPHICS
-useEffect(() => {
-  if(activeprofiletable === "patientprofiletable") {
-    const fetchpatientdemographics = async () => {
-      try{
+// Smart cached demographics fetching with real-time updates
+const fetchDemographicsData = useCallback(async (forceRefresh = false) => {
+  setloadingpatientdemographics(true);
+  setpatientdemoerror(null);
+
+  try {
+    const demographics = await smartFetch(
+      'adminDemographics',
+      async () => {
         const response = await fetch('/api/patientdemographics', {
           headers: {
-            'Authorization' : `Bearer ${currentusertoken}`
+            'Authorization': `Bearer ${currentusertoken}`
           }
         });
 
-        if(!response.ok) throw new Error("Failed to retrieve patient demographics");
-        const data = await response.json();
+        if (!response.ok) throw new Error("Failed to retrieve patient demographics");
+        return response.json();
+      },
+      CACHE_DURATIONS.MEDIUM, // 5 minutes cache
+      forceRefresh
+    );
 
-        setpatientdemographics(data);
-
-
-      }catch(error){
-        setpatientdemoerror(error.message);
-      }finally{
-        setloadingpatientdemographics(false);
-      }
-  
-    };
-    fetchpatientdemographics();
+    setpatientdemographics(demographics);
+  } catch (error) {
+    setpatientdemoerror(error.message);
+  } finally {
+    setloadingpatientdemographics(false);
   }
-}, [activeprofiletable, currentusertoken]);
+}, [smartFetch, CACHE_DURATIONS, currentusertoken]);
+
+useEffect(() => {
+  if(activeprofiletable === "patientprofiletable") {
+    fetchDemographicsData();
+  }
+}, [activeprofiletable, fetchDemographicsData]);
+
+// Listen for real-time demographics updates
+useEffect(() => {
+  if (realtimeUpdates.has('demographics')) {
+    fetchDemographicsData(true); // Force refresh on real-time update
+  }
+}, [realtimeUpdates, fetchDemographicsData]);
 
 
 
@@ -3421,39 +3441,48 @@ const showappointmentstable = (appointmentstableid) => {
 
 
  
- 
- useEffect(() => {
-   const fetchingallpatientappointments = async () => {
-     setloadingappointments(true);
- 
-     try{
+ // Smart cached appointment fetching with real-time updates
+ const fetchAppointmentData = useCallback(async (forceRefresh = false) => {
+   setloadingappointments(true);
+   seterrorloadingappointments(null);
 
-       const response = await fetch(
-         `/api/patientappointments/appointments`,
-         {
+   try {
+     const appointments = await smartFetch(
+       'adminAppointments',
+       async () => {
+         const response = await fetch('/api/patientappointments/appointments', {
            headers: {
-               Authorization: `Bearer ${localStorage.getItem('admintoken')}`
+             Authorization: `Bearer ${currentusertoken}`
            }
-         }
-       );
- 
-       if(!response.ok) throw new Error("Failed to fetch patient appointments");
- 
-       const data = await response.json();
-       setpatientappointments(data);
- 
- 
-     }catch(error){
-       seterrorloadingappointments(error.message);
-     }finally{
-       setloadingappointments(false);
-     }
-   };
- 
-   if(activeappointmentstable === 'allappointmentstable') {
-    fetchingallpatientappointments();
+         });
+
+         if (!response.ok) throw new Error("Failed to fetch patient appointments");
+         return response.json();
+       },
+       CACHE_DURATIONS.MEDIUM, // 5 minutes cache
+       forceRefresh
+     );
+
+     setpatientappointments(appointments);
+   } catch (error) {
+     seterrorloadingappointments(error.message);
+   } finally {
+     setloadingappointments(false);
    }
- }, [activeappointmentstable]);
+ }, [smartFetch, CACHE_DURATIONS, currentusertoken]);
+
+ useEffect(() => {
+   if(activeappointmentstable === 'allappointmentstable') {
+     fetchAppointmentData();
+   }
+ }, [activeappointmentstable, fetchAppointmentData]);
+
+ // Listen for real-time appointment updates
+ useEffect(() => {
+   if (realtimeUpdates.has('appointment')) {
+     fetchAppointmentData(true); // Force refresh on real-time update
+   }
+ }, [realtimeUpdates, fetchAppointmentData]);
 
 
 

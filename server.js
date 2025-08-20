@@ -61,8 +61,7 @@ const server = http.createServer(app);
 
 
 app.use(cors({
-  // eslint-disable-next-line no-undef
-  origin: process.env.FRONTEND_URL, //The frontend URL
+  origin: true, // Allow all origins for now
   credentials: true,
   methods:['GET','POST','PUT','DELETE'],
   allowedHeaders:['Content-Type', 'Authorization', 'X-Requested-With']

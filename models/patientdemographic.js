@@ -179,8 +179,9 @@ PatientdemographicSchema.plugin(AutoIncrement(mongoose),{
   disable_hooks: false 
 });
 
-
-
-
+// Create indexes for better query performance
+// Note: patientemail already has an index due to unique: true
+PatientdemographicSchema.index({ patientdemographicId: -1 });
+PatientdemographicSchema.index({ patientemail: 1, patientdemographicId: -1 });
 
 export default mongoose.model("Patientdemographic", PatientdemographicSchema);

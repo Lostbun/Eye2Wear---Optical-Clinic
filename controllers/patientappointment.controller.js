@@ -26,7 +26,12 @@
     //Get All Patient Appointments
     export const getallpatientappointments = async (req, res) => {
         try{
-            const patientappointments = await PatientAppointment.find().sort({patientappointmentid: -1});
+            // Optimized query with lean() and field selection for better performance
+            const patientappointments = await PatientAppointment.find()
+                .select('patientappointmentid patientappointmentfirstname patientappointmentlastname patientappointmentemail patientappointmentstatus patientambherappointmentdate patientambherappointmenttime patientambherappointmentstatus patientbautistaappointmentdate patientbautistaappointmenttime patientbautistaappointmentstatus createdAt updatedAt')
+                .sort({patientappointmentid: -1})
+                .lean(); // Returns plain JavaScript objects instead of Mongoose documents
+            
             res.json(patientappointments);
     
         }catch(error){
@@ -64,12 +69,9 @@
             .sort({patientappointmentid: -1})
             .lean(); // Returns plain JavaScript objects instead of Mongoose documents
 
-
-            if(!patientappointmentsbyemail || patientappointmentsbyemail.length === 0){
-                return res.status(404).json({message: "No appointments found in this email"});  
-            }
-
-            res.json(patientappointmentsbyemail);
+            // Return empty array instead of 404 when no appointments found
+            // This prevents unnecessary error handling in the frontend
+            res.json(patientappointmentsbyemail || []);
         
 
         }catch(error){

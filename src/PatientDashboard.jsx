@@ -57,28 +57,30 @@ const AppointmentRowSkeleton = () => (
 );
 
 const AppointmentTableSkeleton = () => (
-  <div className="overflow-x-auto rounded-2xl shadow-lg w-full h-full mt-">
-    <table className="min-w-full divide-y divide-gray-200">
-      <thead className="bg-">
-        <tr className="text-[#ffffff] font-albertsans font-bold bg-[#2781af] rounded-tl-2xl rounded-tr-2xl">
-          <th className="pb-3 pt-3 pl-2 pr-2 text-center">Date Created</th> 
-          <th className="pb-3 pt-3 pl-2 pr-2 text-center">Ambher Appointment</th>
-          <th className="pb-3 pt-3 pl-2 pr-2 text-center"></th>
-          <th className="pb-3 pt-3 pl-2 pr-2 text-center">Bautista Appointment</th>
-          <th className="pb-3 pt-3 pl-2 pr-2 text-center">Actions</th>
-        </tr>
-      </thead>
-      <tbody className="divide-y divide-gray-200 bg-white">
-        {[...Array(5)].map((_, index) => (
-          <AppointmentRowSkeleton key={index} />
-        ))}
-      </tbody>
-    </table>
+  <div className="rounded-2xl shadow-lg w-full h-full overflow-hidden">
+    <div className="h-full overflow-y-auto">
+      <table className="min-w-full divide-y divide-gray-200">
+        <thead className="bg-[#2781af] sticky top-0 z-10">
+          <tr className="text-[#ffffff] font-albertsans font-bold">
+            <th className="pb-3 pt-3 pl-2 pr-2 text-center w-1/5">Date Created</th> 
+            <th className="pb-3 pt-3 pl-2 pr-2 text-center w-1/4">Ambher Appointment</th>
+            <th className="pb-3 pt-3 pl-2 pr-2 text-center w-1/12"></th>
+            <th className="pb-3 pt-3 pl-2 pr-2 text-center w-1/4">Bautista Appointment</th>
+            <th className="pb-3 pt-3 pl-2 pr-2 text-center w-1/6">Actions</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-gray-200 bg-white">
+          {[...Array(5)].map((_, index) => (
+            <AppointmentRowSkeleton key={index} />
+          ))}
+        </tbody>
+      </table>
+    </div>
   </div>
 );
 function PatientDashboard(){
 
-  const apiUrl = import.meta.env.VITE_API_URL;
+  const _apiUrl = import.meta.env.VITE_API_URL;
 
   
 
@@ -116,7 +118,7 @@ function PatientDashboard(){
  } = useApiService();
 
  // Smart caching with real-time updates for appointments
- const { smartFetch, realtimeUpdates, CACHE_DURATIONS } = useSmartCache();
+ const { smartFetch, realtimeUpdates, CACHE_DURATIONS, invalidateCache, triggerRealtimeUpdate } = useSmartCache();
 
   //Retrieveing Data from useAuth Hook
   useEffect(() => {
@@ -310,21 +312,34 @@ const patientsubmitappointment = async (formData) => {
 
 
     const result = await response.json();
-    console.log('Patient Appointment Successfull Submitted for Review', result);
+    console.log('Patient Appointment Successfully Submitted for Review', result);
 
-    // Invalidate appointment cache and refresh the list
+    console.log('🔄 Starting immediate appointment list refresh...');
+    
+    // Set flag to prevent tab switching interference
+    setjustSubmittedAppointment(true);
+    
+    // Use dedicated post-submission refresh function
+    await refreshAppointmentsAfterSubmission();
+    
+    // Also trigger real-time updates for other components
+    triggerRealtimeUpdate('appointments');
     invalidateAppointmentData();
     
-    // Switch to appointment list and refresh cached data
-    setactiveappointmenttable('appointmentlist');
-    
-    // Force refresh cached appointment data to show new appointment
-    setTimeout(() => {
-      fetchAppointmentData(true);
-    }, 100);
-
+    // Reset form state
     setadditionaldetails('');
     setappointmentpreviewimage(defaultimageplaceholder);
+    
+    // Switch to appointment list AFTER refresh completes
+    setactiveappointmenttable('appointmentlist');
+    
+    // Clear the flag after a delay to allow normal fetching again
+    setTimeout(() => {
+      console.log('🔄 Resetting justSubmittedAppointment flag after 3 seconds');
+      setjustSubmittedAppointment(false);
+    }, 3000); // 3 seconds should be enough
+    
+    console.log('✅ Appointment submission and refresh completed');
   }catch(error) {
     console.error('Error Submitting Patient Appointment: ', error);
   }finally{
@@ -566,10 +581,71 @@ const handleviewappointment = (appointment) => {
  const [selectedpatientappointment, setselectedpatientappointment] = useState(null);
  const [viewpatientappointment, setviewpatientappointment] = useState(false);
  const [deletepatientappointment, setdeletepatientappointment] = useState(false);
+ const [hasInitialLoad, sethasInitialLoad] = useState(false); // Track if we've loaded at least once
+ const [justSubmittedAppointment, setjustSubmittedAppointment] = useState(false); // Flag to prevent cache interference after submission
+ const [lastRefreshTime, setlastRefreshTime] = useState(0); // Track when we last refreshed
 
  
+ // Add a ref to track if we're already fetching to prevent duplicate calls
+ const isFetchingRef = useRef(false);
+ const lastFetchTimeRef = useRef(0);
+ const FETCH_COOLDOWN = 1000; // 1 second cooldown between fetches
+
+ // Dedicated function for refreshing appointments after submission
+ const refreshAppointmentsAfterSubmission = useCallback(async () => {
+   console.log('🔄 Starting post-submission appointment refresh...');
+   
+   const email = localStorage.getItem("patientemail");
+   if (!email) return;
+   
+   try {
+     // Show loading state
+     setloadingappointments(true);
+     seterrorloadingappointments(null);
+     
+     // Bypass all caches and fetch directly from API
+     console.log('🔄 Fetching fresh data directly from API...');
+     const token = localStorage.getItem('patienttoken');
+     const response = await fetch(`/api/patientappointments/appointments/email/${email}`, {
+       headers: { 'Authorization': `Bearer ${token}` }
+     });
+     
+     if (!response.ok) {
+       throw new Error(`HTTP error! Status: ${response.status}`);
+     }
+     
+     const freshData = await response.json();
+     console.log('🔄 Post-submission fresh data received:', freshData?.length || 0, 'appointments');
+     
+     // Immediately update state
+     setpatientappointments(freshData || []);
+     sethasInitialLoad(true);
+     setlastRefreshTime(Date.now()); // Track refresh time
+     
+     // Clear all related caches
+     const cacheKey = `appointmentData_${email}`;
+     invalidateCache([cacheKey, `patientAppointments_${email}`]);
+     
+   } catch (error) {
+     console.error('❌ Error in post-submission refresh:', error);
+     seterrorloadingappointments(error.message);
+   } finally {
+     setloadingappointments(false);
+   }
+ }, [invalidateCache]);
+
  // Smart cached appointment fetching with real-time updates
  const fetchAppointmentData = useCallback(async (forceRefresh = false) => {
+   const now = Date.now();
+   
+   // Prevent concurrent calls and add cooldown
+   if (isFetchingRef.current || (!forceRefresh && now - lastFetchTimeRef.current < FETCH_COOLDOWN)) {
+     console.log('📅 Fetch blocked - already in progress or in cooldown');
+     return;
+   }
+
+   isFetchingRef.current = true;
+   lastFetchTimeRef.current = now;
    setloadingappointments(true);
    seterrorloadingappointments(null);
 
@@ -579,9 +655,9 @@ const handleviewappointment = (appointment) => {
        throw new Error("Patient email not found");
      }
      
-     console.log('📅 Fetching appointment data...', { forceRefresh });
+     console.log('📅 Fetching appointment data...', { forceRefresh, timestamp: new Date().toISOString() });
      
-     // Use smart cached appointment fetching
+     // Use smart cached appointment fetching with correct duration key
      const data = await smartFetch(
        `appointmentData_${email}`,
        () => fetchPatientAppointments(email),
@@ -591,28 +667,74 @@ const handleviewappointment = (appointment) => {
      
      console.log('📅 Appointment data received:', data?.length || 0, 'appointments');
      setpatientappointments(data || []);
+     sethasInitialLoad(true); // Mark that we've completed at least one load
 
    } catch (error) {
      console.error("Error fetching appointments: ", error);
      seterrorloadingappointments(error.message);
+     // Set empty array on error to prevent infinite loading
+     setpatientappointments([]);
    } finally {
      setloadingappointments(false);
+     isFetchingRef.current = false;
    }
- }, [smartFetch, CACHE_DURATIONS, fetchPatientAppointments]);
+ }, [smartFetch, CACHE_DURATIONS.appointments, fetchPatientAppointments]);
 
+ // Initialize appointment data when switching to appointment list
  useEffect(() => {
+   console.log('📅 Tab switch effect triggered:', { 
+     activeappointmenttable, 
+     hasInitialLoad,
+     appointmentCount: patientappointments.length,
+     isLoading: loadingappointmens,
+     justSubmitted: justSubmittedAppointment
+   });
+   
    if (activeappointmenttable === 'appointmentlist') {
-     fetchAppointmentData();
+     console.log('📅 Tab switched to appointment list');
+     
+     // Don't fetch if we just submitted an appointment - our fresh data should persist
+     if (justSubmittedAppointment) {
+       console.log('📅 Just submitted appointment, skipping fetch to preserve fresh data');
+       return;
+     }
+     
+     // Only fetch if we don't have data and aren't already loading
+     if (patientappointments.length === 0 && !hasInitialLoad && !loadingappointmens && !isFetchingRef.current) {
+       console.log('📅 No appointments data, fetching...');
+       fetchAppointmentData();
+     } else {
+       console.log('📅 Already have data or loading, skipping fetch');
+     }
+   } else {
+     // Reset states when leaving appointment list
+     console.log('📅 Left appointment list, resetting flags');
+     seterrorloadingappointments(null);
+     setjustSubmittedAppointment(false); // Reset the flag when leaving
    }
- }, [activeappointmenttable, fetchAppointmentData]);
+ }, [activeappointmenttable, loadingappointmens, fetchAppointmentData, hasInitialLoad, patientappointments.length, justSubmittedAppointment]);
 
- // Listen for real-time appointment updates
+ // Listen for real-time appointment updates with debounce
  useEffect(() => {
-   if (realtimeUpdates.has('appointment')) {
-     console.log('📅 Real-time appointment update detected, refreshing data...');
-     fetchAppointmentData(true); // Force refresh on real-time update
+   if (!realtimeUpdates.has('appointments') || activeappointmenttable !== 'appointmentlist') {
+     return;
    }
- }, [realtimeUpdates, fetchAppointmentData]);
+
+   // Don't override fresh data if we just submitted an appointment or recently refreshed
+   if (justSubmittedAppointment || (Date.now() - lastRefreshTime < 5000)) {
+     console.log('📅 Real-time update detected but skipping - recent refresh or submission');
+     return;
+   }
+
+   console.log('📅 Real-time appointment update detected, scheduling refresh...');
+   
+   // Debounce real-time updates to prevent spam
+   const debounceTimer = setTimeout(() => {
+     fetchAppointmentData(true); // Force refresh on real-time update
+   }, 500); // 500ms debounce
+
+   return () => clearTimeout(debounceTimer);
+ }, [realtimeUpdates, fetchAppointmentData, activeappointmenttable, justSubmittedAppointment, lastRefreshTime]);
  
 
  
@@ -656,14 +778,32 @@ const handledeleteappointment = async (appointmentId) => {
 
       if(!response.ok) throw new Error('Failed to Delete Appointment');
  
-    // Remove from local state immediately
+    // Get patient email for cache invalidation
+    const email = localStorage.getItem("patientemail");
+    
+    // Invalidate smart cache for this user's appointments
+    if (email) {
+      const cacheKey = `appointmentData_${email}`;
+      console.log('🔄 Invalidating smart cache after appointment deletion:', cacheKey);
+      invalidateCache([cacheKey]);
+    }
+    
+    // Trigger real-time update to notify all components
+    triggerRealtimeUpdate('appointments');
+    
+    // Also invalidate the old cache system for compatibility
+    invalidateAppointmentData();
+
+    // Remove from local state immediately for instant UI update
     setpatientappointments(prev =>
       prev.filter(appt => appt.patientappointmentid !== appointmentId)
     );
 
     // Refresh cached data to ensure consistency
     console.log('📅 Appointment deleted, refreshing cache...');
-    fetchAppointmentData(true);
+    setTimeout(() => {
+      fetchAppointmentData(true);
+    }, 100);
 
     }catch(error){
       console.error("Appointment deletion failed: ", error);
@@ -1472,31 +1612,46 @@ useEffect(() => {
                 
                 <div className=" flex justify-center items-start h-[500px] w-full rounded-3xl ">
 
-      {loadingappointmens ? (
+      {loadingappointmens && !hasInitialLoad ? (
         <AppointmentTableSkeleton />
       ) : errorloadingappointments ? (
     <div className="w-full h-[40px] rounded-tl-2xl rounded-tr-2xl flex justify-center items-center bg-red-50 text-red-600 font-semibold font-albertsans">
     Error: {errorloadingappointments}
   </div>
   ) : patientappointments.length === 0 ? (
-    <div className="w-full h-[40px] rounded-tl-2xl rounded-tr-2xl flex justify-center items-center text-yellow-600 bg-yellow-50 font-semibold font-albertsans">No patient appointments found.</div>
+    <div className="w-full h-full flex flex-col justify-center items-center bg-gray-50 rounded-2xl border-2 border-dashed border-gray-300">
+      <div className="text-center p-8">
+        <div className="mb-4">
+          <svg className="mx-auto h-16 w-16 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3a1 1 0 011-1h6a1 1 0 011 1v4m-7 0h8m0 0v4a1 1 0 01-1 1H9a1 1 0 01-1-1V7m0 0V3a1 1 0 011-1h6a1 1 0 011 1v4"/>
+          </svg>
+        </div>
+        <h3 className="text-lg font-semibold text-gray-600 font-albertsans mb-2">No Appointments Found</h3>
+        <p className="text-gray-500 font-albertsans mb-4">You don't have any scheduled appointments yet.</p>
+        <button 
+          onClick={() => showappointmenttable('bookappointment')}
+          className="bg-[#2781af] hover:bg-[#1f6591] text-white font-albertsans font-semibold py-2 px-6 rounded-2xl transition-all duration-200"
+        >
+          Book New Appointment
+        </button>
+      </div>
+    </div>
     
 
   ) : (
-    <div className="overflow-x-auto rounded-2xl shadow-lg  w-full h-full mt-">
-      <table className="min-w-full divide-y divide-gray-200">
-        <thead className="bg-">
-          <tr className="text-[#ffffff] font-albertsans font-bold bg-[#2781af] rounded-tl-2xl rounded-tr-2xl">
-            <th className="pb-3 pt-3 pl-2 pr-2 text-center">Date Created</th> 
-            <th className="pb-3 pt-3 pl-2 pr-2  text-center">Ambher Appoinment</th>
-            <th className="pb-3 pt-3 pl-2 pr-2  text-center"></th>
-            <th className="pb-3 pt-3 pl-2 pr-2  text-center">Bautista Appoinment</th>
-            <th className="pb-3 pt-3 pl-2 pr-2  text-center">Actions</th>
-          </tr>
-        </thead>
-
-
-        <tbody className="divide-y divide-gray-200 bg-white">
+    <div className="rounded-2xl shadow-lg w-full h-full overflow-hidden">
+      <div className="h-full overflow-y-auto">
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-[#2781af] sticky top-0 z-10">
+            <tr className="text-[#ffffff] font-albertsans font-bold">
+              <th className="pb-3 pt-3 pl-2 pr-2 text-center w-1/5">Date Created</th> 
+              <th className="pb-3 pt-3 pl-2 pr-2 text-center w-1/4">Ambher Appointment</th>
+              <th className="pb-3 pt-3 pl-2 pr-2 text-center w-1/12"></th>
+              <th className="pb-3 pt-3 pl-2 pr-2 text-center w-1/4">Bautista Appointment</th>
+              <th className="pb-3 pt-3 pl-2 pr-2 text-center w-1/6">Actions</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-200 bg-white">
           {patientappointments.map((appointment) => (
             <tr 
               key={appointment._id}
@@ -1579,8 +1734,9 @@ useEffect(() => {
               </td>
             </tr>
           ))}
-        </tbody>
-      </table>
+          </tbody>
+        </table>
+      </div>
     </div>
   )}
                 </div>

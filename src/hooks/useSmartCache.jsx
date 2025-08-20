@@ -159,12 +159,19 @@ const useSmartCache = () => {
     }
   }, [smartFetch, isCacheValid]);
 
+  // Manual trigger for real-time updates (useful after local operations)
+  const triggerRealtimeUpdate = useCallback((updateType) => {
+    console.log(`🔄 Manually triggering real-time update for: ${updateType}`);
+    setRealtimeUpdates(prev => new Map(prev.set(updateType, Date.now())));
+  }, []);
+
   return {
     smartFetch,
     invalidateCache,
     clearAllCache,
     getCacheStats,
     preloadData,
+    triggerRealtimeUpdate,
     realtimeUpdates,
     CACHE_DURATIONS: CACHE_DURATIONS.current
   };
