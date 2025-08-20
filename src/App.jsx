@@ -60,6 +60,8 @@ function PatientChatButton() {
   const [selectedPatient, setSelectedPatient] = useState(null);
   const currentuserprofilepicture = localStorage.getItem(`${localStorage.getItem('role')}profilepicture`);
   const [activeambhermessageslist, setactiveambhermessageslist] = useState('allambhermessageslist');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filteredPatients, setFilteredPatients] = useState([]);
   const [pendingMessageId, setPendingMessageId] = useState(null);
   const [selectedClinic, setSelectedClinic] = useState(null);
   const [conversations, setConversations] = useState([]);
@@ -68,6 +70,7 @@ function PatientChatButton() {
   const [loadingMessages, setLoadingMessages] = useState({});
   const [isSending, setIsSending] = useState(false);
   const [latestMessagesByConversation, setLatestMessagesByConversation] = useState({});
+  const [imageLoadingStates, setImageLoadingStates] = useState({});
   const fetchConversationsRef = useRef(null);
   const [unreadMessagesByConversation, setUnreadMessagesByConversation] = useState({});
   const [hasGlobalUnreadMessages, setHasGlobalUnreadMessages] = useState(false);
@@ -975,24 +978,74 @@ const renderMessageContent = (msg, isCurrentUser) => {
       )}
       
       {(isImage || isMixed) && msg.imageUrl && (
-        <div className="mt-2">
+        <div className="mt-2 relative">
+          {/* Loading state for image */}
+          {imageLoadingStates[msg._id || msg.temporaryId] !== false && (
+            <div className="absolute inset-0 flex items-center justify-center bg-gray-100 rounded-lg">
+              <div className="flex flex-col items-center gap-2">
+                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+                <span className="text-sm text-gray-600">Loading image...</span>
+              </div>
+            </div>
+          )}
           <img 
             src={imageUrl} 
-            alt="Uploaded image" 
-            className="max-w-full max-h-60 rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
+            alt={msg.temporaryId ? "Sending image..." : (isCurrentUser ? "Sent image" : "Received image")} 
+            className={`max-w-full max-h-60 rounded-lg cursor-pointer hover:opacity-90 transition-opacity ${
+              imageLoadingStates[msg._id || msg.temporaryId] === false ? 'opacity-100' : 'opacity-0'
+            }`}
             onClick={() => {
-              setSelectedImageForModal(imageUrl);
-              setModalOpen(true);
+              if (imageLoadingStates[msg._id || msg.temporaryId] === false) {
+                setSelectedImageForModal(imageUrl);
+                setModalOpen(true);
+              }
+            }}
+            onLoad={() => {
+              // Set image as loaded
+              setImageLoadingStates(prev => ({
+                ...prev,
+                [msg._id || msg.temporaryId]: false
+              }));
+              
+              // Remove any error messages when image loads successfully
+              const errorDiv = document.querySelector(`[data-error-for="${msg._id || msg.temporaryId}"]`);
+              if (errorDiv) errorDiv.remove();
             }}
             onError={(e) => {
               console.error('Failed to load image:', imageUrl);
-              e.target.onerror = null;
+              
+              // Set image as failed to load
+              setImageLoadingStates(prev => ({
+                ...prev,
+                [msg._id || msg.temporaryId]: false
+              }));
+              
+              // Don't show error for temporary messages (they're still uploading)
+              if (msg.temporaryId) {
+                return;
+              }
+              
+              // Retry loading the image once after a short delay
+              if (!e.target.hasAttribute('data-retry-attempted')) {
+                e.target.setAttribute('data-retry-attempted', 'true');
+                setTimeout(() => {
+                  e.target.src = imageUrl;
+                }, 1000);
+                return;
+              }
+              
+              // Only show error after retry fails
               e.target.style.display = 'none';
-              // Show a placeholder or error message
-              const errorDiv = document.createElement('div');
-              errorDiv.className = 'p-2 bg-red-100 border border-red-300 rounded text-red-700 text-sm';
-              errorDiv.textContent = 'Failed to load image';
-              e.target.parentNode.appendChild(errorDiv);
+              
+              // Check if error message already exists
+              const existingError = document.querySelector(`[data-error-for="${msg._id || msg.temporaryId}"]`);
+              if (!existingError) {
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'p-2 bg-red-100 border border-red-300 rounded text-red-700 text-sm';
+                errorDiv.textContent = 'Failed to load image';
+                errorDiv.setAttribute('data-error-for', msg._id || msg.temporaryId);
+                e.target.parentNode.appendChild(errorDiv);
+              }
             }}
           />
         </div>
@@ -1074,6 +1127,47 @@ const renderMessageContent = (msg, isCurrentUser) => {
 
   const showambhermessageslist = (ambhermessageslistid) => {
     setactiveambhermessageslist(ambhermessageslistid);
+  };
+
+  // Debounced search function
+  const debouncedSearch = useCallback(
+    (query) => {
+      if (!query.trim()) {
+        setFilteredPatients([]);
+        return;
+      }
+      
+      const filtered = patients.filter(patient => {
+        const fullName = `${patient.patientfirstname} ${patient.patientlastname}`.toLowerCase();
+        return fullName.includes(query.toLowerCase());
+      });
+      
+      setFilteredPatients(filtered);
+    },
+    [patients]
+  );
+
+  // Handle search input change
+  const handleSearchChange = (e) => {
+    const query = e.target.value;
+    setSearchQuery(query);
+    debouncedSearch(query);
+  };
+
+  // Filter patients based on All/Unread selection
+  const getFilteredPatientsForDisplay = () => {
+    const patientsToFilter = searchQuery.trim() ? filteredPatients : patients;
+    
+    if (activeambhermessageslist === 'unreadambhermessageslist') {
+      return patientsToFilter.filter(patient => {
+        const conversation = conversations.find(conv => 
+          conv.participants.some(p => p.userId === patient._id && p.role === 'patient')
+        );
+        return conversation && hasUnreadMessages(conversation._id);
+      });
+    }
+    
+    return patientsToFilter;
   };
 
   // 6. INITIALIZATION EFFECTS (in order of dependency)
@@ -1611,6 +1705,22 @@ useEffect(() => {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  // Initialize loading states for images in messages
+  useEffect(() => {
+    if (messages.length > 0) {
+      const newLoadingStates = {};
+      messages.forEach(msg => {
+        if (msg.imageUrl && imageLoadingStates[msg._id || msg.temporaryId] === undefined) {
+          newLoadingStates[msg._id || msg.temporaryId] = true; // Set as loading initially
+        }
+      });
+      
+      if (Object.keys(newLoadingStates).length > 0) {
+        setImageLoadingStates(prev => ({ ...prev, ...newLoadingStates }));
+      }
+    }
+  }, [messages, imageLoadingStates]);
 
 
 
@@ -2460,6 +2570,8 @@ messages.map((msg, index) => {
                       <input 
                         type="text" 
                         placeholder="Search..." 
+                        value={searchQuery}
+                        onChange={handleSearchChange}
                         className="transition-all duration-300 ease-in-out py-3 pl-10 w-250 rounded-2xl bg-[#e4e4e4] focus:bg-slate-100 focus:outline-sky-500"
                       />
                     </div>
@@ -2532,7 +2644,7 @@ messages.map((msg, index) => {
 </div>
 
 
-{patients
+{getFilteredPatientsForDisplay()
   .map(patient => {
     const patientConversation = conversations.find(conv => 
       conv.participants.some(p => p.userId === patient._id && p.role === 'patient')
@@ -2931,6 +3043,8 @@ messages.map((msg, index) => {
                       <input 
                         type="text" 
                         placeholder="Search..." 
+                        value={searchQuery}
+                        onChange={handleSearchChange}
                         className="transition-all duration-300 ease-in-out py-3 pl-10 w-250 rounded-2xl bg-[#e4e4e4] focus:bg-slate-100 focus:outline-sky-500"
                       />
                     </div>
@@ -3015,7 +3129,7 @@ messages.map((msg, index) => {
 </div>
 
 
-{patients
+{getFilteredPatientsForDisplay()
   .map(patient => {
     // Find the conversation with this patient
     const patientConversation = conversations.find(conv => 

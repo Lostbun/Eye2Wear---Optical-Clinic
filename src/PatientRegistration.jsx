@@ -329,8 +329,15 @@ function PatientRegistration() {
 
      
    
-      <button type="submit" disabled={issubmitting} className="submit-btn mt-12 w-full" style={{ backgroundColor: "#2b2b44", fontSize: "20px", padding: "10px 20px", color: "white", borderRadius: "20px",   }}>
-        {issubmitting ? "Registeringg..." : "Register"}
+      <button type="submit" disabled={issubmitting} className={`submit-btn mt-12 w-full flex items-center justify-center gap-2 ${issubmitting ? 'bg-gray-400 cursor-not-allowed' : 'hover:scale-105'} transition-all duration-300 ease-in-out`} style={{ backgroundColor: issubmitting ? "#9ca3af" : "#2b2b44", fontSize: "20px", padding: "10px 20px", color: "white", borderRadius: "20px" }}>
+        {issubmitting ? (
+          <>
+            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+            <span>Registering...</span>
+          </>
+        ) : (
+          "Register"
+        )}
       </button>
    
        <div className=" flex items-center justify-center mt-5 ">

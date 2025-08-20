@@ -365,9 +365,15 @@ else if(user === 'Owner'){
 
 
 
-            <button type="submit" disabled={islogin} className="submit-btn mt-12"   style={{ backgroundColor: "#2b2b44", fontSize: "20px", padding: "10px 20px", color: "white", borderRadius: "20px",   }}> 
-
-              {islogin ? "Loggin In..." : "Log In"}
+            <button type="submit" disabled={islogin} className={`submit-btn mt-12 flex items-center justify-center gap-2 ${islogin ? 'bg-gray-400 cursor-not-allowed' : 'hover:scale-105'} transition-all duration-300 ease-in-out`} style={{ backgroundColor: islogin ? "#9ca3af" : "#2b2b44", fontSize: "20px", padding: "10px 20px", color: "white", borderRadius: "20px" }}> 
+              {islogin ? (
+                <>
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                  <span>Logging In...</span>
+                </>
+              ) : (
+                "Log In"
+              )}
             </button>
 
 
@@ -405,14 +411,11 @@ else if(user === 'Owner'){
                                       <div onClick={() => {setshowforgotpasswordform(false); setforgotpasswordemail(''); setforgotpasswordmessage({text:'', type: ''});}}  className="hover:scale-105 hover:cursor-pointer transition-all duration-300 ease-in-out bg-[#363638] rounded-2xl px-6 py-3 mr-1"><span className="font-albertsans text-white font-medium">Cancel</span></div>
                     
 
-                                      <button type="submit" disabled={issendingresetlink} className="hover:scale-105 hover:cursor-pointer transition-all duration-300 ease-in-out bg-[#1b5f83] rounded-2xl px-9 py-3 mr-1 flex items-center justify-center gap-2" style={{ backgroundColor: "#1b5f83",paddingBottom:"10px", paddingTop:"10px", paddingLeft: "30px" , paddingRight: "30px", borderRadius: "12px"}}> 
+                                      <button type="submit" disabled={issendingresetlink} className={`flex items-center justify-center gap-2 ${issendingresetlink ? 'bg-gray-400 cursor-not-allowed' : 'hover:scale-105 hover:cursor-pointer'} transition-all duration-300 ease-in-out rounded-2xl px-9 py-3 mr-1`} style={{ backgroundColor: issendingresetlink ? "#9ca3af" : "#1b5f83", paddingBottom:"10px", paddingTop:"10px", paddingLeft: "30px" , paddingRight: "30px", borderRadius: "12px"}}> 
                                        {issendingresetlink ? (
                                         <>
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"  className="text-white animate-spin h-5 w-5 ">
-                                        <circle cx="12" cy="12" stroke="currentColor" className="opacity-25" r="10" strokeWidth="4" ></circle>
-                                        <path fill="currentColor" className="opacity-75" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                        </svg>
-                                        <span className="font-albertsans text-white font-medium">Sending..</span>
+                                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                                        <span className="font-albertsans text-white font-medium">Sending...</span>
                                         </>
                                        ):(
                                         <span className="font-albertsans text-white font-medium">Send</span>
