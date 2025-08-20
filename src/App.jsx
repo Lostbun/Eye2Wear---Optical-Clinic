@@ -955,47 +955,74 @@ const renderMessageContent = (msg, isCurrentUser) => {
   const isText = msg.text && !msg.imageUrl && !msg.documentUrl;
   const isMixed = msg.text && (msg.imageUrl || msg.documentUrl);
 
+  // Construct proper URLs
+  const imageUrl = msg.imageUrl ? (msg.imageUrl.startsWith('http') ? msg.imageUrl : `${apiUrl}${msg.imageUrl.startsWith('/') ? '' : '/'}${msg.imageUrl}`) : null;
+  const documentUrl = msg.documentUrl ? (msg.documentUrl.startsWith('http') ? msg.documentUrl : `${apiUrl}${msg.documentUrl.startsWith('/') ? '' : '/'}${msg.documentUrl}`) : null;
+  
+  // Debug logging
+  if (msg.imageUrl) {
+    console.log('Original imageUrl from DB:', msg.imageUrl);
+    console.log('Constructed imageUrl:', imageUrl);
+    console.log('API URL:', apiUrl);
+  }
+
   return (
     <>
-      {isText || isMixed ? (
-        <p className="text-[15px] font-albertsans font-semibold text-[#555555] whitespace-pre-wrap break-words">
+      {(isText || isMixed) && msg.text && (
+        <p className="text-[15px] font-albertsans font-semibold text-[#555555] whitespace-pre-wrap break-words mb-2">
           {msg.text}
         </p>
-      ) : null}
+      )}
       
-      {isImage || isMixed ? (
-        <img 
-          src={`${apiUrl}/${msg.imageUrl}`} 
-          alt="Uploaded content" 
-          className="max-w-full max-h-60 rounded-lg cursor-pointer hover:opacity-90 transition-opacity mt-2"
-          onClick={() => {
-            setSelectedImageForModal(`${apiUrl}/${msg.imageUrl}`);
-            setModalOpen(true);
-          }}
-          onError={(e) => {
-            e.target.onerror = null;
-            e.target.src = '/path-to-placeholder-image.png';
-          }}
-        />
-      ) : null}
+      {(isImage || isMixed) && msg.imageUrl && (
+        <div className="mt-2">
+          <img 
+            src={imageUrl} 
+            alt="Uploaded image" 
+            className="max-w-full max-h-60 rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
+            onClick={() => {
+              setSelectedImageForModal(imageUrl);
+              setModalOpen(true);
+            }}
+            onError={(e) => {
+              console.error('Failed to load image:', imageUrl);
+              e.target.onerror = null;
+              e.target.style.display = 'none';
+              // Show a placeholder or error message
+              const errorDiv = document.createElement('div');
+              errorDiv.className = 'p-2 bg-red-100 border border-red-300 rounded text-red-700 text-sm';
+              errorDiv.textContent = 'Failed to load image';
+              e.target.parentNode.appendChild(errorDiv);
+            }}
+          />
+        </div>
+      )}
       
-      {isDocument || isMixed ? (
+      {(isDocument || isMixed) && msg.documentUrl && (
         <div className="mt-2 p-2 bg-gray-100 rounded-lg flex items-center w-full">
-          <img src={filesent} className="w-6 h-6 mr-2 flex-shrink-0" />
+          <img src={filesent} className="w-6 h-6 mr-2 flex-shrink-0" alt="Document icon" />
           <a 
-            href={`${apiUrl}/${msg.documentUrl}`} 
+            href={documentUrl} 
             target="_blank" 
             rel="noopener noreferrer"
-            className="text-blue-600 hover:underline break-all"
-            download={msg.documentName || msg.documentUrl.split('/').pop()}
+            className="text-blue-600 hover:underline break-all flex-1"
+            download={msg.documentName || msg.documentUrl?.split('/').pop()}
+            onClick={(e) => {
+              // Log for debugging
+              console.log('Downloading document:', {
+                originalUrl: msg.documentUrl,
+                fullUrl: documentUrl,
+                documentName: msg.documentName
+              });
+            }}
           >
-            {msg.documentName || msg.documentUrl.split('/').pop()}
+            {msg.documentName || msg.documentUrl?.split('/').pop() || 'Download File'}
           </a>
         </div>
-      ) : null}
+      )}
       
       {!isImage && (
-        <div className={`motion-preset-slide-up rounded-2xl absolute bottom-full mb-1 hidden group-hover:block bg-black bg-opacity-75 text-white text-xs px-2 py-1 whitespace-nowrap ${isCurrentUser ? 'right-0' : 'left-0'}`}>
+        <div className={`motion-preset-slide-up rounded-2xl absolute bottom-full mb-1 hidden group-hover:block bg-black bg-opacity-75 text-white text-xs px-2 py-1 whitespace-nowrap z-10 ${isCurrentUser ? 'right-0' : 'left-0'}`}>
           {formatDate(msg.createdAt)} at {new Date(msg.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
         </div>
       )}
