@@ -14,14 +14,36 @@ export function AmbhereyespecialistBox({ value, onChange }) {
   React.useEffect(() => {
     const fetchOptometrists = async () => {
       try {
-        // Fetch from both endpoints simultaneously
+        // Get API URL and token
+        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+        const token = localStorage.getItem('token') || 
+                     localStorage.getItem('stafftoken') || 
+                     localStorage.getItem('ownertoken') || 
+                     localStorage.getItem('admintoken');
+
+        if (!token) {
+          console.error('No authentication token found');
+          return;
+        }
+
+        // Fetch from both endpoints simultaneously with proper headers
         const [staffResponse, ownerResponse] = await Promise.all([
-          fetch('/api/staffaccounts'),
-          fetch('/api/owneraccounts')
+          fetch(`${apiUrl}/api/staffaccounts`, {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            }
+          }),
+          fetch(`${apiUrl}/api/owneraccounts`, {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            }
+          })
         ]);
 
         if (!staffResponse.ok || !ownerResponse.ok) {
-          throw new Error('Failed to fetch optometrists')
+          throw new Error(`Failed to fetch optometrists: ${staffResponse.status}, ${ownerResponse.status}`)
         }
 
         const [staffData, ownerData] = await Promise.all([
@@ -30,7 +52,7 @@ export function AmbhereyespecialistBox({ value, onChange }) {
         ]);
 
         // Filter and format the data
-        const formattedOptometrists = [
+        const allOptometrists = [
           ...staffData
             .filter(staff => staff.staffiseyespecialist === 'Optometrist')
             .map(staff => ({
@@ -50,6 +72,17 @@ export function AmbhereyespecialistBox({ value, onChange }) {
               type: 'Owner'
             }))
         ].filter(opt => opt.lastname && opt.firstname); // Filter out any entries with missing names
+
+        // Remove duplicates based on full name (keep first occurrence)
+        const seen = new Set();
+        const formattedOptometrists = allOptometrists.filter(opt => {
+          const fullName = `${opt.firstname} ${opt.lastname}`;
+          if (seen.has(fullName)) {
+            return false;
+          }
+          seen.add(fullName);
+          return true;
+        });
 
         setOptometrists(formattedOptometrists);
       } catch (error) {
@@ -101,9 +134,9 @@ export function AmbhereyespecialistBox({ value, onChange }) {
                 No optometrists found
               </CommandItem>
             ) : (
-              optometrists.map((optometrist) => (
+              optometrists.map((optometrist, index) => (
                 <CommandItem
-                  key={`(${optometrist.eyespecialist}) - ${optometrist.firstname}-${optometrist.lastname}`}
+                  key={`optometrist-${index}-${optometrist.firstname}-${optometrist.lastname}-${optometrist.type}`}
                   value={formatName(optometrist)}
                   onSelect={handleSelect}
                   className="font-semibold text-1xl"

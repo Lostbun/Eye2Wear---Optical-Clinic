@@ -18,14 +18,36 @@ export function BautistaeyespecialistBox({ value, onChange }) {
   React.useEffect(() => {
     const fetchOphthalmologists = async () => {
       try {
-        // Fetch from both endpoints simultaneously
+        // Get API URL and token
+        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+        const token = localStorage.getItem('token') || 
+                     localStorage.getItem('stafftoken') || 
+                     localStorage.getItem('ownertoken') || 
+                     localStorage.getItem('admintoken');
+
+        if (!token) {
+          console.error('No authentication token found');
+          return;
+        }
+
+        // Fetch from both endpoints simultaneously with proper headers
         const [staffResponse, ownerResponse] = await Promise.all([
-          fetch('/api/staffaccounts'),
-          fetch('/api/owneraccounts')
+          fetch(`${apiUrl}/api/staffaccounts`, {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            }
+          }),
+          fetch(`${apiUrl}/api/owneraccounts`, {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            }
+          })
         ]);
 
         if (!staffResponse.ok || !ownerResponse.ok) {
-          throw new Error('Failed to fetch ophthalmologists')
+          throw new Error(`Failed to fetch ophthalmologists: ${staffResponse.status}, ${ownerResponse.status}`)
         }
 
         const [staffData, ownerData] = await Promise.all([
@@ -34,7 +56,7 @@ export function BautistaeyespecialistBox({ value, onChange }) {
         ]);
 
         // Filter and format the data
-        const formattedOphthalmologists = [
+        const allOphthalmologists = [
           ...staffData
             .filter(staff => staff.staffiseyespecialist === 'Ophthalmologist')
             .map(staff => ({
@@ -54,6 +76,17 @@ export function BautistaeyespecialistBox({ value, onChange }) {
               type: 'Owner'
             }))
         ].filter(oph => oph.lastname && oph.firstname); // Filter out any entries with missing names
+
+        // Remove duplicates based on full name (keep first occurrence)
+        const seen = new Set();
+        const formattedOphthalmologists = allOphthalmologists.filter(oph => {
+          const fullName = `${oph.firstname} ${oph.lastname}`;
+          if (seen.has(fullName)) {
+            return false;
+          }
+          seen.add(fullName);
+          return true;
+        });
 
         setOphthalmologists(formattedOphthalmologists);
       } catch (error) {
@@ -105,9 +138,9 @@ export function BautistaeyespecialistBox({ value, onChange }) {
                 No ophthalmologists found
               </CommandItem>
             ) : (
-              ophthalmologists.map((ophthalmologist) => (
+              ophthalmologists.map((ophthalmologist, index) => (
                 <CommandItem
-                  key={`(${ophthalmologist.eyespecialist}) - ${ophthalmologist.lastname}-${ophthalmologist.firstname}`}
+                  key={`ophthalmologist-${index}-${ophthalmologist.firstname}-${ophthalmologist.lastname}-${ophthalmologist.type}`}
                   value={formatName(ophthalmologist)}
                   onSelect={handleSelect}
                   className="font-semibold text-1xl"

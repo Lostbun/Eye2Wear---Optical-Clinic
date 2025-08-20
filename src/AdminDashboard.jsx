@@ -3200,6 +3200,8 @@ const showappointmentstable = (appointmentstableid) => {
  const [selectedpatientappointment, setselectedpatientappointment] = useState(null);
  const [viewpatientappointment, setviewpatientappointment] = useState(false);
  const [deletepatientappointment, setdeletepatientappointment] = useState(false);
+ const [isAcceptingAppointment, setIsAcceptingAppointment] = useState(false);
+ const [isCompletingAppointment, setIsCompletingAppointment] = useState(false);
  const [bautistaeyespecialist, setbautistaeyespecialist] = useState('');
  const [ambhereyespecialist, setambhereyespecialist] = useState('');
  const [ambherappointmentpaymentotal, setambherappointmentpaymentotal] = useState(null);
@@ -3496,6 +3498,9 @@ const handleviewappointment = (appointment) => {
 
 //UPDATING APPOINTMENT STATUS
 const handleacceptappointment = async (appointmentId, clinicType) => {
+  // Set loading state to true
+  setIsAcceptingAppointment(true);
+  
   try{
     const response = await fetch(`/api/patientappointments/appointments/${appointmentId}`,{
       method: "PUT",
@@ -3531,6 +3536,9 @@ const handleacceptappointment = async (appointmentId, clinicType) => {
 
     }catch(error){
       console.error(`Failed to accept ${clinicType} patient appointment:`, error);
+    } finally {
+      // Always set loading state to false when done
+      setIsAcceptingAppointment(false);
     }
 
   };
@@ -3541,6 +3549,9 @@ const handleacceptappointment = async (appointmentId, clinicType) => {
 
 //AICODE
   const handleCompleteAppointment = async (appointmentId, clinicType) => {
+    // Set loading state to true
+    setIsCompletingAppointment(true);
+    
     try {
       // Make API call to update appointment status with correct URL
       const response = await fetch(
@@ -3587,6 +3598,9 @@ const handleacceptappointment = async (appointmentId, clinicType) => {
     } catch (error) {
       console.error(`Error completing ${clinicType} appointment:`, error);
       // TODO: Add error handling UI feedback
+    } finally {
+      // Always set loading state to false when done
+      setIsCompletingAppointment(false);
     }
   };
   
@@ -8724,7 +8738,19 @@ const submitpatientpendingorderbautista = async (e) => {
     <div className=""><AmbhereyespecialistBox value={ambhereyespecialist} onChange={(e) => setambhereyespecialist(e.target.value)} /></div>  
 
     {ambhereyespecialist && (
-    <div onClick={() => handleacceptappointment(selectedpatientappointment.patientambherappointmentid, 'ambher')} className=" bg-[#5f9e1b]  hover:bg-[#55871f] mt-4 h-[50px]  transition-all duration-300 ease-in-out flex justify-center items-center py-2 px-5 hover:cursor-pointer rounded-[20px]"><h1 className="text-white font-albertsans font-semibold text-[20px]">Accept Ambher Appointment</h1></div>
+    <div 
+      onClick={() => !isAcceptingAppointment && handleacceptappointment(selectedpatientappointment.patientambherappointmentid, 'ambher')} 
+      className={`${isAcceptingAppointment ? 'bg-gray-400 cursor-not-allowed' : 'bg-[#5f9e1b] hover:bg-[#55871f] hover:cursor-pointer'} mt-4 h-[50px] transition-all duration-300 ease-in-out flex justify-center items-center py-2 px-5 rounded-[20px]`}
+    >
+      {isAcceptingAppointment ? (
+        <div className="flex items-center">
+          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+          <h1 className="text-white font-albertsans font-semibold text-[20px]">Accepting...</h1>
+        </div>
+      ) : (
+        <h1 className="text-white font-albertsans font-semibold text-[20px]">Accept Ambher Appointment</h1>
+      )}
+    </div>
     )} 
     </div>
   
@@ -8760,7 +8786,19 @@ const submitpatientpendingorderbautista = async (e) => {
 
 
   {ambherappointmentpaymentotal && ambherappointmentconsultationremarks && (
-    <div onClick={() => handleCompleteAppointment(selectedpatientappointment.patientambherappointmentid, 'ambher')}  className=" bg-[#2d91cf]  hover:bg-[#1b6796] mt-4 h-[50px]  transition-all duration-300 ease-in-out flex justify-center items-center py-2 px-5 hover:cursor-pointer rounded-[20px]"><h1 className="text-white font-albertsans font-semibold text-[20px]">Complete Ambher Appointment</h1></div>
+    <div 
+      onClick={() => !isCompletingAppointment && handleCompleteAppointment(selectedpatientappointment.patientambherappointmentid, 'ambher')} 
+      className={`${isCompletingAppointment ? 'bg-gray-400 cursor-not-allowed' : 'bg-[#2d91cf] hover:bg-[#1b6796] hover:cursor-pointer'} mt-4 h-[50px] transition-all duration-300 ease-in-out flex justify-center items-center py-2 px-5 rounded-[20px]`}
+    >
+      {isCompletingAppointment ? (
+        <div className="flex items-center">
+          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+          <h1 className="text-white font-albertsans font-semibold text-[20px]">Completing...</h1>
+        </div>
+      ) : (
+        <h1 className="text-white font-albertsans font-semibold text-[20px]">Complete Ambher Appointment</h1>
+      )}
+    </div>
   )}
 
 
@@ -8932,7 +8970,19 @@ const submitpatientpendingorderbautista = async (e) => {
     <h1 className="font-bold text-[17px] text-[#343436] mb-3">Eye Specialist : </h1>
     <div className=""><BautistaeyespecialistBox value={bautistaeyespecialist} onChange={(e) => setbautistaeyespecialist(e.target.value)}/></div>
    {bautistaeyespecialist && (
-    <div onClick={() => handleacceptappointment(selectedpatientappointment.patientbautistaappointmentid, 'bautista')} className=" bg-[#5f9e1b]  hover:bg-[#55871f] mt-4 h-[50px]  transition-all duration-300 ease-in-out flex justify-center items-center py-2 px-5 hover:cursor-pointer rounded-[20px]"><h1 className="text-white font-albertsans font-semibold text-[20px]">Accept Bautista Appointment</h1></div>
+    <div 
+      onClick={() => !isAcceptingAppointment && handleacceptappointment(selectedpatientappointment.patientbautistaappointmentid, 'bautista')} 
+      className={`${isAcceptingAppointment ? 'bg-gray-400 cursor-not-allowed' : 'bg-[#5f9e1b] hover:bg-[#55871f] hover:cursor-pointer'} mt-4 h-[50px] transition-all duration-300 ease-in-out flex justify-center items-center py-2 px-5 rounded-[20px]`}
+    >
+      {isAcceptingAppointment ? (
+        <div className="flex items-center">
+          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+          <h1 className="text-white font-albertsans font-semibold text-[20px]">Accepting...</h1>
+        </div>
+      ) : (
+        <h1 className="text-white font-albertsans font-semibold text-[20px]">Accept Bautista Appointment</h1>
+      )}
+    </div>
    )}
        </div>
 )}
@@ -8963,7 +9013,19 @@ const submitpatientpendingorderbautista = async (e) => {
 
 
   {bautistaappointmentpaymentotal && bautistaappointmentconsultationremarks && (
-    <div onClick={() => handleCompleteAppointment(selectedpatientappointment.patientbautistaappointmentid, 'bautista')}  className=" bg-[#2d91cf]  hover:bg-[#1b6796] mt-4 h-[50px]  transition-all duration-300 ease-in-out flex justify-center items-center py-2 px-5 hover:cursor-pointer rounded-[20px]"><h1 className="text-white font-albertsans font-semibold text-[20px]">Complete Bautista Appointment</h1></div>
+    <div 
+      onClick={() => !isCompletingAppointment && handleCompleteAppointment(selectedpatientappointment.patientbautistaappointmentid, 'bautista')} 
+      className={`${isCompletingAppointment ? 'bg-gray-400 cursor-not-allowed' : 'bg-[#2d91cf] hover:bg-[#1b6796] hover:cursor-pointer'} mt-4 h-[50px] transition-all duration-300 ease-in-out flex justify-center items-center py-2 px-5 rounded-[20px]`}
+    >
+      {isCompletingAppointment ? (
+        <div className="flex items-center">
+          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+          <h1 className="text-white font-albertsans font-semibold text-[20px]">Completing...</h1>
+        </div>
+      ) : (
+        <h1 className="text-white font-albertsans font-semibold text-[20px]">Complete Bautista Appointment</h1>
+      )}
+    </div>
   )}
 
        </div>
@@ -9343,7 +9405,19 @@ ${selectedpatientappointment.patientambherappointmentstatus === 'Cancelled' ? 'b
   <div className=""><AmbhereyespecialistBox value={ambhereyespecialist} onChange={(e) => setambhereyespecialist(e.target.value)} /></div>  
 
   {ambhereyespecialist && (
-  <div onClick={() => handleacceptappointment(selectedpatientappointment.patientambherappointmentid, 'ambher')} className=" bg-[#5f9e1b]  hover:bg-[#55871f] mt-4 h-[50px]  transition-all duration-300 ease-in-out flex justify-center items-center py-2 px-5 hover:cursor-pointer rounded-[20px]"><h1 className="text-white font-albertsans font-semibold text-[20px]">Accept Ambher Appointment</h1></div>
+  <div 
+    onClick={() => !isAcceptingAppointment && handleacceptappointment(selectedpatientappointment.patientambherappointmentid, 'ambher')} 
+    className={`${isAcceptingAppointment ? 'bg-gray-400 cursor-not-allowed' : 'bg-[#5f9e1b] hover:bg-[#55871f] hover:cursor-pointer'} mt-4 h-[50px] transition-all duration-300 ease-in-out flex justify-center items-center py-2 px-5 rounded-[20px]`}
+  >
+    {isAcceptingAppointment ? (
+      <div className="flex items-center">
+        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+        <h1 className="text-white font-albertsans font-semibold text-[20px]">Accepting...</h1>
+      </div>
+    ) : (
+      <h1 className="text-white font-albertsans font-semibold text-[20px]">Accept Ambher Appointment</h1>
+    )}
+  </div>
   )} 
   </div>
 
@@ -9377,7 +9451,19 @@ ${selectedpatientappointment.patientambherappointmentstatus === 'Cancelled' ? 'b
 
 
 {ambherappointmentpaymentotal && ambherappointmentconsultationremarks && (
-  <div onClick={() => handleCompleteAppointment(selectedpatientappointment.patientambherappointmentid, 'ambher')}  className=" bg-[#2d91cf]  hover:bg-[#1b6796] mt-4 h-[50px]  transition-all duration-300 ease-in-out flex justify-center items-center py-2 px-5 hover:cursor-pointer rounded-[20px]"><h1 className="text-white font-albertsans font-semibold text-[20px]">Complete Ambher Appointment</h1></div>
+  <div 
+    onClick={() => !isCompletingAppointment && handleCompleteAppointment(selectedpatientappointment.patientambherappointmentid, 'ambher')} 
+    className={`${isCompletingAppointment ? 'bg-gray-400 cursor-not-allowed' : 'bg-[#2d91cf] hover:bg-[#1b6796] hover:cursor-pointer'} mt-4 h-[50px] transition-all duration-300 ease-in-out flex justify-center items-center py-2 px-5 rounded-[20px]`}
+  >
+    {isCompletingAppointment ? (
+      <div className="flex items-center">
+        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+        <h1 className="text-white font-albertsans font-semibold text-[20px]">Completing...</h1>
+      </div>
+    ) : (
+      <h1 className="text-white font-albertsans font-semibold text-[20px]">Complete Ambher Appointment</h1>
+    )}
+  </div>
 )}
 
 
@@ -9728,7 +9814,19 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
   <h1 className="font-bold text-[17px] text-[#343436] mb-3">Eye Specialist : </h1>
   <div className=""><BautistaeyespecialistBox value={bautistaeyespecialist} onChange={(e) => setbautistaeyespecialist(e.target.value)}/></div>
  {bautistaeyespecialist && (
-  <div onClick={() => handleacceptappointment(selectedpatientappointment.patientbautistaappointmentid, 'bautista')} className=" bg-[#5f9e1b]  hover:bg-[#55871f] mt-4 h-[50px]  transition-all duration-300 ease-in-out flex justify-center items-center py-2 px-5 hover:cursor-pointer rounded-[20px]"><h1 className="text-white font-albertsans font-semibold text-[20px]">Accept Bautista Appointment</h1></div>
+  <div 
+    onClick={() => !isAcceptingAppointment && handleacceptappointment(selectedpatientappointment.patientbautistaappointmentid, 'bautista')} 
+    className={`${isAcceptingAppointment ? 'bg-gray-400 cursor-not-allowed' : 'bg-[#5f9e1b] hover:bg-[#55871f] hover:cursor-pointer'} mt-4 h-[50px] transition-all duration-300 ease-in-out flex justify-center items-center py-2 px-5 rounded-[20px]`}
+  >
+    {isAcceptingAppointment ? (
+      <div className="flex items-center">
+        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+        <h1 className="text-white font-albertsans font-semibold text-[20px]">Accepting...</h1>
+      </div>
+    ) : (
+      <h1 className="text-white font-albertsans font-semibold text-[20px]">Accept Bautista Appointment</h1>
+    )}
+  </div>
  )}
      </div>
 )}
@@ -9759,7 +9857,19 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
 
 
 {bautistaappointmentpaymentotal && bautistaappointmentconsultationremarks && (
-  <div onClick={() => handleCompleteAppointment(selectedpatientappointment.patientbautistaappointmentid, 'bautista')}  className=" bg-[#2d91cf]  hover:bg-[#1b6796] mt-4 h-[50px]  transition-all duration-300 ease-in-out flex justify-center items-center py-2 px-5 hover:cursor-pointer rounded-[20px]"><h1 className="text-white font-albertsans font-semibold text-[20px]">Complete Bautista Appointment</h1></div>
+  <div 
+    onClick={() => !isCompletingAppointment && handleCompleteAppointment(selectedpatientappointment.patientbautistaappointmentid, 'bautista')} 
+    className={`${isCompletingAppointment ? 'bg-gray-400 cursor-not-allowed' : 'bg-[#2d91cf] hover:bg-[#1b6796] hover:cursor-pointer'} mt-4 h-[50px] transition-all duration-300 ease-in-out flex justify-center items-center py-2 px-5 rounded-[20px]`}
+  >
+    {isCompletingAppointment ? (
+      <div className="flex items-center">
+        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+        <h1 className="text-white font-albertsans font-semibold text-[20px]">Completing...</h1>
+      </div>
+    ) : (
+      <h1 className="text-white font-albertsans font-semibold text-[20px]">Complete Bautista Appointment</h1>
+    )}
+  </div>
 )}
 
      </div>
