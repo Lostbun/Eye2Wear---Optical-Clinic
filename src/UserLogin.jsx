@@ -124,89 +124,90 @@ const handleloginsubmit = async (e) => {
               
 
               //If the user is patient it will assign token
-              if(user  === 'Patient'){
-                localStorage.setItem("patienttoken", data.jsontoken);
-                localStorage.setItem("patientdetails", JSON.stringify(data.patient));
-                localStorage.setItem("patientid", data.patient._id);
-                localStorage.setItem("patientemail", data.patient.patientemail);
-                localStorage.setItem("patientfirstname", data.patient.patientfirstname);
-                localStorage.setItem("patientlastname", data.patient.patientlastname);
-                localStorage.setItem("patientname", data.patient.patientfirstname + " " + data.patient.patientlastname);
-                localStorage.setItem('role', 'patient');
-                localStorage.setItem('token', data.jsontoken);
-                axios.defaults.headers.common['Authorization'] = `Bearer ${data.jsontoken}`;
-
-                
-                setloginnotice({
-                    text:"Patient Login Successful!",
-                    type:"success"
-                });
+if(user === 'Patient'){
+  localStorage.setItem("patienttoken", data.jsontoken);
+  localStorage.setItem("patientdetails", JSON.stringify(data.patient));
+  localStorage.setItem("patientid", data.patient._id);
+  localStorage.setItem("patientemail", data.patient.patientemail);
+  localStorage.setItem("patientfirstname", data.patient.patientfirstname);
+  localStorage.setItem("patientlastname", data.patient.patientlastname);
+  localStorage.setItem("patientname", data.patient.patientfirstname + " " + data.patient.patientlastname);
+  localStorage.setItem('role', 'patient');
+  localStorage.setItem('token', data.jsontoken);
+  localStorage.setItem('needsSocketInit', 'true');
   
-
-                setTimeout(() => {
-                    navigate("/patientlandingpage");
-                }, 2000);
-              }
-
-
-              else if(user  === 'Staff'){
-                localStorage.setItem("stafftoken", data.jsontoken);
-                localStorage.setItem("staffdetails", JSON.stringify(data.staff));
-                localStorage.setItem("staffemail", data.staff.staffemail);
-                localStorage.setItem("staffname", data.staff.stafffirstname + " " + data.staff.stafflastname);
-                localStorage.setItem("staffclinic", data.staff.staffclinic);
-                localStorage.setItem('role', 'staff');
-                localStorage.setItem('token', data.jsontoken);
-                localStorage.setItem("currentuser", JSON.stringify({
-                  type: 'Staff',
-                  firstname: data.staff.stafffirstname,
-                  middlename: data.staff.staffmiddlename,
-                  lastname: data.staff.stafflastname,
-                  email: data.staff.staffemail,
-                  profilepicture: data.staff.staffprofilepicture
-                }));
-
-
-                
-                setloginnotice({
-                    text:"Staff Login Successful!",
-                    type:"success"
-                });
+  axios.defaults.headers.common['Authorization'] = `Bearer ${data.jsontoken}`;
   
+  setloginnotice({
+    text:"Patient Login Successful!",
+    type:"success"
+  });
 
-                setTimeout(() => {
-                  navigate("/admindashboard");
-              }, 2000);
-              }
+  setTimeout(() => {
+    navigate("/patientlandingpage");
+  }, 2000);
+}
+
+else if(user === 'Staff'){
+  localStorage.setItem("stafftoken", data.jsontoken);
+  localStorage.setItem("staffdetails", JSON.stringify(data.staff));
+  localStorage.setItem("staffid", data.staff._id); // ADD THIS LINE
+  localStorage.setItem("staffemail", data.staff.staffemail);
+  localStorage.setItem("staffname", data.staff.stafffirstname + " " + data.staff.stafflastname);
+  localStorage.setItem("staffclinic", data.staff.staffclinic);
+  localStorage.setItem('role', 'staff');
+  localStorage.setItem('token', data.jsontoken);
+  localStorage.setItem('needsSocketInit', 'true');
 
 
-              else if(user  === 'Owner'){
-                localStorage.setItem("ownertoken", data.jsontoken);
-                localStorage.setItem("ownerdetails", JSON.stringify(data.owner));
-                localStorage.setItem("owneremail", data.owner.owneremail);
-                localStorage.setItem("ownerclinic", data.owner.ownerclinic);
-                localStorage.setItem("ownername", data.owner.ownerfirstname + " " + data.owner.ownerlastname);
-                localStorage.setItem('role', 'owner');
-                localStorage.setItem('token', data.jsontoken);
-                localStorage.setItem("currentuser", JSON.stringify({
-                  type: 'Staff',
-                  firstname: data.owner.ownerfirstname,
-                  middlename: data.owner.ownermiddlename,
-                  lastname: data.owner.ownerlastname,
-                  email: data.owner.owneremail,
-                  profilepicture: data.owner.ownerprofilepicture
-                }));
-                
-                setloginnotice({
-                    text:"Owner Login Successful!",
-                    type:"success"
-                });
+  localStorage.setItem("currentuser", JSON.stringify({
+    type: 'Staff',
+    firstname: data.staff.stafffirstname,
+    middlename: data.staff.staffmiddlename,
+    lastname: data.staff.stafflastname,
+    email: data.staff.staffemail,
+    profilepicture: data.staff.staffprofilepicture
+  }));
+
+  setloginnotice({
+    text:"Staff Login Successful!",
+    type:"success"
+  });
+
+  setTimeout(() => {
+    navigate("/admindashboard");
+  }, 2000);
+}
+
+else if(user === 'Owner'){
+  localStorage.setItem("ownertoken", data.jsontoken);
+  localStorage.setItem("ownerdetails", JSON.stringify(data.owner));
+  localStorage.setItem("ownerid", data.owner._id); // ADD THIS LINE
+  localStorage.setItem("owneremail", data.owner.owneremail);
+  localStorage.setItem("ownerclinic", data.owner.ownerclinic);
+  localStorage.setItem("ownername", data.owner.ownerfirstname + " " + data.owner.ownerlastname);
+  localStorage.setItem('role', 'owner');
+  localStorage.setItem('token', data.jsontoken);
+  localStorage.setItem('needsSocketInit', 'true');
   
+  localStorage.setItem("currentuser", JSON.stringify({
+    type: 'Staff',
+    firstname: data.owner.ownerfirstname,
+    middlename: data.owner.ownermiddlename,
+    lastname: data.owner.ownerlastname,
+    email: data.owner.owneremail,
+    profilepicture: data.owner.ownerprofilepicture
+  }));
+  
+  setloginnotice({
+    text:"Owner Login Successful!",
+    type:"success"
+  });
 
-                setTimeout(() => {
-                  navigate("/admindashboard");
-              }, 2000);
-              }
+  setTimeout(() => {
+    navigate("/admindashboard");
+  }, 2000);
+}
 
 
               else if(user  === 'Admin'){
