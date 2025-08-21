@@ -184,6 +184,10 @@ function AdminDashboard(){
 
   const loggedinusertype = JSON.parse(localStorage.getItem('currentuser'));
   
+  // Debug logging to check the user role
+  console.log('Current user from localStorage:', loggedinusertype);
+  console.log('User role:', loggedinusertype?.role);
+  
   // Smart caching with real-time updates for admin data
   const { smartFetch, realtimeUpdates, CACHE_DURATIONS } = useSmartCache();
   
@@ -211,6 +215,8 @@ function AdminDashboard(){
   const {adminlogout, fetchadmindetails} = useAdminAuth();
 
   const [ownerownedclinic,setownerownedclinic] = useState('');
+  const [staffclinic, setStaffClinic] = useState('');
+  const [currentUserClinic, setCurrentUserClinic] = useState('');
 
 
   const currentusertoken = localStorage.getItem("stafftoken") ||
@@ -223,6 +229,26 @@ function AdminDashboard(){
   const currentuserloggedin = localStorage.getItem("stafftoken") ? "Staff" :
                               localStorage.getItem("ownertoken") ? "Owner" :
                               localStorage.getItem("admintoken") ? "Admin" : null;
+
+  // Helper function to determine if user should see only Ambher Optical data
+  const isAmbherOnlyUser = () => {
+    if (currentuserloggedin === "Staff") {
+      return localStorage.getItem('staffclinic') === 'Ambher Optical' || staffclinic === 'Ambher Optical';
+    } else if (currentuserloggedin === "Owner") {
+      return ownerownedclinic === 'Ambher Optical';
+    }
+    return false; // Admin can see all data
+  };
+
+  // Helper function to determine if user should see only Bautista Eye Center data
+  const isBautistaOnlyUser = () => {
+    if (currentuserloggedin === "Staff") {
+      return localStorage.getItem('staffclinic') === 'Bautista Eye Center' || staffclinic === 'Bautista Eye Center';
+    } else if (currentuserloggedin === "Owner") {
+      return ownerownedclinic === 'Bautista Eye Center';
+    }
+    return false; // Admin can see all data
+  };
 
 
   const handlelogout = () => {
@@ -258,6 +284,8 @@ function AdminDashboard(){
           setadminmiddlename(data.staffmiddlename || '');
           setadminlastname(data.stafflastname || '');
           setadminprofilepicture(data.staffprofilepicture || '');
+          setStaffClinic(data.staffclinic || '');
+          setCurrentUserClinic(data.staffclinic || '');
         }
       }
 
@@ -269,6 +297,7 @@ function AdminDashboard(){
           setadminlastname(data.ownerlastname || '');
           setadminprofilepicture(data.ownerprofilepicture || '');
           setownerownedclinic(data.ownerclinic || '');
+          setCurrentUserClinic(data.ownerclinic || '');
         }
       }
 
@@ -287,13 +316,25 @@ function AdminDashboard(){
 
 
 
+  // Check if user role is admin - enhanced detection
+  const isAdminRole = loggedinusertype?.role === 'admin' || 
+                      loggedinusertype?.role === 'Admin' ||
+                      localStorage.getItem('admintoken') !== null;
+  
+  console.log('isAdminRole:', isAdminRole);
+  console.log('Admin token exists:', localStorage.getItem('admintoken') !== null);
+  console.log('All localStorage keys:', Object.keys(localStorage));
+  
+  // For testing: uncomment the line below to force admin view
+  // const isAdminRole = true;
+  
   const [sidebarexpanded, setsidebarexpanded] = useState(false);
   const toggleadminsidebar = () => {
     setsidebarexpanded(!sidebarexpanded);
   }
 
-
-  const [activedashboard, setactivedashboard] = useState('summaryoverview');
+  // Set default dashboard based on user role - admin users default to account management
+  const [activedashboard, setactivedashboard] = useState(isAdminRole ? 'accountmanagement' : 'summaryoverview');
   const showdashboard = (dashboardid) => {
      setactivedashboard(dashboardid);
   };
@@ -349,7 +390,8 @@ function AdminDashboard(){
 
 
 
-  const [activeaccounttable, setactiveaccounttable] = useState('patientaccounttable');
+  // Set default account table based on user role - admin users default to administrator table
+  const [activeaccounttable, setactiveaccounttable] = useState(isAdminRole ? 'administratoraccounttable' : 'patientaccounttable');
   const showaccounttable = (accounttableid) => {
         setactiveaccounttable(accounttableid);
   };
@@ -1746,9 +1788,13 @@ const [showaddstaffdialog, setshowaddstaffdialog] = useState(false);
               <th className="pb-3 pt-3 pl-2 pr-2 text-center">Clinic</th>
               <th className="pb-3 pt-3 pl-2 pr-2 text-center">Eye Specialist</th>
               <th className="pb-3 pt-3 pl-2 pr-2 text-center">isVerified</th>
-              <th className="pb-3 pt-3 pl-2 pr-2 text-center">Date Created</th>
-              <th className="pb-3 pt-3 text-center pr-3"></th>
-              <th className="pb-3 pt-3 text-center pr-3 rounded-tr-2xl"></th>
+              <th className={`pb-3 pt-3 pl-2 pr-2 text-center ${currentuserloggedin === "Staff" ? "rounded-tr-2xl" : ""}`}>Date Created</th>
+              {currentuserloggedin !== "Staff" && (
+                <>
+                  <th className="pb-3 pt-3 text-center pr-3"></th>
+                  <th className="pb-3 pt-3 text-center pr-3 rounded-tr-2xl"></th>
+                </>
+              )}
   
             </tr>
           </thead>
@@ -1792,44 +1838,48 @@ const [showaddstaffdialog, setshowaddstaffdialog] = useState(false);
                     year: 'numeric'
                   })}
                 </td>
-                <td><div onClick={() =>  {
-                  setselectededitowneraccount({
-                     id: owner._id,
-                     email: owner.owneremail,
-                     lastname: owner.ownerlastname,
-                     firstname: owner.ownerfirstname,
-                     middlename: owner.ownermiddlename,
-                     clinic: owner.ownerclinic,
-                     eyespecialist: owner.owneriseyespecialist,
-                     profilepicture: owner.ownerprofilepicture
-                     });
-  
-                  setownerformdata({
-                    role: 'owner',
-                    owneremail: owner.owneremail,
-                    ownerpassword: owner.ownerpassword,
-                    ownerlastname: owner.ownerlastname,
-                    ownerfirstname: owner.ownerfirstname,
-                    ownermiddlename: owner.ownermiddlename,
-                    ownerclinic: owner.ownerclinic,
-                    owneriseyespecialist: owner.owneriseyespecialist,
-                    ownerprofilepicture: owner.ownerprofilepicture
-                  });
-  
-                  setownerpreviewimage(owner.ownerprofilepicture);
-                  setshowviewownerdialog(true);}}
-  
-                 className="bg-[#383838]  hover:bg-[#595959]  mr-2 transition-all duration-300 ease-in-out flex justify-center items-center py-2 px-5 rounded-2xl hover:cursor-pointer"><i className="bx bxs-pencil text-white mr-1"/><h1 className="text-white">Edit</h1></div></td>
+                {currentuserloggedin !== "Staff" && (
+                  <>
+                    <td><div onClick={() =>  {
+                      setselectededitowneraccount({
+                         id: owner._id,
+                         email: owner.owneremail,
+                         lastname: owner.ownerlastname,
+                         firstname: owner.ownerfirstname,
+                         middlename: owner.ownermiddlename,
+                         clinic: owner.ownerclinic,
+                         eyespecialist: owner.owneriseyespecialist,
+                         profilepicture: owner.ownerprofilepicture
+                         });
     
-                <td><div onClick={() =>  {
-                  setselectedowneraccount({
-                     id: owner.ownerId,
-                     email: owner.owneremail,
-                     name: `${owner.ownerfirstname} ${owner.ownerlastname}`});
-                              
-                  setshowdeleteownerdialog(true);}}
-  
-                 className="bg-[#8c3226] hover:bg-[#ab4f43]  transition-all duration-300 ease-in-out flex justify-center items-center py-2 px-5 rounded-2xl hover:cursor-pointer"><i className="bx bxs-trash text-white mr-1"/><h1 className="text-white">Delete</h1></div></td>
+                      setownerformdata({
+                        role: 'owner',
+                        owneremail: owner.owneremail,
+                        ownerpassword: owner.ownerpassword,
+                        ownerlastname: owner.ownerlastname,
+                        ownerfirstname: owner.ownerfirstname,
+                        ownermiddlename: owner.ownermiddlename,
+                        ownerclinic: owner.ownerclinic,
+                        owneriseyespecialist: owner.owneriseyespecialist,
+                        ownerprofilepicture: owner.ownerprofilepicture
+                      });
+    
+                      setownerpreviewimage(owner.ownerprofilepicture);
+                      setshowviewownerdialog(true);}}
+    
+                     className="bg-[#383838]  hover:bg-[#595959]  mr-2 transition-all duration-300 ease-in-out flex justify-center items-center py-2 px-5 rounded-2xl hover:cursor-pointer"><i className="bx bxs-pencil text-white mr-1"/><h1 className="text-white">Edit</h1></div></td>
+        
+                    <td><div onClick={() =>  {
+                      setselectedowneraccount({
+                         id: owner.ownerId,
+                         email: owner.owneremail,
+                         name: `${owner.ownerfirstname} ${owner.ownerlastname}`});
+                                  
+                      setshowdeleteownerdialog(true);}}
+    
+                     className="bg-[#8c3226] hover:bg-[#ab4f43]  transition-all duration-300 ease-in-out flex justify-center items-center py-2 px-5 rounded-2xl hover:cursor-pointer"><i className="bx bxs-trash text-white mr-1"/><h1 className="text-white">Delete</h1></div></td>
+                  </>
+                )}
   
   
                 </tr>
@@ -2366,9 +2416,13 @@ return (
           <th className="pb-3 pt-3 pl-2 pr-2 text-center">Middlename</th>
           <th className="pb-3 pt-3 pl-2 pr-2 text-center">Email</th>
           <th className="pb-3 pt-3 pl-2 pr-2 text-center">isVerified</th>
-          <th className="pb-3 pt-3 pl-2 pr-2 text-center">Date Created</th>
-          <th className="pb-3 pt-3 text-center pr-3"></th>
-          <th className="pb-3 pt-3 text-center pr-3 rounded-tr-2xl"></th>
+          <th className={`pb-3 pt-3 pl-2 pr-2 text-center ${currentuserloggedin === "Staff" ? "rounded-tr-2xl" : ""}`}>Date Created</th>
+          {currentuserloggedin !== "Staff" && (
+            <>
+              <th className="pb-3 pt-3 text-center pr-3"></th>
+              <th className="pb-3 pt-3 text-center pr-3 rounded-tr-2xl"></th>
+            </>
+          )}
 
         </tr>
       </thead>
@@ -2410,40 +2464,44 @@ return (
                 year: 'numeric'
               })}
             </td>
-            <td><div onClick={() =>  {
-              setselectededitadminaccount({
-                 id: admin._id,
-                 email: admin.adminemail,
-                 lastname: admin.adminlastname,
-                 firstname: admin.adminfirstname,
-                 middlename: admin.adminmiddlename,
-                 profilepicture: admin.adminprofilepicture
-                 });
-
-              setadminformdata({
-                role: 'Admin',
-                adminemail: admin.adminemail,
-                adminpassword: admin.adminpassword,
-                adminlastname: admin.adminlastname,
-                adminfirstname: admin.adminfirstname,
-                adminmiddlename: admin.adminmiddlename,
-                adminprofilepicture: admin.adminprofilepicture
-              });
-
-              setadminpreviewimage(admin.adminprofilepicture);
-              setshowviewadmindialog(true);}}
-
-             className="bg-[#383838]  hover:bg-[#595959]  mr-2 transition-all duration-300 ease-in-out flex justify-center items-center py-2 px-5 rounded-2xl hover:cursor-pointer"><i className="bx bxs-pencil text-white mr-1"/><h1 className="text-white">Edit</h1></div></td>
-
-            <td><div onClick={() =>  {
-              setselectedadminaccount({
-                 id: admin.adminId,
-                 email: admin.adminemail,
-                 name: `${admin.adminfirstname} ${admin.adminlastname}`});
-                          
-              setshowdeleteadmindialog(true);}}
-
-             className="bg-[#8c3226] hover:bg-[#ab4f43]  transition-all duration-300 ease-in-out flex justify-center items-center py-2 px-5 rounded-2xl hover:cursor-pointer"><i className="bx bxs-trash text-white mr-1"/><h1 className="text-white">Delete</h1></div></td>
+            {currentuserloggedin !== "Staff" && (
+              <>
+                <td><div onClick={() =>  {
+                  setselectededitadminaccount({
+                     id: admin._id,
+                     email: admin.adminemail,
+                     lastname: admin.adminlastname,
+                     firstname: admin.adminfirstname,
+                     middlename: admin.adminmiddlename,
+                     profilepicture: admin.adminprofilepicture
+                     });
+  
+                  setadminformdata({
+                    role: 'Admin',
+                    adminemail: admin.adminemail,
+                    adminpassword: admin.adminpassword,
+                    adminlastname: admin.adminlastname,
+                    adminfirstname: admin.adminfirstname,
+                    adminmiddlename: admin.adminmiddlename,
+                    adminprofilepicture: admin.adminprofilepicture
+                  });
+  
+                  setadminpreviewimage(admin.adminprofilepicture);
+                  setshowviewadmindialog(true);}}
+  
+                 className="bg-[#383838]  hover:bg-[#595959]  mr-2 transition-all duration-300 ease-in-out flex justify-center items-center py-2 px-5 rounded-2xl hover:cursor-pointer"><i className="bx bxs-pencil text-white mr-1"/><h1 className="text-white">Edit</h1></div></td>
+  
+                <td><div onClick={() =>  {
+                  setselectedadminaccount({
+                     id: admin.adminId,
+                     email: admin.adminemail,
+                     name: `${admin.adminfirstname} ${admin.adminlastname}`});
+                              
+                  setshowdeleteadmindialog(true);}}
+  
+                 className="bg-[#8c3226] hover:bg-[#ab4f43]  transition-all duration-300 ease-in-out flex justify-center items-center py-2 px-5 rounded-2xl hover:cursor-pointer"><i className="bx bxs-trash text-white mr-1"/><h1 className="text-white">Delete</h1></div></td>
+              </>
+            )}
 
 
             </tr>
@@ -3720,6 +3778,26 @@ const handledeleteappointmentbyclinic = async (appointmentId, clinicType) => {
 const handleviewappointment = (appointment) => {
   setselectedpatientappointment(appointment);
 
+  // Populate form fields with existing appointment data
+  if (appointment) {
+    // Ambher Optical data
+    if (appointment.patientambherappointmentdate) {
+      setambhereyespecialist(appointment.patientambherappointmenteyespecialist || '');
+      setambherappointmentpaymentotal(appointment.patientambherappointmentpaymentotal || null);
+      setambherappointmentconsultationremarkssubject(appointment.patientambherappointmentconsultationremarkssubject || '');
+      setambherappointmentconsultationremarks(appointment.patientambherappointmentconsultationremarks || '');
+      setambherappointmentprescription(appointment.patientambherappointmentprescription || '');
+    }
+    
+    // Bautista Eye Center data
+    if (appointment.patientbautistaappointmentdate) {
+      setbautistaeyespecialist(appointment.patientbautistaappointmenteyespecialist || '');
+      setbautistaappointmentpaymentotal(appointment.patientbautistaappointmentpaymentotal || null);
+      setbautistaappointmentconsultationremarkssubject(appointment.patientbautistaappointmentconsultationremarkssubject || '');
+      setbautistaappointmentconsultationremarks(appointment.patientbautistaappointmentconsultationremarks || '');
+      setbautistaappointmentprescription(appointment.patientbautistaappointmentprescription || '');
+    }
+  }
 };
  
 
@@ -3751,8 +3829,6 @@ const handleacceptappointment = async (appointmentId, clinicType) => {
       body:JSON.stringify({
         [`patient${clinicType}appointmentstatus`]: 'Accepted',
         [`patient${clinicType}appointmentstatushistory`]:{
-          status:'Accepted',
-          changedAt: new Date(),
           changedBy: adminfirstname
         },
         [`patient${clinicType}appointmenteyespecialist`]:clinicType === 'ambher' ? ambhereyespecialist : bautistaeyespecialist
@@ -3818,10 +3894,9 @@ const handleacceptappointment = async (appointmentId, clinicType) => {
           body: JSON.stringify({
             [`patient${clinicType}appointmentstatus`]: 'Completed',
             [`patient${clinicType}appointmentstatushistory`]: {
-              status: 'Completed',
-              changedAt: new Date(),
               changedBy: adminfirstname
             },
+            [`patient${clinicType}appointmenteyespecialist`]: clinicType === 'ambher' ? ambhereyespecialist : bautistaeyespecialist,
             [`patient${clinicType}appointmentpaymentotal`]: clinicType === 'ambher' ? ambherappointmentpaymentotal : bautistaappointmentpaymentotal,
             [`patient${clinicType}appointmentconsultationremarkssubject`]: clinicType === 'ambher' ? ambherappointmentconsultationremarkssubject : bautistaappointmentconsultationremarkssubject,
             [`patient${clinicType}appointmentconsultationremarks`]: clinicType === 'ambher' ? ambherappointmentconsultationremarks : bautistaappointmentconsultationremarks,
@@ -4184,7 +4259,17 @@ const deleteotherclinicrecord = async () => {
  //CATEGORIES MANAGEMENT //CATEGORIES MANAGEMENT //CATEGORIES MANAGEMENT //CATEGORIES MANAGEMENT //CATEGORIES MANAGEMENT //CATEGORIES MANAGEMENT //CATEGORIES MANAGEMENT //CATEGORIES MANAGEMENT
  //CATEGORIES MANAGEMENT //CATEGORIES MANAGEMENT //CATEGORIES MANAGEMENT //CATEGORIES MANAGEMENT //CATEGORIES MANAGEMENT //CATEGORIES MANAGEMENT //CATEGORIES MANAGEMENT //CATEGORIES MANAGEMENT
 
-const [activeinventorytable, setactiveinventorytable] = useState('ambherinventorytable');
+// Set default inventory table based on user role and clinic
+const getDefaultInventoryTable = () => {
+  if (isAmbherOnlyUser()) {
+    return 'ambherinventorytable';
+  } else if (isBautistaOnlyUser()) {
+    return 'bautistainventorytable';
+  }
+  return 'ambherinventorytable'; // Default for admin
+};
+
+const [activeinventorytable, setactiveinventorytable] = useState(getDefaultInventoryTable());
 const showinventorytable = (inventorytableid) => {
       setactiveinventorytable(inventorytableid);
 };
@@ -4414,6 +4499,7 @@ const showbautistainventorycategory = (bautistainventorycategorytableid) => {
 // Advanced filters state for Bautista
 const [activeBautistaProductFilter, setActiveBautistaProductFilter] = useState('all');
 const [bautistaPriceSortingProducts, setBautistaPriceSortingProducts] = useState('none');
+const [bautistaQuantitySortingProducts, setBautistaQuantitySortingProducts] = useState('none');
 
 const bautistaProductFilters = [
     { id: 'polarized', label: 'Polarized' },
@@ -4720,6 +4806,7 @@ useEffect(() => {
 // --- INVENTORY PRODUCT FILTERS STATE & LOGIC ---
 // Place these near your other inventory-related useState declarations
 const [activeProductFilter, setActiveProductFilter] = useState('all');
+const [quantitySortingProducts, setQuantitySortingProducts] = useState('none');
 const productFilters = [
 
   { id: 'polarized', label: 'Polarized' },
@@ -4772,9 +4859,20 @@ const sortedFilteredAmbherProducts = [...filteredAmbherProducts].sort((a, b) => 
     return (b.ambherinventoryproductprice || 0) - (a.ambherinventoryproductprice || 0);
   } else if (pricesortingProducts === 'Lowesttohighest') {
     return (a.ambherinventoryproductprice || 0) - (b.ambherinventoryproductprice || 0);
+  } else if (quantitySortingProducts === 'Highesttolowest') {
+    return (b.ambherinventoryproductquantity || 0) - (a.ambherinventoryproductquantity || 0);
+  } else if (quantitySortingProducts === 'Lowesttohighest') {
+    return (a.ambherinventoryproductquantity || 0) - (b.ambherinventoryproductquantity || 0);
+  } else if (quantitySortingProducts === 'Outofstock') {
+    return (a.ambherinventoryproductquantity || 0) - (b.ambherinventoryproductquantity || 0);
   }
   return 0;
 });
+
+// Filter out of stock products if needed
+const finalFilteredAmbherProducts = quantitySortingProducts === 'Outofstock' 
+  ? sortedFilteredAmbherProducts.filter(product => (product.ambherinventoryproductquantity || 0) === 0)
+  : sortedFilteredAmbherProducts;
 
 const ambherinventoryproductcount = ambherinventoryproducts.filter(
   product => product.ambherinventoryproductquantity <= 10
@@ -5212,6 +5310,27 @@ const filteredBautistaProducts = bautistainventoryproducts.filter(product => {
     return categoryMatch && (product.bautistainventoryproducttype?.toLowerCase().includes('accessor') || nameDesc.includes('accessor'));
   return categoryMatch;
 });
+
+// Sorting logic for Bautista products
+const sortedFilteredBautistaProducts = [...filteredBautistaProducts].sort((a, b) => {
+  if (bautistaPriceSortingProducts === 'Highesttolowest') {
+    return (b.bautistainventoryproductprice || 0) - (a.bautistainventoryproductprice || 0);
+  } else if (bautistaPriceSortingProducts === 'Lowesttohighest') {
+    return (a.bautistainventoryproductprice || 0) - (b.bautistainventoryproductprice || 0);
+  } else if (bautistaQuantitySortingProducts === 'Highesttolowest') {
+    return (b.bautistainventoryproductquantity || 0) - (a.bautistainventoryproductquantity || 0);
+  } else if (bautistaQuantitySortingProducts === 'Lowesttohighest') {
+    return (a.bautistainventoryproductquantity || 0) - (b.bautistainventoryproductquantity || 0);
+  } else if (bautistaQuantitySortingProducts === 'Outofstock') {
+    return (a.bautistainventoryproductquantity || 0) - (b.bautistainventoryproductquantity || 0);
+  }
+  return 0;
+});
+
+// Filter out of stock products if needed
+const finalFilteredBautistaProducts = bautistaQuantitySortingProducts === 'Outofstock' 
+  ? sortedFilteredBautistaProducts.filter(product => (product.bautistainventoryproductquantity || 0) === 0)
+  : sortedFilteredBautistaProducts;
 
 const bautistainventoryproductcount = bautistainventoryproducts.filter(
   product => product.bautistainventoryproductquantity <= 10
@@ -5674,7 +5793,18 @@ useEffect(() => {
 //BILLINGS AND ORDERS //BILLINGS AND ORDERS //BILLINGS AND ORDERS //BILLINGS AND ORDERS //BILLINGS AND ORDERS //BILLINGS AND ORDERS //BILLINGS AND ORDERS //BILLINGS AND ORDERS 
 //BILLINGS AND ORDERS //BILLINGS AND ORDERS //BILLINGS AND ORDERS //BILLINGS AND ORDERS //BILLINGS AND ORDERS //BILLINGS AND ORDERS //BILLINGS AND ORDERS //BILLINGS AND ORDERS 
 //BILLINGS AND ORDERS //BILLINGS AND ORDERS //BILLINGS AND ORDERS //BILLINGS AND ORDERS //BILLINGS AND ORDERS //BILLINGS AND ORDERS //BILLINGS AND ORDERS //BILLINGS AND ORDERS 
-const [activebillingsandorderstable, setactivebillingsandorderstable] = useState('ambherbillingsandorderstable');
+
+// Set default billings and orders table based on user role and clinic
+const getDefaultBillingsTable = () => {
+  if (isAmbherOnlyUser()) {
+    return 'ambherbillingsandorderstable';
+  } else if (isBautistaOnlyUser()) {
+    return 'bautistabillingsandorderstable';
+  }
+  return 'ambherbillingsandorderstable'; // Default for admin
+};
+
+const [activebillingsandorderstable, setactivebillingsandorderstable] = useState(getDefaultBillingsTable());
 const showbillingsandorderstable = (billingsandorderstableid) => {
       setactivebillingsandorderstable(billingsandorderstableid);
 };
@@ -5729,6 +5859,11 @@ const showbautistapickupnoworlater = (pickupnoworlaterid) => {
   const [bautistacount, setbautistaCount] = useState(1);
   const [selectedorderambherproduct, setselectedorderambherproduct] = useState(null);
   const [selectedorderbautistaproduct, setselectedorderbautistaproduct] = useState(null);
+  
+  // View Order Modal States
+  const [selectedOrderForView, setSelectedOrderForView] = useState(null);
+  const [showViewOrderModal, setShowViewOrderModal] = useState(false);
+  const [viewOrderCurrentImageIndex, setViewOrderCurrentImageIndex] = useState(0);
 
 
 
@@ -5740,6 +5875,7 @@ const showbautistapickupnoworlater = (pickupnoworlaterid) => {
   const [orderambherinventoryproductbrand , setorderambherinventoryproductbrand ] = useState("");
   const [orderambherinventoryproductmodelnumber, setorderambherinventoryproductmodelnumber ] = useState("");
   const [orderambherinventoryproductdescription , setorderambherinventoryproductdescription ] = useState("");
+  const [orderambherinventoryproductnotes , setorderambherinventoryproductnotes ] = useState("");
   const [orderambherinventoryproductprice , setorderambherinventoryproductprice ] = useState( );
   const [orderambherinventoryproductquantity , setorderambherinventoryproductquantity ] = useState( );
   const [orderambherinventoryproductimagepreviewimages , setorderambherinventoryproductimagepreviewimages ] = useState([]);
@@ -5777,6 +5913,7 @@ const showbautistapickupnoworlater = (pickupnoworlaterid) => {
   const [orderbautistainventoryproductbrand , setorderbautistainventoryproductbrand ] = useState("");
   const [orderbautistainventoryproductmodelnumber, setorderbautistainventoryproductmodelnumber ] = useState("");
   const [orderbautistainventoryproductdescription , setorderbautistainventoryproductdescription ] = useState("");
+  const [orderbautistainventoryproductnotes , setorderbautistainventoryproductnotes ] = useState("");
   const [orderbautistainventoryproductprice , setorderbautistainventoryproductprice ] = useState( );
   const [orderbautistainventoryproductquantity , setorderbautistainventoryproductquantity ] = useState( );
   const [orderbautistainventoryproductimagepreviewimages , setorderbautistainventoryproductimagepreviewimages ] = useState([]);
@@ -6428,6 +6565,7 @@ const submitpatientorderambher = async (e) => {
       patientorderambherproductquantity: ambhercount,
       patientorderambherproductsubtotal: orderambherinventoryproductprice * ambhercount,
       patientorderambherproductdescription: orderambherinventoryproductdescription,
+      patientorderambherproductnotes: orderambherNotes,
 
       //Total
       patientorderambhercustomfee: Number(orderambhercustomFee),
@@ -6606,6 +6744,7 @@ const submitpatientorderbautista = async (e) => {
       patientorderbautistaproductquantity: bautistacount,
       patientorderbautistaproductsubtotal: orderbautistainventoryproductprice * bautistacount,
       patientorderbautistaproductdescription: orderbautistainventoryproductdescription,
+      patientorderbautistaproductnotes: orderbautistaNotes,
 
       //Total
       patientorderbautistacustomfee: Number(orderbautistacustomFee),
@@ -6788,6 +6927,7 @@ const submitpatientpendingorderambher = async (e) => {
       patientorderambherproductquantity: ambhercount,
       patientorderambherproductsubtotal: orderambherinventoryproductprice * ambhercount,
       patientorderambherproductdescription: orderambherinventoryproductdescription,
+      patientorderambherproductnotes: orderambherNotes,
 
       //Total
       patientorderambhercustomfee: Number(orderambhercustomFee),
@@ -6906,6 +7046,7 @@ const submitpatientpendingorderbautista = async (e) => {
       patientorderbautistaproductquantity: bautistacount,
       patientorderbautistaproductsubtotal: orderbautistainventoryproductprice * bautistacount,
       patientorderbautistaproductdescription: orderbautistainventoryproductdescription,
+      patientorderbautistaproductnotes: orderbautistaNotes,
 
       //Total
       patientorderbautistacustomfee: Number(orderbautistacustomFee),
@@ -7301,6 +7442,8 @@ const submitpatientpendingorderbautista = async (e) => {
 
     
         
+          {/* Conditionally render sidebar - hide for admin role */}
+          {!isAdminRole && (
           <div className={`relative z-30 transition-all duration-300 ease-in-out flex flex-col justify-between items-start pl-3 bg-[#272828]  rounded-2xl    ml-3 mb-3 pt-3 pb-3 ${sidebarexpanded ? 'w-[365px]' : 'w-[85px]'}`} id="adminsidebar">
 
               <div className="group relative " id="expandbtn" onClick={toggleadminsidebar} ><div className="hover:bg-[#454545] hover:rounded-2xl  hover:cursor-pointer rounded-3xl  transition-all duration-300 ease-in-out flex items-center justify-center w-fit overflow-hidden">{sidebarexpanded &&(<i className='bx bx-collapse-horizontal  p-2 hover:text-white text-white text-[40px] ' ></i>)}   {!sidebarexpanded &&(<i className='bx bx-expand-horizontal  p-2 hover:text-white text-white text-[40px] ' ></i>)}<span className={`text-[16px] text-white font-semibold font-albertsans transition-all duration-300 ease-in-out whitespace-nowrap overflow-hidden ${sidebarexpanded ? 'opacity-100 w-auto ml-2 mr-2 animate-slideIn' : 'opacity-0 w-0 animate-slideOut'}`}>{sidebarexpanded ? 'Collapse Sidebar' : ''}</span></div></div>
@@ -7320,20 +7463,18 @@ const submitpatientpendingorderbautista = async (e) => {
               <div className="group relative" onClick={() => showdashboard('mappingintegration')}><div className={`hover:bg-[#454545] hover:rounded-2xl  hover:cursor-pointer rounded-3xl transition-all duration-300 ease-in-out flex items-center justify-center w-fit overflow-hidden  ${activedashboard ==='mappingintegration' ? 'bg-[#454545] rounded-2xl' :''}`}><i className={`bx bx-street-view p-3.5    text-[#cacacf] hover:text-white text-[27px]${activedashboard ==='mappingintegration' ? 'bg-[#454545] rounded-2xl text-white text-[27px]' :''}`}></i>  <span className={`text-[16px] text-white font-semibold font-albertsans transition-all duration-300 ease-in-out whitespace-nowrap overflow-hidden ${sidebarexpanded ? 'opacity-100 w-auto ml-2 mr-2 animate-slideIn' : 'opacity-0 w-0 animate-slideOut'}`}>Mapping Integration</span>  {!sidebarexpanded && (<span className="pointer-events-none absolute p-4 rounded-2xl ml-4 left-full text-white font-albertsans font-semibold text-[16px] top-1/2 transform -translate-y-1/2  bg-[#2b2a2a]   whitespace-nowrap  group-hover:opacity-100 group-hover:translate-x-0  transition-all duration-300 ease-in-out opacity-0 -translate-x-2 ">Mapping Integration</span>)}  </div></div>
 
               </div>
+          )}
 
-
-
-
-
-
-
-
-        <div  className=" rounded-2xl   ml-3  h-screen  w-[100%] flex flex-col items-center justify-center mr-3 mb-3" >
+        <div  className={`rounded-2xl ${isAdminRole ? 'ml-3' : 'ml-3'} h-screen w-[100%] flex flex-col items-center justify-center mr-3 mb-3`} >
           
           <div className="flex flex-col items-start w-full h-[12%] rounded-2xl" id="greet">
-
-            <h1 className="ml-5 mt-1 font-albertsans font-bold text-[40px] text-[#212134]">Good Day, {adminfirstname}!</h1>
-            <p className="ml-5 font-geistsemibold text-[16px] text-[#23232a]">Stay on top of your tasks, monitor progress, and track status.  </p>
+            
+            <h1 className="ml-5 mt-1 font-albertsans font-bold text-[40px] text-[#212134]">
+              {isAdminRole ? `Good Day, ${adminfirstname}! - Account Management` : `Good Day, ${adminfirstname}!`}
+            </h1>
+            <p className="ml-5 font-geistsemibold text-[16px] text-[#23232a]">
+              {isAdminRole ? 'Manage user accounts and permissions across the system.' : 'Stay on top of your tasks, monitor progress, and track status.'}
+            </p>
 
           </div>
 
@@ -7349,7 +7490,7 @@ const submitpatientpendingorderbautista = async (e) => {
 {/* Summary Overview */}{/* Summary Overview */}{/* Summary Overview */}{/* Summary Overview */}{/* Summary Overview */}
 {/* Summary Overview */}{/* Summary Overview */}{/* Summary Overview */}{/* Summary Overview */}{/* Summary Overview */}
 {/* Summary Overview */}{/* Summary Overview */}{/* Summary Overview */}{/* Summary Overview */}{/* Summary Overview */}
-              { activedashboard === 'summaryoverview' && ( <div id="summaryoverview" className="   flex justify-center items-center w-[100%] h-[100%] rounded-2xl" > 
+              { (activedashboard === 'summaryoverview' && !isAdminRole) && ( <div id="summaryoverview" className="   flex justify-center items-center w-[100%] h-[100%] rounded-2xl" > 
                 
                   {/* Left */}
                   <div className="pl-5 w-[35%] h-full rounded-2xl flex flex-col justify-center items-center mr-2">
@@ -7419,19 +7560,24 @@ const submitpatientpendingorderbautista = async (e) => {
               {/*Start of Account Management*/} {/*Start of Account Management*/} {/*Start of Account Management*/} {/*Start of Account Management*/} {/*Start of Account Management*/} 
               {/*Start of Account Management*/} {/*Start of Account Management*/} {/*Start of Account Management*/} {/*Start of Account Management*/} {/*Start of Account Management*/} 
             
-              { activedashboard === 'accountmanagement' && ( <div id="accountmanagement" className="pl-5 pr-5 pb-4 pt-4 transition-all duration-300  ease-in-out border-1 bg-white border-gray-200 shadow-lg w-[100%] h-[100%] rounded-2xl" >   
+              { (activedashboard === 'accountmanagement' || isAdminRole) && ( <div id="accountmanagement" className="pl-5 pr-5 pb-4 pt-4 transition-all duration-300  ease-in-out border-1 bg-white border-gray-200 shadow-lg w-[100%] h-[100%] rounded-2xl" >   
 
                 <div className="flex items-center"><i className="bx bxs-user-account text-[#184d85] text-[25px] mr-2"/> <h1 className=" font-albertsans font-bold text-[#184d85] text-[25px]">Account Management</h1></div>
-                <div className="flex justify-between items-center mt-3 h-[60px]">
-                  <div onClick={() => showaccounttable('patientaccounttable')}  className={`hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 pb-3 pt-3 text-center flex justify-center items-center ${activeaccounttable ==='patientaccounttable' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d] ${activeaccounttable ==='patientaccounttable' ? 'text-white' : ''}`}>Patients</h1></div>
-                  <div onClick={() => showaccounttable('staffaccounttable')}  className={`hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 pb-3 pt-3 text-center flex justify-center items-center ${activeaccounttable ==='staffaccounttable' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d] ${activeaccounttable ==='staffaccounttable' ? 'text-white' : ''}`}>Staff</h1></div>
+                <div className={`flex ${isAdminRole ? 'justify-start' : 'justify-between'} items-center mt-3 h-[60px] ${isAdminRole ? 'gap-4' : ''}`}>
+                  {/* Hide Patient and Staff tabs for admin users */}
+                  {!isAdminRole && (
+                    <>
+                      <div onClick={() => showaccounttable('patientaccounttable')}  className={`hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 pb-3 pt-3 text-center flex justify-center items-center ${activeaccounttable ==='patientaccounttable' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d] ${activeaccounttable ==='patientaccounttable' ? 'text-white' : ''}`}>Patients</h1></div>
+                      <div onClick={() => showaccounttable('staffaccounttable')}  className={`hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 pb-3 pt-3 text-center flex justify-center items-center ${activeaccounttable ==='staffaccounttable' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d] ${activeaccounttable ==='staffaccounttable' ? 'text-white' : ''}`}>Staff</h1></div>
+                    </>
+                  )}
                   <div onClick={() => showaccounttable('owneraccounttable')}  className={`hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 pb-3 pt-3 text-center flex justify-center items-center ${activeaccounttable ==='owneraccounttable' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d] ${activeaccounttable ==='owneraccounttable' ? 'text-white' : ''}`}>Owner</h1></div>
                   <div onClick={() => showaccounttable('administratoraccounttable')}  className={`hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 pb-3 pt-3 text-center flex justify-center items-center ${activeaccounttable ==='administratoraccounttable' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d] ${activeaccounttable ==='administratoraccounttable' ? 'text-white' : ''}`}>Administrator</h1></div>
                  </div>
 
         
         {/*Patient Account Table*/} {/*Patient Account Table*/} {/*Patient Account Table*/} {/*Patient Account Table*/} {/*Patient Account Table*/} {/*Patient Account Table*/} {/*Patient Account Table*/} {/*Patient Account Table*/} {/*Patient Account Table*/} 
-                 { activeaccounttable === 'patientaccounttable' && ( <div id="patientaccounttable" className="animate-fadeInUp flex flex-col items-center border-t-2  border-[#909090] w-[100%] h-[83%] rounded-2xl mt-5" >
+                 { (activeaccounttable === 'patientaccounttable' && !isAdminRole) && ( <div id="patientaccounttable" className="animate-fadeInUp flex flex-col items-center border-t-2  border-[#909090] w-[100%] h-[83%] rounded-2xl mt-5" >
     
                       <div className=" mt-5  w-full h-[60px] flex justify-between rounded-3xl pl-5 pr-5">              
                       <div className="flex justify-center items-center"><h2 className="font-albertsans font-bold text-[20px] text-[#434343] mr-3 ">Search: </h2><div className="relative flex items-center justify-center gap-3"><i className="bx bx-search absolute left-3 text-2xl text-gray-500"></i><input type="text" placeholder="Enter here..." value={searchpatients} onChange={(e) => {setsearchpatients(e.target.value); filterpatientaccount(e.target.value);}} className="transition-all duration-300 ease-in-out py-2 pl-10 rounded-3xl border-2 border-[#6c6c6c] focus:bg-slate-100 focus:outline-sky-500"></input></div></div>
@@ -7702,7 +7848,7 @@ const submitpatientpendingorderbautista = async (e) => {
 
 
         {/*Staff Account Table*/} {/*Staff Account Table*/} {/*Staff Account Table*/} {/*Staff Account Table*/} {/*Staff Account Table*/} {/*Staff Account Table*/} {/*Staff Account Table*/} {/*Staff Account Table*/}              
-                 { activeaccounttable === 'staffaccounttable' && ( <div id="staffaccounttable" className="animate-fadeInUp flex flex-col items-center border-t-2  border-[#909090] w-[100%] h-[83%] rounded-2xl mt-5" >
+                 { (activeaccounttable === 'staffaccounttable' && !isAdminRole) && ( <div id="staffaccounttable" className="animate-fadeInUp flex flex-col items-center border-t-2  border-[#909090] w-[100%] h-[83%] rounded-2xl mt-5" >
     
     <div className=" mt-5  w-full h-[60px] flex justify-between rounded-3xl pl-5 pr-5">              
     <div className="flex justify-center items-center"><h2 className="font-albertsans font-bold text-[20px] text-[#434343] mr-3 ">Search: </h2><div className="relative flex items-center justify-center gap-3"><i className="bx bx-search absolute left-3 text-2xl text-gray-500"></i><input type="text" placeholder="Enter here..." value={searchstaffs} onChange={(e) => {setsearchstaffs(e.target.value); filterstaffaccount(e.target.value);}} className="transition-all duration-300 ease-in-out py-2 pl-10 rounded-3xl border-2 border-[#6c6c6c] focus:bg-slate-100 focus:outline-sky-500"></input></div></div>
@@ -7980,7 +8126,9 @@ const submitpatientpendingorderbautista = async (e) => {
     
     <div className=" mt-5  w-full h-[60px] flex justify-between rounded-3xl pl-5 pr-5">              
     <div className="flex justify-center items-center"><h2 className="font-albertsans font-bold text-[20px] text-[#434343] mr-3 ">Search: </h2><div className="relative flex items-center justify-center gap-3"><i className="bx bx-search absolute left-3 text-2xl text-gray-500"></i><input type="text" placeholder="Enter here..." value={searchowners} onChange={(e) => {setsearchowners(e.target.value); filterowneraccount(e.target.value);}} className="transition-all duration-300 ease-in-out py-2 pl-10 rounded-3xl border-2 border-[#6c6c6c] focus:bg-slate-100 focus:outline-sky-500"></input></div></div>
-    <div onClick={() => setshowaddownerdialog(true)}  className=" mt-1 mb-1 hover:cursor-pointer hover:scale-103 bg-[#4ca22b] rounded-3xl flex justify-center items-center pl-3 pr-3 transition-all duration-300 ease-in-out"><i className="bx bx-user-plus text-white font-bold text-[30px]"/><p className="font-bold font-albertsans text-white text-[18px] ml-2">Add Owner</p></div>
+    {currentuserloggedin !== "Staff" && (
+      <div onClick={() => setshowaddownerdialog(true)}  className=" mt-1 mb-1 hover:cursor-pointer hover:scale-103 bg-[#4ca22b] rounded-3xl flex justify-center items-center pl-3 pr-3 transition-all duration-300 ease-in-out"><i className="bx bx-user-plus text-white font-bold text-[30px]"/><p className="font-bold font-albertsans text-white text-[18px] ml-2">Add Owner</p></div>
+    )}
     </div>
 
     <div className=" rounded-3xl h-full w-full mt-2 bg-[#f7f7f7]">
@@ -8268,7 +8416,9 @@ const submitpatientpendingorderbautista = async (e) => {
     
     <div className=" mt-5  w-full h-[60px] flex justify-between rounded-3xl pl-5 pr-5">              
     <div className="flex justify-center items-center"><h2 className="font-albertsans font-bold text-[20px] text-[#434343] mr-3 ">Search: </h2><div className="relative flex items-center justify-center gap-3"><i className="bx bx-search absolute left-3 text-2xl text-gray-500"></i><input type="text" placeholder="Enter here..." value={searchadmins} onChange={(e) => {setsearchadmins(e.target.value); filteradminaccount(e.target.value);}} className="transition-all duration-300 ease-in-out py-2 pl-10 rounded-3xl border-2 border-[#6c6c6c] focus:bg-slate-100 focus:outline-sky-500"></input></div></div>
-    <div onClick={() => setshowaddadmindialog(true)}  className=" mt-1 mb-1 hover:cursor-pointer hover:scale-103 bg-[#4ca22b] rounded-3xl flex justify-center items-center pl-3 pr-3 transition-all duration-300 ease-in-out"><i className="bx bx-user-plus text-white font-bold text-[30px]"/><p className="font-bold font-albertsans text-white text-[18px] ml-2">Add Admin</p></div>
+    {currentuserloggedin !== "Staff" && (
+      <div onClick={() => setshowaddadmindialog(true)}  className=" mt-1 mb-1 hover:cursor-pointer hover:scale-103 bg-[#4ca22b] rounded-3xl flex justify-center items-center pl-3 pr-3 transition-all duration-300 ease-in-out"><i className="bx bx-user-plus text-white font-bold text-[30px]"/><p className="font-bold font-albertsans text-white text-[18px] ml-2">Add Admin</p></div>
+    )}
     </div>
 
     <div className=" rounded-3xl h-full w-full mt-2 bg-[#f7f7f7]">
@@ -8544,7 +8694,7 @@ const submitpatientpendingorderbautista = async (e) => {
               {/*Profile Information*/} {/*Profile Information*/} {/*Profile Information*/} {/*Profile Information*/} {/*Profile Information*/} {/*Profile Information*/} 
               {/*Profile Information*/} {/*Profile Information*/} {/*Profile Information*/} {/*Profile Information*/} {/*Profile Information*/} {/*Profile Information*/} 
              
-              { activedashboard === 'profileinformation' && ( <div id="profileinformation" className="pl-5 pr-5 pb-4 pt-4 transition-all duration-300  ease-in-out border-1 bg-white border-gray-200 shadow-lg w-[100%] h-[100%] rounded-2xl" >   
+              { (activedashboard === 'profileinformation' && !isAdminRole) && ( <div id="profileinformation" className="pl-5 pr-5 pb-4 pt-4 transition-all duration-300  ease-in-out border-1 bg-white border-gray-200 shadow-lg w-[100%] h-[100%] rounded-2xl" >   
 
 
            <div className="flex items-center"><i className="bx bxs-user-detail text-[#184d85] text-[25px] mr-2"/> <h1 className=" font-albertsans font-bold text-[#184d85] text-[25px]">Profile Information</h1></div>
@@ -8936,7 +9086,7 @@ const submitpatientpendingorderbautista = async (e) => {
               {/*APPOINTMENT MANAGEMENT*/} {/*APPOINTMENT MANAGEMENT*/} {/*APPOINTMENT MANAGEMENT*/} {/*APPOINTMENT MANAGEMENT*/} {/*APPOINTMENT MANAGEMENT*/} {/*APPOINTMENT MANAGEMENT*/}
               {/*APPOINTMENT MANAGEMENT*/} {/*APPOINTMENT MANAGEMENT*/} {/*APPOINTMENT MANAGEMENT*/} {/*APPOINTMENT MANAGEMENT*/} {/*APPOINTMENT MANAGEMENT*/} {/*APPOINTMENT MANAGEMENT*/}
               
-               { activedashboard === 'appointmentmanagement' && (<div id="appointmentmanagement" className="pl-5 pr-5 pb-4 pt-4 transition-all duration-300  ease-in-out border-1 bg-white border-gray-200 shadow-lg w-[100%] h-[100%] rounded-2xl" >   
+               { (activedashboard === 'appointmentmanagement' && !isAdminRole) && (<div id="appointmentmanagement" className="pl-5 pr-5 pb-4 pt-4 transition-all duration-300  ease-in-out border-1 bg-white border-gray-200 shadow-lg w-[100%] h-[100%] rounded-2xl" >   
 
 <div className="flex items-center"><i className="bx bxs-calendar text-[#184d85] text-[25px] mr-2"/> <h1 className=" font-albertsans font-bold text-[#184d85] text-[25px]">Appointment Management</h1></div>
 
@@ -10484,7 +10634,7 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
               {/*Start of Medical Records*/}{/*Start of Medical Records*/}{/*Start of Medical Records*/}{/*Start of Medical Records*/}{/*Start of Medical Records*/}{/*Start of Medical Records*/}{/*Start of Medical Records*/}
               {/*Start of Medical Records*/}{/*Start of Medical Records*/}{/*Start of Medical Records*/}{/*Start of Medical Records*/}{/*Start of Medical Records*/}{/*Start of Medical Records*/}{/*Start of Medical Records*/}
               
-              { activedashboard === 'medicalrecords' && (<div id="medicalrecords" className="pl-5 pr-5 pb-4 pt-4 transition-all duration-300  ease-in-out border-1 bg-white border-gray-200 shadow-lg w-[100%] h-[100%] rounded-2xl" >   
+              { (activedashboard === 'medicalrecords' && !isAdminRole) && (<div id="medicalrecords" className="pl-5 pr-5 pb-4 pt-4 transition-all duration-300  ease-in-out border-1 bg-white border-gray-200 shadow-lg w-[100%] h-[100%] rounded-2xl" >   
                 
 
 
@@ -11070,15 +11220,22 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
               {/*Start of Inventory Management*/}{/*Start of Inventory Management*/}{/*Start of Inventory Management*/}{/*Start of Inventory Management*/}{/*Start of Inventory Management*/}{/*Start of Inventory Management*/}
               {/*Start of Inventory Management*/}{/*Start of Inventory Management*/}{/*Start of Inventory Management*/}{/*Start of Inventory Management*/}{/*Start of Inventory Management*/}{/*Start of Inventory Management*/}
 
-              { activedashboard === 'inventorymanagement' && ( <div id="inventorymanagement" className="pl-5 pr-5 pb-26 pt-4 transition-all duration-300  ease-in-out border-1 bg-white border-gray-200 shadow-lg w-[100%] h-auto rounded-2xl" >   
+              { (activedashboard === 'inventorymanagement' && !isAdminRole) && ( <div id="inventorymanagement" className="pl-5 pr-5 pb-26 pt-4 transition-all duration-300  ease-in-out border-1 bg-white border-gray-200 shadow-lg w-[100%] h-auto rounded-2xl" >   
 
               <div className="flex items-center"><i className="bx bxs-package text-[#184d85] text-[25px] mr-2"/> <h1 className=" font-albertsans font-bold text-[#184d85] text-[25px]">Inventory Management</h1></div>
 
   <div className="flex justify-start items-center mt-3 h-[60px]">
  {/*<div onClick={() => showinventorytable('allinventorytable')}  className={`hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 pb-3 pt-3 text-center flex justify-center items-center ${activeinventorytable ==='allinventorytable' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d] ${activeinventorytable ==='allinventorytable' ? 'text-white' : ''}`}>All</h1></div>*/}
-  <div onClick={() => showinventorytable('ambherinventorytable')}  className={`mr-3 hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 pb-3 pt-3 text-center flex justify-center items-center ${activeinventorytable ==='ambherinventorytable' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d] ${activeinventorytable ==='ambherinventorytable' ? 'text-white' : ''}`}>Ambher Optical</h1></div>
-  <div onClick={() => showinventorytable('bautistainventorytable')}  className={`ml-3 hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 pb-3 pt-3 text-center flex justify-center items-center ${activeinventorytable ==='bautistainventorytable' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d] ${activeinventorytable ==='bautistainventorytable' ? 'text-white' : ''}`}>Bautista Eye Center</h1></div>
   
+  {/* Show Ambher Optical tab only if admin or Ambher user */}
+  {(currentuserloggedin === 'Admin' || isAmbherOnlyUser()) && (
+    <div onClick={() => showinventorytable('ambherinventorytable')}  className={`mr-3 hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 pb-3 pt-3 text-center flex justify-center items-center ${activeinventorytable ==='ambherinventorytable' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d] ${activeinventorytable ==='ambherinventorytable' ? 'text-white' : ''}`}>Ambher Optical</h1></div>
+  )}
+  
+  {/* Show Bautista Eye Center tab only if admin or Bautista user */}
+  {(currentuserloggedin === 'Admin' || isBautistaOnlyUser()) && (
+    <div onClick={() => showinventorytable('bautistainventorytable')}  className={`ml-3 hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 pb-3 pt-3 text-center flex justify-center items-center ${activeinventorytable ==='bautistainventorytable' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d] ${activeinventorytable ==='bautistainventorytable' ? 'text-white' : ''}`}>Bautista Eye Center</h1></div>
+  )}
   
   </div>
 
@@ -11274,6 +11431,51 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
   </div>
 </div>
 
+                {/* Quantity Filter for Ambher */}
+                <div className="border-b-2 pb-3 flex items center w-full mt-7">
+                  <i className="bx bx-filter font-albertsans font-semibold text-[#363636] text-[25px]" />
+                  <h1 className="ml-2 text-[16px] font-albertsans font-semibold text-[#363636]">Filter by quantity</h1>
+                </div>
+                {quantitySortingProducts !== 'none' && (
+                  <div
+                    className="text-center cursor-pointer px-4 py-1 rounded-2xl border border-[#2781af] bg-white text-[#2781af] font-medium transition-all duration-200 hover:bg-[#2781af] hover:text-white hover:shadow-md mt-2"
+                    onClick={() => setQuantitySortingProducts('none')}
+                  >
+                    Clear filter
+                  </div>
+                )}
+                <div className="flex flex-wrap gap-2 mt-2 mb-4">
+                  <div
+                    onClick={() => setQuantitySortingProducts('Highesttolowest')}
+                    className={`text-center w-full cursor-pointer px-4 py-2 rounded-2xl border transition-all duration-200 text-sm font-medium
+                      ${quantitySortingProducts === 'Highesttolowest'
+                        ? 'bg-[#2781af] text-white border-[#2781af]'
+                        : 'bg-white text-gray-700 border-gray-300 hover:bg-blue-50'}`}
+                  >
+                    Highest to Lowest
+                  </div>
+
+                  <div
+                    onClick={() => setQuantitySortingProducts('Lowesttohighest')}
+                    className={`text-center w-full cursor-pointer px-4 py-2 rounded-2xl border transition-all duration-200 text-sm font-medium
+                      ${quantitySortingProducts === 'Lowesttohighest'
+                        ? 'bg-[#2781af] text-white border-[#2781af]'
+                        : 'bg-white text-gray-700 border-gray-300 hover:bg-blue-50'}`}
+                  >
+                    Lowest to Highest
+                  </div>
+
+                  <div
+                    onClick={() => setQuantitySortingProducts('Outofstock')}
+                    className={`text-center w-full cursor-pointer px-4 py-2 rounded-2xl border transition-all duration-200 text-sm font-medium
+                      ${quantitySortingProducts === 'Outofstock'
+                        ? 'bg-[#2781af] text-white border-[#2781af]'
+                        : 'bg-white text-gray-700 border-gray-300 hover:bg-blue-50'}`}
+                  >
+                    Out of Stock
+                  </div>
+                </div>
+
             
             {/*<div className=""> <AmbherinventorycategoryBox value={ambherinventorycategorynamebox} loading={loadingambherinventorycategorylist} onChange={(e) => setambherinventorycategorynamebox(e.target.value)} categories={ambherinventorycategorylist}/></div>*/}
 
@@ -11294,7 +11496,7 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
                 ): ambherinventoryproducts.length === 0 ? (
                   <div>No Products Found...</div> 
                 ):(
-                  sortedFilteredAmbherProducts
+                  finalFilteredAmbherProducts
                   .sort((a, b) => {
                     const aquant = a.ambherinventoryproductquantity || 0;
                     const bquant = b.ambherinventoryproductquantity || 0;
@@ -11867,6 +12069,51 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
                   </div>
                 </div>
 
+                {/* Quantity Filter for Bautista */}
+                <div className="border-b-2 pb-3 flex items center w-full mt-7">
+                  <i className="bx bx-filter font-albertsans font-semibold text-[#363636] text-[25px]" />
+                  <h1 className="ml-2 text-[16px] font-albertsans font-semibold text-[#363636]">Filter by quantity</h1>
+                </div>
+                {bautistaQuantitySortingProducts !== 'none' && (
+                  <div
+                    className="text-center cursor-pointer px-4 py-1 rounded-2xl border border-[#2781af] bg-white text-[#2781af] font-medium transition-all duration-200 hover:bg-[#2781af] hover:text-white hover:shadow-md mt-2"
+                    onClick={() => setBautistaQuantitySortingProducts('none')}
+                  >
+                    Clear filter
+                  </div>
+                )}
+                <div className="flex flex-wrap gap-2 mt-2 mb-4">
+                  <div
+                    onClick={() => setBautistaQuantitySortingProducts('Highesttolowest')}
+                    className={`text-center w-full cursor-pointer px-4 py-2 rounded-2xl border transition-all duration-200 text-sm font-medium
+                      ${bautistaQuantitySortingProducts === 'Highesttolowest'
+                        ? 'bg-[#2781af] text-white border-[#2781af]'
+                        : 'bg-white text-gray-700 border-gray-300 hover:bg-blue-50'}`}
+                  >
+                    Highest to Lowest
+                  </div>
+
+                  <div
+                    onClick={() => setBautistaQuantitySortingProducts('Lowesttohighest')}
+                    className={`text-center w-full cursor-pointer px-4 py-2 rounded-2xl border transition-all duration-200 text-sm font-medium
+                      ${bautistaQuantitySortingProducts === 'Lowesttohighest'
+                        ? 'bg-[#2781af] text-white border-[#2781af]'
+                        : 'bg-white text-gray-700 border-gray-300 hover:bg-blue-50'}`}
+                  >
+                    Lowest to Highest
+                  </div>
+
+                  <div
+                    onClick={() => setBautistaQuantitySortingProducts('Outofstock')}
+                    className={`text-center w-full cursor-pointer px-4 py-2 rounded-2xl border transition-all duration-200 text-sm font-medium
+                      ${bautistaQuantitySortingProducts === 'Outofstock'
+                        ? 'bg-[#2781af] text-white border-[#2781af]'
+                        : 'bg-white text-gray-700 border-gray-300 hover:bg-blue-50'}`}
+                  >
+                    Out of Stock
+                  </div>
+                </div>
+
             
             {/*<div className=""> <AmbherinventorycategoryBox value={bautistainventorycategorynamebox} loading={loadingbautistainventorycategorylist} onChange={(e) => setbautistainventorycategorynamebox(e.target.value)} categories={bautistainventorycategorylist}/></div>*/}
 
@@ -11887,7 +12134,7 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
                 ): bautistainventoryproducts.length === 0 ? (
                   <div>No Products Found...</div> 
                 ):(
-                  [...filteredBautistaProducts]
+                  finalFilteredBautistaProducts
                   .sort((a, b) => {
                     const aquant = a.bautistainventoryproductquantity || 0;
                     const bquant = b.bautistainventoryproductquantity || 0;
@@ -12309,13 +12556,22 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
               {/*Start of Billings and Orders*/} {/*Start of Billings and Orders*/} {/*Start of Billings and Orders*/} {/*Start of Billings and Orders*/} {/*Start of Billings and Orders*/} 
               {/*Start of Billings and Orders*/} {/*Start of Billings and Orders*/} {/*Start of Billings and Orders*/} {/*Start of Billings and Orders*/} {/*Start of Billings and Orders*/} 
 
-              { activedashboard === 'billingsandorders' && ( <div id="billingsandorders"  className="pl-5 pr-5 pb-26 pt-4 transition-all duration-300  ease-in-out border-1 bg-white border-gray-200 shadow-lg w-[100%] min-h-full h-auto rounded-2xl" >   
+              { (activedashboard === 'billingsandorders' && !isAdminRole) && ( <div id="billingsandorders"  className="pl-5 pr-5 pb-26 pt-4 transition-all duration-300  ease-in-out border-1 bg-white border-gray-200 shadow-lg w-[100%] min-h-full h-auto rounded-2xl" >   
 
                 <div className="flex items-center"><i className="bx bxs-receipt text-[#184d85] text-[25px] mr-2"/> <h1 className=" font-albertsans font-bold text-[#184d85] text-[25px]">Billings and Orders</h1></div>
                 
                 <div className="flex justify-start items-center mt-3 h-[60px]">
-                <div onClick={() => showbillingsandorderstable('ambherbillingsandorderstable')}  className={`mr-3 hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 pb-3 pt-3 text-center flex justify-center items-center ${activebillingsandorderstable ==='ambherbillingsandorderstable' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d] ${activebillingsandorderstable ==='ambherbillingsandorderstable' ? 'text-white' : ''}`}>Ambher Optical</h1></div>
-                <div onClick={() => showbillingsandorderstable('bautistabillingsandorderstable')}  className={`ml-3 hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 pb-3 pt-3 text-center flex justify-center items-center ${activebillingsandorderstable ==='bautistabillingsandorderstable' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d] ${activebillingsandorderstable ==='bautistabillingsandorderstable' ? 'text-white' : ''}`}>Bautista Eye Center</h1></div>
+                
+                {/* Show Ambher Optical tab only if admin or Ambher user */}
+                {(currentuserloggedin === 'Admin' || isAmbherOnlyUser()) && (
+                  <div onClick={() => showbillingsandorderstable('ambherbillingsandorderstable')}  className={`mr-3 hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 pb-3 pt-3 text-center flex justify-center items-center ${activebillingsandorderstable ==='ambherbillingsandorderstable' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d] ${activebillingsandorderstable ==='ambherbillingsandorderstable' ? 'text-white' : ''}`}>Ambher Optical</h1></div>
+                )}
+                
+                {/* Show Bautista Eye Center tab only if admin or Bautista user */}
+                {(currentuserloggedin === 'Admin' || isBautistaOnlyUser()) && (
+                  <div onClick={() => showbillingsandorderstable('bautistabillingsandorderstable')}  className={`ml-3 hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 pb-3 pt-3 text-center flex justify-center items-center ${activebillingsandorderstable ==='bautistabillingsandorderstable' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d] ${activebillingsandorderstable ==='bautistabillingsandorderstable' ? 'text-white' : ''}`}>Bautista Eye Center</h1></div>
+                )}
+                
                 </div>
 
 
@@ -12346,19 +12602,10 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
         ) : (
           filteredambherOrders.map((order) => (
                   <div  key={order.ambherinventoryproductid} onClick={() => {
-                                                  
-                                                                           setshowpatientorderedambher(true);
-                                                                           setselectedorderambherproduct(order);
-                                                                           setorderambhercurrentimageindex(0);
-                                                                           setambherCount(1);
-                                                                           setorderambherinventorycategorynamebox(order?.ambherinventoryproductcategory || '');
-                                                                           setorderambherinventoryproductname(order?.ambherinventoryproductname || '');
-                                                                           setorderambherinventoryproductbrand(order?.ambherinventoryproductbrand || '');
-                                                                           setorderambherinventoryproductmodelnumber(order?.ambherinventoryproductmodelnumber || '');
-                                                                           setorderambherinventoryproductdescription(order?.ambherinventoryproductdescription || '');
-                                                                           setorderambherinventoryproductprice(order?.ambherinventoryproductprice || 0);
-                                                                           setorderambherinventoryproductquantity(order?.ambherinventoryproductquantity || 0);
-                                                                           setorderambherinventoryproductimagepreviewimages(order?.ambherinventoryproductimagepreviewimages || []);}}   className="hover:bg-gray-100 transition-all duration-300 ease-in-out cursor-pointer pb-7 shadow-md rounded-2xl py-3.25 px-3.25 mb-3 border-1 flex items-center motion-preset-slide-up w-full h-auto ">
+                    setSelectedOrderForView(order);
+                    setShowViewOrderModal(true);
+                    setViewOrderCurrentImageIndex(0);
+                  }} className="hover:bg-gray-100 transition-all duration-300 ease-in-out cursor-pointer pb-7 shadow-md rounded-2xl py-3.25 px-3.25 mb-3 border-1 flex items-center motion-preset-slide-up w-full h-auto ">
                    <img src={order.patientorderambherproductimage?.[0] || 'default-image-url'} alt={order.patientorderambherproductname}  className="mr-5 w-35 h-35 rounded-2xl"/>
                     <div className="mt-2 h-auto w-full flex flex-col items-start">
                         <div className="flex justify-between w-full"><h1 className="font-semibold font-albertsans text-[20px] text-[#1f1f1f]">{order.patientorderambherproductname}</h1>                  
@@ -12459,6 +12706,7 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
                                                                            setorderambherinventoryproductbrand(product?.ambherinventoryproductbrand || '');
                                                                            setorderambherinventoryproductmodelnumber(product?.ambherinventoryproductmodelnumber || '');
                                                                            setorderambherinventoryproductdescription(product?.ambherinventoryproductdescription || '');
+                                                                           setorderambherinventoryproductnotes(product?.ambherinventoryproductnotes || '');
                                                                            setorderambherinventoryproductprice(product?.ambherinventoryproductprice || 0);
                                                                            setorderambherinventoryproductquantity(product?.ambherinventoryproductquantity || 0);
                                                                            setorderambherinventoryproductimagepreviewimages(product?.ambherinventoryproductimagepreviewimages || []);}}    className={`${product.ambherinventoryproductquantity == 0 ? 'opacity-50 relative' : ''} mb-2  items-center p-2 min-h-25 h-auto rounded-2xl border-1 hover:shadow-md hover:cursor-pointer transition-all duration-300 ease-in-out max-w-full`} >
@@ -12639,7 +12887,7 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
 
                                  <div className="flex items-center gap-2  mt-3">
                                     <h1 className="w-35 text-[#242424] font-albertsans font-semibold text-[17px]">Amount Paid : </h1>
-                                    <input  value={orderambheramountPaid} onChange={(e) => setorderambheramountPaid(e.target.value)}  type="text" placeholder="10% for downpayment"  className=" transition-all duration-300 ease-in-out  min-w-14 w-auto px-5 py-1.5  rounded-2xl  bg-[#e4e4e4] focus:bg-slate-100 focus:outline-sky-500"></input>
+                                    <input  value={orderambheramountPaid} onChange={(e) => setorderambheramountPaid(e.target.value)}  type="text" placeholder="50% for downpayment"  className=" transition-all duration-300 ease-in-out  min-w-14 w-auto px-5 py-1.5  rounded-2xl  bg-[#e4e4e4] focus:bg-slate-100 focus:outline-sky-500"></input>
                                  </div>
                                 
 
@@ -12713,7 +12961,7 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
                                     )}
                                   </div>
                                   ) : (
-                                 (Number(orderambheramountPaid) >= Number(orderambhertotalwithFee) * 0.10) || activeambherpickupnoworlater==='ambherorderpickuplater' ? (
+                                 (Number(orderambheramountPaid) >= Number(orderambhertotalwithFee) * 0.50) || activeambherpickupnoworlater==='ambherorderpickuplater' ? (
                                   <div
                                     onClick={(e) => submitpatientpendingorderambher(e)}
                                     disabled={isSubmittingAmbherPendingOrder}
@@ -12952,7 +13200,7 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
 
                                  <div className="flex items-center gap-2  mt-3">
                                     <h1 className="w-35 text-[#242424] font-albertsans font-semibold text-[17px]">Amount Paid : </h1>
-                                    <input  value={orderambheramountPaid} onChange={(e) => setorderambheramountPaid(e.target.value)}  type="text" placeholder="10% for downpayment"  className=" transition-all duration-300 ease-in-out  min-w-14 w-auto px-5 py-1.5  rounded-2xl  bg-[#e4e4e4] focus:bg-slate-100 focus:outline-sky-500"></input>
+                                    <input  value={orderambheramountPaid} onChange={(e) => setorderambheramountPaid(e.target.value)}  type="text" placeholder="50% for downpayment"  className=" transition-all duration-300 ease-in-out  min-w-14 w-auto px-5 py-1.5  rounded-2xl  bg-[#e4e4e4] focus:bg-slate-100 focus:outline-sky-500"></input>
                                  </div>
                                 
 
@@ -13026,7 +13274,7 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
                                     )}
                                   </div>
                                   ) : (
-                                 (Number(orderambheramountPaid) >= Number(orderambhertotalwithFee) * 0.10) || activeambherpickupnoworlater==='ambherorderpickuplater' ? (
+                                 (Number(orderambheramountPaid) >= Number(orderambhertotalwithFee) * 0.50) || activeambherpickupnoworlater==='ambherorderpickuplater' ? (
                                   <div 
                                     onClick={(e) => submitpatientpendingorderambher(e)} 
                                     disabled={isSubmittingAmbherPendingOrder}
@@ -13120,21 +13368,12 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
        {filteredbautistaOrders.length === 0 ? (
           <div className="text-gray-500 p-4">No orders found</div>
         ) : (
-          filteredbautistaOrders.map((order) => (     <div  key={order.ambherinventoryproductid} onClick={() => {
-                                                  
-                                                                           setshowpatientorderedambher(true);
-                                                                           setselectedorderambherproduct(order);
-                                                                           setorderambhercurrentimageindex(0);
-                                                                         setambherCount(1);
-                                                                           setorderambherinventorycategorynamebox(order?.ambherinventoryproductcategory || '');
-                                                                           setorderambherinventoryproductname(order?.ambherinventoryproductname || '');
-                                                                           setorderambherinventoryproductbrand(order?.ambherinventoryproductbrand || '');
-                                                                           setorderambherinventoryproductmodelnumber(order?.ambherinventoryproductmodelnumber || '');
-                                                                       setorderambherinventoryproductdescription(order?.ambherinventoryproductdescription || '');
-                                                                           setorderambherinventoryproductprice(order?.ambherinventoryproductprice || 0);
-                                                                           setorderambherinventoryproductquantity(order?.ambherinventoryproductquantity || 0);
-                                                                           setorderambherinventoryproductimagepreviewimages(order?.ambherinventoryproductimagepreviewimages || []);}}   className="hover:bg-gray-100 transition-all duration-300 ease-in-out cursor-pointer pb-7 shadow-md rounded-2xl py-3.25 px-3.25 mb-3 border-1 flex items-center motion-preset-slide-up w-full h-auto ">
-         
+          filteredbautistaOrders.map((order) => (
+                  <div  key={order.ambherinventoryproductid} onClick={() => {
+                    setSelectedOrderForView(order);
+                    setShowViewOrderModal(true);
+                    setViewOrderCurrentImageIndex(0);
+                  }} className="hover:bg-gray-100 transition-all duration-300 ease-in-out cursor-pointer pb-7 shadow-md rounded-2xl py-3.25 px-3.25 mb-3 border-1 flex items-center motion-preset-slide-up w-full h-auto ">
                    <img src={order.patientorderbautistaproductimage?.[0] || 'default-image-url'} alt={order.patientorderbautistaproductname}  className="mr-5 w-35 h-35 rounded-2xl"/>
                     <div className="mt-2 h-auto w-full flex flex-col items-start">
                         <div className="flex justify-between w-full"><h1 className="font-semibold font-albertsans text-[20px] text-[#1f1f1f]">{order.patientorderbautistaproductname}</h1>                   <span className={`ml-3 font-albertsans font-semibold rounded-full text-[15px] leading-5 px-4 py-2 inline-flex ${
@@ -13414,7 +13653,7 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
 
                                  <div className="flex items-center gap-2  mt-3">
                                     <h1 className="w-35 text-[#242424] font-albertsans font-semibold text-[17px]">Amount Paid : </h1>
-                                    <input  value={orderbautistaamountPaid} onChange={(e) => setorderbautistaamountPaid(e.target.value)}  type="text" placeholder="10% for downpayment"  className=" transition-all duration-300 ease-in-out  min-w-14 w-auto px-5 py-1.5  rounded-2xl  bg-[#e4e4e4] focus:bg-slate-100 focus:outline-sky-500"></input>
+                                    <input  value={orderbautistaamountPaid} onChange={(e) => setorderbautistaamountPaid(e.target.value)}  type="text" placeholder="50% for downpayment"  className=" transition-all duration-300 ease-in-out  min-w-14 w-auto px-5 py-1.5  rounded-2xl  bg-[#e4e4e4] focus:bg-slate-100 focus:outline-sky-500"></input>
                                  </div>
                                 
 
@@ -13488,7 +13727,7 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
                                     )}
                                   </div>
                                   ) : (
-                                 (Number(orderbautistaamountPaid) >= Number(orderbautistatotalwithFee) * 0.10) || activebautistapickupnoworlater==='bautistaorderpickuplater' ? (
+                                 (Number(orderbautistaamountPaid) >= Number(orderbautistatotalwithFee) * 0.50) || activebautistapickupnoworlater==='bautistaorderpickuplater' ? (
                                   <div 
                                     onClick={(e) => submitpatientpendingorderbautista(e)} 
                                     disabled={isSubmittingBautistaPendingOrder}
@@ -13724,7 +13963,7 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
 
                                  <div className="flex items-center gap-2  mt-3">
                                     <h1 className="w-35 text-[#242424] font-albertsans font-semibold text-[17px]">Amount Paid : </h1>
-                                    <input  value={orderbautistaamountPaid} onChange={(e) => setorderbautistaamountPaid(e.target.value)}  type="text" placeholder="10% for downpayment"  className=" transition-all duration-300 ease-in-out  min-w-14 w-auto px-5 py-1.5  rounded-2xl  bg-[#e4e4e4] focus:bg-slate-100 focus:outline-sky-500"></input>
+                                    <input  value={orderbautistaamountPaid} onChange={(e) => setorderbautistaamountPaid(e.target.value)}  type="text" placeholder="50% for downpayment"  className=" transition-all duration-300 ease-in-out  min-w-14 w-auto px-5 py-1.5  rounded-2xl  bg-[#e4e4e4] focus:bg-slate-100 focus:outline-sky-500"></input>
                                  </div>
                                 
 
@@ -13798,7 +14037,7 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
                                     )}
                                   </div>
                                   ) : (
-                                 (Number(orderbautistaamountPaid) >= Number(orderbautistatotalwithFee) * 0.10) || activebautistapickupnoworlater==='bautistaorderpickuplater' ? (
+                                 (Number(orderbautistaamountPaid) >= Number(orderbautistatotalwithFee) * 0.50) || activebautistapickupnoworlater==='bautistaorderpickuplater' ? (
                                   <div 
                                     onClick={(e) => submitpatientpendingorderbautista(e)} 
                                     disabled={isSubmittingBautistaPendingOrder}
@@ -13842,6 +14081,200 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
 
 
               </div> )}
+
+
+
+
+
+
+
+
+                          {/* View Order Details Modal */}
+       {showViewOrderModal && selectedOrderForView && (
+              <div className="overflow-y-auto h-auto px-10 bg-opacity-0 flex justify-center items-start z-50 fixed inset-0 bg-[#000000af] bg-opacity-50">
+                <div className="motion-preset-fade h-auto min-h-180 mb-7 mt-7 pl-5 pr-5 bg-white rounded-2xl w-full max-w-4xl animate-fadeInUp">
+                  <div className="mt-5 border-3 flex justify-between items-center border-[#2d2d4400] w-full h-[70px]">
+                    <div className="flex justify-center items-center">
+                      <img src={darklogo} alt="Eye2Wear: Optical Clinic" className="w-15 hover:scale-105 transition-all p-1" />
+                      <h1 className="text-[#184d85] font-albertsans font-bold ml-3 text-[30px]">Order Details</h1>
+                    </div>
+                    <div 
+                      onClick={() => {
+                        setShowViewOrderModal(false);
+                        setSelectedOrderForView(null);
+                      }}
+                      className="text-[#1f1f1f]  cursor-pointer transition-all text-[25px]"
+                    >
+                      <i className="bx bx-x"></i>
+                    </div>
+                  </div>
+
+                  <div className="h-px bg-gray-300 w-full mb-6"></div>
+
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-6">
+                    {/* Product Images */}
+                    <div className="space-y-4">
+                      <h3 className="text-lg font-semibold text-gray-800">Product Images</h3>
+                      {selectedOrderForView.patientorderambherproductimage || selectedOrderForView.patientorderbautistaproductimage ? (
+                        <div className="space-y-4">
+                          <div className="relative">
+                            <img 
+                              src={(selectedOrderForView.patientorderambherproductimage || selectedOrderForView.patientorderbautistaproductimage)?.[viewOrderCurrentImageIndex] || 'default-image-url'} 
+                              alt="Product"
+                              className="w-full h-64 object-cover rounded-lg border"
+                            />
+                            {((selectedOrderForView.patientorderambherproductimage || selectedOrderForView.patientorderbautistaproductimage)?.length > 1) && (
+                              <>
+                                <div 
+                                  onClick={() => setViewOrderCurrentImageIndex(prev => prev > 0 ? prev - 1 : (selectedOrderForView.patientorderambherproductimage || selectedOrderForView.patientorderbautistaproductimage).length - 1)}
+                                  className="absolute left-2 top-1/2 transform -translate-y-1/2 cursor-pointer bg-gray-500 bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-70"
+                                >
+                                  <i className="bx bx-chevron-left"></i>
+                                </div>
+                                <div 
+                                  onClick={() => setViewOrderCurrentImageIndex(prev => prev < (selectedOrderForView.patientorderambherproductimage || selectedOrderForView.patientorderbautistaproductimage).length - 1 ? prev + 1 : 0)}
+                                  className="absolute right-2 top-1/2 transform -translate-y-1/2 cursor-pointer bg-gray-500 bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-70"
+                                >
+                                  <i className="bx bx-chevron-right"></i>
+                                </div>
+                              </>
+                            )}
+                          </div>
+                          {((selectedOrderForView.patientorderambherproductimage || selectedOrderForView.patientorderbautistaproductimage)?.length > 1) && (
+                            <div className="flex gap-2 justify-center">
+                              {(selectedOrderForView.patientorderambherproductimage || selectedOrderForView.patientorderbautistaproductimage).map((_, index) => (
+                                <div
+                                  key={index}
+                                  onClick={() => setViewOrderCurrentImageIndex(index)}
+                                  className={` w-3 h-3 rounded-full ${index === viewOrderCurrentImageIndex ? 'bg-blue-500' : 'bg-gray-300'}`}
+                                />
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="w-full h-64 bg-gray-200 rounded-lg flex items-center justify-center">
+                          <span className="text-gray-500">No product images available</span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Order Information */}
+                    <div className="space-y-6">
+                      <div>
+                        <h3 className="text-lg font-semibold text-gray-800 mb-4">Order Information</h3>
+                        <div className="space-y-3">
+                          <div className="flex justify-between">
+                            <span className="font-medium text-gray-600">Product Name:</span>
+                            <span className="text-gray-800">{selectedOrderForView.patientorderambherproductname || selectedOrderForView.patientorderbautistaproductname}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="font-medium text-gray-600">Status:</span>
+                            <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                              (selectedOrderForView.patientorderambherstatus || selectedOrderForView.patientorderbautistastatus) === 'Pending' ? 'bg-yellow-100 text-yellow-800' :
+                              (selectedOrderForView.patientorderambherstatus || selectedOrderForView.patientorderbautistastatus) === 'Processing' ? 'bg-blue-100 text-blue-800' :
+                              (selectedOrderForView.patientorderambherstatus || selectedOrderForView.patientorderbautistastatus) === 'Ready for Pickup' ? 'bg-purple-100 text-purple-800' :
+                              (selectedOrderForView.patientorderambherstatus || selectedOrderForView.patientorderbautistastatus) === 'Completed' ? 'bg-green-100 text-green-800' :
+                              'bg-red-100 text-red-800'
+                            }`}>
+                              {selectedOrderForView.patientorderambherstatus || selectedOrderForView.patientorderbautistastatus}
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="font-medium text-gray-600">Quantity:</span>
+                            <span className="text-gray-800">{selectedOrderForView.patientorderambherproductquantity || selectedOrderForView.patientorderbautistaproductquantity}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="font-medium text-gray-600">Date Ordered:</span>
+                            <span className="text-gray-800">{formatorderDates(selectedOrderForView.createdAt)}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="font-medium text-gray-600">Pickup Status:</span>
+                            <span className="text-gray-800">
+                              {(selectedOrderForView.patientorderambherproductpickupstatus || selectedOrderForView.patientorderbautistaproductpickupstatus) === 'Now' 
+                                ? `Completed (${formatorderDates(selectedOrderForView.createdAt)})` 
+                                : (selectedOrderForView.patientorderambherproductpickupstatus || selectedOrderForView.patientorderbautistaproductpickupstatus) === 'Later' 
+                                ? "To be scheduled" 
+                                : "Not specified"}
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="font-medium text-gray-600">Clinic:</span>
+                            <span className="text-gray-800">
+                              {selectedOrderForView.patientorderambherproductname ? "Ambher Optical" : "Bautista Eye Center"}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Customer Information */}
+                      <div>
+                        <h3 className="text-lg font-semibold text-gray-800 mb-4">Customer Information</h3>
+                        <div className="space-y-3">
+                          <div className="flex justify-between">
+                            <span className="font-medium text-gray-600">Name:</span>
+                            <span className="text-gray-800">{selectedOrderForView.patientfirstname} {selectedOrderForView.patientmiddlename} {selectedOrderForView.patientlastname}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="font-medium text-gray-600">Email:</span>
+                            <span className="text-gray-800">{selectedOrderForView.patientemail}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="font-medium text-gray-600">Contact Number:</span>
+                            <span className="text-gray-800">{selectedOrderForView.patientcontactnumber}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Payment Information */}
+                      <div>
+                        <h3 className="text-lg font-semibold text-gray-800 mb-4">Payment Information</h3>
+                        <div className="space-y-3">
+                          <div className="flex justify-between">
+                            <span className="font-medium text-gray-600">Amount Paid:</span>
+                            <span className="text-gray-800">₱{Number(selectedOrderForView.patientorderambheramountpaid || selectedOrderForView.patientorderbautistaamountpaid).toLocaleString('en-PH', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="font-medium text-gray-600">Total Price:</span>
+                            <span className="text-gray-800 text-lg font-semibold">₱{Number(selectedOrderForView.patientorderambherproducttotal || selectedOrderForView.patientorderbautistaproducttotal).toLocaleString('en-PH', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="font-medium text-gray-600">Payment Status:</span>
+                            <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                              Number(selectedOrderForView.patientorderambheramountpaid || selectedOrderForView.patientorderbautistaamountpaid) < Number(selectedOrderForView.patientorderambherproducttotal || selectedOrderForView.patientorderbautistaproducttotal)
+                                ? 'bg-yellow-100 text-yellow-800' 
+                                : 'bg-green-100 text-green-800'
+                            }`}>
+                              {Number(selectedOrderForView.patientorderambheramountpaid || selectedOrderForView.patientorderbautistaamountpaid) < Number(selectedOrderForView.patientorderambherproducttotal || selectedOrderForView.patientorderbautistaproducttotal)
+                                ? 'Partial Payment (Down Payment)' 
+                                : 'Fully Paid'}
+                            </span>
+                          </div>
+                          {Number(selectedOrderForView.patientorderambheramountpaid || selectedOrderForView.patientorderbautistaamountpaid) < Number(selectedOrderForView.patientorderambherproducttotal || selectedOrderForView.patientorderbautistaproducttotal) && (
+                            <div className="flex justify-between">
+                              <span className="font-medium text-gray-600">Remaining Balance:</span>
+                              <span className="text-red-600 font-semibold">₱{(Number(selectedOrderForView.patientorderambherproducttotal || selectedOrderForView.patientorderbautistaproducttotal) - Number(selectedOrderForView.patientorderambheramountpaid || selectedOrderForView.patientorderbautistaamountpaid)).toLocaleString('en-PH', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Additional Order Details */}
+                  {(selectedOrderForView.patientorderambherproductnotes || selectedOrderForView.patientorderbautistaproductnotes) && (
+                    <div className="mb-6">
+                      <h3 className="text-lg font-semibold text-gray-800 mb-4">Order Notes</h3>
+                      <div className="bg-gray-50 p-4 rounded-lg">
+                        <p className="text-gray-700">{selectedOrderForView.patientorderambherproductnotes || selectedOrderForView.patientorderbautistaproductnotes}</p>
+                      </div>
+                    </div>
+                  )}
+
+
+                </div>
+              </div>
+            )}
 
 
 
@@ -13949,12 +14382,12 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
 
 
              
-              { activedashboard === 'communicationcenter' && ( <div id="communicationcenter" className="border-2 border-red-500 w-[100%] h-[100%] rounded-2xl" > sadasd6  </div> )}
-              { activedashboard === 'reportingandanalytics' && ( <div id="reportingandanalytics" className="border-2 border-red-500 w-[100%] h-[100%] rounded-2xl" >  asdasd5 </div> )}
+              { (activedashboard === 'communicationcenter' && !isAdminRole) && ( <div id="communicationcenter" className="border-2 border-red-500 w-[100%] h-[100%] rounded-2xl" > sadasd6  </div> )}
+              { (activedashboard === 'reportingandanalytics' && !isAdminRole) && ( <div id="reportingandanalytics" className="border-2 border-red-500 w-[100%] h-[100%] rounded-2xl" >  asdasd5 </div> )}
               { activedashboard === 'clinicmanagement' && ( <div id="clinicmanagement" className="border-2 border-red-500 w-[100%] h-[100%] rounded-2xl" > asdsad4  </div> )}
               { activedashboard === 'sytemadministration' && ( <div id="sytemadministration" className=" w-[100%] h-[100%] rounded-2xl p" ></div> )}
               { activedashboard === 'wishlistandproductfeatures' && ( <div id="wishlistandproductfeatures" className="border-2 border-red-500 w-[100%] h-[100%] rounded-2xl" >  sadasd2  </div> )}
-              { activedashboard === 'mappingintegration' && ( <div id="mappingintegration" className="border-2 border-red-500 w-[100%] h-[100%] rounded-2xl" >  sadsad1  </div> )}
+              { (activedashboard === 'mappingintegration' && !isAdminRole) && ( <div id="mappingintegration" className="border-2 border-red-500 w-[100%] h-[100%] rounded-2xl" >  sadsad1  </div> )}
 
            </div>
            </div>
@@ -13967,8 +14400,20 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
 
 
 
+
+
     </>
    )
   }
         
+
+
+
+
+
+
+
+
+
+  
 export default AdminDashboard

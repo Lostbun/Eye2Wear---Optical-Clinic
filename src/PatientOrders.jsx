@@ -5,7 +5,7 @@ import navlogo from  "../src/assets/images/navlogo.png";
 import { useAuth } from "./hooks/patientuseAuth";
 import useApiService from "./hooks/useApiService";
 import useSmartCache from "./hooks/useSmartCache";
-
+import darklogo from "../src/assets/images/darklogo.png";
 import profileuser from "../src/assets/images/profile-user.png";
 import logout from "../src/assets/images/logout.png";
 
@@ -196,6 +196,11 @@ const [filteredambherOrders, setfilteredambherOrders] = useState([]);
 const [filteredbautistaOrders, setfilteredbautistaOrders] = useState([]);
 const [searchpatientorderedProducts, setsearchpatientorderedProducts] = useState('');
 
+// View Order Modal states
+const [selectedOrderForView, setSelectedOrderForView] = useState(null);
+const [showViewOrderModal, setShowViewOrderModal] = useState(false);
+const [viewOrderCurrentImageIndex, setViewOrderCurrentImageIndex] = useState(0);
+
 
 const showorderstable = (orderstableid) => {
       setactiveorderstable(orderstableid);
@@ -325,6 +330,49 @@ useEffect(() => {
         return 'bg-red-100 text-red-900';
       default:
         return 'bg-gray-100 text-gray-900';
+    }
+  };
+
+  // View Order Modal handlers
+  const handleViewOrder = (order) => {
+    setSelectedOrderForView(order);
+    setViewOrderCurrentImageIndex(0);
+    setShowViewOrderModal(true);
+  };
+
+  const closeViewOrderModal = () => {
+    setShowViewOrderModal(false);
+    setSelectedOrderForView(null);
+    setViewOrderCurrentImageIndex(0);
+  };
+
+  const nextViewOrderImage = () => {
+    if (selectedOrderForView) {
+      const isAmbher = selectedOrderForView.patientorderambherid;
+      const images = isAmbher 
+        ? selectedOrderForView.patientorderambherproductimage 
+        : selectedOrderForView.patientorderbautistaproductimage;
+      
+      if (images && images.length > 0) {
+        setViewOrderCurrentImageIndex((prevIndex) => 
+          prevIndex === images.length - 1 ? 0 : prevIndex + 1
+        );
+      }
+    }
+  };
+
+  const prevViewOrderImage = () => {
+    if (selectedOrderForView) {
+      const isAmbher = selectedOrderForView.patientorderambherid;
+      const images = isAmbher 
+        ? selectedOrderForView.patientorderambherproductimage 
+        : selectedOrderForView.patientorderbautistaproductimage;
+      
+      if (images && images.length > 0) {
+        setViewOrderCurrentImageIndex((prevIndex) => 
+          prevIndex === 0 ? images.length - 1 : prevIndex - 1
+        );
+      }
     }
   };
 
@@ -603,7 +651,7 @@ useEffect(() => {
                       ) : (
                         filteredambherOrders.map(order => (
 
-                  <div key={order.patientorderambherid} className="pb-7  shadow-md rounded-2xl py-3.25 px-3.25 mb-3 border-1 flex items-center motion-preset-slide-up w-full h-auto ">
+                  <div key={order.patientorderambherid} onClick={() => handleViewOrder(order)} className="pb-7 shadow-md rounded-2xl py-3.25 px-3.25 mb-3 border-1 flex items-center motion-preset-slide-up w-full h-auto cursor-pointer hover:shadow-lg transition-all duration-300">
                    <img src={order.patientorderambherproductimage?.[0] || 'default-image-url'} alt={order.patientorderambherproductname} className="mr-5 w-35 h-35 rounded-2xl"/>
                     <div className="mt-2 h-auto w-full flex flex-col items-start">
                         <div className="flex justify-between w-full"><h1 className="font-semibold font-albertsans text-[20px] text-[#1f1f1f]">{order.patientorderambherproductname}</h1> <span className={`${formatorderstatusColor(order.patientorderambherstatus)} ml-3 font-albertsans font-semibold rounded-full text-[15px] leading-5 px-4 py-2 inline-flex`}>{order.patientorderambherstatus}</span> </div>
@@ -658,7 +706,7 @@ useEffect(() => {
                       ) : (
                         filteredbautistaOrders.map(order => (
 
-                  <div key={order.patientorderbautistaid} className="pb-7  shadow-md rounded-2xl py-3.25 px-3.25 flex items-center motion-preset-slide-up w-full h-auto ">
+                  <div key={order.patientorderbautistaid} onClick={() => handleViewOrder(order)} className="pb-7 shadow-md rounded-2xl py-3.25 px-3.25 flex items-center motion-preset-slide-up w-full h-auto cursor-pointer hover:shadow-lg transition-all duration-300">
                     <img src={order.patientorderbautistaproductimage?.[0] || 'default-image-url'} alt={order.patientorderbautistaproductname} className="mr-5 w-35 h-35 rounded-2xl"/>
                     <div className="mt-2 h-auto w-full flex flex-col items-start">
                         <div className="flex justify-between w-full"><h1 className="font-semibold font-albertsans text-[20px] text-[#1f1f1f]">{order.patientorderbautistaproductname}</h1> <span className={`${formatorderstatusColor(order.patientorderbautistastatus)} ml-3 font-albertsans font-semibold rounded-full text-[15px] leading-5 px-4 py-2 inline-flex`}>{order.patientorderbautistastatus}</span> </div>
@@ -685,7 +733,282 @@ useEffect(() => {
           </div>)}
 
 
+        {/* View Order Modal */}
+        {showViewOrderModal && selectedOrderForView && (
+          <div className="fixed inset-0 bg-[#000000b1] flex items-center justify-center z-20 p-4">
+            <div className="bg-white rounded-2xl max-w-6xl w-full max-h-[95vh] overflow-y-auto shadow-2xl">
+              <div className="sticky z-99 top-0 bg-white border-b px-8 py-6 flex justify-between items-center rounded-t-2xl">
+                    <div className="flex justify-center items-center">
+                      <img src={darklogo} alt="Eye2Wear: Optical Clinic" className="w-15 hover:scale-105 transition-all p-1" />
+                      <h1 className="text-[#184d85] font-albertsans font-bold ml-3 text-[30px]">Billing Details</h1>
+                    </div>
+                <div 
+                  onClick={closeViewOrderModal}
+                  className="cursor-pointer text-gray-500 hover:text-gray-700 text-[50px]"
+                >
+                  ×
+                </div>
+              </div>
+              
+              <div className="p-8">
+                {(() => {
+                  const isAmbher = selectedOrderForView.patientorderambherid;
+                  const productName = isAmbher 
+                    ? selectedOrderForView.patientorderambherproductname 
+                    : selectedOrderForView.patientorderbautistaproductname;
+                  const productImages = isAmbher 
+                    ? selectedOrderForView.patientorderambherproductimage 
+                    : selectedOrderForView.patientorderbautistaproductimage;
+                  const productPrice = isAmbher 
+                    ? selectedOrderForView.patientorderambherproductprice 
+                    : selectedOrderForView.patientorderbautistaproductprice;
+                  const productQuantity = isAmbher 
+                    ? selectedOrderForView.patientorderambherproductquantity 
+                    : selectedOrderForView.patientorderbautistaproductquantity;
+                  const orderStatus = isAmbher 
+                    ? selectedOrderForView.patientorderambherstatus 
+                    : selectedOrderForView.patientorderbautistastatus;
+                  const amountPaid = isAmbher 
+                    ? selectedOrderForView.patientorderambheramountpaid 
+                    : selectedOrderForView.patientorderbautistaamountpaid;
+                  const productTotal = isAmbher 
+                    ? selectedOrderForView.patientorderambherproducttotal 
+                    : selectedOrderForView.patientorderbautistaproducttotal;
+                  const pickupStatus = isAmbher 
+                    ? selectedOrderForView.patientorderambherproductpickupstatus 
+                    : selectedOrderForView.patientorderbautistaproductpickupstatus;
+                  const orderNotes = isAmbher 
+                    ? selectedOrderForView.patientorderambherproductnotes 
+                    : selectedOrderForView.patientorderbautistaproductnotes;
+                  const clinic = isAmbher ? 'Ambher Optical' : 'Bautista Eye Center';
 
+                  return (
+                    <div className="grid grid-cols-1 xl:grid-cols-5 gap-8">
+                      {/* Product Images - Takes 3 columns (Left side, wider) */}
+                      <div className="xl:col-span-3 xl:order-1 space-y-6">
+                        <div className="flex items-center">
+                          <i className="bx bx-image text-3xl text-gray-600 mr-3"></i>
+                          <h3 className="text-xl font-semibold font-albertsans text-gray-800">Product Images</h3>
+                        </div>
+                        {productImages && productImages.length > 0 ? (
+                          <div className="relative">
+                            <img 
+                              src={productImages[viewOrderCurrentImageIndex]} 
+                              alt={productName}
+                              className="w-full h-96 object-cover rounded-xl border border-gray-200 shadow-lg"
+                            />
+                            
+                            {productImages && productImages.length > 1 && (
+                              <>
+                                <div
+                                  onClick={prevViewOrderImage}
+                                  className="absolute left-3 top-1/2 transform -translate-y-1/2 bg-gray-400 cursor-pointer bg-opacity-70 hover:bg-opacity-90 rounded-full p-3 shadow-lg transition-all"
+                                >
+                                  <i className="bx bx-chevron-left text-xl text-white"></i>
+                                </div>
+                                <div 
+                                  onClick={nextViewOrderImage}
+                                  className="absolute right-3 top-1/2 transform -translate-y-1/2 bg-gray-400 cursor-pointer bg-opacity-70 hover:bg-opacity-90 rounded-full p-3 shadow-lg transition-all"
+                                >
+                                  <i className="bx bx-chevron-right text-xl text-white"></i>
+                                </div>
+                                
+                                <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-gray-400 bg-opacity-70 text-white px-4 py-2 rounded-full text-sm font-medium">
+                                  {viewOrderCurrentImageIndex + 1} / {productImages.length}
+                                </div>
+                              </>
+                            )}
+                          </div>
+                        ) : (
+                          <div className="w-full h-96 bg-gray-200 rounded-xl flex items-center justify-center border border-gray-300 shadow-lg">
+                            <div className="text-center">
+                              <i className="bx bx-image text-6xl text-gray-400 mb-3"></i>
+                              <span className="text-gray-500 text-lg">No image available</span>
+                            </div>
+                          </div>
+                        )}
+                        
+                        {/* Image thumbnails */}
+                        {productImages && productImages.length > 1 && (
+                          <div className="flex space-x-3 overflow-x-auto py-2">
+                            {productImages.map((image, index) => (
+                              <img
+                                key={index}
+                                src={image}
+                                alt={`${productName} ${index + 1}`}
+                                className={`w-20 h-20 object-cover rounded-lg cursor-pointer border-3 transition-all shadow-md hover:shadow-lg ${
+                                  index === viewOrderCurrentImageIndex ? 'border-blue-500 ring-2 ring-blue-300' : 'border-gray-200 hover:border-gray-300'
+                                }`}
+                                onClick={() => setViewOrderCurrentImageIndex(index)}
+                              />
+                            ))}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Billing Information - Takes 2 columns (Right side, smaller) */}
+                      <div className="xl:col-span-2 xl:order-2 space-y-6">
+                        <div className={`p-6 rounded-xl border ${isAmbher ? 'bg-green-50 border-green-200' : 'bg-blue-50 border-blue-200'}`}>
+                          <div className="flex items-center mb-6">
+                            <i className={`bx bx-credit-card text-2xl mr-3 ${isAmbher ? 'text-green-600' : 'text-blue-600'}`}></i>
+                            <h3 className="text-xl font-bold font-albertsans text-gray-800">Payment Summary</h3>
+                          </div>
+                          
+                          <div className="space-y-4">
+                            <div className={`flex justify-between items-center py-2 border-b ${isAmbher ? 'border-green-200' : 'border-blue-200'}`}>
+                              <span className="text-gray-700 font-medium font-albertsans">Item:</span>
+                              <span className="font-semibold font-albertsans text-gray-800 text-sm text-right">{productName}</span>
+                            </div>
+                            <div className={`flex justify-between items-center py-2 border-b ${isAmbher ? 'border-green-200' : 'border-blue-200'}`}>
+                              <span className="text-gray-700 font-medium font-albertsans">Unit Price:</span>
+                              <span className="font-semibold font-albertsans">₱{Number(productPrice).toLocaleString('en-PH', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                            </div>
+                            <div className={`flex justify-between items-center py-2 border-b ${isAmbher ? 'border-green-200' : 'border-blue-200'}`}>
+                              <span className="text-gray-700 font-medium font-albertsans">Quantity:</span>
+                              <span className="font-semibold font-albertsans">x{productQuantity}</span>
+                            </div>
+                            <div className={`flex justify-between items-center py-2 border-b ${isAmbher ? 'border-green-200' : 'border-blue-200'}`}>
+                              <span className="text-gray-700 font-medium font-albertsans">Subtotal:</span>
+                              <span className="font-semibold font-albertsans">₱{(Number(productPrice) * Number(productQuantity)).toLocaleString('en-PH', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                            </div>
+                            
+                            <div className={`bg-white p-5 rounded-lg border shadow-sm ${isAmbher ? 'border-green-300' : 'border-blue-300'}`}>
+                              <div className="flex justify-between items-center mb-3">
+                                <span className="text-gray-700 font-medium font-albertsans text-sm">
+                                  {Number(amountPaid) < Number(productTotal) ? 'Down Payment:' : 'Amount Paid:'}
+                                </span>
+                                <span className="font-bold font-albertsans text-[#5c5c5c] text-lg">₱{Number(amountPaid).toLocaleString('en-PH', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                              </div>
+                              
+                              {Number(amountPaid) < Number(productTotal) && (
+                                <div className="flex justify-between items-center mb-3">
+                                  <span className="text-gray-700 font-medium font-albertsans text-sm">Remaining Balance:</span>
+                                  <span className="font-bold font-albertsans text-[#c53636] text-lg">₱{(Number(productTotal) - Number(amountPaid)).toLocaleString('en-PH', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                                </div>
+                              )}
+                              
+                              <div className="border-t-2 border-gray-300 pt-3 mt-3">
+                                <div className="flex justify-between items-center">
+                                  <span className="text-lg font-bold font-albertsans text-gray-800">Total Amount:</span>
+                                  <span className={`text-2xl font-bold font-albertsans ${isAmbher ? 'text-[#23a54a]' : 'text-[#23a54a]'}`}>₱{(Number(productPrice) * Number(productQuantity)).toLocaleString('en-PH', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                                </div>
+                              </div>
+                            </div>
+                            
+                            <div className="flex items-center justify-center pt-3">
+                              <span className={`${formatorderstatusColor(orderStatus)} px-4 py-2 rounded-full text-sm font-bold font-albertsans`}>
+                                Payment Status: {orderStatus}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Order Information */}
+                        <div className="bg-gray-50 p-6 rounded-xl">
+                          <div className="flex items-center mb-6">
+                            <i className="bx bx-info-circle text-2xl text-gray-600 mr-3"></i>
+                            <h3 className="text-lg font-bold font-albertsans text-gray-800">Order Information</h3>
+                          </div>
+                          
+                          {/* Order Overview Card */}
+                          <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-200 mb-4">
+                            <div className="grid grid-cols-1 gap-4">
+                              {/* Order ID & Status */}
+                              <div className="flex justify-between items-center pb-3 border-b border-gray-100">
+                                <div>
+                                  <p className="text-xs text-gray-500 uppercase tracking-wide font-medium font-albertsans mb-1">Order ID</p>
+                                  <p className="font-semibold font-albertsans text-gray-800">#{isAmbher ? selectedOrderForView.patientorderambherid : selectedOrderForView.patientorderbautistaid}</p>
+                                </div>
+                                <div className="text-right">
+                                  <p className="text-xs text-gray-500 uppercase tracking-wide font-medium font-albertsans mb-1">Status</p>
+                                  <span className={`${formatorderstatusColor(orderStatus)} px-3 py-1 rounded-full text-xs font-bold font-albertsans`}>
+                                    {orderStatus}
+                                  </span>
+                                </div>
+                              </div>
+                              
+                              {/* Clinic & Date */}
+                              <div className="grid grid-cols-1 gap-4">
+                                <div className="flex items-center">
+                                  <div className="flex items-center justify-center w-10 h-10 bg-blue-100 rounded-lg mr-3">
+                                    <i className="bx bxs-clinic text-blue-600 text-lg"></i>
+                                  </div>
+                                  <div>
+                                    <p className="text-xs text-gray-500 uppercase tracking-wide font-medium font-albertsans">Clinic</p>
+                                    <p className="font-semibold font-albertsans text-gray-800">{clinic}</p>
+                                  </div>
+                                </div>
+                                
+                                <div className="flex items-center">
+                                  <div className="flex items-center justify-center w-10 h-10 bg-green-100 rounded-lg mr-3">
+                                    <i className="bx bxs-calendar text-green-600 text-lg"></i>
+                                  </div>
+                                  <div>
+                                    <p className="text-xs text-gray-500 uppercase tracking-wide font-medium font-albertsans">Order Date</p>
+                                    <p className="font-semibold font-albertsans text-gray-800">{formatorderDates(selectedOrderForView.createdAt)}</p>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          {/* Pickup Information Card */}
+                          <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-200 mb-4">
+                            <div className="flex items-center mb-3">
+                              <div className="flex items-center justify-center w-10 h-10 bg-orange-100 rounded-lg mr-3">
+                                <i className="bx bxs-truck text-orange-600 text-lg"></i>
+                              </div>
+                              <div>
+                                <p className="text-xs text-gray-500 uppercase tracking-wide font-medium font-albertsans">Pickup Status</p>
+                                <p className="font-semibold font-albertsans text-gray-800">
+                                  {pickupStatus === 'Now' 
+                                    ? `Completed (${formatorderDates(selectedOrderForView.createdAt)})`
+                                    : pickupStatus === 'Later' 
+                                      ? "To be scheduled"
+                                      : pickupStatus
+                                  }
+                                </p>
+                              </div>
+                            </div>
+                            
+                            {pickupStatus === 'Later' && (
+                              <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                                <div className="flex items-center">
+                                  <i className="bx bx-time text-yellow-600 mr-2"></i>
+                                  <p className="text-sm text-yellow-800 font-albertsans">
+                                    <span className="font-medium">Pickup scheduling:</span> The {clinic} will set the pickup date and will be displayed here.
+                                  </p>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Order Notes Card */}
+                          {orderNotes && (
+                            <div className={`p-5 rounded-xl border shadow-sm ${isAmbher ? 'bg-green-50 border-green-200' : 'bg-blue-50 border-blue-200'}`}>
+                              <div className="flex items-center mb-3">
+                                <div className={`flex items-center justify-center w-10 h-10 rounded-lg mr-3 ${isAmbher ? 'bg-green-100' : 'bg-blue-100'}`}>
+                                  <i className={`bx bxs-note text-lg ${isAmbher ? 'text-green-600' : 'text-blue-600'}`}></i>
+                                </div>
+                                <div>
+                                  <p className="text-xs text-gray-500 uppercase tracking-wide font-medium font-albertsans">Special Instructions</p>
+                                  <p className="font-semibold font-albertsans text-gray-800">Order Notes</p>
+                                </div>
+                              </div>
+                              <div className="bg-white p-4 rounded-lg border border-gray-200">
+                                <p className="text-gray-700 whitespace-pre-wrap text-sm leading-relaxed font-albertsans">{orderNotes}</p>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()}
+              </div>
+            </div>
+          </div>
+        )}
 
 
 
@@ -715,6 +1038,8 @@ useEffect(() => {
 
       
         </section>
+
+
 
 
 

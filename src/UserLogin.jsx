@@ -212,6 +212,7 @@ else if(user === 'Owner'){
 
               else if(user  === 'Admin'){
                 localStorage.setItem("admintoken", data.jsontoken);
+                localStorage.setItem('role', 'admin');
                 localStorage.setItem("currentuser", JSON.stringify({
                   type: 'Admin',
                   firstname: data.admin.adminfirstname,

@@ -158,8 +158,42 @@ function PatientProducts(){
  //CATEGORIES MANAGEMENT //CATEGORIES MANAGEMENT //CATEGORIES MANAGEMENT //CATEGORIES MANAGEMENT //CATEGORIES MANAGEMENT //CATEGORIES MANAGEMENT //CATEGORIES MANAGEMENT //CATEGORIES MANAGEMENT
 
 const [activeinventorytable, setactiveinventorytable] = useState('ambherinventorytable');
+
+// View Order Modal states
+const [selectedOrderForView, setSelectedOrderForView] = useState(null);
+const [showViewOrderModal, setShowViewOrderModal] = useState(false);
+const [viewOrderCurrentImageIndex, setViewOrderCurrentImageIndex] = useState(0);
+
 const showinventorytable = (inventorytableid) => {
       setactiveinventorytable(inventorytableid);
+};
+
+// View Order Modal handlers
+const handleViewOrder = (order) => {
+  setSelectedOrderForView(order);
+  setViewOrderCurrentImageIndex(0);
+  setShowViewOrderModal(true);
+};
+
+const closeViewOrderModal = () => {
+  setShowViewOrderModal(false);
+  setSelectedOrderForView(null);
+  setViewOrderCurrentImageIndex(0);
+};
+
+const nextViewOrderImage = () => {
+  if (selectedOrderForView) {
+    const images = selectedOrderForView.patientorderambherproductimage || selectedOrderForView.patientorderbautistaproductimage || [];
+    if (viewOrderCurrentImageIndex < images.length - 1) {
+      setViewOrderCurrentImageIndex(viewOrderCurrentImageIndex + 1);
+    }
+  }
+};
+
+const prevViewOrderImage = () => {
+  if (viewOrderCurrentImageIndex > 0) {
+    setViewOrderCurrentImageIndex(viewOrderCurrentImageIndex - 1);
+  }
 };
 
 
@@ -908,6 +942,7 @@ const toggleWishlist = async (e) => {
 //PRODUCT FILTERING PROCESS //PRODUCT FILTERING PROCESS //PRODUCT FILTERING PROCESS //PRODUCT FILTERING PROCESS //PRODUCT FILTERING PROCESS //PRODUCT FILTERING PROCESS
 
 const [pricesortingProducts, setpricesortingProducts] = useState('none');
+const [quantitySortingProducts, setQuantitySortingProducts] = useState('none');
 const [searchProducts, setsearchProducts] = useState('');
 
 
@@ -922,6 +957,29 @@ const sortproductsbyPrice = (products, sortOrder, productType) => {
     const priceB = productType === 'ambher' ? b.ambherinventoryproductprice : b.bautistainventoryproductprice;
     
     return sortOrder === 'Highesttolowest' ? priceB - priceA : priceA - priceB;
+  });
+};
+
+// Add these functions to handle quantity sorting
+const sortProductsByQuantity = (products, sortOrder, productType) => {
+  if(sortOrder === 'none') return products;
+
+  return [...products].sort((a, b) => {
+    const quantityA = productType === 'ambher' ? a.ambherinventoryproductquantity : a.bautistainventoryproductquantity;
+    const quantityB = productType === 'ambher' ? b.ambherinventoryproductquantity : b.bautistainventoryproductquantity;
+    
+    if (sortOrder === 'Highesttolowest') {
+      return quantityB - quantityA;
+    } else if (sortOrder === 'Lowesttohighest') {
+      return quantityA - quantityB;
+    } else if (sortOrder === 'OutOfStock') {
+      // Out of stock items first, then by quantity descending
+      if (quantityA === 0 && quantityB !== 0) return -1;
+      if (quantityA !== 0 && quantityB === 0) return 1;
+      if (quantityA === 0 && quantityB === 0) return 0;
+      return quantityB - quantityA;
+    }
+    return 0;
   });
 };
 
@@ -959,7 +1017,9 @@ const ambherfilteredproducts = () => {
     return categoryMatch && searchMatch && advancedMatch;
   });
   
-  return sortproductsbyPrice(filtered, pricesortingProducts, 'ambher');
+  // Apply price sorting first, then quantity sorting
+  let sortedProducts = sortproductsbyPrice(filtered, pricesortingProducts, 'ambher');
+  return sortProductsByQuantity(sortedProducts, quantitySortingProducts, 'ambher');
 };
 
 
@@ -999,7 +1059,9 @@ const bautistafilteredproducts = () => {
     return categoryMatch && searchMatch && advancedMatch;
   });
   
-  return sortproductsbyPrice(filtered, pricesortingProducts, 'bautista');
+  // Apply price sorting first, then quantity sorting
+  let sortedProducts = sortproductsbyPrice(filtered, pricesortingProducts, 'bautista');
+  return sortProductsByQuantity(sortedProducts, quantitySortingProducts, 'bautista');
 };
 
 
@@ -1765,6 +1827,51 @@ useEffect(() => {
                     Lowest to Highest
                   </div>
                 </div>
+
+                {/* Quantity Filter Section */}
+                <div className="border-b-2 pb-3 flex items center w-full mt-7">
+                  <i className="bx bx-filter font-albertsans font-semibold text-[#363636] text-[25px]" />
+                  <h1 className="ml-2 text-[16px] font-albertsans font-semibold text-[#363636]">Filter by quantity</h1>
+                </div>
+                {quantitySortingProducts !== 'none' && (
+                  <div
+                    className="text-center cursor-pointer px-4 py-1 rounded-2xl border border-[#2781af] bg-white text-[#2781af] font-medium transition-all duration-200 hover:bg-[#2781af] hover:text-white hover:shadow-md mt-2"
+                    onClick={() => setQuantitySortingProducts('none')}
+                  >
+                    Clear filter
+                  </div>
+                )}
+                <div className="flex flex-wrap gap-2 mt-2 mb-4">
+                  <div
+                    onClick={() => setQuantitySortingProducts('Highesttolowest')}
+                    className={`text-center w-full cursor-pointer px-4 py-2 rounded-2xl border transition-all duration-200 text-sm font-medium
+                      ${quantitySortingProducts === 'Highesttolowest'
+                        ? 'bg-[#2781af] text-white border-[#2781af]'
+                        : 'bg-white text-gray-700 border-gray-300 hover:bg-blue-50'}`}
+                  >
+                    Highest to Lowest
+                  </div>
+
+                  <div
+                    onClick={() => setQuantitySortingProducts('Lowesttohighest')}
+                    className={`text-center w-full cursor-pointer px-4 py-2 rounded-2xl border transition-all duration-200 text-sm font-medium
+                      ${quantitySortingProducts === 'Lowesttohighest'
+                        ? 'bg-[#2781af] text-white border-[#2781af]'
+                        : 'bg-white text-gray-700 border-gray-300 hover:bg-blue-50'}`}
+                  >
+                    Lowest to Highest
+                  </div>
+
+                  <div
+                    onClick={() => setQuantitySortingProducts('OutOfStock')}
+                    className={`text-center w-full cursor-pointer px-4 py-2 rounded-2xl border transition-all duration-200 text-sm font-medium
+                      ${quantitySortingProducts === 'OutOfStock'
+                        ? 'bg-[#2781af] text-white border-[#2781af]'
+                        : 'bg-white text-gray-700 border-gray-300 hover:bg-blue-50'}`}
+                  >
+                    Out of Stock
+                  </div>
+                </div>
  
             
 
@@ -1964,7 +2071,7 @@ useEffect(() => {
                                       ):(
                                         <div className="gap-4 mt-15 flex items-center">
                                           <p className="font-albertsans font-semibold ">In Stock:</p>
-                                          <p className="font-albertsans font-semibold text-[#616161] text-[14px]">{addambherinventoryproductquantity} pieces available </p>
+                                          <p className="font-albertsans font-semibold text-[#616161] text-[14px]">{addambherinventoryproductquantity-3} pieces available </p>
                                          </div>
                                       )}    
 
@@ -2184,6 +2291,51 @@ useEffect(() => {
                   </div>
                 </div>
 
+                {/* Quantity Filter Section */}
+                <div className="border-b-2 pb-3 flex items center w-full mt-7">
+                  <i className="bx bx-filter font-albertsans font-semibold text-[#363636] text-[25px]" />
+                  <h1 className="ml-2 text-[16px] font-albertsans font-semibold text-[#363636]">Filter by quantity</h1>
+                </div>
+                {quantitySortingProducts !== 'none' && (
+                  <div
+                    className="text-center cursor-pointer px-4 py-1 rounded-2xl border border-[#2781af] bg-white text-[#2781af] font-medium transition-all duration-200 hover:bg-[#2781af] hover:text-white hover:shadow-md mt-2"
+                    onClick={() => setQuantitySortingProducts('none')}
+                  >
+                    Clear filter
+                  </div>
+                )}
+                <div className="flex flex-wrap gap-2 mt-2 mb-4">
+                  <div
+                    onClick={() => setQuantitySortingProducts('Highesttolowest')}
+                    className={`text-center w-full cursor-pointer px-4 py-2 rounded-2xl border transition-all duration-200 text-sm font-medium
+                      ${quantitySortingProducts === 'Highesttolowest'
+                        ? 'bg-[#2781af] text-white border-[#2781af]'
+                        : 'bg-white text-gray-700 border-gray-300 hover:bg-blue-50'}`}
+                  >
+                    Highest to Lowest
+                  </div>
+
+                  <div
+                    onClick={() => setQuantitySortingProducts('Lowesttohighest')}
+                    className={`text-center w-full cursor-pointer px-4 py-2 rounded-2xl border transition-all duration-200 text-sm font-medium
+                      ${quantitySortingProducts === 'Lowesttohighest'
+                        ? 'bg-[#2781af] text-white border-[#2781af]'
+                        : 'bg-white text-gray-700 border-gray-300 hover:bg-blue-50'}`}
+                  >
+                    Lowest to Highest
+                  </div>
+
+                  <div
+                    onClick={() => setQuantitySortingProducts('OutOfStock')}
+                    className={`text-center w-full cursor-pointer px-4 py-2 rounded-2xl border transition-all duration-200 text-sm font-medium
+                      ${quantitySortingProducts === 'OutOfStock'
+                        ? 'bg-[#2781af] text-white border-[#2781af]'
+                        : 'bg-white text-gray-700 border-gray-300 hover:bg-blue-50'}`}
+                  >
+                    Out of Stock
+                  </div>
+                </div>
+
 
 
 
@@ -2286,11 +2438,20 @@ useEffect(() => {
   
                                 <div className=" relative">
                                 
+
+
                                 <div className="flex items-center justify-end">
-                                
-                                 <img  src={getbautistaHeartImage()} onClick={bautistahearthandleClick} onMouseEnter={() => !bautistaheartisClicked && setbautistaheartisHovered(true)} onMouseLeave={() => !bautistaheartisClicked && setbautistaheartisHovered(false)}  className={` ease-in-out duration-300 transition-all  border-1  w-10 h-10 p-2 rounded-2xl cursor-pointer ${bautistaheartisClicked ? "bg-red-400" : "hover:bg-red-400"}`}/>
-                                   <h1 className="ml-2 text-[17px] font-semibold text-[#383838]">Wishlist</h1>         
+                                 {addbautistainventoryproductquantity === 0 && (
+                                   <>
+                                     <img  src={getbautistaHeartImage()} onClick={bautistahearthandleClick} onMouseEnter={() => !bautistaheartisClicked && setbautistaheartisHovered(true)} onMouseLeave={() => !bautistaheartisClicked && setbautistaheartisHovered(false)}  className={` ease-in-out duration-300 transition-all  border-1  w-10 h-10 p-2 rounded-2xl cursor-pointer ${bautistaheartisClicked ? "bg-red-400" : "hover:bg-red-400"}`}/>
+                                     <h1 className="ml-2 text-[17px] font-semibold text-[#383838]">Wishlist</h1>
+                                   </>
+                                 )}
                                 </div>
+
+
+
+
                                 <img  className="mt-2 w-120 object-cover rounded-2xl h-120" src={(selectedbautistaproduct?.bautistainventoryproductimagepreviewimages?.[bautistacurrentimageindex]) || (addbautistainventoryproductimagepreviewimages?.[bautistacurrentimageindex]) || defaultimageplaceholder}/>
 
                                      {((selectedbautistaproduct?.bautistainventoryproductimagepreviewimages?.length || 0) > 1 || 
@@ -2364,7 +2525,7 @@ useEffect(() => {
                                       ):(
                                         <div className="gap-4 mt-15 flex items-center">
                                           <p className="font-albertsans font-semibold ">In Stock:</p>
-                                          <p className="font-albertsans font-semibold text-[#616161] text-[14px]">{addbautistainventoryproductquantity} pieces available </p>
+                                          <p className="font-albertsans font-semibold text-[#616161] text-[14px]">{addbautistainventoryproductquantity-3} pieces available </p>
                                          </div>
                                       )}    
 
@@ -2491,6 +2652,165 @@ useEffect(() => {
 
       
         </section>
+
+      {/* View Order Modal */}
+      {showViewOrderModal && selectedOrderForView && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-3xl w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl animate-scale-in">
+            {/* Modal Header */}
+            <div className="p-6 border-b border-gray-200 flex justify-between items-center">
+              <h2 className="text-2xl font-bold text-gray-800">Order Details</h2>
+              <button 
+                onClick={closeViewOrderModal}
+                className="text-gray-500 hover:text-gray-700 transition-colors"
+              >
+                <i className="bx bx-x text-3xl"></i>
+              </button>
+            </div>
+
+            {/* Modal Content */}
+            <div className="p-6 space-y-6">
+              {/* Product Images Gallery */}
+              <div className="relative">
+                <h3 className="text-lg font-semibold mb-4 text-gray-800">Product Images</h3>
+                {((selectedOrderForView.patientorderambherproductimage || selectedOrderForView.patientorderbautistaproductimage) && 
+                  (selectedOrderForView.patientorderambherproductimage?.length > 0 || selectedOrderForView.patientorderbautistaproductimage?.length > 0)) ? (
+                  <div className="relative">
+                    <img 
+                      src={(selectedOrderForView.patientorderambherproductimage || selectedOrderForView.patientorderbautistaproductimage)[viewOrderCurrentImageIndex]} 
+                      alt="Product" 
+                      className="w-full h-80 object-cover rounded-xl shadow-lg"
+                    />
+                    {(selectedOrderForView.patientorderambherproductimage?.length > 1 || selectedOrderForView.patientorderbautistaproductimage?.length > 1) && (
+                      <>
+                        <button 
+                          onClick={prevViewOrderImage}
+                          disabled={viewOrderCurrentImageIndex === 0}
+                          className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-80 hover:bg-opacity-100 disabled:bg-opacity-50 disabled:cursor-not-allowed text-gray-800 p-3 rounded-full shadow-lg transition-all"
+                        >
+                          <i className="bx bx-chevron-left text-xl"></i>
+                        </button>
+                        <button 
+                          onClick={nextViewOrderImage}
+                          disabled={viewOrderCurrentImageIndex === (selectedOrderForView.patientorderambherproductimage?.length || selectedOrderForView.patientorderbautistaproductimage?.length) - 1}
+                          className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-80 hover:bg-opacity-100 disabled:bg-opacity-50 disabled:cursor-not-allowed text-gray-800 p-3 rounded-full shadow-lg transition-all"
+                        >
+                          <i className="bx bx-chevron-right text-xl"></i>
+                        </button>
+                        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-50 text-white px-3 py-1 rounded-full text-sm">
+                          {viewOrderCurrentImageIndex + 1} / {(selectedOrderForView.patientorderambherproductimage?.length || selectedOrderForView.patientorderbautistaproductimage?.length)}
+                        </div>
+                      </>
+                    )}
+                  </div>
+                ) : (
+                  <div className="w-full h-80 bg-gray-200 rounded-xl flex items-center justify-center">
+                    <span className="text-gray-500">No images available</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Order Information Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Product Details */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-gray-800 border-b pb-2">Product Information</h3>
+                  <div className="space-y-3">
+                    <div>
+                      <span className="text-gray-600 font-medium">Product Name:</span>
+                      <p className="text-gray-800 font-semibold">{selectedOrderForView.patientorderambherproductname || selectedOrderForView.patientorderbautistaproductname}</p>
+                    </div>
+                    <div>
+                      <span className="text-gray-600 font-medium">Quantity:</span>
+                      <p className="text-gray-800">x{selectedOrderForView.patientorderambherproductquantity || selectedOrderForView.patientorderbautistaproductquantity}</p>
+                    </div>
+                    <div>
+                      <span className="text-gray-600 font-medium">Unit Price:</span>
+                      <p className="text-gray-800">₱{Number(selectedOrderForView.patientorderambherproductprice || selectedOrderForView.patientorderbautistaproductprice).toLocaleString('en-PH', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</p>
+                    </div>
+                    <div>
+                      <span className="text-gray-600 font-medium">Total Price:</span>
+                      <p className="text-green-600 font-bold text-lg">₱{((selectedOrderForView.patientorderambherproductprice || selectedOrderForView.patientorderbautistaproductprice) * (selectedOrderForView.patientorderambherproductquantity || selectedOrderForView.patientorderbautistaproductquantity)).toLocaleString('en-PH', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Order Details */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-gray-800 border-b pb-2">Order Details</h3>
+                  <div className="space-y-3">
+                    <div>
+                      <span className="text-gray-600 font-medium">Order ID:</span>
+                      <p className="text-gray-800 font-mono text-sm">{selectedOrderForView.patientorderambherid || selectedOrderForView.patientorderbautistaid}</p>
+                    </div>
+                    <div>
+                      <span className="text-gray-600 font-medium">Date Ordered:</span>
+                      <p className="text-gray-800">{new Date(selectedOrderForView.createdAt).toLocaleDateString()}</p>
+                    </div>
+                    <div>
+                      <span className="text-gray-600 font-medium">Status:</span>
+                      <span className="px-3 py-1 rounded-full text-sm font-semibold bg-blue-100 text-blue-800">
+                        {selectedOrderForView.patientorderambherstatus || selectedOrderForView.patientorderbautistastatus}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-gray-600 font-medium">Pickup:</span>
+                      <p className="text-gray-800">
+                        {(selectedOrderForView.patientorderambherproductpickupstatus || selectedOrderForView.patientorderbautistaproductpickupstatus) === 'Now' 
+                          ? `Completed (${new Date(selectedOrderForView.createdAt).toLocaleDateString()})` 
+                          : 'To be scheduled'}
+                      </p>
+                    </div>
+                    <div>
+                      <span className="text-gray-600 font-medium">Clinic:</span>
+                      <p className="text-gray-800">
+                        {selectedOrderForView.patientorderambherid ? 'Ambher Optical' : 'Bautista Eye Center'}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Payment Information */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-gray-800 border-b pb-2">Payment Information</h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="bg-blue-50 p-4 rounded-lg">
+                    <span className="text-blue-600 font-medium">Amount Paid</span>
+                    <p className="text-blue-800 font-bold text-lg">₱{Number(selectedOrderForView.patientorderambheramountpaid || selectedOrderForView.patientorderbautistaamountpaid).toLocaleString('en-PH', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</p>
+                  </div>
+                  <div className="bg-green-50 p-4 rounded-lg">
+                    <span className="text-green-600 font-medium">Total Amount</span>
+                    <p className="text-green-800 font-bold text-lg">₱{Number(selectedOrderForView.patientorderambherproducttotal || selectedOrderForView.patientorderbautistaproducttotal).toLocaleString('en-PH', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</p>
+                  </div>
+                  <div className={`p-4 rounded-lg ${Number(selectedOrderForView.patientorderambheramountpaid || selectedOrderForView.patientorderbautistaamountpaid) < Number(selectedOrderForView.patientorderambherproducttotal || selectedOrderForView.patientorderbautistaproducttotal) ? 'bg-yellow-50' : 'bg-green-50'}`}>
+                    <span className={`font-medium ${Number(selectedOrderForView.patientorderambheramountpaid || selectedOrderForView.patientorderbautistaamountpaid) < Number(selectedOrderForView.patientorderambherproducttotal || selectedOrderForView.patientorderbautistaproducttotal) ? 'text-yellow-600' : 'text-green-600'}`}>
+                      Payment Status
+                    </span>
+                    <p className={`font-bold text-lg ${Number(selectedOrderForView.patientorderambheramountpaid || selectedOrderForView.patientorderbautistaamountpaid) < Number(selectedOrderForView.patientorderambherproducttotal || selectedOrderForView.patientorderbautistaproducttotal) ? 'text-yellow-800' : 'text-green-800'}`}>
+                      {Number(selectedOrderForView.patientorderambheramountpaid || selectedOrderForView.patientorderbautistaamountpaid) < Number(selectedOrderForView.patientorderambherproducttotal || selectedOrderForView.patientorderbautistaproducttotal) ? 'Down Payment' : 'Fully Paid'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Order Notes */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-gray-800 border-b pb-2">Order Notes</h3>
+                <div className="bg-gray-50 p-4 rounded-lg min-h-24">
+                  {selectedOrderForView.patientorderambherproductdescription || selectedOrderForView.patientorderbautistaproductdescription ? (
+                    <p className="text-gray-700 whitespace-pre-wrap">
+                      {selectedOrderForView.patientorderambherproductdescription || selectedOrderForView.patientorderbautistaproductdescription}
+                    </p>
+                  ) : (
+                    <p className="text-gray-500 italic">No order notes available</p>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
 
 

@@ -157,6 +157,7 @@
                 return res.status(404).json({message: "Appointment not found"});
             }
 
+            // Handle Ambher appointment status history
             if(updateData.patientambherappointmentstatus) {
                 if(!appointment.patientambherappointmentstatushistory) {
                     appointment.patientambherappointmentstatushistory = [];
@@ -164,9 +165,20 @@
                 appointment.patientambherappointmentstatushistory.push({
                     status: updateData.patientambherappointmentstatus,
                     changedAt: new Date(),
-                    changedBy: updateData.patientambherappointmentstatushistory.changedBy
+                    changedBy: updateData.patientambherappointmentstatushistory?.changedBy || 'Unknown'
                 });
+            }
 
+            // Handle Bautista appointment status history
+            if(updateData.patientbautistaappointmentstatus) {
+                if(!appointment.patientbautistaappointmentstatushistory) {
+                    appointment.patientbautistaappointmentstatushistory = [];
+                }
+                appointment.patientbautistaappointmentstatushistory.push({
+                    status: updateData.patientbautistaappointmentstatus,
+                    changedAt: new Date(),
+                    changedBy: updateData.patientbautistaappointmentstatushistory?.changedBy || 'Unknown'
+                });
             }
 
 

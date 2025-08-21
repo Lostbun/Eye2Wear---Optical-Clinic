@@ -33,6 +33,7 @@ const PatientOrderBautistaSchema = new mongoose.Schema({
     patientorderbautistaproductquantity: {type: Number, required: true, min: 1},
     patientorderbautistaproductsubtotal: {type: Number, required: true},
     patientorderbautistaproductdescription: {type: String, required: true},
+    patientorderbautistaproductnotes: {type: String},
 
     //PAYMENT INFORMATION
     patientorderbautistacustomfee: { type: Number, default: 0 }, // Clinic customization fee

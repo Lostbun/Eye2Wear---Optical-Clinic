@@ -34,6 +34,7 @@ const PatientOrderAmbherSchema = new mongoose.Schema({
     patientorderambherproductquantity: {type: Number, required: true, min: 1},
     patientorderambherproductsubtotal: {type: Number, required: true},
     patientorderambherproductdescription: {type: String, required: true},
+    patientorderambherproductnotes: {type: String},
 
     //PAYMENT INFORMATION
     patientorderambhercustomfee: { type: Number, default: 0 }, // Clinic customization fee
