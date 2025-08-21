@@ -28,7 +28,7 @@
         try{
             // Optimized query with lean() and field selection for better performance
             const patientappointments = await PatientAppointment.find()
-                .select('patientappointmentid patientappointmentfirstname patientappointmentlastname patientappointmentemail patientappointmentstatus patientambherappointmentdate patientambherappointmenttime patientambherappointmentstatus patientbautistaappointmentdate patientbautistaappointmenttime patientbautistaappointmentstatus createdAt updatedAt')
+                .select('patientappointmentid patientappointmentprofilepicture patientappointmentfirstname patientappointmentlastname patientappointmentemail patientappointmentstatus patientambherappointmentdate patientambherappointmenttime patientambherappointmentstatus patientbautistaappointmentdate patientbautistaappointmenttime patientbautistaappointmentstatus createdAt updatedAt')
                 .sort({patientappointmentid: -1})
                 .lean(); // Returns plain JavaScript objects instead of Mongoose documents
             

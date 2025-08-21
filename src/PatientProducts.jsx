@@ -175,6 +175,17 @@ const showambherinventorycategory = (ambherinventorycategorytableid) => {
       setactiveambherinventorycategorytable(ambherinventorycategorytableid);
 };
 
+// Advanced filters state for Ambher
+const [activeAmbherProductFilter, setActiveAmbherProductFilter] = useState('all');
+const ambherProductFilters = [
+    { id: 'polarized', label: 'Polarized' },
+    { id: 'kids', label: 'Kids' },
+    { id: 'adults', label: 'Adults' },
+    { id: 'men', label: "Men's" },
+    { id: 'women', label: "Women's" },
+    { id: 'unisex', label: 'Unisex' }
+];
+
 const [ambherinventorycategorylist, setambherinventorycategorylist] = useState([]);
 const [ambherloadingcategories, setambherloadingcategories] = useState(true);
 
@@ -349,6 +360,17 @@ const [activebautistainventorycategorytable, setactivebautistainventorycategoryt
 const showbautistainventorycategory = (bautistainventorycategorytableid) => {
       setactivebautistainventorycategorytable(bautistainventorycategorytableid);
 };
+
+// Advanced filters state for Bautista
+const [activeBautistaProductFilter, setActiveBautistaProductFilter] = useState('all');
+const bautistaProductFilters = [
+    { id: 'polarized', label: 'Polarized' },
+    { id: 'kids', label: 'Kids' },
+    { id: 'adults', label: 'Adults' },
+    { id: 'men', label: "Men's" },
+    { id: 'women', label: "Women's" },
+    { id: 'unisex', label: 'Unisex' }
+];
 
 const [bautistainventorycategorylist, setbautistainventorycategorylist] = useState([]);
 const [bautistaloadingcategories, setbautistaloadingcategories] = useState(true);
@@ -906,13 +928,36 @@ const sortproductsbyPrice = (products, sortOrder, productType) => {
 
 //Ambher filtering products
 const ambherfilteredproducts = () => {
-  let filtered = ambherinventoryproducts.filter(product =>
-  (activeambherinventorycategorytable === 'all' ||
-    product.ambherinventoryproductcategory === activeambherinventorycategorytable) &&
-  (product.ambherinventoryproductname.toLowerCase().includes(searchProducts.toLowerCase()) ||
-   product.ambherinventoryproductbrand.toLowerCase().includes(searchProducts.toLowerCase())||
-   product.ambherinventoryproductdescription.toLowerCase().includes(searchProducts.toLowerCase()))
-  );
+  let filtered = ambherinventoryproducts.filter(product => {
+    // Category filter
+    const categoryMatch = activeambherinventorycategorytable === 'all' ||
+      product.ambherinventoryproductcategory === activeambherinventorycategorytable;
+    
+    // Search filter
+    const searchMatch = product.ambherinventoryproductname.toLowerCase().includes(searchProducts.toLowerCase()) ||
+      product.ambherinventoryproductbrand.toLowerCase().includes(searchProducts.toLowerCase()) ||
+      product.ambherinventoryproductdescription.toLowerCase().includes(searchProducts.toLowerCase());
+    
+    // Advanced filter
+    let advancedMatch = true;
+    if (activeAmbherProductFilter !== 'all') {
+      const nameDesc = `${product.ambherinventoryproductname || ''} ${product.ambherinventoryproductdescription || ''}`.toLowerCase();
+      if (activeAmbherProductFilter === 'polarized')
+        advancedMatch = product.ambherinventoryproducttype?.toLowerCase().includes('polarized') || nameDesc.includes('polarized');
+      else if (activeAmbherProductFilter === 'kids')
+        advancedMatch = product.ambherinventoryproductfor?.toLowerCase().includes('kid') || nameDesc.includes('kid');
+      else if (activeAmbherProductFilter === 'adults')
+        advancedMatch = product.ambherinventoryproductfor?.toLowerCase().includes('adult') || nameDesc.includes('adult');
+      else if (activeAmbherProductFilter === 'men')
+        advancedMatch = product.ambherinventoryproductfor?.toLowerCase().includes('men') || nameDesc.includes('men');
+      else if (activeAmbherProductFilter === 'women')
+        advancedMatch = product.ambherinventoryproductfor?.toLowerCase().includes('women') || nameDesc.includes('women');
+      else if (activeAmbherProductFilter === 'unisex')
+        advancedMatch = product.ambherinventoryproductfor?.toLowerCase().includes('unisex') || nameDesc.includes('unisex');
+    }
+    
+    return categoryMatch && searchMatch && advancedMatch;
+  });
   
   return sortproductsbyPrice(filtered, pricesortingProducts, 'ambher');
 };
@@ -923,13 +968,36 @@ const ambherfilteredproducts = () => {
 
 //Bautista filtering products
 const bautistafilteredproducts = () => {
-  let filtered = bautistainventoryproducts.filter(product =>
-  (activebautistainventorycategorytable === 'all' ||
-    product.bautistainventoryproductcategory === activebautistainventorycategorytable) &&
-  (product.bautistainventoryproductname.toLowerCase().includes(searchProducts.toLowerCase()) ||
-   product.bautistainventoryproductbrand.toLowerCase().includes(searchProducts.toLowerCase())||
-   product.bautistainventoryproductdescription.toLowerCase().includes(searchProducts.toLowerCase()))
-  );
+  let filtered = bautistainventoryproducts.filter(product => {
+    // Category filter
+    const categoryMatch = activebautistainventorycategorytable === 'all' ||
+      product.bautistainventoryproductcategory === activebautistainventorycategorytable;
+    
+    // Search filter
+    const searchMatch = product.bautistainventoryproductname.toLowerCase().includes(searchProducts.toLowerCase()) ||
+      product.bautistainventoryproductbrand.toLowerCase().includes(searchProducts.toLowerCase()) ||
+      product.bautistainventoryproductdescription.toLowerCase().includes(searchProducts.toLowerCase());
+    
+    // Advanced filter
+    let advancedMatch = true;
+    if (activeBautistaProductFilter !== 'all') {
+      const nameDesc = `${product.bautistainventoryproductname || ''} ${product.bautistainventoryproductdescription || ''}`.toLowerCase();
+      if (activeBautistaProductFilter === 'polarized')
+        advancedMatch = product.bautistainventoryproducttype?.toLowerCase().includes('polarized') || nameDesc.includes('polarized');
+      else if (activeBautistaProductFilter === 'kids')
+        advancedMatch = product.bautistainventoryproductfor?.toLowerCase().includes('kid') || nameDesc.includes('kid');
+      else if (activeBautistaProductFilter === 'adults')
+        advancedMatch = product.bautistainventoryproductfor?.toLowerCase().includes('adult') || nameDesc.includes('adult');
+      else if (activeBautistaProductFilter === 'men')
+        advancedMatch = product.bautistainventoryproductfor?.toLowerCase().includes('men') || nameDesc.includes('men');
+      else if (activeBautistaProductFilter === 'women')
+        advancedMatch = product.bautistainventoryproductfor?.toLowerCase().includes('women') || nameDesc.includes('women');
+      else if (activeBautistaProductFilter === 'unisex')
+        advancedMatch = product.bautistainventoryproductfor?.toLowerCase().includes('unisex') || nameDesc.includes('unisex');
+    }
+    
+    return categoryMatch && searchMatch && advancedMatch;
+  });
   
   return sortproductsbyPrice(filtered, pricesortingProducts, 'bautista');
 };
@@ -1426,7 +1494,7 @@ useEffect(() => {
     <>
 
      {/* NavBar */}
-<div className="bg-white w-[100vw] relative z-10">
+<div className="bg-white w-[99vw] relative z-10">
   <header id="header" className="top-0 absolute flex justify-between items-center text-black md:px-32 bg-white w-full drop-shadow-md z-50">
         <a id:logocontain href="#">
           <img src={navlogo} alt="" className="w-33  hover:scale-105 transition-all"></img>
@@ -1538,8 +1606,8 @@ useEffect(() => {
 
 
     {/* First Section */} {/* First Section */} {/* First Section */} {/* First Section */}
-    <section className="bg-cover bg-center min-h-[100vh] w-[100vw] flex justify-center align-center" >
-    <div className="bg-cover bg-center h-auto w-full flex items-center justify-center " >
+    <section className="bg-cover bg-center min-h-[100vh] w-[full] flex justify-center align-center" >
+    <div className="bg-cover bg-center h-auto w-full flex justify-center " >
 
       <div className="w-full h-auto flex flex-col justify-start items-start pt-3 p-3">
 
@@ -1548,7 +1616,7 @@ useEffect(() => {
 
 
 
-              <div id="inventorymanagement" className="pl-5 pr-5 pb-4 pt-4  transition-all duration-300  ease-in-out  w-[100%] h-full bg-white " >   
+              <div id="inventorymanagement" className="  pl-5 pr-5 pb-4 pt-8  transition-all duration-300  ease-in-out  w-[100%] h-full bg-white " >   
 
               <div className=" flex items-center mt-8"><i className="bx bxs-shopping-bag text-[#184d85] text-[25px] mr-2"/> <h1 className=" font-albertsans font-bold text-[#184d85] text-[25px]">Browse our Products</h1></div>
 
@@ -1570,25 +1638,133 @@ useEffect(() => {
           { activeinventorytable === 'ambherinventorytable' && ( <div id="ambherinventorytable" className="p-2  animate-fadeInUp flex  items-start  w-[100%] h-[83%] rounded-2xl mt-5" >
 
           <div className="p-3  rounded-2xl w-[20%] h-auto  mr-2 overflow-y-auto overflow-x-hidden">
-                <div className=" pb-3 flex items center w-full mt-7"><i className="bx bx-filter font-albertsans font-semibold text-[#363636] text-[25px]" /><h1 className="ml-2 text-[16px] font-albertsans font-semibold text-[#363636]">Filter by category</h1></div>
-
-                <div onClick={() => showambherinventorycategory('all')}  className={`mt-3 hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 py-2 text-center flex justify-center items-center ${activeambherinventorycategorytable ==='all' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#1f1f1f] ${activeambherinventorycategorytable ==='all' ? 'text-white' : ''}`}>All</h1><span className="bg-gray-200 text-gray-500 font-semibold px-2 rounded-full ml-2 text-sm">{ambherinventoryproducts.length}</span></div>
-
-                {ambherloadingcategories ? (
-                  <CategorySkeleton />
-                ) : (
-                  ambherinventorycategorylist.map(category => {
-                    const productcount = ambherinventoryproducts.filter(product =>
-                      product.ambherinventoryproductcategory === category.ambherinventorycategoryname).length;
-                    return(
-                    <div key={category._id} onClick={() => setactiveambherinventorycategorytable(category.ambherinventorycategoryname)}  className={`mt-3 hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl  py-2 text-center flex justify-center items-center ${activeambherinventorycategorytable ===category.ambherinventorycategoryname ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#1f1f1f] ${activeambherinventorycategorytable ===category.ambherinventorycategoryname ? 'text-white' : 'text-[#1f1f1f]'}`}>{category.ambherinventorycategoryname}</h1><span className="bg-gray-200 text-gray-500 font-semibold px-2 rounded-full ml-2 text-sm">{productcount}</span></div>
-                    )
-                  })
+                <div className="border-b-2 pb-3 flex items center w-full mt-7"><i className="bx bx-filter font-albertsans font-semibold text-[#363636] text-[25px]" /><h1 className="ml-2 text-[16px] font-albertsans font-semibold text-[#363636]">Filter by category</h1></div>
+                {activeambherinventorycategorytable !== 'all' && (
+                  <div
+                    className="text-center cursor-pointer px-4 py-1 rounded-2xl border border-[#2781af] bg-white text-[#2781af] font-medium transition-all duration-200 hover:bg-[#2781af] hover:text-white hover:shadow-md mt-2"
+                    onClick={() => showambherinventorycategory('all')}
+                  >
+                    Clear filter
+                  </div>
                 )}
 
-                <div className=" pb-3 flex items center w-full mt-7"><i className="bx bx-filter font-albertsans font-semibold text-[#363636] text-[25px]" /><h1 className="ml-2 text-[16px] font-albertsans font-semibold text-[#363636]">Filter by price</h1></div>
-                <div onClick={() => setpricesortingProducts('Highesttolowest')}    className={`mt-3 hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl   py-2 text-center flex justify-center items-center ${pricesortingProducts === 'Highesttolowest' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#1f1f1f] ${pricesortingProducts === 'Highesttolowest' ? 'text-white' : 'text-[#1f1f1f]'}`}>Highest to Lowest</h1></div>
-                <div onClick={() => setpricesortingProducts('Lowesttohighest')}     className={`mt-3 hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl   py-2 text-center flex justify-center items-center ${pricesortingProducts === 'Lowesttohighest' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#1f1f1f] ${pricesortingProducts === 'Lowesttohighest' ? 'bg-[#2781af] rounded-2xl text-white ' : 'text-[#1f1f1f]'}`}>Lowest to Highest</h1></div>
+                <div className="flex flex-wrap gap-2 mt-2 mb-4">
+                  <div
+                    onClick={() => showambherinventorycategory('all')}
+                    className={`cursor-pointer px-4 py-2 rounded-2xl border transition-all duration-200 text-sm font-medium flex items-center justify-center w-full
+                      ${activeambherinventorycategorytable === 'all'
+                        ? 'bg-[#2781af] rounded-2xl text-white'
+                        : 'bg-white text-gray-700 border-gray-300 hover:bg-blue-50'}`}
+                  >
+                    <span>All</span>
+                    <span className="ml-2 bg-gray-200 text-gray-600 font-semibold px-2 rounded-full text-xs">
+                      {ambherinventoryproducts.length}
+                    </span>
+                  </div>
+
+                  {ambherloadingcategories ? (
+                    <CategorySkeleton />
+                  ) : (
+                    ambherinventorycategorylist.map(category => {
+                      const productcount = ambherinventoryproducts.filter(product =>
+                        product.ambherinventoryproductcategory === category.ambherinventorycategoryname).length;
+                      return(
+                        <div key={category._id}
+                          onClick={() => setactiveambherinventorycategorytable(category.ambherinventorycategoryname)}
+                          className={`cursor-pointer px-4 py-2 rounded-2xl border transition-all duration-200 text-sm font-medium flex items-center justify-center w-full
+                            ${activeambherinventorycategorytable === category.ambherinventorycategoryname
+                              ? 'bg-[#2781af] rounded-2xl text-white'
+                              : 'bg-white text-gray-700 border-gray-300 hover:bg-blue-50'}`}
+                        >
+                          <span>{category.ambherinventorycategoryname}</span>
+                          <span className="ml-2 bg-gray-200 text-gray-600 font-semibold px-2 rounded-full text-xs">
+                            {productcount}
+                          </span>
+                        </div>
+                      )
+                    })
+                  )}
+                </div>
+
+                {/* Advanced Filters for Ambher */}
+                <div className="border-b-2 pb-3 flex items center w-full mt-7">
+                  <i className="bx bx-filter font-albertsans font-semibold text-[#363636] text-[25px]" />
+                  <h1 className="ml-2 text-[16px] font-albertsans font-semibold text-[#363636]">Advanced Filters</h1>
+                </div>
+                {activeAmbherProductFilter !== 'all' && (
+                  <div
+                    className="text-center cursor-pointer px-4 py-1 rounded-2xl border border-[#2781af] bg-white text-[#2781af] font-medium transition-all duration-200 hover:bg-[#2781af] hover:text-white hover:shadow-md mt-2"
+                    onClick={() => setActiveAmbherProductFilter('all')}
+                  >
+                    Clear filter
+                  </div>
+                )}
+                <div className="flex flex-wrap gap-2 mt-2 mb-4">
+                  {ambherProductFilters.map(filter => {
+                    // Count products matching this filter
+                    const count = ambherinventoryproducts.filter(product => {
+                      const nameDesc = `${product.ambherinventoryproductname || ''} ${product.ambherinventoryproductdescription || ''}`.toLowerCase();
+                      if (filter.id === 'polarized')
+                        return product.ambherinventoryproducttype?.toLowerCase().includes('polarized') || nameDesc.includes('polarized');
+                      if (filter.id === 'kids')
+                        return product.ambherinventoryproductfor?.toLowerCase().includes('kid') || nameDesc.includes('kid');
+                      if (filter.id === 'adults')
+                        return product.ambherinventoryproductfor?.toLowerCase().includes('adult') || nameDesc.includes('adult');
+                      if (filter.id === 'men')
+                        return product.ambherinventoryproductfor?.toLowerCase().includes('men') || nameDesc.includes('men');
+                      if (filter.id === 'women')
+                        return product.ambherinventoryproductfor?.toLowerCase().includes('women') || nameDesc.includes('women');
+                      if (filter.id === 'unisex')
+                        return product.ambherinventoryproductfor?.toLowerCase().includes('unisex') || nameDesc.includes('unisex');
+                      return false;
+                    }).length;
+                    return (
+                      <div key={filter.id}
+                        className={`cursor-pointer px-4 py-2 rounded-2xl border transition-all duration-200 text-sm font-medium flex items-center justify-center w-full
+                          ${activeAmbherProductFilter === filter.id
+                            ? 'bg-[#2781af] rounded-2xl text-white'
+                            : 'bg-white text-gray-700 border-gray-300 hover:bg-blue-50'}`}
+                        onClick={() => setActiveAmbherProductFilter(filter.id)}
+                      >
+                        <span>{filter.label}</span>
+                        <span className="ml-2 bg-gray-200 text-gray-600 font-semibold px-2 rounded-full text-xs">
+                          {count}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <div className="border-b-2 pb-3 flex items center w-full mt-7"><i className="bx bx-filter font-albertsans font-semibold text-[#363636] text-[25px]" /><h1 className="ml-2 text-[16px] font-albertsans font-semibold text-[#363636]">Filter by price</h1></div>
+                {pricesortingProducts !== 'none' && (
+                  <div
+                    className="text-center cursor-pointer px-4 py-1 rounded-2xl border border-[#2781af] bg-white text-[#2781af] font-medium transition-all duration-200 hover:bg-[#2781af] hover:text-white hover:shadow-md mt-2"
+                    onClick={() => setpricesortingProducts('none')}
+                  >
+                    Clear filter
+                  </div>
+                )}
+                <div className="flex flex-wrap gap-2 mt-2 mb-4">
+                  <div
+                    onClick={() => setpricesortingProducts('Highesttolowest')}
+                    className={`text-center w-full cursor-pointer px-4 py-2 rounded-2xl border transition-all duration-200 text-sm font-medium
+                      ${pricesortingProducts === 'Highesttolowest'
+                        ? 'bg-[#2781af] text-white border-[#2781af]'
+                        : 'bg-white text-gray-700 border-gray-300 hover:bg-blue-50'}`}
+                  >
+                    Highest to Lowest
+                  </div>
+
+                  <div
+                    onClick={() => setpricesortingProducts('Lowesttohighest')}
+                    className={`text-center w-full cursor-pointer px-4 py-2 rounded-2xl border transition-all duration-200 text-sm font-medium
+                      ${pricesortingProducts === 'Lowesttohighest'
+                        ? 'bg-[#2781af] text-white border-[#2781af]'
+                        : 'bg-white text-gray-700 border-gray-300 hover:bg-blue-50'}`}
+                  >
+                    Lowest to Highest
+                  </div>
+                </div>
  
             
 
@@ -1765,10 +1941,11 @@ useEffect(() => {
                                         <h1 className="font-albertsans mt-3 min-w-0 break-words h-fit w-full font-albertsans font-bold text-[#212121] text-[29px]">{addambherinventoryproductname}</h1>
                          
                                         <div className="mt-1 flex items-center">
+                                          {/*
                                           <img src={starimage} className="w-5 h-5"/>
                                           <p className="font-albertsans ml-2 mt-1 text-[15px] font-semibold">4.8</p><span className="mt-1 text-[13px] pr-3 ml-2">(89 reviews)</span>
-                                          
-                                          <p className="mt-1 font-albertsans border-l-2  border-[#8c8c8c] pl-3  text-[13px]">{ambherproductsoldCount} sold</p>
+                                          */}
+                                          <p className="mt-1 font-albertsans border-[#8c8c8c] pl-3  text-[13px]">{ambherproductsoldCount} sold</p>
                                         </div>
                         
                                   
@@ -1811,7 +1988,7 @@ useEffect(() => {
                                   </div>
 
                                 </div>
-
+                                {/*          
                                 <div className="w-auto h-full  ">
                                   <h1 className="font-albertsans mt-8 text-[21px] font-semibold text-[#171717]">Product Ratings</h1>
                                   <div className="border-2 border-[#a0c1d1] flex items-center justify-between mt-2 w-full h-20 p-6 py-15 bg-[#f7fdff] rounded-2xl">
@@ -1858,6 +2035,7 @@ useEffect(() => {
                                
                               </div>
                                 </div>
+                                */}    
                                 </form>
                            </div>
                          </div>
@@ -1878,28 +2056,133 @@ useEffect(() => {
 
           <div className="p-3  rounded-2xl w-[20%] h-auto  mr-2 overflow-y-auto overflow-x-hidden">
         
-                <div className=" pb-3 flex items center w-full mt-7"><i className="bx bx-filter font-albertsans font-semibold text-[#363636] text-[25px]" /><h1 className="ml-2 text-[16px] font-albertsans font-semibold text-[#363636]">Filter by category</h1></div>
+                <div className="border-b-2 pb-3 flex items center w-full mt-7"><i className="bx bx-filter font-albertsans font-semibold text-[#363636] text-[25px]" /><h1 className="ml-2 text-[16px] font-albertsans font-semibold text-[#363636]">Filter by category</h1></div>
+                {activebautistainventorycategorytable !== 'all' && (
+                  <div
+                    className="text-center cursor-pointer px-4 py-1 rounded-2xl border border-[#2781af] bg-white text-[#2781af] font-medium transition-all duration-200 hover:bg-[#2781af] hover:text-white hover:shadow-md mt-2"
+                    onClick={() => showbautistainventorycategory('all')}
+                  >
+                    Clear filter
+                  </div>
+                )}
 
-                {bautistaloadingcategories ? (
-                  <CategorySkeleton />
-                ) : (
-                  <>
-                    <div onClick={() => showbautistainventorycategory('all')}  className={`mt-3 hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 py-2 text-center flex justify-center items-center ${activebautistainventorycategorytable ==='all' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#1f1f1f] ${activebautistainventorycategorytable ==='all' ? 'text-white' : ''}`}>All</h1><span className="bg-gray-200 text-gray-500 font-semibold px-2 rounded-full ml-2 text-sm">{bautistainventoryproducts.length}</span></div>
+                <div className="flex flex-wrap gap-2 mt-2 mb-4">
+                  <div
+                    onClick={() => showbautistainventorycategory('all')}
+                    className={`cursor-pointer px-4 py-2 rounded-2xl border transition-all duration-200 text-sm font-medium flex items-center justify-center w-full
+                      ${activebautistainventorycategorytable === 'all'
+                        ? 'bg-[#2781af] rounded-2xl text-white'
+                        : 'bg-white text-gray-700 border-gray-300 hover:bg-blue-50'}`}
+                  >
+                    <span>All</span>
+                    <span className="ml-2 bg-gray-200 text-gray-600 font-semibold px-2 rounded-full text-xs">
+                      {bautistainventoryproducts.length}
+                    </span>
+                  </div>
 
-                    {bautistainventorycategorylist.map(category => {
+                  {bautistaloadingcategories ? (
+                    <CategorySkeleton />
+                  ) : (
+                    bautistainventorycategorylist.map(category => {
                       const productcount = bautistainventoryproducts.filter(product =>
                         product.bautistainventoryproductcategory === category.bautistainventorycategoryname).length;
                       return(
-                      <div key={category._id} onClick={() => setactivebautistainventorycategorytable(category.bautistainventorycategoryname)}  className={`mt-3 hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl    py-2 text-center flex justify-center items-center ${activebautistainventorycategorytable ===category.bautistainventorycategoryname ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#1f1f1f] ${activebautistainventorycategorytable ===category.bautistainventorycategoryname ? 'text-white' : 'text-[#1f1f1f]'}`}>{category.bautistainventorycategoryname}</h1><span className="bg-gray-200 text-gray-500 font-semibold px-2 rounded-full ml-2 text-sm">{productcount}</span></div>
+                        <div key={category._id}
+                          onClick={() => setactivebautistainventorycategorytable(category.bautistainventorycategoryname)}
+                          className={`cursor-pointer px-4 py-2 rounded-2xl border transition-all duration-200 text-sm font-medium flex items-center justify-center w-full
+                            ${activebautistainventorycategorytable === category.bautistainventorycategoryname
+                              ? 'bg-[#2781af] rounded-2xl text-white'
+                              : 'bg-white text-gray-700 border-gray-300 hover:bg-blue-50'}`}
+                        >
+                          <span>{category.bautistainventorycategoryname}</span>
+                          <span className="ml-2 bg-gray-200 text-gray-600 font-semibold px-2 rounded-full text-xs">
+                            {productcount}
+                          </span>
+                        </div>
                       )
-                    })}
-                  </>
+                    })
+                  )}
+                </div>
+
+                {/* Advanced Filters for Bautista */}
+                <div className="border-b-2 pb-3 flex items center w-full mt-7">
+                  <i className="bx bx-filter font-albertsans font-semibold text-[#363636] text-[25px]" />
+                  <h1 className="ml-2 text-[16px] font-albertsans font-semibold text-[#363636]">Advanced Filters</h1>
+                </div>
+                {activeBautistaProductFilter !== 'all' && (
+                  <div
+                    className="text-center cursor-pointer px-4 py-1 rounded-2xl border border-[#2781af] bg-white text-[#2781af] font-medium transition-all duration-200 hover:bg-[#2781af] hover:text-white hover:shadow-md mt-2"
+                    onClick={() => setActiveBautistaProductFilter('all')}
+                  >
+                    Clear filter
+                  </div>
                 )}
+                <div className="flex flex-wrap gap-2 mt-2 mb-4">
+                  {bautistaProductFilters.map(filter => {
+                    // Count products matching this filter
+                    const count = bautistainventoryproducts.filter(product => {
+                      const nameDesc = `${product.bautistainventoryproductname || ''} ${product.bautistainventoryproductdescription || ''}`.toLowerCase();
+                      if (filter.id === 'polarized')
+                        return product.bautistainventoryproducttype?.toLowerCase().includes('polarized') || nameDesc.includes('polarized');
+                      if (filter.id === 'kids')
+                        return product.bautistainventoryproductfor?.toLowerCase().includes('kid') || nameDesc.includes('kid');
+                      if (filter.id === 'adults')
+                        return product.bautistainventoryproductfor?.toLowerCase().includes('adult') || nameDesc.includes('adult');
+                      if (filter.id === 'men')
+                        return product.bautistainventoryproductfor?.toLowerCase().includes('men') || nameDesc.includes('men');
+                      if (filter.id === 'women')
+                        return product.bautistainventoryproductfor?.toLowerCase().includes('women') || nameDesc.includes('women');
+                      if (filter.id === 'unisex')
+                        return product.bautistainventoryproductfor?.toLowerCase().includes('unisex') || nameDesc.includes('unisex');
+                      return false;
+                    }).length;
+                    return (
+                      <div key={filter.id}
+                        className={`cursor-pointer px-4 py-2 rounded-2xl border transition-all duration-200 text-sm font-medium flex items-center justify-center w-full
+                          ${activeBautistaProductFilter === filter.id
+                            ? 'bg-[#2781af] rounded-2xl text-white'
+                            : 'bg-white text-gray-700 border-gray-300 hover:bg-blue-50'}`}
+                        onClick={() => setActiveBautistaProductFilter(filter.id)}
+                      >
+                        <span>{filter.label}</span>
+                        <span className="ml-2 bg-gray-200 text-gray-600 font-semibold px-2 rounded-full text-xs">
+                          {count}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
 
+                <div className="border-b-2 pb-3 flex items center w-full mt-7"><i className="bx bx-filter font-albertsans font-semibold text-[#363636] text-[25px]" /><h1 className="ml-2 text-[16px] font-albertsans font-semibold text-[#363636]">Filter by price</h1></div>
+                {pricesortingProducts !== 'none' && (
+                  <div
+                    className="text-center cursor-pointer px-4 py-1 rounded-2xl border border-[#2781af] bg-white text-[#2781af] font-medium transition-all duration-200 hover:bg-[#2781af] hover:text-white hover:shadow-md mt-2"
+                    onClick={() => setpricesortingProducts('none')}
+                  >
+                    Clear filter
+                  </div>
+                )}
+                <div className="flex flex-wrap gap-2 mt-2 mb-4">
+                  <div
+                    onClick={() => setpricesortingProducts('Highesttolowest')}
+                    className={`text-center w-full cursor-pointer px-4 py-2 rounded-2xl border transition-all duration-200 text-sm font-medium
+                      ${pricesortingProducts === 'Highesttolowest'
+                        ? 'bg-[#2781af] text-white border-[#2781af]'
+                        : 'bg-white text-gray-700 border-gray-300 hover:bg-blue-50'}`}
+                  >
+                    Highest to Lowest
+                  </div>
 
-                <div className=" pb-3 flex items center w-full mt-7"><i className="bx bx-filter font-albertsans font-semibold text-[#363636] text-[25px]" /><h1 className="ml-2 text-[16px] font-albertsans font-semibold text-[#363636]">Filter by price</h1></div>
-                <div onClick={() => setpricesortingProducts('Highesttolowest')}    className={`mt-3 hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl   py-2 text-center flex justify-center items-center ${pricesortingProducts === 'Highesttolowest' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#1f1f1f] ${pricesortingProducts === 'Highesttolowest' ? 'text-white' : 'text-[#1f1f1f]'}`}>Highest to Lowest</h1></div>
-                <div onClick={() => setpricesortingProducts('Lowesttohighest')}   className={`mt-3 hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl   py-2 text-center flex justify-center items-center ${pricesortingProducts === 'Lowesttohighest' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#1f1f1f] ${pricesortingProducts === 'Lowesttohighest' ? 'bg-[#2781af] rounded-2xl text-white ' : 'text-[#1f1f1f]'}`}>Lowest to Highest</h1></div>
+                  <div
+                    onClick={() => setpricesortingProducts('Lowesttohighest')}
+                    className={`text-center w-full cursor-pointer px-4 py-2 rounded-2xl border transition-all duration-200 text-sm font-medium
+                      ${pricesortingProducts === 'Lowesttohighest'
+                        ? 'bg-[#2781af] text-white border-[#2781af]'
+                        : 'bg-white text-gray-700 border-gray-300 hover:bg-blue-50'}`}
+                  >
+                    Lowest to Highest
+                  </div>
+                </div>
 
 
 
@@ -2058,9 +2341,10 @@ useEffect(() => {
                                         <h1 className="font-albertsans mt-3 min-w-0 break-words h-fit w-full font-albertsans font-bold text-[#212121] text-[29px]">{addbautistainventoryproductname}</h1>
                          
                                         <div className="mt-1 flex items-center">
+                                          {/* 
                                           <img src={starimage} className="w-5 h-5"/>
                                           <p className="font-albertsans ml-2 mt-1 text-[15px] font-semibold">4.8</p><span className="mt-1 text-[13px] pr-3 ml-2">(89 reviews)</span>
-                                          
+                                          */} 
                                           <p className="mt-1 font-albertsans border-l-2  border-[#8c8c8c] pl-3  text-[13px]">{bautistaproductsoldCount} sold</p>
                                         </div>
                         
@@ -2104,7 +2388,7 @@ useEffect(() => {
                                   </div>
 
                                 </div>
-
+                                  {/*        
                                 <div className="w-auto h-full  ">
                                   <h1 className="font-albertsans mt-8 text-[21px] font-semibold text-[#171717]">Product Ratings</h1>
                                   <div className="border-2 border-[#a0c1d1] flex items-center justify-between mt-2 w-full h-20 p-6 py-15 bg-[#f7fdff] rounded-2xl">
@@ -2151,6 +2435,7 @@ useEffect(() => {
                                
                               </div>
                                 </div>
+                                */}
                                 </form>
                            </div>
                          </div>

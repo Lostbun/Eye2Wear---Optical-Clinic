@@ -4365,6 +4365,19 @@ const showbautistainventorycategory = (bautistainventorycategorytableid) => {
       setactivebautistainventorycategorytable(bautistainventorycategorytableid);
 };
 
+// Advanced filters state for Bautista
+const [activeBautistaProductFilter, setActiveBautistaProductFilter] = useState('all');
+const [bautistaPriceSortingProducts, setBautistaPriceSortingProducts] = useState('none');
+
+const bautistaProductFilters = [
+    { id: 'polarized', label: 'Polarized' },
+    { id: 'kids', label: 'Kids' },
+    { id: 'adults', label: 'Adults' },
+    { id: 'men', label: "Men's" },
+    { id: 'women', label: "Women's" },
+    { id: 'unisex', label: 'Unisex' }
+];
+
 const [showaddbautistainventorycategorydialog, setshowaddbautistainventorycategorydialog] = useState(false);
 const [showaddbautistaaddinventorycategory, setshowaddbautistaaddinventorycategory] = useState(false);
 const [showdeletebautistainventorycategorydialog, setshowdeletebautistainventorycategorydialog] = useState(false);
@@ -4658,11 +4671,64 @@ useEffect(() => {
 
 
 
-const filteredproducts = ambherinventoryproducts.filter(product => 
-  activeambherinventorycategorytable === 'all' || 
-  product.ambherinventoryproductcategory === activeambherinventorycategorytable
-);
+// --- INVENTORY PRODUCT FILTERS STATE & LOGIC ---
+// Place these near your other inventory-related useState declarations
+const [activeProductFilter, setActiveProductFilter] = useState('all');
+const productFilters = [
 
+  { id: 'polarized', label: 'Polarized' },
+  { id: 'kids', label: 'Kids' },
+  { id: 'adults', label: 'Adults' },
+  { id: 'men', label: 'Men' },
+  { id: 'women', label: 'Women' },
+  { id: 'unisex', label: 'Unisex' },
+
+
+];
+
+// Filtering logic for Ambher products
+const [pricesortingProducts, setpricesortingProducts] = useState('none');
+const filteredAmbherProducts = ambherinventoryproducts.filter(product => {
+  // Category filter
+  const categoryMatch =
+    activeambherinventorycategorytable === 'all' ||
+    product.ambherinventoryproductcategory === activeambherinventorycategorytable;
+
+  // Product filter
+  const nameDesc = `${product.ambherinventoryproductname || ''} ${product.ambherinventoryproductdescription || ''}`.toLowerCase();
+  if (activeProductFilter === 'all') return categoryMatch;
+  if (activeProductFilter === 'eyeclinic')
+    return categoryMatch && (product.ambherinventoryproducttype?.toLowerCase().includes('clinic') || nameDesc.includes('clinic'));
+  if (activeProductFilter === 'polarized')
+    return categoryMatch && (product.ambherinventoryproducttype?.toLowerCase().includes('polarized') || nameDesc.includes('polarized'));
+  if (activeProductFilter === 'kids')
+    return categoryMatch && (product.ambherinventoryproductfor?.toLowerCase().includes('kid') || nameDesc.includes('kid'));
+  if (activeProductFilter === 'adults')
+    return categoryMatch && (product.ambherinventoryproductfor?.toLowerCase().includes('adult') || nameDesc.includes('adult'));
+  if (activeProductFilter === 'men')
+    return categoryMatch && (product.ambherinventoryproductfor?.toLowerCase().includes('men') || nameDesc.includes('men'));
+  if (activeProductFilter === 'women')
+    return categoryMatch && (product.ambherinventoryproductfor?.toLowerCase().includes('women') || nameDesc.includes('women'));
+  if (activeProductFilter === 'unisex')
+    return categoryMatch && (product.ambherinventoryproductfor?.toLowerCase().includes('unisex') || nameDesc.includes('unisex'));
+  if (activeProductFilter === 'frameshape')
+    return categoryMatch && (product.ambherinventoryproductframeshape?.toLowerCase().length > 0 || nameDesc.includes('shape'));
+  if (activeProductFilter === 'faceshape')
+    return categoryMatch && (product.ambherinventoryproductfaceshape?.toLowerCase().length > 0 || nameDesc.includes('face'));
+  if (activeProductFilter === 'accessories')
+    return categoryMatch && (product.ambherinventoryproducttype?.toLowerCase().includes('accessor') || nameDesc.includes('accessor'));
+  return categoryMatch;
+});
+
+// Sorting logic for Ambher products
+const sortedFilteredAmbherProducts = [...filteredAmbherProducts].sort((a, b) => {
+  if (pricesortingProducts === 'Highesttolowest') {
+    return (b.ambherinventoryproductprice || 0) - (a.ambherinventoryproductprice || 0);
+  } else if (pricesortingProducts === 'Lowesttohighest') {
+    return (a.ambherinventoryproductprice || 0) - (b.ambherinventoryproductprice || 0);
+  }
+  return 0;
+});
 
 const ambherinventoryproductcount = ambherinventoryproducts.filter(
   product => product.ambherinventoryproductquantity <= 10
@@ -5070,11 +5136,37 @@ const [showdeletebautistaproduct, setshowdeletebautistaproduct] = useState(false
 const [selecteddeletebautistaproduct, setselecteddeletebautistaproduct] = useState([]);
           
           
-          const bautistafilteredproducts = bautistainventoryproducts.filter(product => 
-            activebautistainventorycategorytable === 'all' || 
-            product.bautistainventoryproductcategory === activebautistainventorycategorytable
-          );
-          
+// Filtering logic for Bautista products
+const filteredBautistaProducts = bautistainventoryproducts.filter(product => {
+  const categoryMatch =
+    activebautistainventorycategorytable === 'all' ||
+    product.bautistainventoryproductcategory === activebautistainventorycategorytable;
+
+  const nameDesc = `${product.bautistainventoryproductname || ''} ${product.bautistainventoryproductdescription || ''}`.toLowerCase();
+  if (activeProductFilter === 'all') return categoryMatch;
+  if (activeProductFilter === 'eyeclinic')
+    return categoryMatch && (product.bautistainventoryproducttype?.toLowerCase().includes('clinic') || nameDesc.includes('clinic'));
+  if (activeProductFilter === 'polarized')
+    return categoryMatch && (product.bautistainventoryproducttype?.toLowerCase().includes('polarized') || nameDesc.includes('polarized'));
+  if (activeProductFilter === 'kids')
+    return categoryMatch && (product.bautistainventoryproductfor?.toLowerCase().includes('kid') || nameDesc.includes('kid'));
+  if (activeProductFilter === 'adults')
+    return categoryMatch && (product.bautistainventoryproductfor?.toLowerCase().includes('adult') || nameDesc.includes('adult'));
+  if (activeProductFilter === 'men')
+    return categoryMatch && (product.bautistainventoryproductfor?.toLowerCase().includes('men') || nameDesc.includes('men'));
+  if (activeProductFilter === 'women')
+    return categoryMatch && (product.bautistainventoryproductfor?.toLowerCase().includes('women') || nameDesc.includes('women'));
+  if (activeProductFilter === 'unisex')
+    return categoryMatch && (product.bautistainventoryproductfor?.toLowerCase().includes('unisex') || nameDesc.includes('unisex'));
+  if (activeProductFilter === 'frameshape')
+    return categoryMatch && (product.bautistainventoryproductframeshape?.toLowerCase().length > 0 || nameDesc.includes('shape'));
+  if (activeProductFilter === 'faceshape')
+    return categoryMatch && (product.bautistainventoryproductfaceshape?.toLowerCase().length > 0 || nameDesc.includes('face'));
+  if (activeProductFilter === 'accessories')
+    return categoryMatch && (product.bautistainventoryproducttype?.toLowerCase().includes('accessor') || nameDesc.includes('accessor'));
+  return categoryMatch;
+});
+
 const bautistainventoryproductcount = bautistainventoryproducts.filter(
   product => product.bautistainventoryproductquantity <= 10
 );
@@ -8832,7 +8924,7 @@ const submitpatientpendingorderbautista = async (e) => {
               <td className="py-3 px-6 text-[#171717] text-center font-albertsans font-medium whitespace-nowrap">
                      <div className="flex  items-center whitespace-nowrap">
                   <img 
-                    src={appointment.patientappointmentprofilepicture} 
+                    src={appointment.patientappointmentprofilepicture}
                     alt="Profile" 
                     className=" rounded-full h-12 mr-3 w-12 object-cover"
                     onError={(e) => {
@@ -10942,20 +11034,145 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
         
           
                 <div onClick={() => {setambherinventorycategorynamebox(null); setshowaddambherinventorycategorydialog(true);}}   className=" mt-1 mb-1 hover:cursor-pointer hover:scale-103 bg-[#383838] rounded-3xl flex justify-center items-center px-4 py-2 transition-all duration-300 ease-in-out"><p className="font-semibold font-albertsans text-white text-[18px] ml-2">Manage Categories</p></div>
-                <div className="border-b-2 pb-3 flex items center w-full mt-7"><i className="bx bx-filter font-albertsans font-semibold text-[#363636] text-[25px]" /><h1 className="ml-2 text-[16px] font-albertsans font-semibold text-[#363636]">Filter by category</h1></div>
+{/* Filter by Category Header */}
+<div className="border-b-2 pb-3 flex items-center w-full mt-7">
+  <i className="bx bx-filter font-albertsans font-semibold text-[#363636] text-[25px]" />
+  <h1 className="ml-2 text-[16px] font-albertsans font-semibold text-[#363636]">
+    Filter by category
+  </h1>
+</div>
 
-                <div onClick={() => showambherinventorycategory('all')}  className={`mt-3 hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 py-2 text-center flex justify-center items-center ${activeambherinventorycategorytable ==='all' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d] ${activeambherinventorycategorytable ==='all' ? 'text-white' : ''}`}>All</h1><span className="bg-gray-200 text-gray-500 font-semibold px-2 rounded-full ml-2 text-sm">{ambherinventoryproducts.length}</span></div>
+{/* Category Filters (styled like Advanced Filters chips) */}
+<div className="flex flex-wrap gap-2 mt-2 mb-4">
+  {/* All Category */}
+  <div
+    onClick={() => showambherinventorycategory('all')}
+    className={`w-full text-center justify-center cursor-pointer px-4 py-2 rounded-2xl border transition-all duration-200 text-sm font-medium flex items-center
+      ${
+        activeambherinventorycategorytable === 'all'
+          ? 'bg-[#2781af] text-white border-[#2781af]'
+          : 'bg-white text-gray-700 border-gray-300 hover:bg-blue-50'
+      }`}
+  >
+    All
+    <span className="ml-2 bg-gray-200 text-gray-600 font-semibold px-2 rounded-full text-xs">
+      {ambherinventoryproducts.length}
+    </span>
+  </div>
 
 
-                {ambherinventorycategorylist.map(category => {
-                  const productcount = ambherinventoryproducts.filter(product =>
-                    product.ambherinventoryproductcategory === category.ambherinventorycategoryname).length;
-                  return(
-                  <div key={category._id} onClick={() => setactiveambherinventorycategorytable(category.ambherinventorycategoryname)}  className={`mt-3 hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 py-2 text-center flex justify-center items-center ${activeambherinventorycategorytable ===category.ambherinventorycategoryname ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d] ${activeambherinventorycategorytable ===category.ambherinventorycategoryname ? 'text-white' : 'text-[#5d5d5d]'}`}>{category.ambherinventorycategoryname}</h1><span className="bg-gray-200 text-gray-500 font-semibold px-2 rounded-full ml-2 text-sm">{productcount}</span></div>
-                  )
-                })}
+  {/* Dynamic Categories */}
+  {ambherinventorycategorylist.map(category => {
+    const productcount = ambherinventoryproducts.filter(
+      product => product.ambherinventoryproductcategory === category.ambherinventorycategoryname
+    ).length;
+
+    return (
+      <div
+        key={category._id}
+        onClick={() =>
+          setactiveambherinventorycategorytable(category.ambherinventorycategoryname)
+        }
+        className={`w-full text-center justify-center cursor-pointer px-4 py-2 rounded-2xl border transition-all duration-200 text-sm font-medium flex items-center
+          ${
+            activeambherinventorycategorytable === category.ambherinventorycategoryname
+              ? 'bg-[#2781af] text-white border-[#2781af]'
+              : 'bg-white text-gray-700 border-gray-300 hover:bg-blue-50'
+          }`}
+      >
+        {category.ambherinventorycategoryname}
+        <span className="ml-2 bg-gray-200 text-gray-600 font-semibold px-2 rounded-full text-xs">
+          {productcount}
+        </span>
+      </div>
+    );
+  })}
+</div>
 
 
+
+<div className="border-b-2 pb-3 flex items center w-full mt-7"><i className="bx bx-filter font-albertsans font-semibold text-[#363636] text-[25px]" /><h1 className="ml-2 text-[16px] font-albertsans font-semibold text-[#363636]">Advanced Filters</h1></div>
+{activeProductFilter !== 'all' && (
+                    <div
+                      className="text-center cursor-pointer px-4 py-1 rounded-2xl border border-[#2781af] bg-white text-[#2781af] font-medium transition-all duration-200 hover:bg-[#2781af] hover:text-white hover:shadow-md"
+                      
+                      onClick={() => setActiveProductFilter('all')}
+                    >
+                      Clear filter
+                    </div>
+                  )}
+
+                <div className="flex flex-wrap gap-2 mt-2 mb-4">
+                  {productFilters.map(filter => {
+                    // Count products matching this filter
+                    const count = ambherinventoryproducts.filter(product => {
+                      const nameDesc = `${product.ambherinventoryproductname || ''} ${product.ambherinventoryproductdescription || ''}`.toLowerCase();
+                      if (filter.id === 'polarized')
+                        return product.ambherinventoryproducttype?.toLowerCase().includes('polarized') || nameDesc.includes('polarized');
+                      if (filter.id === 'kids')
+                        return product.ambherinventoryproductfor?.toLowerCase().includes('kid') || nameDesc.includes('kid');
+                      if (filter.id === 'adults')
+                        return product.ambherinventoryproductfor?.toLowerCase().includes('adult') || nameDesc.includes('adult');
+                      if (filter.id === 'men')
+                        return product.ambherinventoryproductfor?.toLowerCase().includes('men') || nameDesc.includes('men');
+                      if (filter.id === 'women')
+                        return product.ambherinventoryproductfor?.toLowerCase().includes('women') || nameDesc.includes('women');
+                      if (filter.id === 'unisex')
+                        return product.ambherinventoryproductfor?.toLowerCase().includes('unisex') || nameDesc.includes('unisex');
+                      return false;
+                    }).length;
+                    return (
+                      <div key={filter.id}
+                        className={`cursor-pointer px-4 py-2 rounded-2xl border transition-all duration-200 text-sm font-medium flex items-center justify-center w-full
+                          ${activeProductFilter === filter.id
+                            ? 'bg-[#2781af] rounded-2xl text-white'
+                            : 'bg-white text-gray-700 border-gray-300 hover:bg-blue-50'}`}
+                        onClick={() => setActiveProductFilter(filter.id)}
+                      >
+                        <span >{filter.label}</span>
+                        <span className="ml-2 bg-gray-200 text-gray-600 font-semibold px-2 rounded-full text-xs">
+                          {count}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+                
+                <div className="border-b-2 pb-3 flex items center w-full mt-7"><i className="bx bx-filter font-albertsans font-semibold text-[#363636] text-[25px]" /><h1 className="ml-2 text-[16px] font-albertsans font-semibold text-[#363636]">Filter by price</h1></div>
+                {pricesortingProducts !== 'none' && (
+                  <div
+                    className="text-center cursor-pointer px-4 py-1 rounded-2xl border border-[#2781af] bg-white text-[#2781af] font-medium transition-all duration-200 hover:bg-[#2781af] hover:text-white hover:shadow-md mt-2"
+                    onClick={() => setpricesortingProducts('none')}
+                  >
+                    Clear filter
+                  </div>
+                )}
+{/* Price filter options styled like Advanced Filters */}
+<div className="flex flex-wrap gap-2 mt-2 mb-4">
+  <div
+    onClick={() => setpricesortingProducts('Highesttolowest')}
+    className={`text-center  w-full cursor-pointer px-4 py-2 rounded-2xl border transition-all duration-200 text-sm font-medium
+      ${
+        pricesortingProducts === 'Highesttolowest'
+          ? 'bg-[#2781af] text-white border-[#2781af]'
+          : 'bg-white text-gray-700 border-gray-300 hover:bg-blue-50'
+      }`}
+  >
+    Highest to Lowest
+  </div>
+
+  <div
+    onClick={() => setpricesortingProducts('Lowesttohighest')}
+    className={`text-center w-full cursor-pointer px-4 py-2 rounded-2xl border transition-all duration-200 text-sm font-medium
+      ${
+        pricesortingProducts === 'Lowesttohighest'
+          ? 'bg-[#2781af] text-white border-[#2781af]'
+          : 'bg-white text-gray-700 border-gray-300 hover:bg-blue-50'
+      }`}
+  >
+    Lowest to Highest
+  </div>
+</div>
 
             
             {/*<div className=""> <AmbherinventorycategoryBox value={ambherinventorycategorynamebox} loading={loadingambherinventorycategorylist} onChange={(e) => setambherinventorycategorynamebox(e.target.value)} categories={ambherinventorycategorylist}/></div>*/}
@@ -10977,12 +11194,13 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
                 ): ambherinventoryproducts.length === 0 ? (
                   <div>No Products Found...</div> 
                 ):(
-                  [...filteredproducts]
+                  sortedFilteredAmbherProducts
                   .sort((a, b) => {
                     const aquant = a.ambherinventoryproductquantity || 0;
                     const bquant = b.ambherinventoryproductquantity || 0;
                     return aquant <= 10 ? (bquant <= 10 ? 0 : -1) : 1;
-                  }).map((product) => (
+                  })
+                  .map((product) => (
               <div key={product.ambherinventoryproductid} onClick={() => {setshowaddambherinventoryproductdialog(true);
                                                                            setselectedambherproduct(product);
                                                                            setcurrentimageindex(0);
@@ -11429,18 +11647,125 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
                 <div onClick={() => {setbautistainventorycategorynamebox(null); setshowaddbautistainventorycategorydialog(true);}}   className=" mt-1 mb-1 hover:cursor-pointer hover:scale-103 bg-[#383838] rounded-3xl flex justify-center items-center px-4 py-2 transition-all duration-300 ease-in-out"><p className="font-semibold font-albertsans text-white text-[18px] ml-2">Manage Categories</p></div>
                 <div className="border-b-2 pb-3 flex items center w-full mt-7"><i className="bx bx-filter font-albertsans font-semibold text-[#363636] text-[25px]" /><h1 className="ml-2 text-[16px] font-albertsans font-semibold text-[#363636]">Filter by category</h1></div>
 
-                <div onClick={() => showbautistainventorycategory('all')}  className={`mt-3 hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 py-2 text-center flex justify-center items-center ${activebautistainventorycategorytable ==='all' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d] ${activebautistainventorycategorytable ==='all' ? 'text-white' : ''}`}>All</h1><span className="bg-gray-200 text-gray-500 font-semibold px-2 rounded-full ml-2 text-sm">{bautistainventoryproducts.length}</span></div>
 
+                <div className="flex flex-wrap gap-2 mt-2 mb-4">
+                  <div
+                    onClick={() => showbautistainventorycategory('all')}
+                    className={`cursor-pointer px-4 py-2 rounded-2xl border transition-all duration-200 text-sm font-medium flex items-center justify-center w-full
+                      ${activebautistainventorycategorytable === 'all'
+                        ? 'bg-[#2781af] rounded-2xl text-white'
+                        : 'bg-white text-gray-700 border-gray-300 hover:bg-blue-50'}`}
+                  >
+                    <span>All</span>
+                    <span className="ml-2 bg-gray-200 text-gray-600 font-semibold px-2 rounded-full text-xs">
+                      {bautistainventoryproducts.length}
+                    </span>
+                  </div>
 
-                {bautistainventorycategorylist.map(category => {
-                  const productcount = bautistainventoryproducts.filter(product =>
-                    product.bautistainventoryproductcategory === category.bautistainventorycategoryname).length;
-                  return(
-                  <div key={category._id} onClick={() => setactivebautistainventorycategorytable(category.bautistainventorycategoryname)}  className={`mt-3 hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 py-2 text-center flex justify-center items-center ${activebautistainventorycategorytable ===category.bautistainventorycategoryname ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d] ${activebautistainventorycategorytable ===category.bautistainventorycategoryname ? 'text-white' : 'text-[#5d5d5d]'}`}>{category.bautistainventorycategoryname}</h1><span className="bg-gray-200 text-gray-500 font-semibold px-2 rounded-full ml-2 text-sm">{productcount}</span></div>
-                  )
-                })}
+                  {bautistainventorycategorylist.map(category => {
+                    const productcount = bautistainventoryproducts.filter(product =>
+                      product.bautistainventoryproductcategory === category.bautistainventorycategoryname).length;
+                    return(
+                      <div key={category._id}
+                        onClick={() => setactivebautistainventorycategorytable(category.bautistainventorycategoryname)}
+                        className={`cursor-pointer px-4 py-2 rounded-2xl border transition-all duration-200 text-sm font-medium flex items-center justify-center w-full
+                          ${activebautistainventorycategorytable === category.bautistainventorycategoryname
+                            ? 'bg-[#2781af] rounded-2xl text-white'
+                            : 'bg-white text-gray-700 border-gray-300 hover:bg-blue-50'}`}
+                      >
+                        <span>{category.bautistainventorycategoryname}</span>
+                        <span className="ml-2 bg-gray-200 text-gray-600 font-semibold px-2 rounded-full text-xs">
+                          {productcount}
+                        </span>
+                      </div>
+                    )
+                  })}
+                </div>
 
+                {/* Advanced Filters for Bautista */}
+                <div className="border-b-2 pb-3 flex items center w-full mt-7">
+                  <i className="bx bx-filter font-albertsans font-semibold text-[#363636] text-[25px]" />
+                  <h1 className="ml-2 text-[16px] font-albertsans font-semibold text-[#363636]">Advanced Filters</h1>
+                </div>
+                {activeBautistaProductFilter !== 'all' && (
+                  <div
+                    className="text-center cursor-pointer px-4 py-1 rounded-2xl border border-[#2781af] bg-white text-[#2781af] font-medium transition-all duration-200 hover:bg-[#2781af] hover:text-white hover:shadow-md"
+                    onClick={() => setActiveBautistaProductFilter('all')}
+                  >
+                    Clear filter
+                  </div>
+                )}
 
+                <div className="flex flex-wrap gap-2 mt-2 mb-4">
+                  {bautistaProductFilters.map(filter => {
+                    // Count products matching this filter
+                    const count = bautistainventoryproducts.filter(product => {
+                      const nameDesc = `${product.bautistainventoryproductname || ''} ${product.bautistainventoryproductdescription || ''}`.toLowerCase();
+                      if (filter.id === 'polarized')
+                        return product.bautistainventoryproducttype?.toLowerCase().includes('polarized') || nameDesc.includes('polarized');
+                      if (filter.id === 'kids')
+                        return product.bautistainventoryproductfor?.toLowerCase().includes('kid') || nameDesc.includes('kid');
+                      if (filter.id === 'adults')
+                        return product.bautistainventoryproductfor?.toLowerCase().includes('adult') || nameDesc.includes('adult');
+                      if (filter.id === 'men')
+                        return product.bautistainventoryproductfor?.toLowerCase().includes('men') || nameDesc.includes('men');
+                      if (filter.id === 'women')
+                        return product.bautistainventoryproductfor?.toLowerCase().includes('women') || nameDesc.includes('women');
+                      if (filter.id === 'unisex')
+                        return product.bautistainventoryproductfor?.toLowerCase().includes('unisex') || nameDesc.includes('unisex');
+                      return false;
+                    }).length;
+                    return (
+                      <div key={filter.id}
+                        className={`cursor-pointer px-4 py-2 rounded-2xl border transition-all duration-200 text-sm font-medium flex items-center justify-center w-full
+                          ${activeBautistaProductFilter === filter.id
+                            ? 'bg-[#2781af] rounded-2xl text-white'
+                            : 'bg-white text-gray-700 border-gray-300 hover:bg-blue-50'}`}
+                        onClick={() => setActiveBautistaProductFilter(filter.id)}
+                      >
+                        <span>{filter.label}</span>
+                        <span className="ml-2 bg-gray-200 text-gray-600 font-semibold px-2 rounded-full text-xs">
+                          {count}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Price Filter for Bautista */}
+                <div className="border-b-2 pb-3 flex items center w-full mt-7">
+                  <i className="bx bx-filter font-albertsans font-semibold text-[#363636] text-[25px]" />
+                  <h1 className="ml-2 text-[16px] font-albertsans font-semibold text-[#363636]">Filter by price</h1>
+                </div>
+                {bautistaPriceSortingProducts !== 'none' && (
+                  <div
+                    className="text-center cursor-pointer px-4 py-1 rounded-2xl border border-[#2781af] bg-white text-[#2781af] font-medium transition-all duration-200 hover:bg-[#2781af] hover:text-white hover:shadow-md mt-2"
+                    onClick={() => setBautistaPriceSortingProducts('none')}
+                  >
+                    Clear filter
+                  </div>
+                )}
+                <div className="flex flex-wrap gap-2 mt-2 mb-4">
+                  <div
+                    onClick={() => setBautistaPriceSortingProducts('Highesttolowest')}
+                    className={`text-center w-full cursor-pointer px-4 py-2 rounded-2xl border transition-all duration-200 text-sm font-medium
+                      ${bautistaPriceSortingProducts === 'Highesttolowest'
+                        ? 'bg-[#2781af] text-white border-[#2781af]'
+                        : 'bg-white text-gray-700 border-gray-300 hover:bg-blue-50'}`}
+                  >
+                    Highest to Lowest
+                  </div>
+
+                  <div
+                    onClick={() => setBautistaPriceSortingProducts('Lowesttohighest')}
+                    className={`text-center w-full cursor-pointer px-4 py-2 rounded-2xl border transition-all duration-200 text-sm font-medium
+                      ${bautistaPriceSortingProducts === 'Lowesttohighest'
+                        ? 'bg-[#2781af] text-white border-[#2781af]'
+                        : 'bg-white text-gray-700 border-gray-300 hover:bg-blue-50'}`}
+                  >
+                    Lowest to Highest
+                  </div>
+                </div>
 
             
             {/*<div className=""> <AmbherinventorycategoryBox value={bautistainventorycategorynamebox} loading={loadingbautistainventorycategorylist} onChange={(e) => setbautistainventorycategorynamebox(e.target.value)} categories={bautistainventorycategorylist}/></div>*/}
@@ -11462,7 +11787,7 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
                 ): bautistainventoryproducts.length === 0 ? (
                   <div>No Products Found...</div> 
                 ):(
-                  [...bautistafilteredproducts]
+                  [...filteredBautistaProducts]
                   .sort((a, b) => {
                     const aquant = a.bautistainventoryproductquantity || 0;
                     const bquant = b.bautistainventoryproductquantity || 0;
@@ -11528,7 +11853,7 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
                 <div  className="p-2  animate-fadeInUp flex  items-center border-t-2  border-[#909090] w-[100%] h-[83%] rounded-2xl mt-5" >
 <div className=" rounded-3xl h-full w-full mt-2 bg-[#f7f7f7]">
     {bautistainventorycategorylist.length === 0 ? (
-        <div className="bg-yellow-100 w-full py-3 rounded-tl-2xl rounded-tr-2xl flex justify-center items-center"><h1 className="text-yellow-900 font-albertsans font-medium ">No Ambher Optical Inventory Categories</h1></div>
+        <div className="bg-yellow-100 w-full py-3 rounded-tl-2xl rounded-tr-2xl flex justify-center items-center"><h1 className="text-yellow-900 font-albertsans font-medium ">No Bautista Eye Center Inventory Categories</h1></div>
   ):(
    <table className="min-w-full divide-y divide-gray-200">
       <thead className="bg-">
@@ -12013,7 +12338,7 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
                 ): ambherinventoryproducts.length === 0 ? (
                   <div>No Products Found...</div> 
                 ):(
-                  [...filteredproducts]
+                  [...filteredAmbherProducts]
                 .filter(product => 
                   product.ambherinventoryproductname.toLowerCase().includes(searchpatientorderambherTerm.toLowerCase())
                 )
@@ -12736,7 +13061,7 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
                 ): bautistainventoryproducts.length === 0 ? (
                   <div>No Products Found...</div> 
                 ):(
-                  [...bautistafilteredproducts]
+                  [...filteredBautistaProducts]
                 .filter(product => 
                   product.bautistainventoryproductname.toLowerCase().includes(searchpatientorderbautistaTerm.toLowerCase())
                 )

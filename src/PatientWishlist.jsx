@@ -970,7 +970,7 @@ const WishlistGridSkeleton = () => (
       <>
 
       {/* NavBar */}
-      <div className=" bg-white w-[100vw]">
+<div className="bg-white w-[99vw] relative z-10">
         <header id="header" className="top-0 absolute flex justify-between items-center text-black  md:px-32 bg-white w-full drop-shadow-md">
           <a id:logocontain href="#">
             <img src={navlogo} alt="" className="w-33  hover:scale-105 transition-all"></img>
@@ -1090,8 +1090,8 @@ const WishlistGridSkeleton = () => (
 
 
       {/* First Section */} {/* First Section */} {/* First Section */} {/* First Section */}
-      <section className="bg-cover bg-center h-auto w-[100vw] flex justify-center align-center" >
-      <div className="bg-cover bg-center h-auto w-full flex items-center justify-center " >
+    <section className="bg-cover bg-center min-h-[100vh] w-[full] flex justify-center align-center" >
+      <div className="bg-cover bg-center h-auto w-full flex justify-center " >
 
         <div className="w-full h-auto flex flex-col justify-start items-start pt-3 p-3">
 
@@ -1100,7 +1100,7 @@ const WishlistGridSkeleton = () => (
 
 
 
-                <div id="inventorymanagement" className="pl-5 pr-5 pb-4 pt-4  transition-all duration-300  ease-in-out  w-[100%] h-full bg-white " >   
+                <div id="inventorymanagement" className="pl-5 pr-5 pb-4 pt-8   transition-all duration-300  ease-in-out  w-[100%] h-full bg-white " >   
 
                 <div className=" flex items-center mt-8">
                   <img src={heart} className="w-7 mr-2"/>

@@ -76,7 +76,7 @@ function PatientLandingpage(){
     <>
 
      {/* NavBar */}
-<div className="bg-white w-full relative z-10 mb-10">
+<div className="bg-white w-[99vw] relative z-10">
   <header id="header" className="top-0 absolute flex justify-between items-center text-black md:px-32 bg-white w-full drop-shadow-md z-50">
         <a id:logocontain href="#">
           <img src={navlogo} alt="" className="w-33  hover:scale-105 transition-all"></img>
@@ -288,8 +288,8 @@ function PatientLandingpage(){
                     <p className="text-[15px] font-medium italic text-white">Updated eye-exam technologies</p>
                     </div>
                     <div className="bg-cover bg-center bg-white border-1 border-gray-200 hover:scale-105 transition-all  shadow-md h-[40%] rounded-4xl flex flex-col justify-end pl-10 pb-10" style={{ backgroundImage: `url(${bentoconsult})` }}>
-                    <h1 className="font-albertsans font-semibold italic text-white text-[25px] ">Virtual Eye Consultation</h1>
-                    <p className="text-[15px] font-medium italic text-white">Effecient consultation with eye-specialists</p>
+                    <h1 className="font-albertsans font-semibold italic text-white text-[25px] ">Direct Messaging</h1>
+                    <p className="text-[15px] font-medium italic text-white">Efficient communication with your eye-specialist</p>
                     </div>
                   </div>
                 </div>
