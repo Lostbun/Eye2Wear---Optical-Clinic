@@ -451,8 +451,7 @@ const fetchConversations = useCallback(async (forceRefresh = false) => {
     // Always clear loading state
     setLoadingConversations(false);
   }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-}, [apiUrl, showpatientchatdashboard]);
+}, [apiUrl, showpatientchatdashboard, conversations.length, unreadMessagesByConversation]);
 
 
 const loadMessages = useCallback(async (targetConversationId, skipStateUpdate = false) => {
@@ -1349,6 +1348,12 @@ useEffect(() => {
           }
         }
         
+        // IMMEDIATE conversation fetch for fresh login
+        console.log('🔄 IMMEDIATE conversation fetch after socket connect');
+        setTimeout(() => {
+          fetchConversations(true);
+        }, 500);
+        
         // ENHANCED: For staff/owner, join ALL conversation rooms immediately
         if ((userRole === 'staff' || userRole === 'owner') && clinic) {
           console.log(`🏥 ${userRole} from ${clinic} ENHANCED joining ALL rooms on socket connect`);
@@ -1577,8 +1582,7 @@ useEffect(() => {
       });
     });
   }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-}, [apiUrl]); // Removed fetchConversations to prevent infinite loop
+}, [apiUrl, fetchConversations, conversations]); // Add conversations as dependency
 
 
 
@@ -1841,8 +1845,7 @@ useEffect(() => {
     
     return () => clearTimeout(timer);
   }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-}, [location.pathname]); // Removed fetchConversations and fetchPatients to prevent infinite loops
+}, [location.pathname, fetchConversations, fetchPatients]);
 
 
 
@@ -1925,8 +1928,7 @@ useEffect(() => {
     
     return () => clearInterval(interval);
   }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-}, [showpatientchatdashboard]);
+}, [showpatientchatdashboard, conversations.length]);
 
 
 useEffect(() => {
