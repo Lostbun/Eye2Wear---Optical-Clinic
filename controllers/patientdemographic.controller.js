@@ -123,10 +123,20 @@
     try{
       const {patientemail} = req.params;
       
-      // Verify that the logged-in patient is requesting their own demographic data
-      if (req.patient.email !== patientemail) {
+      // Handle access based on user type from middleware
+      if (req.userType === 'Patient') {
+        // Patients can only access their own demographic data
+        if (req.patient.email !== patientemail) {
+          return res.status(403).json({
+            message: "Access denied. You can only access your own demographic data."
+          });
+        }
+      } else if (req.userType === 'Staff' || req.userType === 'Owner') {
+        // Staff and Owners can access any patient's demographic data for business operations
+        // No additional restriction needed
+      } else {
         return res.status(403).json({
-          message: "Access denied. You can only access your own demographic data."
+          message: "Access denied. Invalid user type."
         });
       }
       

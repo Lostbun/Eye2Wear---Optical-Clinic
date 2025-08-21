@@ -76,7 +76,9 @@ function PatientChatButton() {
   const [hasGlobalUnreadMessages, setHasGlobalUnreadMessages] = useState(false);
   const isInitializedRef = useRef(false);
   const conversationsFetchedRef = useRef(false);
-const previousConversationIdRef = useRef(null);
+  const previousConversationIdRef = useRef(null);
+  const lastFetchTimeRef = useRef(0);
+  const FETCH_COOLDOWN = 5000; // 5 seconds cooldown between fetches
 
 
 const conversationIdRef = useRef(conversationId);
@@ -236,15 +238,25 @@ const fetchConversations = useCallback(async (forceRefresh = false) => {
       return;
     }
 
+    // Add cooldown check to prevent rapid successive fetches
+    const now = Date.now();
+    if (!forceRefresh && (now - lastFetchTimeRef.current) < FETCH_COOLDOWN) {
+      console.log(`Fetch cooldown active, skipping fetch. Next allowed in ${Math.ceil((FETCH_COOLDOWN - (now - lastFetchTimeRef.current)) / 1000)}s`);
+      return;
+    }
+
     const token = localStorage.getItem('token');
     if (!token) {
       setLoadingConversations(false);
       return;
     }
 
+    // Get current conversations length without depending on state
+    const currentConversationsLength = conversations.length;
+    
     // NEVER show loading spinner when toggling dashboard if we already have conversations
     // Only show loading when dashboard is open AND we truly have no data
-    const shouldShowLoading = showpatientchatdashboard && conversations.length === 0;
+    const shouldShowLoading = showpatientchatdashboard && currentConversationsLength === 0;
     if (shouldShowLoading) {
       setLoadingConversations(true);
     }
@@ -441,6 +453,9 @@ const fetchConversations = useCallback(async (forceRefresh = false) => {
       }
     }
     
+    // Update timestamp after successful fetch
+    lastFetchTimeRef.current = Date.now();
+    
     // Reset the fetch flag only for successful fetches
     conversationsFetchedRef.current = false;
     
@@ -451,7 +466,7 @@ const fetchConversations = useCallback(async (forceRefresh = false) => {
     // Always clear loading state
     setLoadingConversations(false);
   }
-}, [apiUrl, showpatientchatdashboard, conversations.length, unreadMessagesByConversation]);
+}, [apiUrl, showpatientchatdashboard, loadingConversations]);
 
 
 const loadMessages = useCallback(async (targetConversationId, skipStateUpdate = false) => {
@@ -1799,57 +1814,6 @@ useEffect(() => {
 
 
 
-useEffect(() => {
-  const role = localStorage.getItem('role');
-  const token = localStorage.getItem('token');
-  
-  // For staff/owner: ensure socket is connected and joined to conversations on route change
-  if ((role === 'staff' || role === 'owner') && token) {
-    console.log(`Auto-connecting socket for ${role} on route change`);
-    
-    const timer = setTimeout(() => {
-      // Ensure socket is connected
-      if (socket.current && !socket.current.connected) {
-        console.log('Reconnecting socket for staff/owner on route change');
-        socket.current.connect();
-      }
-      
-      // Fetch conversations and patients
-      fetchConversations(true);
-      fetchPatients();
-      
-      // After a delay, join all relevant conversations
-      setTimeout(() => {
-        if (socket.current && socket.current.connected && conversations.length > 0) {
-          const userId = localStorage.getItem('staffid') || localStorage.getItem('ownerid');
-          const userClinic = localStorage.getItem('staffclinic') || localStorage.getItem('ownerclinic');
-          
-          if (userId && userClinic) {
-            console.log(`${role} from ${userClinic} joining conversations after route change`);
-            socket.current.emit('joinConversations', userId, role, userClinic);
-            
-            conversations.forEach(conv => {
-              const isClinicInvolved = conv.participants.some(p => 
-                (p.role === 'clinic' && p.clinic === userClinic) ||
-                (p.userId === userId && (p.role === 'staff' || p.role === 'owner'))
-              ) || conv.clinic === userClinic;
-              
-              if (isClinicInvolved) {
-                socket.current.emit('joinConversation', conv._id);
-              }
-            });
-          }
-        }
-      }, 2000);
-    }, 1000);
-    
-    return () => clearTimeout(timer);
-  }
-}, [location.pathname, fetchConversations, fetchPatients]);
-
-
-
-
 
 
 useEffect(() => {
@@ -1976,31 +1940,7 @@ useEffect(() => {
 
 // Add this new useEffect to handle post-login initialization:
 
-useEffect(() => {
-  const role = localStorage.getItem('role');
-  const token = localStorage.getItem('token');
-  const needsInit = localStorage.getItem('needsSocketInit');
-  
-  // Immediate conversation fetch after login
-  if (role && token && needsInit === 'true') {
-    console.log('🚀 POST-LOGIN: Immediate conversation and patient fetch for', role);
-    
-    const timer = setTimeout(() => {
-      // Fetch conversations immediately
-      fetchConversations(true);
-      
-      // Also fetch patients for staff/owner
-      if (role === 'staff' || role === 'owner') {
-        fetchPatients();
-      }
-      
-      // Clear the flag
-      localStorage.removeItem('needsSocketInit');
-    }, 1000);
-    
-    return () => clearTimeout(timer);
-  }
-}, [location.pathname, fetchConversations, fetchPatients]);
+// Single consolidated initialization handler - no more duplicates
 
 
 

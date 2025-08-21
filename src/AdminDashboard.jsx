@@ -3515,12 +3515,24 @@ const formatappointmenttime = (formattedtimestring) => {
 
 //WHOLE APPOINTMENT DELETE //WHOLE APPOINTMENT DELETE //WHOLE APPOINTMENT DELETE //WHOLE APPOINTMENT DELETE   
 const handledeleteappointment = async (appointmentId) => {
+  // Check if user has permission to delete appointments
+  if (currentuserloggedin !== "Staff" && currentuserloggedin !== "Owner" && currentuserloggedin !== "Admin") {
+    console.error("Only Staff, Owner, and Admin can delete appointments");
+    return;
+  }
+
+  // Validate appointmentId
+  if (!appointmentId) {
+    console.error("Appointment ID is missing");
+    return;
+  }
+
   try {
     const response = await fetch(`/api/patientappointments/appointments/${appointmentId}`, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('patienttoken')}`
+        'Authorization': `Bearer ${currentusertoken}`
       }
     });
 
@@ -3540,12 +3552,22 @@ const handledeleteappointment = async (appointmentId) => {
 //AICODE
 //CLINIC APPOINTMENT DELETE (NULLIFY FIELDS)
 const handledeleteappointmentbyclinic = async (appointmentId, clinicType) => {
+  // Check if user has permission to delete appointments
+  if (currentuserloggedin !== "Staff" && currentuserloggedin !== "Owner" && currentuserloggedin !== "Admin") {
+    console.error("Only Staff, Owner, and Admin can delete appointments");
+    return;
+  }
+
+  // Validate appointmentId
+  if (!appointmentId) {
+    console.error("Appointment ID is missing");
+    return;
+  }
+
   try {
     // First check if there's an appointment in the other clinic
     const appointment = patientappointments.find(appt => 
-      clinicType === 'bautista' ? 
-        appt.patientbautistaappointmentid === appointmentId :
-        appt.patientambherappointmentid === appointmentId
+      appt.patientappointmentid === appointmentId
     );
 
     if (!appointment) {
@@ -3699,12 +3721,24 @@ const handleviewappointment = (appointment) => {
   setselectedpatientappointment(appointment);
 
 };
-
+ 
 
 
 
 //UPDATING APPOINTMENT STATUS
 const handleacceptappointment = async (appointmentId, clinicType) => {
+  // Check if user has permission to accept appointments
+  if (currentuserloggedin !== "Staff" && currentuserloggedin !== "Owner") {
+    console.error("Only Staff and Owner can accept appointments");
+    return;
+  }
+
+  // Validate appointmentId
+  if (!appointmentId) {
+    console.error("Appointment ID is missing");
+    return;
+  }
+
   // Set loading state to true
   setIsAcceptingAppointment(true);
   
@@ -3756,6 +3790,18 @@ const handleacceptappointment = async (appointmentId, clinicType) => {
 
 //AICODE
   const handleCompleteAppointment = async (appointmentId, clinicType) => {
+    // Check if user has permission to complete appointments
+    if (currentuserloggedin !== "Staff" && currentuserloggedin !== "Owner") {
+      console.error("Only Staff and Owner can complete appointments");
+      return;
+    }
+
+    // Validate appointmentId
+    if (!appointmentId) {
+      console.error("Appointment ID is missing");
+      return;
+    }
+
     // Set loading state to true
     setIsCompletingAppointment(true);
     
@@ -5721,6 +5767,8 @@ const showbautistapickupnoworlater = (pickupnoworlaterid) => {
   const [patientorderambherproductToastClosing, setpatientorderambherproductToastClosing] = useState(false);
   const [ambherproductsoldCount, setambherproductsoldCount] = useState(0);
   const [ambherproductsoldCounts, setambherproductsoldCounts] = useState(0);
+  const [isSubmittingAmbherCompleteOrder, setIsSubmittingAmbherCompleteOrder] = useState(false);
+  const [isSubmittingAmbherPendingOrder, setIsSubmittingAmbherPendingOrder] = useState(false);
 
   
   //Order Bautista
@@ -5756,6 +5804,8 @@ const showbautistapickupnoworlater = (pickupnoworlaterid) => {
   const [patientorderbautistaproductToastClosing, setpatientorderbautistaproductToastClosing] = useState(false);
   const [bautistaproductsoldCount, setbautistaproductsoldCount] = useState(0);
   const [bautistaproductsoldCounts, setbautistaproductsoldCounts] = useState(0);
+  const [isSubmittingBautistaCompleteOrder, setIsSubmittingBautistaCompleteOrder] = useState(false);
+  const [isSubmittingBautistaPendingOrder, setIsSubmittingBautistaPendingOrder] = useState(false);
 
 
 
@@ -5944,6 +5994,13 @@ useEffect(() => {
   //CHECK EMAIL IF EXISTS IN AMBHER ORDER FORM
 useEffect(() => {
   const checkAndFetchPatientDetails = async () => {
+    // Check if user has permission to create orders
+    if (currentuserloggedin !== "Staff" && currentuserloggedin !== "Owner") {
+      console.error("Only Staff and Owner can create orders for patients");
+      setorderambheremailError(true);
+      return;
+    }
+
     if (!orderambherEmail) {
       setorderambheremailError(false);
       setorderambherfullName("");
@@ -5963,6 +6020,12 @@ useEffect(() => {
       setorderambherfirstName("");
       setorderambherprofilePicture("");
       setorderambhercontactNumber("");
+      return;
+    }
+
+    // Skip API call if data is already fetched for this email
+    if (orderambherfullName && orderambhercontactNumber && !orderambheremailError) {
+      console.log("Patient data already fetched for:", orderambherEmail);
       return;
     }
 
@@ -5993,30 +6056,35 @@ useEffect(() => {
         setorderambherfirstName(firstName);
         setorderambherprofilePicture(profilePicture);
 
-    // Fetch patient demographic data
-    const demographicResponse = await fetch(
-      `/api/patientdemographics/patientemail/${orderambherEmail}`,
-      {
-        headers: {
-           'Authorization' : `Bearer ${currentusertoken}`
+        // Fetch patient demographic data for contact information
+        try {
+          const demographicResponse = await fetch(
+            `/api/patientdemographics/patientemail/${orderambherEmail}`,
+            {
+              headers: {
+                'Authorization': `Bearer ${currentusertoken}`,
+                'Content-Type': 'application/json'
+              }
+            }
+          );
+
+          if (demographicResponse.ok) {
+            const demographicData = await demographicResponse.json();
+            console.log("Demographics data fetched:", demographicData);
+            
+            if (demographicData.patientcontactnumber) {
+              setorderambhercontactNumber(demographicData.patientcontactnumber);
+            } else {
+              setorderambhercontactNumber("");
+            }
+          } else {
+            console.log("Demographics API response:", demographicResponse.status, demographicResponse.statusText);
+            setorderambhercontactNumber("");
+          }
+        } catch (error) {
+          console.error("Error fetching demographics:", error);
+          setorderambhercontactNumber("");
         }
-      }
-    );
-
-    if (!demographicResponse.ok) {
-      const errorText = await demographicResponse.text();
-      throw new Error(errorText || 'Failed to fetch patient data');
-    }
-
-    const demographicData = await demographicResponse.json();
-    
-    if (!demographicData.patientcontactnumber) {
-      throw new Error('Patient contact number not found');
-    }
-
-    setorderambhercontactNumber(demographicData.patientcontactnumber);
-    
-
 
       } else {
       setorderambheremailError(true);
@@ -6028,7 +6096,7 @@ useEffect(() => {
       setorderambhercontactNumber("");
       }
     } catch (err) {
-      console.error(err);
+      console.error("Error checking patient details:", err);
       setorderambheremailError(true);
       setorderambherfullName("");
       setorderambherlastName("");
@@ -6041,14 +6109,22 @@ useEffect(() => {
     }
   };
 
-  const delay = setTimeout(checkAndFetchPatientDetails, 500);
+  // Debounce with 800ms delay to reduce API calls
+  const delay = setTimeout(checkAndFetchPatientDetails, 800);
   return () => clearTimeout(delay);
-}, [orderambherEmail]);
+}, [orderambherEmail, currentusertoken, emailcharacters, currentuserloggedin]);
 
 
   //CHECK EMAIL IF EXISTS IN bautista ORDER FORM
 useEffect(() => {
   const checkAndFetchPatientDetails = async () => {
+    // Check if user has permission to create orders
+    if (currentuserloggedin !== "Staff" && currentuserloggedin !== "Owner") {
+      console.error("Only Staff and Owner can create orders for patients");
+      setorderbautistaemailError(true);
+      return;
+    }
+
     if (!orderbautistaEmail) {
       setorderbautistaemailError(false);
       setorderbautistafullName("");
@@ -6068,6 +6144,12 @@ useEffect(() => {
       setorderbautistafirstName("");
       setorderbautistaprofilePicture("");
       setorderbautistacontactNumber("");
+      return;
+    }
+
+    // Skip API call if data is already fetched for this email
+    if (orderbautistafullName && orderbautistacontactNumber && !orderbautistaemailError) {
+      console.log("Patient data already fetched for:", orderbautistaEmail);
       return;
     }
 
@@ -6098,30 +6180,35 @@ useEffect(() => {
         setorderbautistafirstName(firstName);
         setorderbautistaprofilePicture(profilePicture);
 
-    // Fetch patient demographic data
-    const demographicResponse = await fetch(
-      `/api/patientdemographics/patientemail/${orderbautistaEmail}`,
-      {
-        headers: {
-           'Authorization' : `Bearer ${currentusertoken}`
+        // Fetch patient demographic data for contact information
+        try {
+          const demographicResponse = await fetch(
+            `/api/patientdemographics/patientemail/${orderbautistaEmail}`,
+            {
+              headers: {
+                'Authorization': `Bearer ${currentusertoken}`,
+                'Content-Type': 'application/json'
+              }
+            }
+          );
+
+          if (demographicResponse.ok) {
+            const demographicData = await demographicResponse.json();
+            console.log("Demographics data fetched:", demographicData);
+            
+            if (demographicData.patientcontactnumber) {
+              setorderbautistacontactNumber(demographicData.patientcontactnumber);
+            } else {
+              setorderbautistacontactNumber("");
+            }
+          } else {
+            console.log("Demographics API response:", demographicResponse.status, demographicResponse.statusText);
+            setorderbautistacontactNumber("");
+          }
+        } catch (error) {
+          console.error("Error fetching demographics:", error);
+          setorderbautistacontactNumber("");
         }
-      }
-    );
-
-    if (!demographicResponse.ok) {
-      const errorText = await demographicResponse.text();
-      throw new Error(errorText || 'Failed to fetch patient data');
-    }
-
-    const demographicData = await demographicResponse.json();
-    
-    if (!demographicData.patientcontactnumber) {
-      throw new Error('Patient contact number not found');
-    }
-
-    setorderbautistacontactNumber(demographicData.patientcontactnumber);
-    
-
 
       } else {
       setorderbautistaemailError(true);
@@ -6133,7 +6220,7 @@ useEffect(() => {
       setorderbautistacontactNumber("");
       }
     } catch (err) {
-      console.error(err);
+      console.error("Error checking patient details:", err);
       setorderbautistaemailError(true);
       setorderbautistafullName("");
       setorderbautistalastName("");
@@ -6146,9 +6233,10 @@ useEffect(() => {
     }
   };
 
-  const delay = setTimeout(checkAndFetchPatientDetails, 500);
+  // Debounce with 800ms delay to reduce API calls
+  const delay = setTimeout(checkAndFetchPatientDetails, 800);
   return () => clearTimeout(delay);
-}, [orderbautistaEmail]);
+}, [orderbautistaEmail, currentusertoken, emailcharacters, currentuserloggedin]);
 
 
 
@@ -6316,6 +6404,7 @@ useEffect(() => {
  //AMBHER OPTICAL ORDER PRODUCT
 const submitpatientorderambher = async (e) => {
   e.preventDefault();
+  setIsSubmittingAmbherCompleteOrder(true);
   
   try {
     // Prepare order data
@@ -6485,12 +6574,15 @@ const submitpatientorderambher = async (e) => {
     setpatientorderambherproductToastMessage(error.message);
     setpatientorderambherproductToast(true);
     setpatientorderambherproductToastClosing(false);
+  } finally {
+    setIsSubmittingAmbherCompleteOrder(false);
   }
 };
 
  //BAUTISTA ORDER PRODUCT
 const submitpatientorderbautista = async (e) => {
   e.preventDefault();
+  setIsSubmittingBautistaCompleteOrder(true);
   
   try {
     // Prepare order data
@@ -6660,6 +6752,8 @@ const submitpatientorderbautista = async (e) => {
     setpatientorderbautistaproductToastMessage(error.message);
     setpatientorderbautistaproductToast(true);
     setpatientorderbautistaproductToastClosing(false);
+  } finally {
+    setIsSubmittingBautistaCompleteOrder(false);
   }
 };
 
@@ -6670,6 +6764,7 @@ const submitpatientorderbautista = async (e) => {
  //AMBHER OPTICAL ORDER PRODUCT
 const submitpatientpendingorderambher = async (e) => {
   e.preventDefault();
+  setIsSubmittingAmbherPendingOrder(true);
   
   try {
     // Prepare order data
@@ -6779,12 +6874,15 @@ const submitpatientpendingorderambher = async (e) => {
     setpatientorderambherproductToastMessage(error.message);
     setpatientorderambherproductToast(true);
     setpatientorderambherproductToastClosing(false);
+  } finally {
+    setIsSubmittingAmbherPendingOrder(false);
   }
 };
 
  //BAUTISTA ORDER PRODUCT
 const submitpatientpendingorderbautista = async (e) => {
   e.preventDefault();
+  setIsSubmittingBautistaPendingOrder(true);
   
   try {
     // Prepare order data
@@ -6894,6 +6992,8 @@ const submitpatientpendingorderbautista = async (e) => {
     setpatientorderbautistaproductToastMessage(error.message);
     setpatientorderbautistaproductToast(true);
     setpatientorderbautistaproductToastClosing(false);
+  } finally {
+    setIsSubmittingBautistaPendingOrder(false);
   }
 };
 
@@ -9156,7 +9256,7 @@ const submitpatientpendingorderbautista = async (e) => {
 
     {ambhereyespecialist && (
     <div 
-      onClick={() => !isAcceptingAppointment && handleacceptappointment(selectedpatientappointment.patientambherappointmentid, 'ambher')} 
+      onClick={() => !isAcceptingAppointment && handleacceptappointment(selectedpatientappointment.patientappointmentid, 'ambher')} 
       className={`${isAcceptingAppointment ? 'bg-gray-400 cursor-not-allowed' : 'bg-[#5f9e1b] hover:bg-[#55871f] hover:cursor-pointer'} mt-4 h-[50px] transition-all duration-300 ease-in-out flex justify-center items-center py-2 px-5 rounded-[20px]`}
     >
       {isAcceptingAppointment ? (
@@ -9204,7 +9304,7 @@ const submitpatientpendingorderbautista = async (e) => {
 
   {ambherappointmentpaymentotal && ambherappointmentconsultationremarks && (
     <div 
-      onClick={() => !isCompletingAppointment && handleCompleteAppointment(selectedpatientappointment.patientambherappointmentid, 'ambher')} 
+      onClick={() => !isCompletingAppointment && handleCompleteAppointment(selectedpatientappointment.patientappointmentid, 'ambher')} 
       className={`${isCompletingAppointment ? 'bg-gray-400 cursor-not-allowed' : 'bg-[#2d91cf] hover:bg-[#1b6796] hover:cursor-pointer'} mt-4 h-[50px] transition-all duration-300 ease-in-out flex justify-center items-center py-2 px-5 rounded-[20px]`}
     >
       {isCompletingAppointment ? (
@@ -9388,7 +9488,7 @@ const submitpatientpendingorderbautista = async (e) => {
     <div className=""><BautistaeyespecialistBox value={bautistaeyespecialist} onChange={(e) => setbautistaeyespecialist(e.target.value)}/></div>
    {bautistaeyespecialist && (
     <div 
-      onClick={() => !isAcceptingAppointment && handleacceptappointment(selectedpatientappointment.patientbautistaappointmentid, 'bautista')} 
+      onClick={() => !isAcceptingAppointment && handleacceptappointment(selectedpatientappointment.patientappointmentid, 'bautista')} 
       className={`${isAcceptingAppointment ? 'bg-gray-400 cursor-not-allowed' : 'bg-[#5f9e1b] hover:bg-[#55871f] hover:cursor-pointer'} mt-4 h-[50px] transition-all duration-300 ease-in-out flex justify-center items-center py-2 px-5 rounded-[20px]`}
     >
       {isAcceptingAppointment ? (
@@ -9431,7 +9531,7 @@ const submitpatientpendingorderbautista = async (e) => {
 
   {bautistaappointmentpaymentotal && bautistaappointmentconsultationremarks && (
     <div 
-      onClick={() => !isCompletingAppointment && handleCompleteAppointment(selectedpatientappointment.patientbautistaappointmentid, 'bautista')} 
+      onClick={() => !isCompletingAppointment && handleCompleteAppointment(selectedpatientappointment.patientappointmentid, 'bautista')} 
       className={`${isCompletingAppointment ? 'bg-gray-400 cursor-not-allowed' : 'bg-[#2d91cf] hover:bg-[#1b6796] hover:cursor-pointer'} mt-4 h-[50px] transition-all duration-300 ease-in-out flex justify-center items-center py-2 px-5 rounded-[20px]`}
     >
       {isCompletingAppointment ? (
@@ -9671,7 +9771,7 @@ ${appointment.patientambherappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] tex
                                 </div>        
                                 <div className="pr-5 flex justify-end  items-center  h-[80px] w-full">
                                   <div className="hover:cursor-pointer mr-2 bg-[#292929] hover:bg-[#414141]   rounded-2xl h-fit w-fit px-7 py-3 hover:scale-105 transition-all duration-300 ease-in-out" onClick={() => setdeletepatientappointment(false)}><p className=" text-[#ffffff]">Cancel</p></div>
-                                  <div className="hover:cursor-pointer bg-[#4e0f0f] hover:bg-[#7f1a1a] ml-2 rounded-2xl h-fit w-fit px-7 py-3 hover:scale-105 transition-all duration-300 ease-in-out" onClick={() => {handledeleteappointmentbyclinic(selectedpatientappointment.patientambherappointmentid, 'ambher');setdeletepatientappointment(false); }}><p className=" text-[#ffffff]">Delete</p></div>
+                                  <div className="hover:cursor-pointer bg-[#4e0f0f] hover:bg-[#7f1a1a] ml-2 rounded-2xl h-fit w-fit px-7 py-3 hover:scale-105 transition-all duration-300 ease-in-out" onClick={() => {handledeleteappointmentbyclinic(selectedpatientappointment.patientappointmentid, 'ambher');setdeletepatientappointment(false); }}><p className=" text-[#ffffff]">Delete</p></div>
                                 </div>
                             </div>
 
@@ -9825,7 +9925,7 @@ ${selectedpatientappointment.patientambherappointmentstatus === 'Cancelled' ? 'b
 
   {ambhereyespecialist && (
   <div 
-    onClick={() => !isAcceptingAppointment && handleacceptappointment(selectedpatientappointment.patientambherappointmentid, 'ambher')} 
+    onClick={() => !isAcceptingAppointment && handleacceptappointment(selectedpatientappointment.patientappointmentid, 'ambher')} 
     className={`${isAcceptingAppointment ? 'bg-gray-400 cursor-not-allowed' : 'bg-[#5f9e1b] hover:bg-[#55871f] hover:cursor-pointer'} mt-4 h-[50px] transition-all duration-300 ease-in-out flex justify-center items-center py-2 px-5 rounded-[20px]`}
   >
     {isAcceptingAppointment ? (
@@ -9871,7 +9971,7 @@ ${selectedpatientappointment.patientambherappointmentstatus === 'Cancelled' ? 'b
 
 {ambherappointmentpaymentotal && ambherappointmentconsultationremarks && (
   <div 
-    onClick={() => !isCompletingAppointment && handleCompleteAppointment(selectedpatientappointment.patientambherappointmentid, 'ambher')} 
+    onClick={() => !isCompletingAppointment && handleCompleteAppointment(selectedpatientappointment.patientappointmentid, 'ambher')} 
     className={`${isCompletingAppointment ? 'bg-gray-400 cursor-not-allowed' : 'bg-[#2d91cf] hover:bg-[#1b6796] hover:cursor-pointer'} mt-4 h-[50px] transition-all duration-300 ease-in-out flex justify-center items-center py-2 px-5 rounded-[20px]`}
   >
     {isCompletingAppointment ? (
@@ -10075,7 +10175,7 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
                                 </div>        
                                 <div className="pr-5 flex justify-end  items-center  h-[80px] w-full">
                                   <div className="hover:cursor-pointer mr-2 bg-[#292929] hover:bg-[#414141]   rounded-2xl h-fit w-fit px-7 py-3 hover:scale-105 transition-all duration-300 ease-in-out" onClick={() => setdeletepatientappointment(false)}><p className=" text-[#ffffff]">Cancel</p></div>
-                                  <div className="hover:cursor-pointer bg-[#4e0f0f] hover:bg-[#7f1a1a] ml-2 rounded-2xl h-fit w-fit px-7 py-3 hover:scale-105 transition-all duration-300 ease-in-out" onClick={() => {handledeleteappointmentbyclinic(selectedpatientappointment.patientbautistaappointmentid, 'bautista') ;setdeletepatientappointment(false); }}><p className=" text-[#ffffff]">Delete</p></div>
+                                  <div className="hover:cursor-pointer bg-[#4e0f0f] hover:bg-[#7f1a1a] ml-2 rounded-2xl h-fit w-fit px-7 py-3 hover:scale-105 transition-all duration-300 ease-in-out" onClick={() => {handledeleteappointmentbyclinic(selectedpatientappointment.patientappointmentid, 'bautista') ;setdeletepatientappointment(false); }}><p className=" text-[#ffffff]">Delete</p></div>
                                 </div>
                             </div>
 
@@ -10236,7 +10336,7 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
   <div className=""><BautistaeyespecialistBox value={bautistaeyespecialist} onChange={(e) => setbautistaeyespecialist(e.target.value)}/></div>
  {bautistaeyespecialist && (
   <div 
-    onClick={() => !isAcceptingAppointment && handleacceptappointment(selectedpatientappointment.patientbautistaappointmentid, 'bautista')} 
+    onClick={() => !isAcceptingAppointment && handleacceptappointment(selectedpatientappointment.patientappointmentid, 'bautista')} 
     className={`${isAcceptingAppointment ? 'bg-gray-400 cursor-not-allowed' : 'bg-[#5f9e1b] hover:bg-[#55871f] hover:cursor-pointer'} mt-4 h-[50px] transition-all duration-300 ease-in-out flex justify-center items-center py-2 px-5 rounded-[20px]`}
   >
     {isAcceptingAppointment ? (
@@ -10279,7 +10379,7 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
 
 {bautistaappointmentpaymentotal && bautistaappointmentconsultationremarks && (
   <div 
-    onClick={() => !isCompletingAppointment && handleCompleteAppointment(selectedpatientappointment.patientbautistaappointmentid, 'bautista')} 
+    onClick={() => !isCompletingAppointment && handleCompleteAppointment(selectedpatientappointment.patientappointmentid, 'bautista')} 
     className={`${isCompletingAppointment ? 'bg-gray-400 cursor-not-allowed' : 'bg-[#2d91cf] hover:bg-[#1b6796] hover:cursor-pointer'} mt-4 h-[50px] transition-all duration-300 ease-in-out flex justify-center items-center py-2 px-5 rounded-[20px]`}
   >
     {isCompletingAppointment ? (
@@ -12598,10 +12698,36 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
                                  </div>
 
                                 {(Number(orderambherremainingBalance) === 0 || Number(orderambheramountpaidChange) > 0) && activeambherpickupnoworlater==='ambherorderpickupnow' ? (
-                                  <div onClick={(e) => submitpatientorderambher(e)} className="w-full mt-10 p-2 hover:cursor-pointer hover:scale-103 bg-[#4ca22b] rounded-2xl flex justify-center items-center pl-3 pr-3 transition-all duration-300 ease-in-out"><p className="font-bold font-albertsans text-white text-[18px] ml-2">Complete Order</p></div>
+                                  <div
+                                    onClick={(e) => submitpatientorderambher(e)} 
+                                    disabled={isSubmittingAmbherCompleteOrder}
+                                    className="w-full mt-10 p-2 hover:cursor-pointer hover:scale-103 bg-[#4ca22b] rounded-2xl flex justify-center items-center pl-3 pr-3 transition-all duration-300 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed"
+                                  >
+                                    {isSubmittingAmbherCompleteOrder ? (
+                                      <>
+                                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                                        <p className="font-bold font-albertsans text-white text-[18px]">Processing...</p>
+                                      </>
+                                    ) : (
+                                      <p className="font-bold font-albertsans text-white text-[18px] ml-2">Complete Order</p>
+                                    )}
+                                  </div>
                                   ) : (
                                  (Number(orderambheramountPaid) >= Number(orderambhertotalwithFee) * 0.10) || activeambherpickupnoworlater==='ambherorderpickuplater' ? (
-                                  <div onClick={(e) => submitpatientpendingorderambher(e)} className="w-full mt-10 p-2 hover:cursor-pointer hover:scale-103 bg-[#F08000] rounded-2xl flex justify-center items-center pl-3 pr-3 transition-all duration-300 ease-in-out"><p className="font-bold font-albertsans text-white text-[18px] ml-2">Set as Pending Order</p></div>
+                                  <div
+                                    onClick={(e) => submitpatientpendingorderambher(e)}
+                                    disabled={isSubmittingAmbherPendingOrder}
+                                    className="w-full mt-10 p-2 hover:cursor-pointer hover:scale-103 bg-[#F08000] rounded-2xl flex justify-center items-center pl-3 pr-3 transition-all duration-300 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed"
+                                  >
+                                    {isSubmittingAmbherPendingOrder ? (
+                                      <>
+                                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                                        <p className="font-bold font-albertsans text-white text-[18px]">Processing...</p>
+                                      </>
+                                    ) : (
+                                      <p className="font-bold font-albertsans text-white text-[18px] ml-2">Set as Pending Order</p>
+                                    )}
+                                  </div>
                                   ) : null)}
                                     
  
@@ -12885,10 +13011,36 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
                                  </div>
 
                                 {(Number(orderambherremainingBalance) === 0 || Number(orderambheramountpaidChange) > 0) && activeambherpickupnoworlater==='ambherorderpickupnow' ? (
-                                  <div onClick={(e) => submitpatientorderambher(e)} className="w-full mt-10 p-2 hover:cursor-pointer hover:scale-103 bg-[#4ca22b] rounded-2xl flex justify-center items-center pl-3 pr-3 transition-all duration-300 ease-in-out"><p className="font-bold font-albertsans text-white text-[18px] ml-2">Complete Order</p></div>
+                                  <div
+                                    onClick={(e) => submitpatientorderambher(e)} 
+                                    disabled={isSubmittingAmbherCompleteOrder}
+                                    className="w-full mt-10 p-2 hover:cursor-pointer hover:scale-103 bg-[#4ca22b] rounded-2xl flex justify-center items-center pl-3 pr-3 transition-all duration-300 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed"
+                                  >
+                                    {isSubmittingAmbherCompleteOrder ? (
+                                      <>
+                                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                                        <p className="font-bold font-albertsans text-white text-[18px]">Processing...</p>
+                                      </>
+                                    ) : (
+                                      <p className="font-bold font-albertsans text-white text-[18px] ml-2">Complete Order</p>
+                                    )}
+                                  </div>
                                   ) : (
                                  (Number(orderambheramountPaid) >= Number(orderambhertotalwithFee) * 0.10) || activeambherpickupnoworlater==='ambherorderpickuplater' ? (
-                                  <div onClick={(e) => submitpatientpendingorderambher(e)} className="w-full mt-10 p-2 hover:cursor-pointer hover:scale-103 bg-[#F08000] rounded-2xl flex justify-center items-center pl-3 pr-3 transition-all duration-300 ease-in-out"><p className="font-bold font-albertsans text-white text-[18px] ml-2">Set as Pending Order</p></div>
+                                  <div 
+                                    onClick={(e) => submitpatientpendingorderambher(e)} 
+                                    disabled={isSubmittingAmbherPendingOrder}
+                                    className="w-full mt-10 p-2 hover:cursor-pointer hover:scale-103 bg-[#F08000] rounded-2xl flex justify-center items-center pl-3 pr-3 transition-all duration-300 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed"
+                                  >
+                                    {isSubmittingAmbherPendingOrder ? (
+                                      <>
+                                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                                        <p className="font-bold font-albertsans text-white text-[18px]">Processing...</p>
+                                      </>
+                                    ) : (
+                                      <p className="font-bold font-albertsans text-white text-[18px] ml-2">Set as Pending Order</p>
+                                    )}
+                                  </div>
                                   ) : null)}
                                     
  
@@ -13321,10 +13473,36 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
                                  </div>
 
                                 {(Number(orderbautistaremainingBalance) === 0 || Number(orderbautistaamountpaidChange) > 0) && activebautistapickupnoworlater==='bautistaorderpickupnow' ? (
-                                  <div onClick={(e) => submitpatientorderbautista(e)} className="w-full mt-10 p-2 hover:cursor-pointer hover:scale-103 bg-[#4ca22b] rounded-2xl flex justify-center items-center pl-3 pr-3 transition-all duration-300 ease-in-out"><p className="font-bold font-albertsans text-white text-[18px] ml-2">Complete Order</p></div>
+                                  <div
+                                    onClick={(e) => submitpatientorderbautista(e)} 
+                                    disabled={isSubmittingBautistaCompleteOrder}
+                                    className="w-full mt-10 p-2 hover:cursor-pointer hover:scale-103 bg-[#4ca22b] rounded-2xl flex justify-center items-center pl-3 pr-3 transition-all duration-300 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed"
+                                  >
+                                    {isSubmittingBautistaCompleteOrder ? (
+                                      <>
+                                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                                        <p className="font-bold font-albertsans text-white text-[18px]">Processing...</p>
+                                      </>
+                                    ) : (
+                                      <p className="font-bold font-albertsans text-white text-[18px] ml-2">Complete Order</p>
+                                    )}
+                                  </div>
                                   ) : (
                                  (Number(orderbautistaamountPaid) >= Number(orderbautistatotalwithFee) * 0.10) || activebautistapickupnoworlater==='bautistaorderpickuplater' ? (
-                                  <div onClick={(e) => submitpatientpendingorderbautista(e)}  className="w-full mt-10 p-2 hover:cursor-pointer hover:scale-103 bg-[#F08000] rounded-2xl flex justify-center items-center pl-3 pr-3 transition-all duration-300 ease-in-out"><p className="font-bold font-albertsans text-white text-[18px] ml-2">Set as Pending Order</p></div>
+                                  <div 
+                                    onClick={(e) => submitpatientpendingorderbautista(e)} 
+                                    disabled={isSubmittingBautistaPendingOrder}
+                                    className="w-full mt-10 p-2 hover:cursor-pointer hover:scale-103 bg-[#F08000] rounded-2xl flex justify-center items-center pl-3 pr-3 transition-all duration-300 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed"
+                                  >
+                                    {isSubmittingBautistaPendingOrder ? (
+                                      <>
+                                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                                        <p className="font-bold font-albertsans text-white text-[18px]">Processing...</p>
+                                      </>
+                                    ) : (
+                                      <p className="font-bold font-albertsans text-white text-[18px] ml-2">Set as Pending Order</p>
+                                    )}
+                                  </div>
                                   ) : null)}
                                     
  
@@ -13605,10 +13783,36 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
                                  </div>
 
                                 {(Number(orderbautistaremainingBalance) === 0 || Number(orderbautistaamountpaidChange) > 0) && activebautistapickupnoworlater==='bautistaorderpickupnow' ? (
-                                  <div onClick={(e) => submitpatientorderbautista(e)} className="w-full mt-10 p-2 hover:cursor-pointer hover:scale-103 bg-[#4ca22b] rounded-2xl flex justify-center items-center pl-3 pr-3 transition-all duration-300 ease-in-out"><p className="font-bold font-albertsans text-white text-[18px] ml-2">Complete Order</p></div>
+                                  <div 
+                                    onClick={(e) => submitpatientorderbautista(e)} 
+                                    disabled={isSubmittingBautistaCompleteOrder}
+                                    className="w-full mt-10 p-2 hover:cursor-pointer hover:scale-103 bg-[#4ca22b] rounded-2xl flex justify-center items-center pl-3 pr-3 transition-all duration-300 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed"
+                                  >
+                                    {isSubmittingBautistaCompleteOrder ? (
+                                      <>
+                                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                                        <p className="font-bold font-albertsans text-white text-[18px]">Processing...</p>
+                                      </>
+                                    ) : (
+                                      <p className="font-bold font-albertsans text-white text-[18px] ml-2">Complete Order</p>
+                                    )}
+                                  </div>
                                   ) : (
                                  (Number(orderbautistaamountPaid) >= Number(orderbautistatotalwithFee) * 0.10) || activebautistapickupnoworlater==='bautistaorderpickuplater' ? (
-                                  <div onClick={(e) => submitpatientpendingorderbautista(e)} className="w-full mt-10 p-2 hover:cursor-pointer hover:scale-103 bg-[#F08000] rounded-2xl flex justify-center items-center pl-3 pr-3 transition-all duration-300 ease-in-out"><p className="font-bold font-albertsans text-white text-[18px] ml-2">Set as Pending Order</p></div>
+                                  <div 
+                                    onClick={(e) => submitpatientpendingorderbautista(e)} 
+                                    disabled={isSubmittingBautistaPendingOrder}
+                                    className="w-full mt-10 p-2 hover:cursor-pointer hover:scale-103 bg-[#F08000] rounded-2xl flex justify-center items-center pl-3 pr-3 transition-all duration-300 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed"
+                                  >
+                                    {isSubmittingBautistaPendingOrder ? (
+                                      <>
+                                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                                        <p className="font-bold font-albertsans text-white text-[18px]">Processing...</p>
+                                      </>
+                                    ) : (
+                                      <p className="font-bold font-albertsans text-white text-[18px] ml-2">Set as Pending Order</p>
+                                    )}
+                                  </div>
                                   ) : null)}
                                     
  
