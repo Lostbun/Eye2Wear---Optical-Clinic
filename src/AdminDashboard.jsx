@@ -1167,10 +1167,13 @@ const [showaddstaffdialog, setshowaddstaffdialog] = useState(false);
             <th className="pb-3 pt-3 pl-2 pr-2 text-center">Clinic</th>
             <th className="pb-3 pt-3 pl-2 pr-2 text-center">Eye Specialist</th>
             <th className="pb-3 pt-3 pl-2 pr-2 text-center">isVerified</th>
-            <th className="pb-3 pt-3 pl-2 pr-2 text-center">Date Created</th>
-            <th className="pb-3 pt-3 text-center pr-3"></th>
-            <th className="pb-3 pt-3 text-center pr-3 rounded-tr-2xl"></th>
-
+            <th className={`pb-3 pt-3 pl-2 pr-2 text-center ${currentuserloggedin === "Staff" ? "rounded-tr-2xl" : ""}`}>Date Created</th>
+            {currentuserloggedin !== "Staff" && (
+              <>
+                <th className="pb-3 pt-3 text-center pr-3"></th>
+                <th className="pb-3 pt-3 text-center pr-3 rounded-tr-2xl"></th>
+              </>
+            )}
           </tr>
         </thead>
         
@@ -1214,44 +1217,48 @@ const [showaddstaffdialog, setshowaddstaffdialog] = useState(false);
                   year: 'numeric'
                 })}
               </td>
-              <td><div onClick={() =>  {
-                setselectededitstaffaccount({
-                   id: staff._id,
-                   email: staff.staffemail,
-                   lastname: staff.stafflastname,
-                   firstname: staff.stafffirstname,
-                   middlename: staff.staffmiddlename,
-                   eyespecialist: staff.staffiseyespecialist,
-                   profilepicture: staff.staffprofilepicture
-                   });
+              {(currentuserloggedin !== "Staff" || (currentuserloggedin === "Staff" && staff.staffemail === JSON.parse(localStorage.getItem("currentuser"))?.email)) && (
+                <>
+                  <td><div onClick={() =>  {
+                    setselectededitstaffaccount({
+                       id: staff._id,
+                       email: staff.staffemail,
+                       lastname: staff.stafflastname,
+                       firstname: staff.stafffirstname,
+                       middlename: staff.staffmiddlename,
+                       eyespecialist: staff.staffiseyespecialist,
+                       profilepicture: staff.staffprofilepicture
+                       });
 
-                setstaffformdata({
-                  role: 'staff',
-                  staffemail: staff.staffemail,
-                  staffpassword: staff.staffpassword,
-                  stafflastname: staff.stafflastname,
-                  stafffirstname: staff.stafffirstname,
-                  staffmiddlename: staff.staffmiddlename,
-                  staffiseyespecialist: staff.staffiseyespecialist,
-                  staffprofilepicture: staff.staffprofilepicture
-                });
+                    setstaffformdata({
+                      role: 'staff',
+                      staffemail: staff.staffemail,
+                      staffpassword: staff.staffpassword,
+                      stafflastname: staff.stafflastname,
+                      stafffirstname: staff.stafffirstname,
+                      staffmiddlename: staff.staffmiddlename,
+                      staffiseyespecialist: staff.staffiseyespecialist,
+                      staffprofilepicture: staff.staffprofilepicture
+                    });
 
-                setstaffpreviewimage(staff.staffprofilepicture);
-                setshowviewstaffdialog(true);}}
+                    setstaffpreviewimage(staff.staffprofilepicture);
+                    setshowviewstaffdialog(true);}}
 
-               className="bg-[#383838]  hover:bg-[#595959]  mr-2 transition-all duration-300 ease-in-out flex justify-center items-center py-2 px-5 rounded-2xl hover:cursor-pointer"><i className="bx bxs-pencil text-white mr-1"/><h1 className="text-white">Edit</h1></div></td>
-  
-              <td><div onClick={() =>  {
-                setselectedstaffaccount({
-                   id: staff.staffId,
-                   email: staff.staffemail,
-                   name: `${staff.stafffirstname} ${staff.stafflastname}`});
-                            
-                setshowdeletestaffdialog(true);}}
+                   className="bg-[#383838]  hover:bg-[#595959]  mr-2 transition-all duration-300 ease-in-out flex justify-center items-center py-2 px-5 rounded-2xl hover:cursor-pointer"><i className="bx bxs-pencil text-white mr-1"/><h1 className="text-white">Edit</h1></div></td>
+      
+                  {currentuserloggedin !== "Staff" && (
+                    <td><div onClick={() =>  {
+                      setselectedstaffaccount({
+                         id: staff.staffId,
+                         email: staff.staffemail,
+                         name: `${staff.stafffirstname} ${staff.stafflastname}`});
+                                  
+                      setshowdeletestaffdialog(true);}}
 
-               className="bg-[#8c3226] hover:bg-[#ab4f43]  transition-all duration-300 ease-in-out flex justify-center items-center py-2 px-5 rounded-2xl hover:cursor-pointer"><i className="bx bxs-trash text-white mr-1"/><h1 className="text-white">Delete</h1></div></td>
-
-
+                     className="bg-[#8c3226] hover:bg-[#ab4f43]  transition-all duration-300 ease-in-out flex justify-center items-center py-2 px-5 rounded-2xl hover:cursor-pointer"><i className="bx bxs-trash text-white mr-1"/><h1 className="text-white">Delete</h1></div></td>
+                  )}
+                </>
+              )}
               </tr>
   ))}
         </tbody>
@@ -7567,12 +7574,12 @@ const submitpatientpendingorderbautista = async (e) => {
                   {/* Hide Patient and Staff tabs for admin users */}
                   {!isAdminRole && (
                     <>
-                      <div onClick={() => showaccounttable('patientaccounttable')}  className={`hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 pb-3 pt-3 text-center flex justify-center items-center ${activeaccounttable ==='patientaccounttable' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d] ${activeaccounttable ==='patientaccounttable' ? 'text-white' : ''}`}>Patients</h1></div>
-                      <div onClick={() => showaccounttable('staffaccounttable')}  className={`hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 pb-3 pt-3 text-center flex justify-center items-center ${activeaccounttable ==='staffaccounttable' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d] ${activeaccounttable ==='staffaccounttable' ? 'text-white' : ''}`}>Staff</h1></div>
+                      <div onClick={() => showaccounttable('patientaccounttable')}  className={`cursor-pointer hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 pb-3 pt-3 text-center flex justify-center items-center ${activeaccounttable ==='patientaccounttable' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d] ${activeaccounttable ==='patientaccounttable' ? 'text-white' : ''}`}>Patients</h1></div>
+                      <div onClick={() => showaccounttable('staffaccounttable')}  className={`cursor-pointer hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 pb-3 pt-3 text-center flex justify-center items-center ${activeaccounttable ==='staffaccounttable' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {` font-albertsans font-semibold text-[#5d5d5d] ${activeaccounttable ==='staffaccounttable' ? 'text-white' : ''}`}>Staff</h1></div>
                     </>
                   )}
-                  <div onClick={() => showaccounttable('owneraccounttable')}  className={`hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 pb-3 pt-3 text-center flex justify-center items-center ${activeaccounttable ==='owneraccounttable' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d] ${activeaccounttable ==='owneraccounttable' ? 'text-white' : ''}`}>Owner</h1></div>
-                  <div onClick={() => showaccounttable('administratoraccounttable')}  className={`hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 pb-3 pt-3 text-center flex justify-center items-center ${activeaccounttable ==='administratoraccounttable' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d] ${activeaccounttable ==='administratoraccounttable' ? 'text-white' : ''}`}>Administrator</h1></div>
+                  <div onClick={() => showaccounttable('owneraccounttable')}  className={`cursor-pointer hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 pb-3 pt-3 text-center flex justify-center items-center ${activeaccounttable ==='owneraccounttable' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d] ${activeaccounttable ==='owneraccounttable' ? 'text-white' : ''}`}>Owner</h1></div>
+                  <div onClick={() => showaccounttable('administratoraccounttable')}  className={`cursor-pointer hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 pb-3 pt-3 text-center flex justify-center items-center ${activeaccounttable ==='administratoraccounttable' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d] ${activeaccounttable ==='administratoraccounttable' ? 'text-white' : ''}`}>Administrator</h1></div>
                  </div>
 
         
@@ -7852,7 +7859,9 @@ const submitpatientpendingorderbautista = async (e) => {
     
     <div className=" mt-5  w-full h-[60px] flex justify-between rounded-3xl pl-5 pr-5">              
     <div className="flex justify-center items-center"><h2 className="font-albertsans font-bold text-[20px] text-[#434343] mr-3 ">Search: </h2><div className="relative flex items-center justify-center gap-3"><i className="bx bx-search absolute left-3 text-2xl text-gray-500"></i><input type="text" placeholder="Enter here..." value={searchstaffs} onChange={(e) => {setsearchstaffs(e.target.value); filterstaffaccount(e.target.value);}} className="transition-all duration-300 ease-in-out py-2 pl-10 rounded-3xl border-2 border-[#6c6c6c] focus:bg-slate-100 focus:outline-sky-500"></input></div></div>
-    <div onClick={() => setshowaddstaffdialog(true)}  className=" mt-1 mb-1 hover:cursor-pointer hover:scale-103 bg-[#4ca22b] rounded-3xl flex justify-center items-center pl-3 pr-3 transition-all duration-300 ease-in-out"><i className="bx bx-user-plus text-white font-bold text-[30px]"/><p className="font-bold font-albertsans text-white text-[18px] ml-2">Add Staff</p></div>
+    {currentuserloggedin !== "Staff" && (
+      <div onClick={() => setshowaddstaffdialog(true)}  className=" mt-1 mb-1 hover:cursor-pointer hover:scale-103 bg-[#4ca22b] rounded-3xl flex justify-center items-center pl-3 pr-3 transition-all duration-300 ease-in-out"><i className="bx bx-user-plus text-white font-bold text-[30px]"/><p className="font-bold font-albertsans text-white text-[18px] ml-2">Add Staff</p></div>
+    )}
     </div>
 
     <div className=" rounded-3xl h-full w-full mt-2 bg-[#f7f7f7]">
