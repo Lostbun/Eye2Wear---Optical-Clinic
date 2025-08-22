@@ -197,6 +197,7 @@ function AdminDashboard(){
   const [adminfirstname, setadminfirstname] = useState('');
   const [adminmiddlename, setadminmiddlename] = useState('');
   const [adminlastname, setadminlastname] = useState('');
+  const [adminrole, setadminrole] = useState('');
   const [admintype, setadmintype] = useState('');
   const [adminprofilepicture, setadminprofilepicture] = useState('');
 
@@ -272,6 +273,7 @@ function AdminDashboard(){
           setadminmiddlename(data.adminmiddlename || '');
           setadminlastname(data.adminlastname || '');
           setadminprofilepicture(data.adminprofilepicture || '');
+          setadmintype(data.role || '');
         }
       }
 
@@ -286,6 +288,7 @@ function AdminDashboard(){
           setadminprofilepicture(data.staffprofilepicture || '');
           setStaffClinic(data.staffclinic || '');
           setCurrentUserClinic(data.staffclinic || '');
+          setadmintype(data.role || '');
         }
       }
 
@@ -298,6 +301,7 @@ function AdminDashboard(){
           setadminprofilepicture(data.ownerprofilepicture || '');
           setownerownedclinic(data.ownerclinic || '');
           setCurrentUserClinic(data.ownerclinic || '');
+          setadmintype(data.role || '');
         }
       }
 
@@ -11238,12 +11242,12 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
   
   {/* Show Ambher Optical tab only if admin or Ambher user */}
   {(currentuserloggedin === 'Admin' || isAmbherOnlyUser()) && (
-    <div onClick={() => showinventorytable('ambherinventorytable')}  className={`mr-3 hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 pb-3 pt-3 text-center flex justify-center items-center ${activeinventorytable ==='ambherinventorytable' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d] ${activeinventorytable ==='ambherinventorytable' ? 'text-white' : ''}`}>Ambher Optical</h1></div>
+    <div onClick={() => showinventorytable('ambherinventorytable')}  className={`opacity-0 hidden mr-3 hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 pb-3 pt-3 text-center flex justify-center items-center ${activeinventorytable ==='ambherinventorytable' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d] ${activeinventorytable ==='ambherinventorytable' ? 'text-white' : ''}`}>Ambher Optical</h1></div>
   )}
   
   {/* Show Bautista Eye Center tab only if admin or Bautista user */}
   {(currentuserloggedin === 'Admin' || isBautistaOnlyUser()) && (
-    <div onClick={() => showinventorytable('bautistainventorytable')}  className={`ml-3 hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 pb-3 pt-3 text-center flex justify-center items-center ${activeinventorytable ==='bautistainventorytable' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d] ${activeinventorytable ==='bautistainventorytable' ? 'text-white' : ''}`}>Bautista Eye Center</h1></div>
+    <div onClick={() => showinventorytable('bautistainventorytable')}  className={`opacity-0 hidden ml-3 hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 pb-3 pt-3 text-center flex justify-center items-center ${activeinventorytable ==='bautistainventorytable' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d] ${activeinventorytable ==='bautistainventorytable' ? 'text-white' : ''}`}>Bautista Eye Center</h1></div>
   )}
   
   </div>
@@ -12573,12 +12577,12 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
                 
                 {/* Show Ambher Optical tab only if admin or Ambher user */}
                 {(currentuserloggedin === 'Admin' || isAmbherOnlyUser()) && (
-                  <div onClick={() => showbillingsandorderstable('ambherbillingsandorderstable')}  className={`mr-3 hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 pb-3 pt-3 text-center flex justify-center items-center ${activebillingsandorderstable ==='ambherbillingsandorderstable' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d] ${activebillingsandorderstable ==='ambherbillingsandorderstable' ? 'text-white' : ''}`}>Ambher Optical</h1></div>
+                  <div onClick={() => showbillingsandorderstable('ambherbillingsandorderstable')}  className={`opacity-0 hidden mr-3 hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 pb-3 pt-3 text-center flex justify-center items-center ${activebillingsandorderstable ==='ambherbillingsandorderstable' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d] ${activebillingsandorderstable ==='ambherbillingsandorderstable' ? 'text-white' : ''}`}>Ambher Optical</h1></div>
                 )}
                 
                 {/* Show Bautista Eye Center tab only if admin or Bautista user */}
                 {(currentuserloggedin === 'Admin' || isBautistaOnlyUser()) && (
-                  <div onClick={() => showbillingsandorderstable('bautistabillingsandorderstable')}  className={`ml-3 hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 pb-3 pt-3 text-center flex justify-center items-center ${activebillingsandorderstable ==='bautistabillingsandorderstable' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d] ${activebillingsandorderstable ==='bautistabillingsandorderstable' ? 'text-white' : ''}`}>Bautista Eye Center</h1></div>
+                  <div onClick={() => showbillingsandorderstable('bautistabillingsandorderstable')}  className={`opacity-0 hidden ml-3 hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 pb-3 pt-3 text-center flex justify-center items-center ${activebillingsandorderstable ==='bautistabillingsandorderstable' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d] ${activebillingsandorderstable ==='bautistabillingsandorderstable' ? 'text-white' : ''}`}>Bautista Eye Center</h1></div>
                 )}
                 
                 </div>
