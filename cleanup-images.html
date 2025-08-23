@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Cleanup Tool</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px;
+        }
+        .button:hover {
+            background-color: #0056b3;
+        }
+        .cleanup-button {
+            background-color: #dc3545;
+        }
+        .cleanup-button:hover {
+            background-color: #c82333;
+        }
+        .result {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+        .orphaned-item {
+            background-color: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 10px;
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Image Cleanup Tool</h1>
+    <p>This tool helps identify and clean up orphaned image references in your chat messages.</p>
+    
+    <div>
+        <button class="button" onclick="checkOrphanedImages()">Check for Orphaned Images</button>
+        <button class="button cleanup-button" onclick="cleanupOrphanedImages()">Clean Up Orphaned References</button>
+    </div>
+    
+    <div id="results"></div>
+
+    <script>
+        async function checkOrphanedImages() {
+            try {
+                const token = prompt('Please enter your authentication token:');
+                if (!token) return;
+
+                const response = await fetch('/api/messages/admin/check-orphaned-images', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    displayResults(data);
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+
+        async function cleanupOrphanedImages() {
+            if (!confirm('Are you sure you want to clean up orphaned image references? This will remove image URLs from messages where the image file no longer exists.')) {
+                return;
+            }
+
+            try {
+                const token = prompt('Please enter your authentication token:');
+                if (!token) return;
+
+                const response = await fetch('/api/messages/admin/cleanup-orphaned-images', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    displayCleanupResults(data);
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+
+        function displayResults(data) {
+            const resultsDiv = document.getElementById('results');
+            
+            let html = `
+                <div class="result">
+                    <h3>Image Check Results</h3>
+                    <p><strong>Total messages with images:</strong> ${data.summary.totalMessagesWithImages}</p>
+                    <p><strong>Valid images:</strong> ${data.summary.validImages}</p>
+                    <p><strong>Orphaned images:</strong> ${data.summary.orphanedImages}</p>
+                </div>
+            `;
+
+            if (data.orphanedImages.length > 0) {
+                html += '<div class="result"><h4>Orphaned Images:</h4>';
+                data.orphanedImages.forEach(item => {
+                    html += `
+                        <div class="orphaned-item">
+                            <strong>Message ID:</strong> ${item.messageId}<br>
+                            <strong>Image URL:</strong> ${item.imageUrl}<br>
+                            <strong>Filename:</strong> ${item.filename}<br>
+                            <strong>Conversation ID:</strong> ${item.conversationId}
+                        </div>
+                    `;
+                });
+                html += '</div>';
+            }
+
+            resultsDiv.innerHTML = html;
+        }
+
+        function displayCleanupResults(data) {
+            const resultsDiv = document.getElementById('results');
+            
+            let html = `
+                <div class="result">
+                    <h3>Cleanup Results</h3>
+                    <p><strong>Messages cleaned:</strong> ${data.cleanedCount}</p>
+                </div>
+            `;
+
+            if (data.orphanedMessages.length > 0) {
+                html += '<div class="result"><h4>Cleaned Messages:</h4>';
+                data.orphanedMessages.forEach(item => {
+                    html += `
+                        <div class="orphaned-item">
+                            <strong>Message ID:</strong> ${item.messageId}<br>
+                            <strong>Original Image URL:</strong> ${item.originalImageUrl}
+                        </div>
+                    `;
+                });
+                html += '</div>';
+            }
+
+            resultsDiv.innerHTML = html;
+        }
+    </script>
+</body>
+</html>

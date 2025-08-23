@@ -3,6 +3,7 @@ import Message from "../models/message.js";
 import Conversation from "../models/conversation.js";
 import multer from 'multer';
 import path from 'path';
+import fs from 'fs';
 import { v4 as uuidv4 } from 'uuid';
 
 
@@ -444,6 +445,112 @@ export const createMessage = async (req, res) => {
     res.status(500).json({ 
       message: error.message,
       error: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
+  }
+};
+
+// Helper function to check for orphaned image references
+export const checkOrphanedImages = async (req, res) => {
+  try {
+    // Get all messages with images
+    const messagesWithImages = await Message.find({ 
+      imageUrl: { $exists: true, $ne: null } 
+    });
+    
+    const orphanedImages = [];
+    const validImages = [];
+    
+    for (const message of messagesWithImages) {
+      if (message.imageUrl) {
+        // Extract filename from URL like "/uploads/message-images/filename.jpg"
+        const filename = message.imageUrl.split('/').pop();
+        const imagePath = path.join(process.cwd(), 'uploads', 'message-images', filename);
+        
+        try {
+          // Check if file exists
+          fs.accessSync(imagePath, fs.constants.F_OK);
+          validImages.push({
+            messageId: message._id,
+            imageUrl: message.imageUrl,
+            filename: filename
+          });
+        } catch {
+          orphanedImages.push({
+            messageId: message._id,
+            imageUrl: message.imageUrl,
+            filename: filename,
+            conversationId: message.conversationId
+          });
+        }
+      }
+    }
+    
+    res.status(200).json({
+      message: 'Image check completed',
+      summary: {
+        totalMessagesWithImages: messagesWithImages.length,
+        validImages: validImages.length,
+        orphanedImages: orphanedImages.length
+      },
+      orphanedImages,
+      validImages: req.query.showValid === 'true' ? validImages : []
+    });
+    
+  } catch (error) {
+    console.error('Error checking orphaned images:', error);
+    res.status(500).json({ 
+      message: 'Error checking images',
+      error: error.message
+    });
+  }
+};
+
+// Function to clean up orphaned image references
+export const cleanupOrphanedImageReferences = async (req, res) => {
+  try {
+    // Get all messages with images
+    const messagesWithImages = await Message.find({ 
+      imageUrl: { $exists: true, $ne: null } 
+    });
+    
+    const orphanedMessages = [];
+    let cleanedCount = 0;
+    
+    for (const message of messagesWithImages) {
+      if (message.imageUrl) {
+        const filename = message.imageUrl.split('/').pop();
+        const imagePath = path.join(process.cwd(), 'uploads', 'message-images', filename);
+        
+        try {
+          fs.accessSync(imagePath, fs.constants.F_OK);
+        } catch {
+          // File doesn't exist, remove imageUrl from message
+          orphanedMessages.push({
+            messageId: message._id,
+            originalImageUrl: message.imageUrl
+          });
+          
+          // Update message to remove imageUrl
+          await Message.findByIdAndUpdate(message._id, {
+            $unset: { imageUrl: 1 }
+          });
+          
+          cleanedCount++;
+        }
+      }
+    }
+    
+    res.status(200).json({
+      message: 'Cleanup completed',
+      cleanedCount,
+      orphanedMessages
+    });
+    
+  } catch (error) {
+    console.error('Error cleaning up orphaned images:', error);
+    res.status(500).json({ 
+      message: 'Error during cleanup',
+      error: error.message
     });
   }
 };

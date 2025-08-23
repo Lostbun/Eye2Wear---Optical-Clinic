@@ -43,7 +43,7 @@
 
     //Get Single Appointments by Id
     export const getpatientappointmentbyid = async (req, res) => {
-        try{
+        try{    
             const patientappointment = await PatientAppointment.findOne({patientappointmentid: req.params.id});
             
             if(!patientappointment) return res.status(404).json({message: "Appointment not found"});
