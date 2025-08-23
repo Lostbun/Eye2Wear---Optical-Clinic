@@ -229,9 +229,13 @@ useEffect(() => {
   const hasUnreadMessages = useCallback((conversationId) => {
     if (!conversationId) return false;
     
-    // First check the unreadMessagesByConversation state
-    if (unreadMessagesByConversation.hasOwnProperty(conversationId)) {
-      return unreadMessagesByConversation[conversationId];
+    // Don't show unread notifications while conversations are still loading
+    if (loadingConversations) return false;
+    
+    // First check the unreadMessagesByConversation state (most reliable)
+    if (Object.prototype.hasOwnProperty.call(unreadMessagesByConversation, conversationId)) {
+      const isUnread = unreadMessagesByConversation[conversationId];
+      return isUnread;
     }
     
     // Fallback: check the conversation's last message if messages aren't loaded
@@ -241,19 +245,85 @@ useEffect(() => {
                            localStorage.getItem('staffid') || 
                            localStorage.getItem('ownerid');
       const currentRole = localStorage.getItem('role');
+      const currentClinic = localStorage.getItem('staffclinic') || localStorage.getItem('ownerclinic');
       
       const lastMsg = conversation.lastMessage;
       const isFromCurrentUser = lastMsg.senderId === currentUserId;
       
+      console.log(`� FALLBACK: Conversation check for ${conversationId}:`, {
+        currentUserId,
+        currentRole,
+        currentClinic,
+        lastMessage: {
+          senderId: lastMsg.senderId,
+          readBy: lastMsg.readBy,
+          sentToClinic: lastMsg.sentToClinic
+        },
+        isFromCurrentUser
+      });
+      
       if (!isFromCurrentUser) {
-        const isRead = lastMsg.readBy && Array.isArray(lastMsg.readBy) && 
-                      lastMsg.readBy.some(read => read.userId === currentUserId && read.role === currentRole);
-        return !isRead;
+        let isRead = false;
+        
+        if (lastMsg.readBy && Array.isArray(lastMsg.readBy)) {
+          console.log(`🔍 FALLBACK: Found readBy array with ${lastMsg.readBy.length} entries`);
+          
+          // For patients: check if they specifically read it
+          if (currentRole === 'patient') {
+            isRead = lastMsg.readBy.some(read => read.userId === currentUserId && read.role === currentRole);
+            console.log(`🔍 FALLBACK: Patient read check result:`, isRead);
+          } 
+          // For staff/owners: check if ANY staff from the same clinic read it
+          else if ((currentRole === 'staff' || currentRole === 'owner') && currentClinic) {
+            console.log(`🔍 FALLBACK: Checking staff/owner read status...`);
+            
+            isRead = lastMsg.readBy.some(read => {
+              console.log(`🔍 FALLBACK: Checking readBy entry:`, {
+                readUserId: read.userId,
+                readRole: read.role,
+                readClinic: read.clinic,
+                exactMatch: read.userId === currentUserId && read.role === currentRole
+              });
+              
+              // Check if the current user specifically read it
+              if (read.userId === currentUserId && read.role === currentRole) {
+                console.log(`🔍 FALLBACK: ✅ EXACT USER MATCH FOUND!`);
+                return true;
+              }
+              
+              // For staff/owner: check if ANY staff from the same clinic read it
+              if ((read.role === 'staff' || read.role === 'owner')) {
+                // New format: check if reader is from same clinic
+                if (read.clinic === currentClinic) {
+                  console.log(`🔍 FALLBACK: ✅ Same clinic match (new format)`);
+                  return true;
+                }
+                // Old format fallback: if no clinic field, check message target
+                if (!read.clinic && lastMsg.sentToClinic === currentClinic) {
+                  console.log(`🔍 FALLBACK: ✅ Same clinic match (old format fallback)`);
+                  return true;
+                }
+              }
+              
+              return false;
+            });
+            
+            console.log(`🔍 FALLBACK: Staff/Owner final read result:`, isRead);
+          }
+        } else {
+          console.log(`🔍 FALLBACK: No readBy array found in message`);
+        }
+        
+        const hasUnread = !isRead;
+        console.log(`🔍 FALLBACK: Final unread result for ${conversationId}:`, { hasUnread, isRead });
+        return hasUnread;
+      } else {
+        console.log(`🔍 FALLBACK: Message is from current user, returning false (read)`);
       }
     }
     
     return false;
-  }, [messagesByConversation, conversations, unreadMessagesByConversation]);
+  }, [conversations, unreadMessagesByConversation, loadingConversations]);
 
 
   const checkGlobalUnreadMessages = useCallback(() => {
@@ -287,34 +357,18 @@ useEffect(() => {
 
   // 3. CONVERSATION MANAGEMENT FUNCTIONS
 const markConversationAsRead = useCallback(async (conversationId) => {
-  try {
-    console.log('🔴 Marking conversation as read locally:', conversationId);
-    
-    // IMMEDIATELY and SYNCHRONOUSLY update both states
-    setUnreadMessagesByConversation(prev => {
-      const updated = { ...prev, [conversationId]: false };
-      
-      // Calculate and set global unread state immediately
-      const hasOtherUnread = Object.values(updated).some(isUnread => isUnread);
-      
-      // Use a microtask to ensure this happens after the current render
-      Promise.resolve().then(() => {
-        setHasGlobalUnreadMessages(hasOtherUnread);
-      });
-      
-      console.log('✅ Updated unread state:', { 
-        conversationId, 
-        hasOtherUnread,
-        updated: updated[conversationId] 
-      });
-      
-      return updated;
-    });
+  if (!conversationId) {
+    console.warn('⚠️ No conversationId provided to markConversationAsRead');
+    return;
+  }
 
-    // ALSO update the server-side readBy field to persist the read status
+  try {
+    console.log('🔴 Marking conversation as read:', conversationId);
+    
+    // FIRST: Update the server-side readBy field to persist the read status
     const token = localStorage.getItem('token');
     
-    if (token && conversationId) {
+    if (token) {
       try {
         console.log('📨 Marking messages as read on server for conversation:', conversationId);
         const response = await fetch(`${apiUrl}/api/messages/${conversationId}/mark-read`, {
@@ -328,21 +382,49 @@ const markConversationAsRead = useCallback(async (conversationId) => {
         if (response.ok) {
           const result = await response.json();
           console.log('✅ Successfully marked messages as read on server:', result);
+          
+          // ONLY update local state AFTER server confirms success
+          setUnreadMessagesByConversation(prev => {
+            const updated = { ...prev, [conversationId]: false };
+            
+            // Calculate and set global unread state immediately
+            const hasOtherUnread = Object.values(updated).some(isUnread => isUnread);
+            setHasGlobalUnreadMessages(hasOtherUnread);
+            
+            console.log('✅ Updated local unread state after server confirmation:', { 
+              conversationId, 
+              hasOtherUnread,
+              updated: updated[conversationId] 
+            });
+            
+            return updated;
+          });
+          
         } else {
           console.warn('⚠️ Failed to mark messages as read on server:', response.status);
           // Log response text for debugging
           const errorText = await response.text();
           console.warn('Server response:', errorText);
+          throw new Error(`Server responded with ${response.status}`);
         }
-      } catch (error) {
-        console.error('❌ Error marking messages as read on server:', error);
+      } catch (serverError) {
+        console.error('❌ Error marking messages as read on server:', serverError);
+        
+        // Fallback: Update local state anyway but with warning
+        console.log('🔄 Falling back to local state update only');
+        setUnreadMessagesByConversation(prev => {
+          const updated = { ...prev, [conversationId]: false };
+          const hasOtherUnread = Object.values(updated).some(isUnread => isUnread);
+          setHasGlobalUnreadMessages(hasOtherUnread);
+          return updated;
+        });
       }
     } else {
-      console.warn('⚠️ No token or conversationId available for server update:', { token: !!token, conversationId });
+      console.warn('⚠️ No token available for server update');
     }
     
   } catch (error) {
-    console.error("Error marking conversation as read:", error);
+    console.error("❌ Error in markConversationAsRead:", error);
   }
 }, [apiUrl]);
 
@@ -441,9 +523,66 @@ const fetchConversations = useCallback(async (forceRefresh = false) => {
               );
             
             if (isRelevantToCurrentClinic) {
-              const isRead = lastMsg.readBy && Array.isArray(lastMsg.readBy) && 
-                            lastMsg.readBy.some(read => read.userId === currentUserId && read.role === role);
+              // IMPROVED: For staff/owners, check if ANY staff from the same clinic read it
+              let isRead = false;
+              if (lastMsg.readBy && Array.isArray(lastMsg.readBy)) {
+                isRead = lastMsg.readBy.some(read => {
+                  // Debug for ANY problematic conversation
+                  if (conv._id === '68aa4133805aa32836b59c75' || conv._id === '68aa327e205ffb271f585cd8') {
+                    console.log(`🔍 DEBUG CONVERSATION ${conv._id}: Checking readBy entry:`, {
+                      conversationId: conv._id,
+                      currentUserId,
+                      currentRole: role,
+                      currentClinic,
+                      readByEntry: read,
+                      exactUserMatch: read.userId === currentUserId && read.role === role,
+                      sameClinicMatch: read.clinic === currentClinic,
+                      oldFormatMatch: !read.clinic && lastMsg.sentToClinic === currentClinic,
+                      lastMsgSentToClinic: lastMsg.sentToClinic
+                    });
+                  }
+                  
+                  // Check if the current user specifically read it
+                  if (read.userId === currentUserId && read.role === role) {
+                    if (conv._id === '68aa327e205ffb271f585cd8') {
+                      console.log(`🔍 DEBUG: EXACT USER MATCH FOUND for conversation!`);
+                    }
+                    return true;
+                  }
+                  
+                  // For staff/owner: check if ANY staff from the same clinic read it
+                  if ((read.role === 'staff' || read.role === 'owner')) {
+                    // New format: check if reader is from same clinic
+                    if (read.clinic === currentClinic) {
+                      if (conv._id === '68aa327e205ffb271f585cd8') {
+                        console.log(`🔍 DEBUG: Same clinic match (new format) for conversation!`);
+                      }
+                      return true;
+                    }
+                    // Old format fallback: if no clinic field, check message target
+                    if (!read.clinic && lastMsg.sentToClinic === currentClinic) {
+                      return true;
+                    }
+                  }
+                  
+                  return false;
+                });
+              }
               shouldBeUnread = !isRead;
+              
+              // Debug for specific problematic conversations
+              if (conv._id === '68aa4133805aa32836b59c75' || conv._id === '68aa327e205ffb271f585cd8') {
+                console.log(`🔍 DEBUG FINAL RESULT for ${conv._id}:`, {
+                  conversationId: conv._id,
+                  lastMessage: lastMsg.text,
+                  readByCount: lastMsg.readBy?.length || 0,
+                  isRead,
+                  shouldBeUnread,
+                  currentUserId,
+                  currentClinic,
+                  sentToClinic: lastMsg.sentToClinic
+                });
+              }
               
               console.log(`🔍 Clinic relevance check for ${currentClinic}:`, {
                 conversationId: conv._id,
@@ -453,7 +592,8 @@ const fetchConversations = useCallback(async (forceRefresh = false) => {
                 senderRole: lastMsg.senderRole,
                 isRelevant: isRelevantToCurrentClinic,
                 isRead: !shouldBeUnread,
-                shouldBeUnread
+                shouldBeUnread,
+                readByCount: lastMsg.readBy?.length || 0
               });
             } else {
               console.log(`❌ Message not relevant to ${currentClinic}:`, {
@@ -525,12 +665,6 @@ const fetchConversations = useCallback(async (forceRefresh = false) => {
       const hasUnread = Object.values(updated).some(isUnread => isUnread);
       setHasGlobalUnreadMessages(hasUnread);
       
-      console.log(`Updated unread status for ${role}:`, { 
-        unreadByConversation: updated, 
-        hasGlobalUnread: hasUnread,
-        conversationCount: sortedConversations.length 
-      });
-      
       return updated;
     });
     
@@ -587,7 +721,7 @@ const fetchConversations = useCallback(async (forceRefresh = false) => {
 }, [apiUrl, showpatientchatdashboard, loadingConversations]);
 
 
-const loadMessages = useCallback(async (targetConversationId, skipStateUpdate = false) => {
+const loadMessages = useCallback(async (targetConversationId, skipStateUpdate = false, markAsReadOnLoad = true) => {
   try {
     const token = localStorage.getItem('token');
     if (!token) {
@@ -621,6 +755,16 @@ const loadMessages = useCallback(async (targetConversationId, skipStateUpdate = 
     if (!skipStateUpdate && targetConversationId === conversationId) {
       console.log('Setting active messages for current conversation');
       setMessages(data);
+      
+      // ✅ FIXED: Only mark as read if explicitly requested (user interaction)
+      if (markAsReadOnLoad) {
+        setTimeout(() => {
+          console.log('🎯 Marking conversation as read due to user interaction');
+          markConversationAsRead(targetConversationId);
+        }, 200); // Small delay to ensure messages are set and rendered
+      } else {
+        console.log('🚫 Skipping auto-mark as read (page load/background)');
+      }
     }
     
     return data;
@@ -631,7 +775,7 @@ const loadMessages = useCallback(async (targetConversationId, skipStateUpdate = 
     }
     return [];
   }
-}, [apiUrl, conversationId]);
+}, [apiUrl, conversationId, markConversationAsRead]);
 
   const startConversation = useCallback(async (clinic, patientId = null) => {
     try {
@@ -781,7 +925,7 @@ const loadMessages = useCallback(async (targetConversationId, skipStateUpdate = 
       setConversationId(existingConversation._id);
       
       // Load messages for this conversation
-      await loadMessages(existingConversation._id);
+      await loadMessages(existingConversation._id, false, false); // Don't mark as read during startup
       
       clearTimeout(loadingTimeout);
       setLoading(false);
@@ -873,7 +1017,7 @@ const handlePatientSelect = (patient) => {
       setLoading(false);
     } else {
       console.log('🔄 Loading messages from server');
-      loadMessages(patientConversation._id).then(() => {
+      loadMessages(patientConversation._id, false, false).then(() => { // Don't mark as read during auto-select
         setLoading(false);
       });
     }
@@ -1064,7 +1208,7 @@ const handlePatientSelect = (patient) => {
           console.warn('Socket not connected, will join conversation when socket connects');
         }
         
-        await loadMessages(data.conversationId);
+        await loadMessages(data.conversationId, false, true); // Mark as read when sending message
       }
       
       setTimeout(scrollToBottom, 100);
@@ -2037,27 +2181,47 @@ useEffect(() => {
 
 
 useEffect(() => {
+  console.log('ConversationId or messagesByConversation changed:', {
+    conversationId,
+    hasMessages: !!messagesByConversation[conversationId],
+    messageCount: messagesByConversation[conversationId]?.length || 0
+  });
 
   if (conversationId) {
     console.log('Conversation changed, loading messages:', conversationId);
     
-
     if (messagesByConversation[conversationId]) {
       console.log('Loading messages from cache for conversation:', conversationId);
       setMessages(messagesByConversation[conversationId]);
+      
+      // ✅ FIXED: Only mark as read if the conversation was explicitly switched by user
+      // Don't auto-mark as read during app initialization or when messages arrive
+      const isUserInitiatedSwitch = !loadingConversations && 
+                                   conversationId !== conversationIdRef.current;
+      
+      if (isUserInitiatedSwitch) {
+        console.log('🎯 User switched conversation, marking as read');
+        setTimeout(() => {
+          markConversationAsRead(conversationId);
+        }, 100); // Small delay to ensure messages are rendered
+      } else {
+        console.log('🚫 Skipping auto-mark as read (app init or new message arrival)');
+      }
+      
     } else {
-
       console.log('Fetching messages from server for conversation:', conversationId);
-      loadMessages(conversationId);
+      // Only mark as read if this is a user-initiated conversation switch
+      const isUserInitiatedSwitch = !loadingConversations;
+      loadMessages(conversationId, false, isUserInitiatedSwitch);
     }
     
-
-    markConversationAsRead(conversationId);
+    // Update the ref to track current conversation
+    conversationIdRef.current = conversationId;
   } else {
-
     setMessages([]);
+    conversationIdRef.current = null;
   }
-}, [conversationId, messagesByConversation]);
+}, [conversationId, messagesByConversation, loadMessages, markConversationAsRead, loadingConversations]);
 
 
 
@@ -2261,7 +2425,7 @@ useEffect(() => {
           setMessages(messagesByConversation[ambherConv._id]);
         } else {
           console.log('Fetching Ambher messages from server');
-          await loadMessages(ambherConv._id);
+          await loadMessages(ambherConv._id, false, true); // Mark as read when user clicks Ambher
         }
       } else {
         console.log('No Ambher conversation found, starting new one');
@@ -2351,7 +2515,7 @@ useEffect(() => {
           setMessages(messagesByConversation[bautistaConv._id]);
         } else {
           console.log('Fetching Bautista messages from server');
-          await loadMessages(bautistaConv._id);
+          await loadMessages(bautistaConv._id, false, true); // Mark as read when user clicks Bautista
         }
       } else {
         console.log('No Bautista conversation found, starting new one');
@@ -2718,7 +2882,15 @@ messages.map((msg, index) => {
       conv.participants.some(p => p.role === 'clinic' && p.clinic === "Ambher Optical") &&
       conv.participants.some(p => p.role === 'clinic' && p.clinic === "Bautista Eye Center")
     );
-    return clinicConversation && hasUnreadMessages(clinicConversation._id) ? (
+    
+    // Don't show notification if conversations are still loading or unread state isn't initialized
+    if (loadingConversations || !clinicConversation) return null;
+    
+    // Check if this conversation's unread state has been calculated
+    const hasCalculatedUnreadState = Object.prototype.hasOwnProperty.call(unreadMessagesByConversation, clinicConversation._id);
+    
+    // Only show notification if we have properly calculated the unread state AND it's unread
+    return hasCalculatedUnreadState && hasUnreadMessages(clinicConversation._id) ? (
       <div className="absolute top-0 right-0 flex justify-center items-center bg-[#f15b5b] rounded-full w-4 h-4"></div>
     ) : null;
   })()}

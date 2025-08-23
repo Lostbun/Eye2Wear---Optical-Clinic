@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Current User</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .info-box {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .info-box h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        .user-data {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 4px solid #007bff;
+            margin: 10px 0;
+        }
+        .message-data {
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 4px solid #ffc107;
+            margin: 10px 0;
+        }
+        .staff-data {
+            background: #d4edda;
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 4px solid #28a745;
+            margin: 10px 0;
+        }
+        code {
+            background: #f1f1f1;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+        .highlight {
+            background: #ffeb3b;
+            padding: 2px 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="info-box">
+        <h3>🔍 Current User Debug Information</h3>
+        <p>This page will show you exactly who you're logged in as and why the unread notification might be appearing.</p>
+    </div>
+
+    <div class="info-box">
+        <h3>👤 Current Logged In User</h3>
+        <div id="currentUser" class="user-data">
+            Loading current user data...
+        </div>
+    </div>
+
+    <div class="info-box">
+        <h3>📧 Message That Should Be Read</h3>
+        <div class="message-data">
+            <strong>Message ID:</strong> 68aa39cc4c11326a8d11c135<br>
+            <strong>Sender:</strong> Francis Daniel Genese (Patient ID: 68a603b5eb0da088f4ea9093)<br>
+            <strong>Sent To:</strong> Ambher Optical<br>
+            <strong>Text:</strong> "i will send a message"<br>
+            <strong>Read By:</strong> Staff ID 689af8fe850ec2084b029ea0 at 2025-08-23T21:59:57.211+00:00
+        </div>
+    </div>
+
+    <div class="info-box">
+        <h3>👨‍⚕️ Staff Who Read The Message</h3>
+        <div class="staff-data">
+            <strong>Staff ID:</strong> 689af8fe850ec2084b029ea0<br>
+            <strong>Name:</strong> Aljhon P. Lopez<br>
+            <strong>Email:</strong> aplopez@bpsu.edu.ph<br>
+            <strong>Clinic:</strong> <span class="highlight">Ambher Optical</span><br>
+            <strong>Role:</strong> Staff (Optometrist)
+        </div>
+    </div>
+
+    <div class="info-box">
+        <h3>🔍 Analysis</h3>
+        <div id="analysis">
+            Analyzing why the message appears as unread...
+        </div>
+    </div>
+
+    <script>
+        function getCurrentUserData() {
+            const userData = {
+                role: localStorage.getItem('role'),
+                userId: localStorage.getItem(`${localStorage.getItem('role')}id`),
+                email: localStorage.getItem(`${localStorage.getItem('role')}email`),
+                name: localStorage.getItem(`${localStorage.getItem('role')}name`),
+                clinic: localStorage.getItem(`${localStorage.getItem('role')}clinic`),
+                firstname: localStorage.getItem(`${localStorage.getItem('role')}firstname`),
+                lastname: localStorage.getItem(`${localStorage.getItem('role')}lastname`)
+            };
+
+            // Try different storage patterns
+            if (!userData.userId) {
+                userData.userId = localStorage.getItem('userid') || 
+                                 localStorage.getItem('patientid') || 
+                                 localStorage.getItem('staffid') || 
+                                 localStorage.getItem('ownerid');
+            }
+
+            if (!userData.clinic) {
+                userData.clinic = localStorage.getItem('clinic') || 
+                                 localStorage.getItem('staffclinic') || 
+                                 localStorage.getItem('ownerclinic');
+            }
+
+            if (!userData.name) {
+                userData.name = localStorage.getItem('name') || 
+                               localStorage.getItem('patientname') || 
+                               localStorage.getItem('staffname') || 
+                               localStorage.getItem('ownername');
+            }
+
+            return userData;
+        }
+
+        function displayCurrentUser() {
+            const user = getCurrentUserData();
+            const currentUserDiv = document.getElementById('currentUser');
+            
+            currentUserDiv.innerHTML = `
+                <strong>Role:</strong> ${user.role || 'Not found'}<br>
+                <strong>User ID:</strong> <span class="highlight">${user.userId || 'Not found'}</span><br>
+                <strong>Email:</strong> ${user.email || 'Not found'}<br>
+                <strong>Name:</strong> ${user.name || 'Not found'}<br>
+                <strong>First Name:</strong> ${user.firstname || 'Not found'}<br>
+                <strong>Last Name:</strong> ${user.lastname || 'Not found'}<br>
+                <strong>Clinic:</strong> <span class="highlight">${user.clinic || 'Not found'}</span>
+            `;
+
+            analyzeUnreadIssue(user);
+        }
+
+        function analyzeUnreadIssue(currentUser) {
+            const analysisDiv = document.getElementById('analysis');
+            const messageReadByUserId = '689af8fe850ec2084b029ea0';
+            const messageReadByClinic = 'Ambher Optical';
+            
+            let analysis = '';
+
+            if (!currentUser.userId) {
+                analysis = `
+                    <p><strong>❌ Issue Found:</strong> No user ID found in localStorage. You might not be properly logged in.</p>
+                    <p><strong>🔧 Solution:</strong> Please log in again to set the proper user session data.</p>
+                `;
+            } else if (currentUser.userId === messageReadByUserId) {
+                analysis = `
+                    <p><strong>✅ Expected Result:</strong> You are the same staff member who read the message (${messageReadByUserId}).</p>
+                    <p><strong>📋 This message should appear as READ for you.</strong></p>
+                    <p>If it's still showing as unread, there's a bug in the frontend logic.</p>
+                `;
+            } else if (currentUser.role === 'staff' && currentUser.clinic === messageReadByClinic) {
+                analysis = `
+                    <p><strong>✅ Expected Result:</strong> You are a staff member from the same clinic (${messageReadByClinic}) where the message was read.</p>
+                    <p><strong>📋 This message should appear as READ for you</strong> because any staff member reading a message marks it as read for all staff in the same clinic.</p>
+                    <p>Your ID: <code>${currentUser.userId}</code><br>Staff who read it: <code>${messageReadByUserId}</code></p>
+                `;
+            } else if (currentUser.role === 'owner' && currentUser.clinic === messageReadByClinic) {
+                analysis = `
+                    <p><strong>✅ Expected Result:</strong> You are an owner of the same clinic (${messageReadByClinic}) where the message was read.</p>
+                    <p><strong>📋 This message should appear as READ for you</strong> because owners can see read status from their clinic staff.</p>
+                `;
+            } else if (currentUser.role === 'patient' && currentUser.userId === '68a603b5eb0da088f4ea9093') {
+                analysis = `
+                    <p><strong>✅ Expected Result:</strong> You are the patient who sent this message.</p>
+                    <p><strong>📋 This message should NOT appear as unread for you</strong> because you sent it.</p>
+                `;
+            } else {
+                analysis = `
+                    <p><strong>⚠️ Expected Result:</strong> This message should appear as UNREAD for you.</p>
+                    <p><strong>Reason:</strong></p>
+                    <ul>
+                        <li>Your Role: <code>${currentUser.role}</code></li>
+                        <li>Your Clinic: <code>${currentUser.clinic}</code></li>
+                        <li>Message was read by staff from: <code>${messageReadByClinic}</code></li>
+                        <li>You are not the same user who read it, and not from the same clinic</li>
+                    </ul>
+                `;
+            }
+
+            // Add localStorage debug info
+            analysis += `
+                <hr>
+                <h4>🔧 All localStorage Data:</h4>
+                <pre style="background: #f1f1f1; padding: 10px; border-radius: 5px; overflow-x: auto; font-size: 12px;">`;
+            
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                const value = localStorage.getItem(key);
+                analysis += `${key}: ${value}\n`;
+            }
+            
+            analysis += `</pre>`;
+
+            analysisDiv.innerHTML = analysis;
+        }
+
+        // Load data when page loads
+        document.addEventListener('DOMContentLoaded', displayCurrentUser);
+    </script>
+</body>
+</html>

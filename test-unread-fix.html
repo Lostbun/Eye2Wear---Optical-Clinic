@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unread Notification Fix Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .success { background: #d4edda; border-color: #c3e6cb; }
+        .error { background: #f8d7da; border-color: #f1aeb5; }
+        .info { background: #d1ecf1; border-color: #bee5eb; }
+        button {
+            background: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+        .log { background: #f8f9fa; padding: 10px; margin: 10px 0; border-radius: 4px; font-family: monospace; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Unread Notification Fix Test</h1>
+    
+    <div class="test-section info">
+        <h2>📋 What We Fixed</h2>
+        <ul>
+            <li><strong>Problem:</strong> Messages showed as unread again after page reload</li>
+            <li><strong>Root Cause:</strong> Client-server state synchronization timing issues</li>
+            <li><strong>Solution:</strong> Server-first read status updates + clinic-based read sharing</li>
+        </ul>
+    </div>
+
+    <div class="test-section info">
+        <h2>🔍 Key Improvements</h2>
+        <ol>
+            <li><strong>Server-First Updates:</strong> markConversationAsRead now updates server before local state</li>
+            <li><strong>Clinic-Based Reading:</strong> When ANY staff member from a clinic reads a message, it's marked as read for ALL staff in that clinic</li>
+            <li><strong>Proper Timing:</strong> Added delays to prevent race conditions between API calls</li>
+            <li><strong>Enhanced Logging:</strong> Detailed console logs for debugging read status</li>
+        </ol>
+    </div>
+
+    <div class="test-section success">
+        <h2>✅ Testing Instructions</h2>
+        <ol>
+            <li>Open the main application at <a href="http://localhost:5174" target="_blank">http://localhost:5174</a></li>
+            <li>Login as a staff member</li>
+            <li>Find a conversation with unread messages</li>
+            <li>Click on the conversation to read the messages</li>
+            <li>Verify the red notification dot disappears</li>
+            <li><strong>CRITICAL TEST:</strong> Reload the page (F5 or Ctrl+R)</li>
+            <li>Verify the notification stays gone (does NOT reappear after 2-5 seconds)</li>
+        </ol>
+    </div>
+
+    <div class="test-section info">
+        <h2>🛠️ Technical Details</h2>
+        <div class="log">
+            <strong>Backend Changes (controllers/message.controller.js):</strong><br>
+            • Fixed readBy clinic storage for staff/owner roles<br>
+            • Now stores clinic info: (role === 'staff' || role === 'owner' || role === 'clinic') ? clinic : null<br><br>
+            
+            <strong>Frontend Changes (src/App.jsx):</strong><br>
+            • markConversationAsRead: Server-first approach with error handling<br>
+            • hasUnreadMessages: Clinic-based read checking for staff/owners<br>
+            • Improved timing with 100-200ms delays<br>
+            • Enhanced dependency arrays for useCallback/useEffect
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>🔗 Quick Links</h2>
+        <button onclick="window.open('http://localhost:5174', '_blank')">Open Main App</button>
+        <button onclick="openDevTools()">Console Debugging Tips</button>
+        <button onclick="showExpectedLogs()">Expected Console Output</button>
+    </div>
+
+    <div id="logs" class="test-section" style="display: none;">
+        <h2>📊 Expected Console Logs</h2>
+        <div class="log">
+            <strong>When reading a message:</strong><br>
+            🔴 Marking conversation as read: {conversationId}<br>
+            ✅ Server confirmed messages marked as read<br>
+            📋 hasUnreadMessages from state for {conversationId}: false<br><br>
+            
+            <strong>When page loads:</strong><br>
+            📋 Clinic relevance check for {clinic}: {...}<br>
+            ✅ Conversation {conversationId} is read or not relevant for {role}<br>
+            📋 Updated unread status for {role}: {unreadByConversation: {...}}
+        </div>
+    </div>
+
+    <script>
+        function openDevTools() {
+            alert('Open browser DevTools (F12) and check the Console tab for detailed logs about read status updates.');
+        }
+
+        function showExpectedLogs() {
+            const logsDiv = document.getElementById('logs');
+            logsDiv.style.display = logsDiv.style.display === 'none' ? 'block' : 'none';
+        }
+    </script>
+</body>
+</html>

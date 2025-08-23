@@ -58,7 +58,7 @@ export const getConversations = async (req, res) => {
       .select('participants lastMessage clinic createdAt updatedAt isActive')
       .populate({
         path: 'lastMessage',
-        select: 'text senderName senderId senderRole createdAt'
+        select: 'text senderName senderId senderRole createdAt readBy'
       })
       .sort({ updatedAt: -1 })
       .lean(); // Returns plain JavaScript objects for better performance
@@ -154,7 +154,7 @@ export const getMessages = async (req, res) => {
           readBy: {
             userId: userIdString,
             role: role,
-            clinic: role === 'clinic' ? clinic : null,
+            clinic: (role === 'staff' || role === 'owner' || role === 'clinic') ? clinic : null,
             readAt: new Date()
           }
         }
@@ -633,7 +633,7 @@ export const markMessagesAsRead = async (req, res) => {
           readBy: {
             userId: userIdString,
             role: role,
-            clinic: role === 'clinic' ? clinic : null,
+            clinic: (role === 'staff' || role === 'owner' || role === 'clinic') ? clinic : null,
             readAt: new Date()
           }
         }
@@ -641,6 +641,21 @@ export const markMessagesAsRead = async (req, res) => {
     );
 
     console.log(`✅ Marked ${updateResult.modifiedCount} messages as read for user ${userIdString}`);
+    
+    // Update the conversation's lastMessage if it was marked as read
+    if (updateResult.modifiedCount > 0) {
+      const conversation = await Conversation.findById(conversationId).populate('lastMessage');
+      if (conversation && conversation.lastMessage) {
+        // Check if the lastMessage was one of the messages we just marked as read
+        const lastMessageUpdated = await Message.findById(conversation.lastMessage._id);
+        if (lastMessageUpdated && lastMessageUpdated.readBy.some(read => read.userId === userIdString)) {
+          console.log('🔄 Updating conversation lastMessage with new readBy status');
+          // Re-populate the lastMessage to get the updated readBy data
+          await conversation.populate('lastMessage');
+          await conversation.save();
+        }
+      }
+    }
     
     res.status(200).json({ 
       message: 'Messages marked as read successfully',
