@@ -1,4 +1,4 @@
-import React, { useState,useRef, useEffect, useCallback, useMemo } from "react";
+import React, { useState,useRef, useEffect, useCallback } from "react";
 import { Link} from "react-router-dom";
 import landinglogo from "../src/assets/images/landinglogo.png";
 import { useAuth as useAdminAuth} from "./hooks/adminuseAuth";
@@ -28,11 +28,165 @@ import useSmartCache from './hooks/useSmartCache';
 
 
 
+
+// Skeleton Loading Components
+const TableRowSkeleton = () => (
+  <tr className="animate-pulse">
+    <td className="py-3 px-6 text-center">
+      <div className="h-4 bg-gray-300 rounded w-12 mx-auto"></div>
+    </td>
+    <td className="py-3 px-6 text-center">
+      <div className="flex justify-center">
+        <div className="h-12 w-12 bg-gray-300 rounded-full"></div>
+      </div>
+    </td>
+    <td className="py-3 px-6 text-center">
+      <div className="h-4 bg-gray-300 rounded w-20 mx-auto"></div>
+    </td>
+    <td className="py-3 px-6 text-center">
+      <div className="h-4 bg-gray-300 rounded w-24 mx-auto"></div>
+    </td>
+    <td className="py-3 px-6 text-center">
+      <div className="h-4 bg-gray-300 rounded w-20 mx-auto"></div>
+    </td>
+    <td className="py-3 px-6 text-center">
+      <div className="h-4 bg-gray-300 rounded w-32 mx-auto"></div>
+    </td>
+    <td className="py-3 px-6 text-center">
+      <div className="h-6 bg-gray-300 rounded-full w-16 mx-auto"></div>
+    </td>
+    <td className="py-3 px-6 text-center">
+      <div className="h-4 bg-gray-300 rounded w-20 mx-auto"></div>
+    </td>
+    <td className="py-3 px-6 text-center">
+      <div className="flex justify-center space-x-2">
+        <div className="h-8 w-16 bg-gray-300 rounded-2xl"></div>
+        <div className="h-8 w-16 bg-gray-300 rounded-2xl"></div>
+      </div>
+    </td>
+  </tr>
+);
+
+const CategoryTableSkeleton = () => (
+  <tr className="animate-pulse hover:bg-gray-50 transition-all ease-in-out duration-300 border-b-2">
+    <td className="px-5 text-center">
+      <div className="h-4 bg-gray-300 rounded w-24 mx-auto"></div>
+    </td>
+    <td className="px-5 text-center">
+      <div className="flex items-center justify-center">
+        <div className="h-12 w-12 bg-gray-300 rounded-full mr-3"></div>
+        <div>
+          <div className="h-4 bg-gray-300 rounded w-32 mb-1"></div>
+          <div className="h-3 bg-gray-300 rounded w-16"></div>
+        </div>
+      </div>
+    </td>
+    <td className="px-5 text-center">
+      <div className="h-4 bg-gray-300 rounded w-20 mx-auto"></div>
+    </td>
+    <td className="px-5 py-4 text-center">
+      <div className="flex justify-center">
+        <div className="h-8 w-16 bg-gray-300 rounded-2xl"></div>
+      </div>
+    </td>
+  </tr>
+);
+
+const CardSkeleton = () => (
+  <div className="animate-pulse bg-white rounded-2xl p-4 shadow-md">
+    <div className="h-40 bg-gray-300 rounded-lg mb-4"></div>
+    <div className="h-4 bg-gray-300 rounded w-3/4 mb-2"></div>
+    <div className="h-4 bg-gray-300 rounded w-1/2 mb-2"></div>
+    <div className="h-6 bg-gray-300 rounded w-1/4"></div>
+  </div>
+);
+
+const AppointmentSkeleton = () => (
+  <tr className="animate-pulse hover:bg-gray-50 transition-all ease-in-out duration-300 border-b-2">
+    <td className="py-3 px-6 text-center">
+      <div className="h-4 bg-gray-300 rounded w-16 mx-auto"></div>
+    </td>
+    <td className="py-3 px-6 text-center">
+      <div className="flex items-center whitespace-nowrap">
+        <div className="h-12 w-12 bg-gray-300 rounded-full mr-3"></div>
+        <div className="h-4 bg-gray-300 rounded w-32"></div>
+      </div>
+    </td>
+    <td className="py-3 px-6 text-center">
+      <div className="h-4 bg-gray-300 rounded w-20 mx-auto"></div>
+    </td>
+    <td className="py-3 px-6 text-center">
+      <div className="flex justify-center items-center whitespace-nowrap">
+        <div className="h-4 bg-gray-300 rounded w-24 mr-2"></div>
+        <div className="h-4 bg-gray-300 rounded w-16 mr-3"></div>
+        <div className="h-6 bg-gray-300 rounded-full w-20"></div>
+      </div>
+    </td>
+    <td className="py-3 px-6 text-center">
+      <div className="flex justify-center items-center whitespace-nowrap">
+        <div className="h-4 bg-gray-300 rounded w-24 mr-2"></div>
+        <div className="h-4 bg-gray-300 rounded w-16 mr-3"></div>
+        <div className="h-6 bg-gray-300 rounded-full w-20"></div>
+      </div>
+    </td>
+    <td className="py-3 px-6 text-center">
+      <div className="flex justify-center space-x-2">
+        <div className="h-8 w-16 bg-gray-300 rounded-2xl"></div>
+      </div>
+    </td>
+  </tr>
+);
+
+const ProfileSkeleton = () => (
+  <div className="animate-pulse bg-white shadow-lg w-[316px] h-[120px] rounded-3xl">
+    <div className="flex justify-center items-center h-full">
+      <div className="w-[125px] h-full flex justify-center items-center">
+        <div className="h-18 w-18 bg-gray-300 rounded-full"></div>
+      </div>
+      <div className="flex flex-col justify-center items-start pl-2 pr-2 w-full h-full">
+        <div className="h-4 bg-gray-300 rounded w-3/4 mb-2"></div>
+        <div className="h-3 bg-gray-300 rounded w-1/2"></div>
+      </div>
+    </div>
+  </div>
+);
+
+const InventorySkeleton = () => (
+  <div className="animate-pulse flex flex-col items-start justify-start w-[220px] h-auto shadow-md bg-white rounded-2xl mr-3 mb-3">
+    <div className="h-45 bg-gray-300 rounded-tr-2xl rounded-tl-2xl w-full"></div>
+    <div className="mx-1 w-fit rounded-md py-1 px-2 bg-gray-200 mt-2">
+      <div className="h-3 bg-gray-300 rounded w-16"></div>
+    </div>
+    <div className="w-full h-auto ml-2 mt-2">
+      <div className="h-4 bg-gray-300 rounded w-3/4"></div>
+    </div>
+    <div className="w-fit h-auto ml-2 mt-1">
+      <div className="h-5 bg-gray-300 rounded w-20"></div>
+    </div>
+    <div className="w-full h-auto ml-2 mt-5 mb-1">
+      <div className="h-4 bg-gray-300 rounded w-1/2"></div>
+    </div>
+    <div className="w-full h-auto ml-2 mb-1 flex items-center">
+      <div className="h-4 bg-gray-300 rounded w-20"></div>
+    </div>
+    <div className="w-full h-auto ml-2 mb-3 flex items-center">
+      <div className="h-4 bg-gray-300 rounded w-16"></div>
+    </div>
+  </div>
+);
+
+
+
+
 function AdminDashboard(){
 
   const apiUrl = import.meta.env.VITE_API_URL;
 
   const loggedinusertype = JSON.parse(localStorage.getItem('currentuser'));
+  
+  // Debug logging to check the user role
+  console.log('Current user from localStorage:', loggedinusertype);
+  console.log('User role:', loggedinusertype?.role);
   
   // Smart caching with real-time updates for admin data
   const { smartFetch, realtimeUpdates, CACHE_DURATIONS } = useSmartCache();
@@ -107,79 +261,57 @@ function AdminDashboard(){
 
 
   
-  // Memoize fetch functions to prevent unnecessary re-renders
-  const memoizedFetchAdminDetails = useCallback(async () => {
-    return await fetchadmindetails();
-  }, [fetchadmindetails]);
-
-  const memoizedFetchStaffDetails = useCallback(async () => {
-    return await fetchstaffdetails();
-  }, [fetchstaffdetails]);
-
-  const memoizedFetchOwnerDetails = useCallback(async () => {
-    return await fetchownerdetails();
-  }, [fetchownerdetails]);
-
   useEffect(() => {
-    let isMounted = true; // Flag to prevent state updates if component unmounts
-    
     const loaduser = async () => {
-      try {
-        let data;
+    let data;
 
-        if(currentuserloggedin === "Admin"){
-          data = await memoizedFetchAdminDetails();
-          
-          if(data && isMounted) {
-            setadminfirstname(data.adminfirstname || '');
-            setadminmiddlename(data.adminmiddlename || '');
-            setadminlastname(data.adminlastname || '');
-            setadminprofilepicture(data.adminprofilepicture || '');
-            setadmintype(data.role || '');
-          }
+      if(currentuserloggedin === "Admin"){
+        data = await fetchadmindetails();
+        
+        if(data) {
+          setadminfirstname(data.adminfirstname || '');
+          setadminmiddlename(data.adminmiddlename || '');
+          setadminlastname(data.adminlastname || '');
+          setadminprofilepicture(data.adminprofilepicture || '');
+          setadmintype(data.role || '');
         }
-
-        else if(currentuserloggedin === "Staff"){
-          data = await memoizedFetchStaffDetails();
-          
-          if(data && isMounted) {
-            setadminfirstname(data.stafffirstname || '');
-            setadminmiddlename(data.staffmiddlename || '');
-            setadminlastname(data.stafflastname || '');
-            setadminprofilepicture(data.staffprofilepicture || '');
-            setStaffClinic(data.staffclinic || '');
-            setCurrentUserClinic(data.staffclinic || '');
-            setadmintype(data.role || '');
-          }
-        }
-
-        else if(currentuserloggedin === "Owner"){
-          data = await memoizedFetchOwnerDetails();
-          if(data && isMounted) {
-            setadminfirstname(data.ownerfirstname || '');
-            setadminmiddlename(data.ownermiddlename || '');
-            setadminlastname(data.ownerlastname || '');
-            setadminprofilepicture(data.ownerprofilepicture || '');
-            setownerownedclinic(data.ownerclinic || '');
-            setCurrentUserClinic(data.ownerclinic || '');
-            setadmintype(data.role || '');
-          }
-        }
-      } catch (error) {
-        console.error('Error loading user data:', error);
       }
+
+
+      else if(currentuserloggedin === "Staff"){
+        data = await fetchstaffdetails();
+        
+        if(data) {
+          setadminfirstname(data.stafffirstname || '');
+          setadminmiddlename(data.staffmiddlename || '');
+          setadminlastname(data.stafflastname || '');
+          setadminprofilepicture(data.staffprofilepicture || '');
+          setStaffClinic(data.staffclinic || '');
+          setCurrentUserClinic(data.staffclinic || '');
+          setadmintype(data.role || '');
+        }
+      }
+
+      else if(currentuserloggedin === "Owner"){
+        data = await fetchownerdetails();
+        if(data) {
+          setadminfirstname(data.ownerfirstname || '');
+          setadminmiddlename(data.ownermiddlename || '');
+          setadminlastname(data.ownerlastname || '');
+          setadminprofilepicture(data.ownerprofilepicture || '');
+          setownerownedclinic(data.ownerclinic || '');
+          setCurrentUserClinic(data.ownerclinic || '');
+          setadmintype(data.role || '');
+        }
+      }
+
+ 
+
+
     };
 
-    // Only load user data if currentuserloggedin exists and no data has been loaded yet
-    if (currentuserloggedin && !adminfirstname && !adminlastname) {
-      loaduser();
-    }
-
-    // Cleanup function to prevent state updates after unmount
-    return () => {
-      isMounted = false;
-    };
-  }, [currentuserloggedin, memoizedFetchAdminDetails, memoizedFetchStaffDetails, memoizedFetchOwnerDetails]); // Removed adminfirstname and adminlastname to prevent infinite loop
+    loaduser();
+  }, [fetchadmindetails, fetchownerdetails, fetchstaffdetails, currentuserloggedin]);
 
 
 
@@ -189,231 +321,14 @@ function AdminDashboard(){
 
 
   // Check if user role is admin - enhanced detection
-  const isAdminRole = useMemo(() => {
-    return loggedinusertype?.role === 'admin' || 
-           loggedinusertype?.role === 'Admin' ||
-           localStorage.getItem('admintoken') !== null;
-  }, [loggedinusertype?.role]);
-
-  // Image Preloading & Optimization System
-  const [imageCache, setImageCache] = useState(new Map());
-  const [preloadingProgress, setPreloadingProgress] = useState(0);
-  const [isPreloading, setIsPreloading] = useState(false);
-  const imageCacheLimit = 500; // Maximum number of cached images
-
-  // Clear old cache entries when limit is reached
-  const manageCacheSize = useCallback(() => {
-    if (imageCache.size > imageCacheLimit) {
-      const entries = Array.from(imageCache.entries());
-      const entriesToKeep = entries.slice(-imageCacheLimit * 0.8); // Keep 80% of limit
-      setImageCache(new Map(entriesToKeep));
-    }
-  }, [imageCache, imageCacheLimit]);
-
-  // Helper function to preload a single image
-  const preloadImage = useCallback((src) => {
-    return new Promise((resolve) => {
-      if (!src || imageCache.has(src)) {
-        resolve(src);
-        return;
-      }
-
-      const img = new Image();
-      img.onload = () => {
-        setImageCache(prev => {
-          const newCache = new Map(prev).set(src, Date.now()); // Store timestamp
-          return newCache;
-        });
-        manageCacheSize();
-        resolve(src);
-      };
-      img.onerror = () => {
-        console.warn(`Failed to preload image: ${src}`);
-        resolve(src); // Still resolve to continue with other images
-      };
-      img.src = src;
-    });
-  }, [imageCache, manageCacheSize]);
-
-  // Comprehensive image preloading function
-  const preloadAllImages = useCallback(async () => {
-    if (isPreloading) return;
-    
-    setIsPreloading(true);
-    setPreloadingProgress(0);
-
-    try {
-      const imagesToPreload = [];
-
-      // 1. Preload all profile pictures
-      const profileResponse = await fetch('/api/patientaccount', {
-        headers: { 'Authorization': `Bearer ${currentusertoken}` }
-      });
-      if (profileResponse.ok) {
-        const patients = await profileResponse.json();
-        patients.forEach(patient => {
-          if (patient.patientprofilepicture) {
-            imagesToPreload.push(patient.patientprofilepicture);
-          }
-        });
-      }
-
-      // 2. Preload staff profile pictures
-      const staffResponse = await fetch('/api/staffaccount', {
-        headers: { 'Authorization': `Bearer ${currentusertoken}` }
-      });
-      if (staffResponse.ok) {
-        const staffs = await staffResponse.json();
-        staffs.forEach(staff => {
-          if (staff.staffprofilepicture) {
-            imagesToPreload.push(staff.staffprofilepicture);
-          }
-        });
-      }
-
-      // 3. Preload owner profile pictures
-      const ownerResponse = await fetch('/api/owneraccount', {
-        headers: { 'Authorization': `Bearer ${currentusertoken}` }
-      });
-      if (ownerResponse.ok) {
-        const owners = await ownerResponse.json();
-        owners.forEach(owner => {
-          if (owner.ownerprofilepicture) {
-            imagesToPreload.push(owner.ownerprofilepicture);
-          }
-        });
-      }
-
-      // 4. Preload admin profile pictures
-      const adminResponse = await fetch('/api/adminaccount', {
-        headers: { 'Authorization': `Bearer ${currentusertoken}` }
-      });
-      if (adminResponse.ok) {
-        const admins = await adminResponse.json();
-        admins.forEach(admin => {
-          if (admin.adminprofilepicture) {
-            imagesToPreload.push(admin.adminprofilepicture);
-          }
-        });
-      }
-
-      // 5. Preload Ambher product images
-      const ambherProductResponse = await fetch('/api/ambherinventoryproduct', {
-        headers: { 'Authorization': `Bearer ${currentusertoken}` }
-      });
-      if (ambherProductResponse.ok) {
-        const ambherProducts = await ambherProductResponse.json();
-        ambherProducts.forEach(product => {
-          if (product.ambherinventoryproductimages) {
-            product.ambherinventoryproductimages.forEach(imageUrl => {
-              imagesToPreload.push(imageUrl);
-            });
-          }
-        });
-      }
-
-      // 6. Preload Bautista product images
-      const bautistaProductResponse = await fetch('/api/bautistainventoryproduct', {
-        headers: { 'Authorization': `Bearer ${currentusertoken}` }
-      });
-      if (bautistaProductResponse.ok) {
-        const bautistaProducts = await bautistaProductResponse.json();
-        bautistaProducts.forEach(product => {
-          if (product.bautistainventoryproductimages) {
-            product.bautistainventoryproductimages.forEach(imageUrl => {
-              imagesToPreload.push(imageUrl);
-            });
-          }
-        });
-      }
-
-      // 7. Preload patient demographic profile pictures
-      const demoResponse = await fetch('/api/patientdemographic', {
-        headers: { 'Authorization': `Bearer ${currentusertoken}` }
-      });
-      if (demoResponse.ok) {
-        const demographics = await demoResponse.json();
-        demographics.forEach(demo => {
-          if (demo.patientprofilepicture) {
-            imagesToPreload.push(demo.patientprofilepicture);
-          }
-        });
-      }
-
-      // Remove duplicates and empty values
-      const uniqueImages = [...new Set(imagesToPreload.filter(Boolean))];
-      
-      if (uniqueImages.length === 0) {
-        setIsPreloading(false);
-        return;
-      }
-
-      console.log(`Starting preload of ${uniqueImages.length} images...`);
-
-      // Preload images in batches to avoid overwhelming the browser
-      const batchSize = 10;
-      const batches = [];
-      for (let i = 0; i < uniqueImages.length; i += batchSize) {
-        batches.push(uniqueImages.slice(i, i + batchSize));
-      }
-
-      let loadedCount = 0;
-      for (const batch of batches) {
-        await Promise.allSettled(
-          batch.map(async (imageUrl) => {
-            await preloadImage(imageUrl);
-            loadedCount++;
-            setPreloadingProgress((loadedCount / uniqueImages.length) * 100);
-          })
-        );
-      }
-
-      console.log(`Successfully preloaded ${loadedCount} images`);
-    } catch (error) {
-      console.error('Error during image preloading:', error);
-    } finally {
-      setIsPreloading(false);
-      setPreloadingProgress(100);
-    }
-  }, [currentusertoken, preloadImage, isPreloading]);
-
-  // Start preloading when user is authenticated and user data is loaded
-  useEffect(() => {
-    if (currentuserloggedin && adminfirstname && currentusertoken && !isPreloading) {
-      // Delay preloading slightly to allow UI to render first
-      const preloadTimer = setTimeout(() => {
-        preloadAllImages();
-      }, 1000);
-
-      return () => clearTimeout(preloadTimer);
-    }
-  }, [currentuserloggedin, adminfirstname, currentusertoken, preloadAllImages, isPreloading]);
-
-  // Helper function to check if image is cached
-  const isImageCached = useCallback((src) => {
-    return imageCache.has(src);
-  }, [imageCache]);
-
-  // Helper function to get optimized image props
-  const getImageProps = useCallback((src, alt = 'Image') => {
-    return {
-      src,
-      alt,
-      loading: isImageCached(src) ? 'eager' : 'lazy',
-      className: `transition-opacity duration-300 ${isImageCached(src) ? 'opacity-100' : 'opacity-75'}`,
-      onLoad: (e) => {
-        e.target.style.opacity = '1';
-        if (!imageCache.has(src)) {
-          setImageCache(prev => new Map(prev).set(src, Date.now()));
-          manageCacheSize();
-        }
-      },
-      onError: (e) => {
-        e.target.src = defaultprofilepic; // Fallback to default image
-      }
-    };
-  }, [imageCache, isImageCached, manageCacheSize]);
-
+  const isAdminRole = loggedinusertype?.role === 'admin' || 
+                      loggedinusertype?.role === 'Admin' ||
+                      localStorage.getItem('admintoken') !== null;
+  
+  console.log('isAdminRole:', isAdminRole);
+  console.log('Admin token exists:', localStorage.getItem('admintoken') !== null);
+  console.log('All localStorage keys:', Object.keys(localStorage));
+  
   // For testing: uncomment the line below to force admin view
   // const isAdminRole = true;
   
@@ -7437,7 +7352,7 @@ const submitpatientpendingorderbautista = async (e) => {
 
   
   return (
-<>
+    <>
 
      {/* NavBar */}
 <div className="rounded-full mt-2 ml-3 mr-3 bg-[#003366] ">
@@ -7652,8 +7567,10 @@ const submitpatientpendingorderbautista = async (e) => {
 
               {/*Start of Account Management*/} {/*Start of Account Management*/} {/*Start of Account Management*/} {/*Start of Account Management*/} {/*Start of Account Management*/} 
               {/*Start of Account Management*/} {/*Start of Account Management*/} {/*Start of Account Management*/} {/*Start of Account Management*/} {/*Start of Account Management*/} 
-              {/*Start of Account Management*/} 
-              
+              {/*Start of Account Management*/} {/*Start of Account Management*/} {/*Start of Account Management*/} {/*Start of Account Management*/} {/*Start of Account Management*/} 
+              {/*Start of Account Management*/} {/*Start of Account Management*/} {/*Start of Account Management*/} {/*Start of Account Management*/} {/*Start of Account Management*/} 
+              {/*Start of Account Management*/} {/*Start of Account Management*/} {/*Start of Account Management*/} {/*Start of Account Management*/} {/*Start of Account Management*/} 
+            
               { (activedashboard === 'accountmanagement' || isAdminRole) && ( <div id="accountmanagement" className="pl-5 pr-5 pb-4 pt-4 transition-all duration-300  ease-in-out border-1 bg-white border-gray-200 shadow-lg w-[100%] h-[100%] rounded-2xl" >   
 
                 <div className="flex items-center"><i className="bx bxs-user-account text-[#184d85] text-[25px] mr-2"/> <h1 className=" font-albertsans font-bold text-[#184d85] text-[25px]">Account Management</h1></div>
@@ -11320,17 +11237,17 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
 
               <div className="flex items-center"><i className="bx bxs-package text-[#184d85] text-[25px] mr-2"/> <h1 className=" font-albertsans font-bold text-[#184d85] text-[25px]">Inventory Management</h1></div>
 
-  <div className="flex justify-start items-center ">
+  <div className="flex justify-start items-center mt-3 h-[60px]">
  {/*<div onClick={() => showinventorytable('allinventorytable')}  className={`hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 pb-3 pt-3 text-center flex justify-center items-center ${activeinventorytable ==='allinventorytable' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d] ${activeinventorytable ==='allinventorytable' ? 'text-white' : ''}`}>All</h1></div>*/}
   
   {/* Show Ambher Optical tab only if admin or Ambher user */}
   {(currentuserloggedin === 'Admin' || isAmbherOnlyUser()) && (
-    <div onClick={() => showinventorytable('ambherinventorytable')}  className={`opacity-0 hidden mr-3 hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl  text-center flex justify-center items-center ${activeinventorytable ==='ambherinventorytable' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d] ${activeinventorytable ==='ambherinventorytable' ? 'text-white' : ''}`}>Ambher Optical</h1></div>
+    <div onClick={() => showinventorytable('ambherinventorytable')}  className={`opacity-0 hidden mr-3 hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 pb-3 pt-3 text-center flex justify-center items-center ${activeinventorytable ==='ambherinventorytable' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d] ${activeinventorytable ==='ambherinventorytable' ? 'text-white' : ''}`}>Ambher Optical</h1></div>
   )}
   
   {/* Show Bautista Eye Center tab only if admin or Bautista user */}
   {(currentuserloggedin === 'Admin' || isBautistaOnlyUser()) && (
-    <div onClick={() => showinventorytable('bautistainventorytable')}  className={`opacity-0 hidden ml-3 hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl  text-center flex justify-center items-center ${activeinventorytable ==='bautistainventorytable' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d] ${activeinventorytable ==='bautistainventorytable' ? 'text-white' : ''}`}>Bautista Eye Center</h1></div>
+    <div onClick={() => showinventorytable('bautistainventorytable')}  className={`opacity-0 hidden ml-3 hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 pb-3 pt-3 text-center flex justify-center items-center ${activeinventorytable ==='bautistainventorytable' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d] ${activeinventorytable ==='bautistainventorytable' ? 'text-white' : ''}`}>Bautista Eye Center</h1></div>
   )}
   
   </div>
@@ -11347,7 +11264,7 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
 
 
 
-          { activeinventorytable === 'ambherinventorytable' && ( <div id="ambherinventorytable" className="p-2  animate-fadeInUp  border-[#909090] w-[100%] h-[83%] rounded-2xl " >
+          { activeinventorytable === 'ambherinventorytable' && ( <div id="ambherinventorytable" className="p-2  animate-fadeInUp  border-[#909090] w-[100%] h-[83%] rounded-2xl mt-5" >
 
 
 {(cliniclowstockProducts.length > 0 || clinicoutofstockProducts.length > 0) && (
@@ -12006,7 +11923,7 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
 
 
 
-          { activeinventorytable === 'bautistainventorytable' && ( <div id="bautistainventorytable" className="p-2  animate-fadeInUp  border-[#909090] w-[100%] h-[83%] rounded-2xl" >
+          { activeinventorytable === 'bautistainventorytable' && ( <div id="bautistainventorytable" className="p-2  animate-fadeInUp  border-[#909090] w-[100%] h-[83%] rounded-2xl mt-5" >
 
 {(cliniclowstockProducts.length > 0 || clinicoutofstockProducts.length > 0) && (
   <div >
@@ -12656,11 +12573,11 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
 
                 <div className="flex items-center"><i className="bx bxs-receipt text-[#184d85] text-[25px] mr-2"/> <h1 className=" font-albertsans font-bold text-[#184d85] text-[25px]">Billings and Orders</h1></div>
                 
-                <div className="flex justify-start items-center ">
+                <div className="flex justify-start items-center mt-3 h-[60px]">
                 
                 {/* Show Ambher Optical tab only if admin or Ambher user */}
                 {(currentuserloggedin === 'Admin' || isAmbherOnlyUser()) && (
-                  <div onClick={() => showbillingsandorderstable('ambherbillingsandorderstable')}  className={`opacity-0 hidden mr-3 hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl  text-center flex justify-center items-center ${activebillingsandorderstable ==='ambherbillingsandorderstable' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d] ${activebillingsandorderstable ==='ambherbillingsandorderstable' ? 'text-white' : ''}`}>Ambher Optical</h1></div>
+                  <div onClick={() => showbillingsandorderstable('ambherbillingsandorderstable')}  className={`opacity-0 hidden mr-3 hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 pb-3 pt-3 text-center flex justify-center items-center ${activebillingsandorderstable ==='ambherbillingsandorderstable' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d] ${activebillingsandorderstable ==='ambherbillingsandorderstable' ? 'text-white' : ''}`}>Ambher Optical</h1></div>
                 )}
                 
                 {/* Show Bautista Eye Center tab only if admin or Bautista user */}
