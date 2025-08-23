@@ -96,6 +96,15 @@ PatientOrderAmbherSchema.post('save', function(error, doc, next){
     }
 });
 
+// Add indexes for better query performance
+PatientOrderAmbherSchema.index({ patientorderambherid: -1 }); // Primary sorting
+PatientOrderAmbherSchema.index({ patientemail: 1 }); // Email filtering
+PatientOrderAmbherSchema.index({ patientorderambherstatus: 1 }); // Status filtering
+PatientOrderAmbherSchema.index({ patientorderambherproductcategory: 1 }); // Category filtering
+PatientOrderAmbherSchema.index({ patientorderambherproductpaymentstatus: 1 }); // Payment status filtering
+PatientOrderAmbherSchema.index({ createdAt: -1 }); // Date sorting
+PatientOrderAmbherSchema.index({ patientlastname: 1, patientfirstname: 1 }); // Name searches
+PatientOrderAmbherSchema.index({ patientlastname: 'text', patientfirstname: 'text', patientemail: 'text', patientorderambherproductname: 'text' }); // Text search
 
 
 

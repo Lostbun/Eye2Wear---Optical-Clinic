@@ -33,6 +33,7 @@ import Staffaccount from "./models/staffacount.js";
 import Owneraccount from "./models/owneraccount.js";
 import path from 'path';
 import { fileURLToPath } from 'url';
+import DatabaseOptimizer from './utils/databaseOptimization.js';
 
 
 
@@ -171,12 +172,38 @@ app.get("/", (req, res) => {
     res.send("Hello from Althea Ebora");
   });
 
-// Socket.IO setup
+// Performance monitoring endpoint
+app.get("/api/performance", async (req, res) => {
+  try {
+    const metrics = await DatabaseOptimizer.getPerformanceMetrics();
+    res.json({
+      success: true,
+      performance: metrics,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Error getting performance metrics",
+      error: error.message
+    });
+  }
+});
+
+// Socket.IO setup with enhanced CORS configuration
 const io = new Server(server, {
   cors: {
-    origin: process.env.FRONTEND_URL,
-    methods: ['GET', 'POST']
-  }
+    origin: [
+      process.env.FRONTEND_URL,
+      "http://localhost:5173",
+      "http://127.0.0.1:5173"
+    ],
+    methods: ['GET', 'POST'],
+    allowedHeaders: ['*'],
+    credentials: true
+  },
+  allowEIO3: true, // Allow Engine.IO v3 clients to connect
+  transports: ['websocket', 'polling'] // Enable both transport methods
 });
 
 // Socket.IO middleware for token verification
@@ -272,13 +299,24 @@ io.on('connection', (socket) => {
 
 //ALLOW FILTERING OF PROPERTIES NOT DEFINED IN MODEL SCHEMA
 mongoose.set("strictQuery", false);
+
+// Get optimized connection options
+const connectionOptions = DatabaseOptimizer.getOptimizedConnectionOptions();
+
 //MONGO DB ATLAS CONNECTION VALIDATION
 mongoose
-  .connect(mongoUri)
-  .then(() => {
+  .connect(mongoUri, connectionOptions)
+  .then(async () => {
+    console.log("✅ Database connection success", mongoUri);
+    
+    // Initialize database optimizations
+    await DatabaseOptimizer.createOptimalIndexes();
+    await DatabaseOptimizer.analyzeSlowQueries();
+    
+    // Start server
     server.listen(3000, () => {
-      console.log("Listening to port", mongoPort);
-      console.log("Database connection success", mongoUri);
+      console.log("🚀 Server listening on port", mongoPort);
+      console.log("📊 Database performance optimization enabled");
     });
   })
-  .catch((error) => console.error("Database connection error:", error));
+  .catch((error) => console.error("❌ Database connection error:", error));

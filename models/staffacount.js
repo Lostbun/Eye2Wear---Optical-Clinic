@@ -143,7 +143,12 @@ StaffaccountSchema.post('save', function(error, doc, next){
 
 });
 
-
+// Add indexes for better query performance (avoid duplicates with unique fields)
+StaffaccountSchema.index({ staffclinic: 1 }); // Index for clinic filtering
+StaffaccountSchema.index({ stafflastname: 1, stafffirstname: 1 }); // Index for name searches
+StaffaccountSchema.index({ isVerified: 1 }); // Index for verification status
+StaffaccountSchema.index({ createdAt: -1 }); // Index for date sorting
+StaffaccountSchema.index({ stafflastname: 'text', stafffirstname: 'text', staffemail: 'text' }); // Text index for search
 
 //Hashes the password details before saving to the mongoDB Atlas
 StaffaccountSchema.pre('save', async function(next){

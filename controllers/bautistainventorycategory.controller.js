@@ -28,7 +28,12 @@ import BautistaInventoryCategory from "../models/bautistainventorycategory.js";
     //Get All Clinic BautistaInventoryCategory
     export const getallbautistainventorycategory = async (req, res) => {
         try{
-            const bautistainventorycategorys = await BautistaInventoryCategory.find().sort({bautistainventorycategoryid: -1});
+            // Optimized query with field selection, lean(), and proper sorting
+            const bautistainventorycategorys = await BautistaInventoryCategory.find({})
+                .select('bautistainventorycategoryid bautistainventorycategoryname bautistainventorycategoryaddedbyprofilepicture bautistainventorycategoryaddedbylastname bautistainventorycategoryaddedbyfirstname bautistainventorycategoryaddedbytype createdAt')
+                .sort({bautistainventorycategoryid: -1})
+                .lean(); // Returns plain JavaScript objects for better performance
+            
             res.json(bautistainventorycategorys);
     
         }catch(error){
@@ -45,10 +50,15 @@ import BautistaInventoryCategory from "../models/bautistainventorycategory.js";
      try{
         const { bautistainventorycategoryname } = req.params;
 
-        const category = await BautistaInventoryCategory.findOne({bautistainventorycategoryname:{$regex: new RegExp(`^${bautistainventorycategoryname}$`, "i")}});
+        // Optimized query with lean() and direct name match (case-insensitive)
+        const category = await BautistaInventoryCategory.findOne({
+            bautistainventorycategoryname: { $regex: new RegExp(`^${bautistainventorycategoryname.trim()}$`, "i") }
+        })
+        .select('bautistainventorycategoryid bautistainventorycategoryname bautistainventorycategoryaddedbyprofilepicture bautistainventorycategoryaddedbylastname bautistainventorycategoryaddedbyfirstname bautistainventorycategoryaddedbytype createdAt')
+        .lean(); // Use lean() for better performance
     
         if(!category){
-            return res.status(404).json({exists: false, message: "Bautista Inventory Category Not Foundd"});
+            return res.status(404).json({exists: false, message: "Bautista Inventory Category Not Found"});
         }
 
         res.status(200).json({exists:true, message: "Bautista Inventory Category Exists", data: category});

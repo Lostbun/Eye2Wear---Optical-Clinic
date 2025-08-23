@@ -28,7 +28,12 @@ import AmbherInventoryCategory from "../models/ambherinventorycategory.js";
     //Get All Clinic AmbherInventoryCategory
     export const getallambherinventorycategory = async (req, res) => {
         try{
-            const ambherinventorycategorys = await AmbherInventoryCategory.find().sort({ambherinventorycategoryid: -1});
+            // Optimized query with field selection, lean(), and proper sorting
+            const ambherinventorycategorys = await AmbherInventoryCategory.find({})
+                .select('ambherinventorycategoryid ambherinventorycategoryname ambherinventorycategoryaddedbyprofilepicture ambherinventorycategoryaddedbylastname ambherinventorycategoryaddedbyfirstname ambherinventorycategoryaddedbytype createdAt')
+                .sort({ambherinventorycategoryid: -1})
+                .lean(); // Returns plain JavaScript objects for better performance
+            
             res.json(ambherinventorycategorys);
     
         }catch(error){
@@ -45,10 +50,15 @@ import AmbherInventoryCategory from "../models/ambherinventorycategory.js";
      try{
         const { ambherinventorycategoryname } = req.params;
 
-        const category = await AmbherInventoryCategory.findOne({ambherinventorycategoryname:{$regex: new RegExp(`^${ambherinventorycategoryname}$`, "i")}});
+        // Optimized query with lean() and direct name match (case-insensitive)
+        const category = await AmbherInventoryCategory.findOne({
+            ambherinventorycategoryname: { $regex: new RegExp(`^${ambherinventorycategoryname.trim()}$`, "i") }
+        })
+        .select('ambherinventorycategoryid ambherinventorycategoryname ambherinventorycategoryaddedbyprofilepicture ambherinventorycategoryaddedbylastname ambherinventorycategoryaddedbyfirstname ambherinventorycategoryaddedbytype createdAt')
+        .lean(); // Use lean() for better performance
     
         if(!category){
-            return res.status(404).json({exists: false, message: "Ambher Inventory Category Not Foundd"});
+            return res.status(404).json({exists: false, message: "Ambher Inventory Category Not Found"});
         }
 
         res.status(200).json({exists:true, message: "Ambher Inventory Category Exists", data: category});

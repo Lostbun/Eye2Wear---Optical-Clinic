@@ -181,7 +181,12 @@ PatientdemographicSchema.plugin(AutoIncrement(mongoose),{
 
 // Create indexes for better query performance
 // Note: patientemail already has an index due to unique: true
-PatientdemographicSchema.index({ patientdemographicId: -1 });
-PatientdemographicSchema.index({ patientemail: 1, patientdemographicId: -1 });
+PatientdemographicSchema.index({ patientdemographicId: -1 }); // Primary sorting
+PatientdemographicSchema.index({ patientemail: 1, patientdemographicId: -1 }); // Email + ID compound
+PatientdemographicSchema.index({ patientgender: 1 }); // Gender filtering
+PatientdemographicSchema.index({ patientage: 1 }); // Age filtering
+PatientdemographicSchema.index({ patientlastname: 1, patientfirstname: 1 }); // Name searches
+PatientdemographicSchema.index({ createdAt: -1 }); // Date sorting
+PatientdemographicSchema.index({ patientlastname: 'text', patientfirstname: 'text', patientemail: 'text' }); // Text search
 
 export default mongoose.model("Patientdemographic", PatientdemographicSchema);

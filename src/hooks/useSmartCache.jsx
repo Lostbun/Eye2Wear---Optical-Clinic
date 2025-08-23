@@ -7,15 +7,15 @@ const useSmartCache = () => {
   const socket = useRef(null);
   const [realtimeUpdates, setRealtimeUpdates] = useState(new Map());
 
-  // Cache durations in milliseconds
+  // Cache durations in milliseconds - increased for better performance
   const CACHE_DURATIONS = useRef({
-    products: 10 * 60 * 1000,      // 10 minutes
-    categories: 15 * 60 * 1000,    // 15 minutes
-    orders: 5 * 60 * 1000,         // 5 minutes
-    appointments: 3 * 60 * 1000,   // 3 minutes
-    wishlist: 5 * 60 * 1000,       // 5 minutes
-    patients: 10 * 60 * 1000,      // 10 minutes
-    realtime: 30 * 1000            // 30 seconds for real-time data
+    products: 30 * 60 * 1000,      // 30 minutes (increased from 10)
+    categories: 60 * 60 * 1000,    // 60 minutes (increased from 15)
+    orders: 15 * 60 * 1000,        // 15 minutes (increased from 5)
+    appointments: 10 * 60 * 1000,  // 10 minutes (increased from 3)
+    wishlist: 15 * 60 * 1000,      // 15 minutes (increased from 5)
+    patients: 30 * 60 * 1000,      // 30 minutes (increased from 10)
+    realtime: 5 * 60 * 1000        // 5 minutes (increased from 30 seconds)
   });
 
   // Invalidate specific cache keys
@@ -33,39 +33,96 @@ const useSmartCache = () => {
     }
   }, []);
 
-  // Initialize WebSocket for real-time updates
+  // Initialize WebSocket for real-time updates - with connection throttling
   useEffect(() => {
+    // Don't initialize socket for admin dashboard to prevent excessive connections
+    const isAdminDashboard = window.location.pathname.includes('admin');
+    if (isAdminDashboard) {
+      console.log('🚫 Skipping WebSocket initialization for admin dashboard');
+      return;
+    }
+
     const apiUrl = import.meta.env.VITE_API_URL;
     const token = localStorage.getItem('patienttoken');
     
     if (token && !socket.current) {
+      console.log('🔌 Initializing WebSocket connection...');
       socket.current = io(apiUrl, {
         auth: { token },
-        transports: ['websocket', 'polling']
+        transports: ['websocket', 'polling'],
+        timeout: 20000,
+        reconnection: true,
+        reconnectionAttempts: 3,
+        reconnectionDelay: 5000
       });
 
       // Listen for real-time data updates
       socket.current.on('orderUpdate', (data) => {
         console.log('📦 Real-time order update received:', data);
-        invalidateCache(['ambherOrders', 'bautistaOrders']);
+        // Use local invalidateCache instead of dependency
+        const localInvalidateCache = (keys) => {
+          if (Array.isArray(keys)) {
+            keys.forEach(key => {
+              cache.current.delete(key);
+              timestamps.current.delete(key);
+            });
+          } else {
+            cache.current.delete(keys);
+            timestamps.current.delete(keys);
+          }
+        };
+        localInvalidateCache(['ambherOrders', 'bautistaOrders']);
         setRealtimeUpdates(prev => new Map(prev.set('orders', Date.now())));
       });
 
       socket.current.on('appointmentUpdate', (data) => {
         console.log('📅 Real-time appointment update received:', data);
-        invalidateCache(['patientAppointments']);
+        const localInvalidateCache = (keys) => {
+          if (Array.isArray(keys)) {
+            keys.forEach(key => {
+              cache.current.delete(key);
+              timestamps.current.delete(key);
+            });
+          } else {
+            cache.current.delete(keys);
+            timestamps.current.delete(keys);
+          }
+        };
+        localInvalidateCache(['patientAppointments']);
         setRealtimeUpdates(prev => new Map(prev.set('appointments', Date.now())));
       });
 
       socket.current.on('wishlistUpdate', (data) => {
         console.log('❤️ Real-time wishlist update received:', data);
-        invalidateCache(['wishlist']);
+        const localInvalidateCache = (keys) => {
+          if (Array.isArray(keys)) {
+            keys.forEach(key => {
+              cache.current.delete(key);
+              timestamps.current.delete(key);
+            });
+          } else {
+            cache.current.delete(keys);
+            timestamps.current.delete(keys);
+          }
+        };
+        localInvalidateCache(['wishlist']);
         setRealtimeUpdates(prev => new Map(prev.set('wishlist', Date.now())));
       });
 
       socket.current.on('productUpdate', (data) => {
         console.log('🛍️ Real-time product update received:', data);
-        invalidateCache(['ambherProducts', 'bautistaProducts']);
+        const localInvalidateCache = (keys) => {
+          if (Array.isArray(keys)) {
+            keys.forEach(key => {
+              cache.current.delete(key);
+              timestamps.current.delete(key);
+            });
+          } else {
+            cache.current.delete(keys);
+            timestamps.current.delete(keys);
+          }
+        };
+        localInvalidateCache(['ambherProducts', 'bautistaProducts']);
         setRealtimeUpdates(prev => new Map(prev.set('products', Date.now())));
       });
 
@@ -76,15 +133,20 @@ const useSmartCache = () => {
       socket.current.on('disconnect', () => {
         console.log('🔌 Smart cache WebSocket disconnected');
       });
+
+      socket.current.on('connect_error', (error) => {
+        console.warn('🔌 WebSocket connection error:', error);
+      });
     }
 
     return () => {
       if (socket.current) {
+        console.log('🔌 Cleaning up WebSocket connection');
         socket.current.disconnect();
         socket.current = null;
       }
     };
-  }, [invalidateCache]);
+  }, []); // Empty dependency array to run only once
 
   // Check if cache is valid
   const isCacheValid = useCallback((key, duration) => {

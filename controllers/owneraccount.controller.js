@@ -11,7 +11,12 @@ dotenv.config();
 //Retrieve (All Owner) Controller
 export const getowneraccounts = async (req, res) => {
   try {
-    const owneracc = await Owneraccount.find({});
+    // Optimized query with field selection, lean(), and proper sorting
+    const owneracc = await Owneraccount.find({})
+      .select('ownerId owneremail ownerlastname ownerfirstname ownermiddlename ownerprofilepicture ownerclinic owneriseyespecialist isVerified createdAt')
+      .sort({ ownerId: -1 }) // Sort by ID descending for newest first
+      .lean(); // Returns plain JavaScript objects for better performance
+    
     res.status(200).json(owneracc);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -24,7 +29,13 @@ export const getowneraccounts = async (req, res) => {
 export const getowneraccountbyid = async (req, res) => {
   try {
     const { id } = req.params;
-    const owneracc = await Owneraccount.findById(id);
+    // Use lean() for better performance when not modifying the document
+    const owneracc = await Owneraccount.findById(id).lean();
+    
+    if (!owneracc) {
+      return res.status(404).json({ message: "Owner not found" });
+    }
+    
     res.status(200).json(owneracc);
   } catch (error) {
     res.status(500).json({ message: error.message });

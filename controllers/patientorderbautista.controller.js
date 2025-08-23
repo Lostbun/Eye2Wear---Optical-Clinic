@@ -43,7 +43,12 @@ export const createpatientorderbautista = async (req, res) => {
     //Get All Patient Bautista Orders
     export const getallpatientorderbautistas = async (req, res) => {
         try{
-            const patientorderbautistas = await PatientOrderBautista.find().sort({patientorderbautistaid: -1});
+            // Optimized query with ALL necessary fields, lean(), and proper sorting
+            const patientorderbautistas = await PatientOrderBautista.find({})
+                .select('patientorderbautistaid patientorderbautistastatus patientorderbautistahistory patientprofilepicture patientlastname patientfirstname patientmiddlename patientemail patientcontactnumber patientorderbautistaproductid patientorderbautistaproductname patientorderbautistaproductbrand patientorderbautistaproductmodelnumber patientorderbautistaproductcategory patientorderbautistaproductimage patientorderbautistaproductprice patientorderbautistaproductquantity patientorderbautistaproductsubtotal patientorderbautistaproductdescription patientorderbautistaproductnotes patientorderbautistacustomfee patientorderbautistaamountpaid patientorderbautistaremainingbalance patientorderbautistaamountpaidchange patientorderbautistaproducttotal patientorderbautistaproductpaymentmethod patientorderbautistaproductpaymentreceiptimage patientorderbautistaproductpaymentstatus patientorderbautistaproductpaymenttransactionid patientorderbautistaproductpickupstatus patientorderbautistaproductchosenpickupdate patientorderbautistaproductchosenpickuptime patientorderbautistaproducauthorizedname patientorderbautistaproducauthorizedtype createdAt updatedAt')
+                .sort({patientorderbautistaid: -1})
+                .lean(); // Returns plain JavaScript objects for better performance
+            
             res.json(patientorderbautistas);
     
         }catch(error){
@@ -56,7 +61,12 @@ export const createpatientorderbautista = async (req, res) => {
     //Get Single Bautista Orders by Id
     export const getpatientorderbautistabyid = async (req, res) => {
         try{
-            const patientorderbautista = await PatientOrderBautista.findOne({patientorderbautistaid: req.params.id});
+            // Optimized query with ALL necessary fields and lean()
+            const patientorderbautista = await PatientOrderBautista.findOne({
+                patientorderbautistaid: req.params.id
+            })
+            .select('patientorderbautistaid patientorderbautistastatus patientorderbautistahistory patientprofilepicture patientlastname patientfirstname patientmiddlename patientemail patientcontactnumber patientorderbautistaproductid patientorderbautistaproductname patientorderbautistaproductbrand patientorderbautistaproductmodelnumber patientorderbautistaproductcategory patientorderbautistaproductimage patientorderbautistaproductprice patientorderbautistaproductquantity patientorderbautistaproductsubtotal patientorderbautistaproductdescription patientorderbautistaproductnotes patientorderbautistacustomfee patientorderbautistaamountpaid patientorderbautistaremainingbalance patientorderbautistaamountpaidchange patientorderbautistaproducttotal patientorderbautistaproductpaymentmethod patientorderbautistaproductpaymentreceiptimage patientorderbautistaproductpaymentstatus patientorderbautistaproductpaymenttransactionid patientorderbautistaproductpickupstatus patientorderbautistaproductchosenpickupdate patientorderbautistaproductchosenpickuptime patientorderbautistaproducauthorizedname patientorderbautistaproducauthorizedtype createdAt updatedAt')
+            .lean(); // Returns plain JavaScript objects for better performance
             
             if(!patientorderbautista) return res.status(404).json({message: "Bautista Order not found"});
             res.json(patientorderbautista);
@@ -74,18 +84,20 @@ export const createpatientorderbautista = async (req, res) => {
     //Get Bautista Order By Email
     export const getorderbautistasbyemail = async (req, res) => {
         try{
+            // Optimized query with ALL necessary fields, lean(), and indexed email lookup
             const patientorderbautistasbyemail = await PatientOrderBautista.find({
                 patientemail: req.params.email
-            }).sort({patientorderbautistaid: -1});
+            })
+            .select('patientorderbautistaid patientorderbautistastatus patientorderbautistahistory patientprofilepicture patientlastname patientfirstname patientmiddlename patientemail patientcontactnumber patientorderbautistaproductid patientorderbautistaproductname patientorderbautistaproductbrand patientorderbautistaproductmodelnumber patientorderbautistaproductcategory patientorderbautistaproductimage patientorderbautistaproductprice patientorderbautistaproductquantity patientorderbautistaproductsubtotal patientorderbautistaproductdescription patientorderbautistaproductnotes patientorderbautistacustomfee patientorderbautistaamountpaid patientorderbautistaremainingbalance patientorderbautistaamountpaidchange patientorderbautistaproducttotal patientorderbautistaproductpaymentmethod patientorderbautistaproductpaymentreceiptimage patientorderbautistaproductpaymentstatus patientorderbautistaproductpaymenttransactionid patientorderbautistaproductpickupstatus patientorderbautistaproductchosenpickupdate patientorderbautistaproductchosenpickuptime patientorderbautistaproducauthorizedname patientorderbautistaproducauthorizedtype createdAt updatedAt')
+            .sort({patientorderbautistaid: -1})
+            .lean(); // Returns plain JavaScript objects for better performance
 
-
-            if(!patientorderbautistasbyemail || patientorderbautistasbyemail === 0){
+            if(!patientorderbautistasbyemail || patientorderbautistasbyemail.length === 0){
                 return res.status(404).json({message: "No orderbautistas found in this email"});  
             }
 
             res.json(patientorderbautistasbyemail);
         
-
         }catch(error){
             res.status(500).json({message: error.message});
         }

@@ -101,8 +101,14 @@ BautistaInventoryProductSchema.post('findOneAndUpdate', async function(doc) {
   }
 });
 
-
-
-
+// Add indexes for better query performance
+BautistaInventoryProductSchema.index({ bautistainventoryproductid: -1 }); // Primary sorting index
+BautistaInventoryProductSchema.index({ bautistainventoryproductcategory: 1 }); // Category filtering
+BautistaInventoryProductSchema.index({ bautistainventoryproductname: 1 }); // Name searches
+BautistaInventoryProductSchema.index({ bautistainventoryproductbrand: 1 }); // Brand filtering
+BautistaInventoryProductSchema.index({ bautistainventoryproductprice: 1 }); // Price sorting
+BautistaInventoryProductSchema.index({ bautistainventoryproductquantity: 1 }); // Stock filtering
+BautistaInventoryProductSchema.index({ createdAt: -1 }); // Date sorting
+BautistaInventoryProductSchema.index({ bautistainventoryproductname: 'text', bautistainventoryproductdescription: 'text', bautistainventoryproductbrand: 'text' }); // Text search
 
 export default mongoose.model("BautistaInventoryProduct", BautistaInventoryProductSchema);

@@ -1,8 +1,8 @@
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { unstable_batchedUpdates } from "react-dom";
-import chat from "../src/assets/images/chat.png";
-import close from "../src/assets/images/close.png";
+import chat from "./assets/images/chat.png";
+import close from "./assets/images/close.png";
 import PatientRegistration from "./PatientRegistration";
 import UserLogin from "./UserLogin";
 import PatientLandingpage from "./PatientLandingpage";
@@ -28,6 +28,41 @@ import profileuser from "./assets/images/profile-user.png";
 function PatientChatButton() {
   const apiUrl = import.meta.env.VITE_API_URL;
   const location = useLocation();
+  
+  // Image preloading state
+  const [imagesLoaded, setImagesLoaded] = useState(false);
+  
+  // Preload images for better performance
+  useEffect(() => {
+    const preloadImages = async () => {
+      const imageUrls = [
+        chat, close, landinglogo, ambherlogo, bautistalogo,
+        sendchatambher, sendchatbautista, closeimage, documenticon,
+        filesent, leftarrow, profileuser
+      ];
+      
+      const imagePromises = imageUrls.map((src) => {
+        return new Promise((resolve, reject) => {
+          const img = new Image();
+          img.onload = resolve;
+          img.onerror = reject;
+          img.src = src;
+        });
+      });
+      
+      try {
+        await Promise.all(imagePromises);
+        setImagesLoaded(true);
+        console.log('✅ All chat images preloaded successfully');
+      } catch (error) {
+        console.warn('⚠️ Some images failed to preload:', error);
+        setImagesLoaded(true); // Continue anyway
+      }
+    };
+    
+    preloadImages();
+  }, []);
+  
   const [ispatientloggedIn, setispatientloggedIn] = useState(false);
   const allowedRoutes = [
     "/patientlandingpage",
@@ -97,6 +132,59 @@ useEffect(() => {
 
 
 
+
+  // Image cache for better performance
+  const imageCache = useRef(new Map());
+  
+  // Image component with loading state and caching
+  const OptimizedImage = ({ src, alt, className, onClick, fallback = null, priority = false }) => {
+    const [loading, setLoading] = useState(!imageCache.current.has(src));
+    const [error, setError] = useState(false);
+
+    const handleLoad = () => {
+      setLoading(false);
+      imageCache.current.set(src, true);
+    };
+
+    const handleError = () => {
+      setLoading(false);
+      setError(true);
+    };
+
+    // Check if image is already cached
+    useEffect(() => {
+      if (imageCache.current.has(src)) {
+        setLoading(false);
+      }
+    }, [src]);
+
+    if (error && fallback) {
+      return fallback;
+    }
+
+    return (
+      <div className="relative inline-block">
+        {loading && (
+          <div className={`absolute inset-0 bg-gray-200 animate-pulse rounded ${className}`}>
+            <div className="w-full h-full flex items-center justify-center">
+              <div className="w-4 h-4 bg-gray-400 rounded-full animate-pulse"></div>
+            </div>
+          </div>
+        )}
+        <img
+          src={src}
+          alt={alt}
+          className={`optimized-image ${className} ${loading ? 'opacity-0' : 'opacity-100'} transition-opacity duration-200`}
+          onLoad={handleLoad}
+          onError={handleError}
+          onClick={onClick}
+          loading={priority ? "eager" : "lazy"}
+          decoding="async"
+          style={{ display: loading ? 'none' : 'block' }}
+        />
+      </div>
+    );
+  };
 
   // 1. UTILITY FUNCTIONS (No dependencies)
   const debounce = (func, wait) => {
@@ -222,11 +310,41 @@ const markConversationAsRead = useCallback(async (conversationId) => {
       
       return updated;
     });
+
+    // ALSO update the server-side readBy field to persist the read status
+    const token = localStorage.getItem('token');
+    
+    if (token && conversationId) {
+      try {
+        console.log('📨 Marking messages as read on server for conversation:', conversationId);
+        const response = await fetch(`${apiUrl}/api/messages/${conversationId}/mark-read`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        
+        if (response.ok) {
+          const result = await response.json();
+          console.log('✅ Successfully marked messages as read on server:', result);
+        } else {
+          console.warn('⚠️ Failed to mark messages as read on server:', response.status);
+          // Log response text for debugging
+          const errorText = await response.text();
+          console.warn('Server response:', errorText);
+        }
+      } catch (error) {
+        console.error('❌ Error marking messages as read on server:', error);
+      }
+    } else {
+      console.warn('⚠️ No token or conversationId available for server update:', { token: !!token, conversationId });
+    }
     
   } catch (error) {
     console.error("Error marking conversation as read:", error);
   }
-}, []);
+}, [apiUrl]);
 
 
   
@@ -2007,9 +2125,41 @@ useEffect(() => {
 
   return (
     <>
+      {/* Preload critical images for better performance */}
+      <style>
+        {`
+          .preload-images::before {
+            content: '';
+            position: absolute;
+            top: -9999px;
+            left: -9999px;
+            background-image: 
+              url(${chat}),
+              url(${close}),
+              url(${ambherlogo}),
+              url(${bautistalogo}),
+              url(${sendchatambher}),
+              url(${sendchatbautista}),
+              url(${documenticon}),
+              url(${closeimage});
+          }
+          
+          /* Optimize image rendering */
+          .optimized-image {
+            image-rendering: -webkit-optimize-contrast;
+            image-rendering: crisp-edges;
+            backface-visibility: hidden;
+            transform: translateZ(0);
+          }
+        `}
+      </style>
+      <div className="preload-images">
+        {/* Image preloading content */}
+      </div>
+      
       {modalOpen && (
         <div className="motion-preset-fade-md fixed inset-0 bg-[#040404e2] flex items-center justify-center z-[99999]">
-          <img src={close} onClick={() => setModalOpen(false)} className=" w-7 h-7 absolute top-5 right-5"/>
+          <OptimizedImage src={close} alt="Close modal" onClick={() => setModalOpen(false)} className=" w-7 h-7 absolute top-5 right-5"/>
           <div className="relative max-w-4xl max-h-[90vh]">
             <img 
               src={selectedImageForModal} 
@@ -2031,18 +2181,18 @@ useEffect(() => {
               }`}>
                 {showpatientambherConversation ? (
                   <div className="flex px-2 w-full items-center">
-                    <img src={leftarrow} className="cursor-pointer hover:scale-105 transition-all duration-300 ease-in-out w-5 h-5 mr-2" onClick={() => {setMessages([]); setSelectedImage(null); setSelectedFile(null); setshowpatientambherConversation(false);}}/>
-                    <img src={ambherlogo} className="w-15 px-2 py-1"/>
+                    <OptimizedImage src={leftarrow} alt="Back" className="cursor-pointer hover:scale-105 transition-all duration-300 ease-in-out w-5 h-5 mr-2" onClick={() => {setMessages([]); setSelectedImage(null); setSelectedFile(null); setshowpatientambherConversation(false);}} priority={true}/>
+                    <OptimizedImage src={ambherlogo} alt="Ambher Optical Logo" className="w-15 px-2 py-1" priority={true}/>
                     <p className="font-albertsans font-semibold text-[17px] text-[#ffffff]">Ambher Optical</p>
                   </div>
                 ) : showpatientbautistaConversation ? (
                   <div className="flex px-2 w-full items-center">
-                    <img src={leftarrow} className="cursor-pointer hover:scale-105 transition-all duration-300 ease-in-out w-5 h-5 mr-2" onClick={() => {setMessages([]); setSelectedImage(null); setSelectedFile(null); setshowpatientbautistaConversation(false);}}/>
-                    <img src={bautistalogo} className="w-15 px-2 py-1"/>
+                    <OptimizedImage src={leftarrow} alt="Back" className="cursor-pointer hover:scale-105 transition-all duration-300 ease-in-out w-5 h-5 mr-2" onClick={() => {setMessages([]); setSelectedImage(null); setSelectedFile(null); setshowpatientbautistaConversation(false);}} priority={true}/>
+                    <OptimizedImage src={bautistalogo} alt="Bautista Eye Center Logo" className="w-15 px-2 py-1" priority={true}/>
                     <p className="font-albertsans font-semibold text-[17px] text-[#ffffff]">Bautista Eye Center</p>
                   </div>
                 ) : (
-                  <img src={landinglogo} className="w-40 px-2 py-1"/>
+                  <OptimizedImage src={landinglogo} alt="Eye2Wear Logo" className="w-40 px-2 py-1" priority={true}/>
                 )}
               </div>
 
@@ -2135,7 +2285,7 @@ useEffect(() => {
   })()}
   
   {/* Ambher Optical Logo */}
-  <img 
+  <OptimizedImage 
     src={ambherlogo} 
     alt="Ambher Optical Logo" 
     className="w-20 h-20 object-contain mb-2"
@@ -2225,7 +2375,7 @@ useEffect(() => {
   })()}
   
   {/* Bautista Eye Center Logo */}
-  <img 
+  <OptimizedImage 
     src={bautistalogo} 
     alt="Bautista Eye Center Logo" 
     className="w-20 h-20 object-contain mb-2"
@@ -2378,7 +2528,7 @@ messages.map((msg, index) => {
                             className="hidden"
                             onChange={handleFileChange}
                           />
-                          <img src={documenticon} className="w-7 h-7"/>
+                          <OptimizedImage src={documenticon} alt="Attach document" className="w-7 h-7"/>
                         </label>
                       )}
 
@@ -2393,10 +2543,10 @@ messages.map((msg, index) => {
                               setModalOpen(true);
                             }}
                           />
-                          <img 
+                          <OptimizedImage 
                             onClick={cancelFile}
                             src={closeimage} 
-                            alt="cancel" 
+                            alt="Cancel file" 
                             className="absolute -top-2 -right-2 h-5 w-5 cursor-pointer hover:cursor-pointer hover:scale-110 transition-all duration-300 ease-in-out bg-white rounded-full p-0.5 shadow-sm"
                           />
                         </div>
@@ -2435,9 +2585,9 @@ messages.map((msg, index) => {
                       {isSending ? (
                         <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-white flex-shrink-0"></div>
                       ) : (
-                        <img 
+                        <OptimizedImage 
                           src={showpatientambherConversation ? sendchatambher : sendchatbautista} 
-                          alt="send" 
+                          alt="Send message" 
                           className="hover:scale-105 transition-all duration-300 ease-in-out h-10 w-10 p-2 cursor-pointer flex-shrink-0" 
                           onClick={handleSendMessage}
                         />
@@ -2466,7 +2616,7 @@ messages.map((msg, index) => {
                 }} 
                 className="motion-preset-slide-down hover:scale-105 ease-in-out duration-300 transition-all cursor-pointer flex justify-center items-center w-[60px] h-[60px] rounded-full bg-[#1583b3]"
               >
-                <img src={close} alt="logo" className="select-none motion-preset-shake w-10 h-10 p-2" />
+                <OptimizedImage src={close} alt="Close chat" className="select-none motion-preset-shake w-10 h-10 p-2" />
               </div>
             ) : (
 <div 
@@ -2489,7 +2639,7 @@ messages.map((msg, index) => {
   {hasGlobalUnreadMessages && (
     <div className="flex justify-center items-center absolute top-0 right-0 bg-[#e93f3f] rounded-full w-4.5 h-4.5"></div>
   )}
-  <img src={chat} alt="logo" className="select-none motion-preset-seesaw w-10 h-10 p-2" />
+  <OptimizedImage src={chat} alt="Open chat" className="select-none motion-preset-seesaw w-10 h-10 p-2" priority={true} />
 </div>
             )}
           </div>

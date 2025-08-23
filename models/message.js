@@ -53,4 +53,13 @@ const MessageSchema = new mongoose.Schema({
   timestamps: true
 });
 
+// Add indexes for better query performance
+MessageSchema.index({ conversationId: 1, createdAt: -1 }); // Conversation messages sorted by date
+MessageSchema.index({ senderId: 1 }); // Sender filtering
+MessageSchema.index({ senderRole: 1 }); // Role filtering
+MessageSchema.index({ senderClinic: 1 }); // Clinic filtering
+MessageSchema.index({ sentToClinic: 1 }); // Target clinic filtering
+MessageSchema.index({ createdAt: -1 }); // Date sorting
+MessageSchema.index({ text: 'text', senderName: 'text' }); // Text search
+
 export default mongoose.model("Message", MessageSchema);

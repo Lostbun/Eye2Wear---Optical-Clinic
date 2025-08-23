@@ -97,6 +97,12 @@ AdminaccountSchema.plugin(AutoIncrement(mongoose),{
   start_seq: 0
 });
 
+// Add indexes for better query performance (avoid duplicates with unique fields)
+AdminaccountSchema.index({ adminlastname: 1, adminfirstname: 1 }); // Index for name searches
+AdminaccountSchema.index({ isVerified: 1 }); // Index for verification status
+AdminaccountSchema.index({ createdAt: -1 }); // Index for date sorting
+AdminaccountSchema.index({ adminlastname: 'text', adminfirstname: 'text', adminemail: 'text' }); // Text index for search
+
 //Hashes the password details before saving to the mongoDB Atlas
 AdminaccountSchema.pre('save', async function(next){
   if (this.isModified('adminpassword')) {

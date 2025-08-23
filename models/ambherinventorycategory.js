@@ -48,6 +48,12 @@ AmbherInventoryCategorySchema.plugin(AutoIncrement(mongoose),{
     disable_hooks: false
 });
 
+// Add indexes for better query performance
+AmbherInventoryCategorySchema.index({ ambherinventorycategoryid: -1 }); // Primary sorting index (ID descending)
+AmbherInventoryCategorySchema.index({ createdAt: -1 }); // Date sorting
+AmbherInventoryCategorySchema.index({ ambherinventorycategoryname: 'text' }); // Text search
+AmbherInventoryCategorySchema.index({ ambherinventorycategoryaddedbyemail: 1 }); // Added by email lookup
+AmbherInventoryCategorySchema.index({ ambherinventorycategoryaddedbytype: 1 }); // Added by type filtering
 
 
 

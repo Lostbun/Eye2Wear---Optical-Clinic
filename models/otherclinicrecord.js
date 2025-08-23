@@ -62,8 +62,13 @@ OtherClinicRecordSchema.plugin(AutoIncrement(mongoose),{
     disable_hooks: false
 });
 
-
-
+// Add indexes for better query performance
+OtherClinicRecordSchema.index({ patientotherclinicrecordid: -1 }); // Primary sorting
+OtherClinicRecordSchema.index({ patientotherclinicemail: 1 }); // Email filtering
+OtherClinicRecordSchema.index({ patientotherclinicname: 1 }); // Clinic name filtering
+OtherClinicRecordSchema.index({ patientothercliniclastname: 1, patientotherclinicfirstname: 1 }); // Name searches
+OtherClinicRecordSchema.index({ createdAt: -1 }); // Date sorting
+OtherClinicRecordSchema.index({ patientothercliniclastname: 'text', patientotherclinicfirstname: 'text', patientotherclinicemail: 'text', patientotherclinicname: 'text' }); // Text search
 
 
 

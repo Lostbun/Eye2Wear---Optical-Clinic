@@ -11,7 +11,12 @@ dotenv.config();
 //Retrieve (All Admin) Controller
 export const getadminaccounts = async (req, res) => {
   try {
-    const adminacc = await Adminaccount.find({});
+    // Optimized query with field selection, lean(), and proper sorting
+    const adminacc = await Adminaccount.find({})
+      .select('adminId adminemail adminlastname adminfirstname adminmiddlename adminprofilepicture isVerified createdAt')
+      .sort({ adminId: -1 }) // Sort by ID descending for newest first
+      .lean(); // Returns plain JavaScript objects for better performance
+    
     res.status(200).json(adminacc);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -25,7 +30,13 @@ export const getadminaccounts = async (req, res) => {
 export const getadminaccountbyid = async (req, res) => {
   try {
     const { id } = req.params;
-    const adminacc = await Adminaccount.findById(id);
+    // Use lean() for better performance when not modifying the document
+    const adminacc = await Adminaccount.findById(id).lean();
+    
+    if (!adminacc) {
+      return res.status(404).json({ message: "Admin not found" });
+    }
+    
     res.status(200).json(adminacc);
   } catch (error) {
     res.status(500).json({ message: error.message });

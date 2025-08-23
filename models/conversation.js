@@ -44,4 +44,12 @@ ConversationSchema.pre('save', function(next) {
   next();
 });
 
+// Add indexes for better query performance
+ConversationSchema.index({ 'participants.userId': 1 }); // User participation lookup
+ConversationSchema.index({ 'participants.role': 1 }); // Role filtering
+ConversationSchema.index({ 'participants.clinic': 1 }); // Clinic filtering
+ConversationSchema.index({ clinic: 1 }); // Direct clinic filtering
+ConversationSchema.index({ updatedAt: -1 }); // Recent conversations first
+ConversationSchema.index({ 'participants.userId': 1, 'participants.role': 1 }); // Compound for user + role
+
 export default mongoose.model("Conversation", ConversationSchema);

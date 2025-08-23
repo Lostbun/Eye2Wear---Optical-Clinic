@@ -71,14 +71,19 @@ PatientWishlistSchema.plugin(AutoIncrement(mongoose), {
   disable_hooks: false
 });
 
-
-
 // Ensures one product per patient per clinic
 PatientWishlistSchema.index(
   { patientwishlistemail: 1, patientwishlistinventoryproductid: 1, clinicType: 1 },
   { unique: true }
 );
 
+// Additional indexes for better query performance
+PatientWishlistSchema.index({ wishlistid: -1 }); // Primary sorting
+PatientWishlistSchema.index({ patientwishlistinventoryproductcategory: 1 }); // Category filtering
+PatientWishlistSchema.index({ patientwishlistinventoryproductbrand: 1 }); // Brand filtering
+PatientWishlistSchema.index({ patientwishlistinventoryproductprice: 1 }); // Price sorting
+PatientWishlistSchema.index({ createdAt: -1 }); // Date sorting
+PatientWishlistSchema.index({ patientwishlistinventoryproductname: 'text', patientwishlistinventoryproductdescription: 'text' }); // Text search
 
 
 

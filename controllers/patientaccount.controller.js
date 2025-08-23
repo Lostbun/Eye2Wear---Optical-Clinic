@@ -32,7 +32,12 @@ const generateAuthToken = (patient) => {
 //Retrieve (All Patient) Controller
 export const getpatientaccounts = async (req, res) => {
   try {
-    const patientacc = await Patientaccount.find({});
+    // Optimized query with field selection, lean(), and proper sorting
+    const patientacc = await Patientaccount.find({})
+      .select('patientId patientemail patientlastname patientfirstname patientmiddlename patientprofilepicture isVerified createdAt')
+      .sort({ patientId: -1 }) // Sort by ID descending for newest first
+      .lean(); // Returns plain JavaScript objects for better performance
+    
     res.status(200).json(patientacc);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -43,7 +48,13 @@ export const getpatientaccounts = async (req, res) => {
 export const getpatientaccountbyid = async (req, res) => {
   try {
     const { id } = req.params;
-    const patientacc = await Patientaccount.findById(id);
+    // Use lean() for better performance when not modifying the document
+    const patientacc = await Patientaccount.findById(id).lean();
+    
+    if (!patientacc) {
+      return res.status(404).json({ message: "Patient not found" });
+    }
+    
     res.status(200).json(patientacc);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -71,10 +82,10 @@ export const getpatientaccountbylastname = async (req, res) => {
 
 export const getloggedinpatientacc = async (req, res) => {
   try{
-
+    // Optimized query with lean() and specific field selection for faster response
     const patient = await Patientaccount.findById(req.patient.id)
-    .select('-password')
-    .lean();
+      .select('patientlastname patientfirstname patientmiddlename patientemail patientId patientprofilepicture isVerified')
+      .lean(); // Use lean() for better performance
 
     if(!patient){
       return res.status(404).json({message: "Patient does not exist"});
@@ -249,11 +260,19 @@ export const patientlogin = async(req, res) => {
   try{
     const {patientemail,patientpassword} = req.body;
 
-    const patient = await Patientaccount.findOne({patientemail}).select('+patientpassword');
+    // Optimized query with lean() and specific field selection for faster login
+    const patient = await Patientaccount.findOne({patientemail: patientemail})
+      .select('_id patientemail patientpassword patientfirstname patientlastname patientmiddlename patientprofilepicture patientId isVerified')
+      .lean();
+      
     if(!patient) {
       return res.status(401).json({message:"Login Error, Invalid Credentials"});
     }
 
+    // Check if account is verified
+    if(!patient.isVerified) {
+      return res.status(401).json({message:"Account not verified. Please check your email."});
+    }
 
     const loginmatch = await bcrypt.compare(patientpassword, patient.patientpassword);
     if(!loginmatch) {
@@ -262,18 +281,14 @@ export const patientlogin = async(req, res) => {
 
     const jsontoken = generateAuthToken(patient);
 
+    // Remove password from response (already lean object)
+    const { patientpassword: _, ...patientlogin } = patient;
 
-
-
-       const patientlogin = patient.toObject();
-       delete patientlogin.patientpassword;
-
-       res.json({
-        message:"Loggin Success",
-        jsontoken,
-        patient: patientlogin
-       });
-
+    res.json({
+      message:"Login Success",
+      jsontoken,
+      patient: patientlogin
+    });
 
   } catch(error){
     console.error("Login Failed", error);

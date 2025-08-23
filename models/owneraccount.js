@@ -113,6 +113,13 @@ OwneraccountSchema.plugin(AutoIncrement(mongoose),{
   start_seq: 0
 });
 
+// Add indexes for better query performance (avoid duplicates with unique fields)
+OwneraccountSchema.index({ ownerclinic: 1 }); // Index for clinic filtering
+OwneraccountSchema.index({ ownerlastname: 1, ownerfirstname: 1 }); // Index for name searches
+OwneraccountSchema.index({ isVerified: 1 }); // Index for verification status
+OwneraccountSchema.index({ createdAt: -1 }); // Index for date sorting
+OwneraccountSchema.index({ ownerlastname: 'text', ownerfirstname: 'text', owneremail: 'text' }); // Text index for search
+
 //Hashes the password details before saving to the mongoDB Atlas
 OwneraccountSchema.pre('save', async function(next){
   if (this.isModified('ownerpassword')) {

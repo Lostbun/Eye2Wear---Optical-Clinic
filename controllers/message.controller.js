@@ -8,20 +8,29 @@ import { v4 as uuidv4 } from 'uuid';
 
 
 // Get all conversations for a user or clinic
-// Get all conversations for a user or clinic
 export const getConversations = async (req, res) => {
   try {
     const { userId, role, clinic } = req.user;
     
+    console.log('🔍 Getting conversations for:', { userId, role, clinic });
+    
     let query = {};
 
     if (role === 'patient') {
-      // Patients see all conversations where they are a participant
+      // FIXED: Patients should ONLY see conversations where they are specifically a participant
+      // Convert userId to string for consistent comparison
+      const userIdString = userId.toString();
       query = {
         'participants': {
-          $elemMatch: { userId: userId, role: 'patient' }
+          $elemMatch: { 
+            userId: userIdString, 
+            role: 'patient' 
+          }
         }
       };
+      
+      console.log('👤 Patient query:', JSON.stringify(query, null, 2));
+      
     } else if (role === 'staff' || role === 'owner') {
       // Staff/owners see conversations involving their clinic
       query = {
@@ -44,43 +53,62 @@ export const getConversations = async (req, res) => {
       };
     }
 
+    // Optimized query with field selection, lean(), and indexed sorting
     const conversations = await Conversation.find(query)
-      .populate('lastMessage')
-      .sort({ updatedAt: -1 });
+      .select('participants lastMessage clinic createdAt updatedAt isActive')
+      .populate({
+        path: 'lastMessage',
+        select: 'text senderName senderId senderRole createdAt'
+      })
+      .sort({ updatedAt: -1 })
+      .lean(); // Returns plain JavaScript objects for better performance
 
-    console.log(`Found ${conversations.length} conversations for ${role} ${userId} at clinic ${clinic}`);
-    console.log('Query used:', JSON.stringify(query, null, 2));
-    console.log('Sample conversation participants:', conversations[0]?.participants);
+    console.log(`✅ Found ${conversations.length} conversations for ${role} ${userId}`);
+    
+    // Log first conversation for debugging
+    if (conversations.length > 0) {
+      console.log('📝 Sample conversation participants:', conversations[0].participants);
+    }
     
     res.status(200).json(conversations);
   } catch (error) {
-    console.error('Error fetching conversations:', error);
+    console.error('❌ Error fetching conversations:', error);
     res.status(500).json({ message: error.message });
   }
 };
 
 
 // Get messages in a conversation
-// Get messages in a conversation
 export const getMessages = async (req, res) => {
   try {
     const { conversationId } = req.params;
     const { userId, role, clinic } = req.user;
 
-    // Verify conversation exists
-    const conversation = await Conversation.findById(conversationId);
+    console.log('🔍 Getting messages for:', { conversationId, userId, role, clinic });
+
+    // Verify conversation exists and get it with lean for performance
+    const conversation = await Conversation.findById(conversationId).lean();
     if (!conversation) {
+      console.log('❌ Conversation not found:', conversationId);
       return res.status(404).json({ message: 'Conversation not found' });
     }
 
-    // Check if user has access to the conversation
+    // FIXED: Strict access control for patients
     let hasAccess = false;
     
     if (role === 'patient') {
-      // Patient can access if they are a participant
+      // Patient can ONLY access if they are specifically a participant
+      // Convert userId to string for consistent comparison
+      const userIdString = userId.toString();
       hasAccess = conversation.participants.some(p => 
-        p.userId === userId && p.role === 'patient'
+        p.userId === userIdString && p.role === 'patient'
       );
+      console.log('👤 Patient access check:', { 
+        userId: userIdString, 
+        hasAccess, 
+        participants: conversation.participants 
+      });
+      
     } else if (role === 'staff' || role === 'owner') {
       // Staff/owner can access if:
       // 1. They are a direct participant
@@ -90,36 +118,41 @@ export const getMessages = async (req, res) => {
         (p.userId === userId && (p.role === role || p.role === 'clinic')) || 
         (p.clinic === clinic && ['staff', 'owner', 'clinic'].includes(p.role))
       ) || conversation.clinic === clinic;
+      
+      console.log('🏥 Staff/Owner access check:', { 
+        userId, 
+        role,
+        clinic,
+        hasAccess, 
+        participants: conversation.participants 
+      });
     }
 
-    console.log('Access check details:', {
-      userId,
-      role,
-      clinic,
-      conversationId,
-      hasAccess,
-      participants: conversation.participants,
-      conversationClinic: conversation.clinic
-    });
-
     if (!hasAccess) {
+      console.log('🚫 Access denied for user:', userId);
       return res.status(403).json({ message: 'Unauthorized access to conversation' });
     }
 
+    // Optimized query with CORRECT field selection, lean(), and indexed sorting
     const messages = await Message.find({ conversationId })
-      .sort({ createdAt: 1 });
+      .select('senderId senderName senderRole senderClinic sentToClinic text imageUrl documentUrl documentName readBy createdAt updatedAt')
+      .sort({ createdAt: 1 })
+      .lean(); // Returns plain JavaScript objects for better performance
 
-    // Mark messages as read
-    await Message.updateMany(
+    console.log(`📨 Found ${messages.length} messages in conversation ${conversationId}`);
+
+    // Mark messages as read - optimized bulk operation with consistent userId
+    const userIdString = userId.toString();
+    const updateResult = await Message.updateMany(
       { 
         conversationId,
-        'readBy.userId': { $ne: userId },
-        senderId: { $ne: userId }
+        'readBy.userId': { $ne: userIdString },
+        senderId: { $ne: userIdString }
       },
       {
         $push: {
           readBy: {
-            userId: userId || null,
+            userId: userIdString,
             role: role,
             clinic: role === 'clinic' ? clinic : null,
             readAt: new Date()
@@ -128,7 +161,8 @@ export const getMessages = async (req, res) => {
       }
     );
 
-    console.log(`Fetched ${messages.length} messages for conversation ${conversationId} by ${role} ${userId}`);
+    console.log(`✅ Marked ${updateResult.modifiedCount} messages as read for user ${userIdString}`);
+    
     res.status(200).json(messages);
   } catch (error) {
     console.error('Error fetching messages:', error);
@@ -300,6 +334,12 @@ export const createConversation = async (req, res) => {
 // Create a new message
 export const createMessage = async (req, res) => {
   try {
+    console.log('📤 CREATE MESSAGE REQUEST:', {
+      body: req.body,
+      user: req.user,
+      file: req.file ? { filename: req.file.filename, mimetype: req.file.mimetype } : null
+    });
+    
     const { conversationId, text, patientId, targetClinic, senderName, temporaryId } = req.body;
     const { userId, role, clinic, name } = req.user;
 
@@ -439,9 +479,22 @@ export const createMessage = async (req, res) => {
     const io = req.app.get('io');
     io.to(conversation._id.toString()).emit('newMessage', message);
 
+    console.log('✅ MESSAGE CREATED SUCCESSFULLY:', {
+      messageId: message._id,
+      conversationId: conversation._id,
+      senderName: finalSenderName,
+      text: text?.substring(0, 50) + (text?.length > 50 ? '...' : ''),
+      hasFile: !!req.file
+    });
+
     res.status(201).json(message);
   } catch (error) {
-    console.error('Error creating message:', error);
+    console.error('❌ ERROR CREATING MESSAGE:', {
+      error: error.message,
+      stack: error.stack,
+      body: req.body,
+      user: req.user
+    });
     res.status(500).json({ 
       message: error.message,
       error: process.env.NODE_ENV === 'development' ? error.stack : undefined
@@ -552,5 +605,49 @@ export const cleanupOrphanedImageReferences = async (req, res) => {
       message: 'Error during cleanup',
       error: error.message
     });
+  }
+};
+
+// Mark messages in a conversation as read
+export const markMessagesAsRead = async (req, res) => {
+  try {
+    const { conversationId } = req.params;
+    const { userId, role, clinic } = req.user;
+    
+    console.log('🔴 Marking messages as read:', { conversationId, userId, role, clinic });
+    
+    if (!conversationId) {
+      return res.status(400).json({ message: 'Conversation ID is required' });
+    }
+
+    // Mark messages as read - optimized bulk operation with consistent userId
+    const userIdString = userId.toString();
+    const updateResult = await Message.updateMany(
+      { 
+        conversationId,
+        'readBy.userId': { $ne: userIdString },
+        senderId: { $ne: userIdString }
+      },
+      {
+        $push: {
+          readBy: {
+            userId: userIdString,
+            role: role,
+            clinic: role === 'clinic' ? clinic : null,
+            readAt: new Date()
+          }
+        }
+      }
+    );
+
+    console.log(`✅ Marked ${updateResult.modifiedCount} messages as read for user ${userIdString}`);
+    
+    res.status(200).json({ 
+      message: 'Messages marked as read successfully',
+      markedCount: updateResult.modifiedCount
+    });
+  } catch (error) {
+    console.error('Error marking messages as read:', error);
+    res.status(500).json({ message: error.message });
   }
 };

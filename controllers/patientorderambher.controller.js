@@ -45,7 +45,12 @@ export const createpatientorderambher = async (req, res) => {
     //Get All Patient Order Ambhers
     export const getallpatientorderambhers = async (req, res) => {
         try{
-            const patientorderambhers = await PatientOrderAmbher.find().sort({patientorderambherid: -1});
+            // Optimized query with ALL necessary fields, lean(), and proper sorting
+            const patientorderambhers = await PatientOrderAmbher.find({})
+                .select('patientorderambherid patientorderambherstatus patientorderambherhistory patientprofilepicture patientlastname patientfirstname patientmiddlename patientemail patientcontactnumber patientorderambherproductid patientorderambherproductname patientorderambherproductbrand patientorderambherproductmodelnumber patientorderambherproductcategory patientorderambherproductimage patientorderambherproductprice patientorderambherproductquantity patientorderambherproductsubtotal patientorderambherproductdescription patientorderambherproductnotes patientorderambhercustomfee patientorderambheramountpaid patientorderambherremainingbalance patientorderambheramountpaidchange patientorderambherproducttotal patientorderambherproductpaymentmethod patientorderambherproductpaymentreceiptimage patientorderambherproductpaymentstatus patientorderambherproductpaymenttransactionid patientorderambherproductpickupstatus patientorderambherproductchosenpickupdate patientorderambherproductchosenpickuptime patientorderambherproducauthorizedname patientorderambherproducauthorizedtype createdAt updatedAt')
+                .sort({patientorderambherid: -1})
+                .lean(); // Returns plain JavaScript objects for better performance
+            
             res.json(patientorderambhers);
     
         }catch(error){
@@ -58,7 +63,12 @@ export const createpatientorderambher = async (req, res) => {
     //Get Single Order Ambhers by Id
     export const getpatientorderambherbyid = async (req, res) => {
         try{
-            const patientorderambher = await PatientOrderAmbher.findOne({patientorderambherid: req.params.id});
+            // Optimized query with ALL necessary fields and lean()
+            const patientorderambher = await PatientOrderAmbher.findOne({
+                patientorderambherid: req.params.id
+            })
+            .select('patientorderambherid patientorderambherstatus patientorderambherhistory patientprofilepicture patientlastname patientfirstname patientmiddlename patientemail patientcontactnumber patientorderambherproductid patientorderambherproductname patientorderambherproductbrand patientorderambherproductmodelnumber patientorderambherproductcategory patientorderambherproductimage patientorderambherproductprice patientorderambherproductquantity patientorderambherproductsubtotal patientorderambherproductdescription patientorderambherproductnotes patientorderambhercustomfee patientorderambheramountpaid patientorderambherremainingbalance patientorderambheramountpaidchange patientorderambherproducttotal patientorderambherproductpaymentmethod patientorderambherproductpaymentreceiptimage patientorderambherproductpaymentstatus patientorderambherproductpaymenttransactionid patientorderambherproductpickupstatus patientorderambherproductchosenpickupdate patientorderambherproductchosenpickuptime patientorderambherproducauthorizedname patientorderambherproducauthorizedtype createdAt updatedAt')
+            .lean(); // Returns plain JavaScript objects for better performance
             
             if(!patientorderambher) return res.status(404).json({message: "Order Ambher not found"});
             res.json(patientorderambher);
@@ -76,18 +86,20 @@ export const createpatientorderambher = async (req, res) => {
     //Get Order Ambher By Email
     export const getorderambhersbyemail = async (req, res) => {
         try{
+            // Optimized query with ALL necessary fields, lean(), and indexed email lookup
             const patientorderambhersbyemail = await PatientOrderAmbher.find({
                 patientemail: req.params.email
-            }).sort({patientorderambherid: -1});
+            })
+            .select('patientorderambherid patientorderambherstatus patientorderambherhistory patientprofilepicture patientlastname patientfirstname patientmiddlename patientemail patientcontactnumber patientorderambherproductid patientorderambherproductname patientorderambherproductbrand patientorderambherproductmodelnumber patientorderambherproductcategory patientorderambherproductimage patientorderambherproductprice patientorderambherproductquantity patientorderambherproductsubtotal patientorderambherproductdescription patientorderambherproductnotes patientorderambhercustomfee patientorderambheramountpaid patientorderambherremainingbalance patientorderambheramountpaidchange patientorderambherproducttotal patientorderambherproductpaymentmethod patientorderambherproductpaymentreceiptimage patientorderambherproductpaymentstatus patientorderambherproductpaymenttransactionid patientorderambherproductpickupstatus patientorderambherproductchosenpickupdate patientorderambherproductchosenpickuptime patientorderambherproducauthorizedname patientorderambherproducauthorizedtype createdAt updatedAt')
+            .sort({patientorderambherid: -1})
+            .lean(); // Returns plain JavaScript objects for better performance
 
-
-            if(!patientorderambhersbyemail || patientorderambhersbyemail === 0){
+            if(!patientorderambhersbyemail || patientorderambhersbyemail.length === 0){
                 return res.status(404).json({message: "No orderambhers found in this email"});  
             }
 
             res.json(patientorderambhersbyemail);
         
-
         }catch(error){
             res.status(500).json({message: error.message});
         }

@@ -1,4 +1,32 @@
-/* eslint-disable no-undef */
+/* eslint-dis//Retrieve (All Staff) //Retrieve (Single Staff) Controller
+export const getstaffaccountbyid = async (req, res) => {
+  try {
+    const { id } = req.params;
+    // Use lean() for better performance when not modifying the document
+    const staffacc = await Staffaccount.findById(id).lean();
+    
+    if (!staffacc) {
+      return res.status(404).json({ message: "Staff not found" });
+    }
+    
+    res.status(200).json(staffacc);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+export const getstaffaccounts = async (req, res) => {
+  try {
+    // Optimized query with field selection, lean(), and proper sorting
+    const staffacc = await Staffaccount.find({})
+      .select('staffId staffemail stafflastname stafffirstname staffmiddlename staffprofilepicture staffclinic staffiseyespecialist isVerified createdAt')
+      .sort({ staffId: -1 }) // Sort by ID descending for newest first
+      .lean(); // Returns plain JavaScript objects for better performance
+    
+    res.status(200).json(staffacc);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};ndef */
 import Staffaccount from "../models/staffacount.js";
 import bcrypt  from "bcryptjs";
 import jwt from "jsonwebtoken";

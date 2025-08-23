@@ -271,8 +271,14 @@ PatientAppointmentSchema.post('save', function(error, doc, next){
 });
 
 // Create indexes for better query performance
-PatientAppointmentSchema.index({ patientappointmentemail: 1 });
-PatientAppointmentSchema.index({ patientappointmentid: -1 });
-PatientAppointmentSchema.index({ patientappointmentemail: 1, patientappointmentid: -1 });
+PatientAppointmentSchema.index({ patientappointmentid: -1 }); // Primary sorting index
+PatientAppointmentSchema.index({ patientappointmentemail: 1 }); // Email lookup
+PatientAppointmentSchema.index({ patientappointmentstatus: 1 }); // Status filtering
+PatientAppointmentSchema.index({ patientambherappointmentdate: 1 }); // Date filtering for Ambher
+PatientAppointmentSchema.index({ patientbautistaappointmentdate: 1 }); // Date filtering for Bautista
+PatientAppointmentSchema.index({ createdAt: -1 }); // Creation date sorting
+PatientAppointmentSchema.index({ patientappointmentlastname: 1, patientappointmentfirstname: 1 }); // Name searches
+PatientAppointmentSchema.index({ patientappointmentlastname: 'text', patientappointmentfirstname: 'text', patientappointmentemail: 'text' }); // Text search
+PatientAppointmentSchema.index({ patientappointmentemail: 1, patientappointmentid: -1 }); // Compound for email + ID
 
 export default mongoose.model("PatientAppointment", PatientAppointmentSchema);

@@ -1,4 +1,4 @@
-import React, { useState,useRef, useEffect, useCallback } from "react";
+import React, { useState,useRef, useEffect, useCallback, useMemo } from "react";
 import { Link} from "react-router-dom";
 import landinglogo from "../src/assets/images/landinglogo.png";
 import { useAuth as useAdminAuth} from "./hooks/adminuseAuth";
@@ -25,6 +25,7 @@ import { BautistainventorycategoryBox } from "./components/Bautistainventorycate
 import cautionlowstockalert from "../src/assets/images/caution.png";
 import starimage from "../src/assets/images/star.png";
 import useSmartCache from './hooks/useSmartCache';
+import { useImageOptimization } from './utils/imageOptimization';
 
 
 
@@ -63,6 +64,44 @@ const TableRowSkeleton = () => (
         <div className="h-8 w-16 bg-gray-300 rounded-2xl"></div>
         <div className="h-8 w-16 bg-gray-300 rounded-2xl"></div>
       </div>
+    </td>
+  </tr>
+);
+
+// Admin Table Skeleton with separate action columns
+const AdminTableRowSkeleton = () => (
+  <tr className="animate-pulse">
+    <td className="py-3 px-6 text-center">
+      <div className="h-4 bg-gray-300 rounded w-12 mx-auto"></div>
+    </td>
+    <td className="py-3 px-6 text-center">
+      <div className="flex justify-center">
+        <div className="h-12 w-12 bg-gray-300 rounded-full"></div>
+      </div>
+    </td>
+    <td className="py-3 px-6 text-center">
+      <div className="h-4 bg-gray-300 rounded w-20 mx-auto"></div>
+    </td>
+    <td className="py-3 px-6 text-center">
+      <div className="h-4 bg-gray-300 rounded w-24 mx-auto"></div>
+    </td>
+    <td className="py-3 px-6 text-center">
+      <div className="h-4 bg-gray-300 rounded w-20 mx-auto"></div>
+    </td>
+    <td className="py-3 px-6 text-center">
+      <div className="h-4 bg-gray-300 rounded w-32 mx-auto"></div>
+    </td>
+    <td className="py-3 px-6 text-center">
+      <div className="h-6 bg-gray-300 rounded-full w-16 mx-auto"></div>
+    </td>
+    <td className="py-3 px-6 text-center">
+      <div className="h-4 bg-gray-300 rounded w-20 mx-auto"></div>
+    </td>
+    <td className="py-3 px-6 text-center">
+      <div className="h-8 w-16 bg-gray-300 rounded-2xl mx-auto"></div>
+    </td>
+    <td className="py-3 px-6 text-center">
+      <div className="h-8 w-16 bg-gray-300 rounded-2xl mx-auto"></div>
     </td>
   </tr>
 );
@@ -182,14 +221,27 @@ function AdminDashboard(){
 
   const apiUrl = import.meta.env.VITE_API_URL;
 
-  const loggedinusertype = JSON.parse(localStorage.getItem('currentuser'));
+  // Memoize the user type to prevent JSON.parse on every render
+  const loggedinusertype = useMemo(() => {
+    try {
+      return JSON.parse(localStorage.getItem('currentuser'));
+    } catch {
+      return null;
+    }
+  }, []);
   
-  // Debug logging to check the user role
-  console.log('Current user from localStorage:', loggedinusertype);
-  console.log('User role:', loggedinusertype?.role);
+  // Smart caching with real-time updates for admin data - memoized to prevent re-initialization
+  const smartCacheInstance = useSmartCache();
+  const { smartFetch, realtimeUpdates, CACHE_DURATIONS } = smartCacheInstance;
   
-  // Smart caching with real-time updates for admin data
-  const { smartFetch, realtimeUpdates, CACHE_DURATIONS } = useSmartCache();
+  // Image optimization hook for better performance
+  const {
+    preloadAllImages,
+    getImageProps,
+    manageCacheSize,
+    isImageLoaded,
+    loadingProgress
+  } = useImageOptimization();
   
 
 
@@ -210,7 +262,7 @@ function AdminDashboard(){
 
 
   
-  //Retrieveing Data from useAuth Hook
+  //Retrieveing Data from useAuth Hook - Memoized to prevent re-initialization
   const {stafflogout, fetchstaffdetails} = useStaffAuth();
   const {ownerlogout, fetchownerdetails} = useOwnerAuth();
   const {adminlogout, fetchadmindetails} = useAdminAuth();
@@ -219,17 +271,18 @@ function AdminDashboard(){
   const [staffclinic, setStaffClinic] = useState('');
   const [currentUserClinic, setCurrentUserClinic] = useState('');
 
+  // Memoize these to prevent recalculation on every render
+  const currentusertoken = useMemo(() => 
+    localStorage.getItem("stafftoken") ||
+    localStorage.getItem("ownertoken") ||
+    localStorage.getItem("admintoken"), []
+  );
 
-  const currentusertoken = localStorage.getItem("stafftoken") ||
-                           localStorage.getItem("ownertoken") ||
-                           localStorage.getItem("admintoken");
-
-
-
-  
-  const currentuserloggedin = localStorage.getItem("stafftoken") ? "Staff" :
-                              localStorage.getItem("ownertoken") ? "Owner" :
-                              localStorage.getItem("admintoken") ? "Admin" : null;
+  const currentuserloggedin = useMemo(() => 
+    localStorage.getItem("stafftoken") ? "Staff" :
+    localStorage.getItem("ownertoken") ? "Owner" :
+    localStorage.getItem("admintoken") ? "Admin" : null, []
+  );
 
   // Helper function to determine if user should see only Ambher Optical data
   const isAmbherOnlyUser = () => {
@@ -261,57 +314,63 @@ function AdminDashboard(){
 
 
   
+  // Track if user data has been loaded to prevent infinite re-renders
+  const [userDataLoaded, setUserDataLoaded] = useState(false);
+  
+  // Load user data once on component mount - avoiding auth function dependencies
   useEffect(() => {
-    const loaduser = async () => {
-    let data;
+    if (userDataLoaded || !currentuserloggedin) return;
 
-      if(currentuserloggedin === "Admin"){
-        data = await fetchadmindetails();
+    const loadUser = async () => {
+      try {
+        let data;
+
+        if(currentuserloggedin === "Admin"){
+          data = await fetchadmindetails();
+          
+          if(data) {
+            setadminfirstname(data.adminfirstname || '');
+            setadminmiddlename(data.adminmiddlename || '');
+            setadminlastname(data.adminlastname || '');
+            setadminprofilepicture(data.adminprofilepicture || '');
+            setadmintype(data.role || '');
+          }
+        }
+        else if(currentuserloggedin === "Staff"){
+          data = await fetchstaffdetails();
+          
+          if(data) {
+            setadminfirstname(data.stafffirstname || '');
+            setadminmiddlename(data.staffmiddlename || '');
+            setadminlastname(data.stafflastname || '');
+            setadminprofilepicture(data.staffprofilepicture || '');
+            setStaffClinic(data.staffclinic || '');
+            setCurrentUserClinic(data.staffclinic || '');
+            setadmintype(data.role || '');
+          }
+        }
+        else if(currentuserloggedin === "Owner"){
+          data = await fetchownerdetails();
+          if(data) {
+            setadminfirstname(data.ownerfirstname || '');
+            setadminmiddlename(data.ownermiddlename || '');
+            setadminlastname(data.ownerlastname || '');
+            setadminprofilepicture(data.ownerprofilepicture || '');
+            setownerownedclinic(data.ownerclinic || '');
+            setCurrentUserClinic(data.ownerclinic || '');
+            setadmintype(data.role || '');
+          }
+        }
         
-        if(data) {
-          setadminfirstname(data.adminfirstname || '');
-          setadminmiddlename(data.adminmiddlename || '');
-          setadminlastname(data.adminlastname || '');
-          setadminprofilepicture(data.adminprofilepicture || '');
-          setadmintype(data.role || '');
-        }
+        setUserDataLoaded(true);
+      } catch (error) {
+        console.error('Error loading user data:', error);
+        setUserDataLoaded(true); // Still mark as loaded to prevent infinite retry
       }
-
-
-      else if(currentuserloggedin === "Staff"){
-        data = await fetchstaffdetails();
-        
-        if(data) {
-          setadminfirstname(data.stafffirstname || '');
-          setadminmiddlename(data.staffmiddlename || '');
-          setadminlastname(data.stafflastname || '');
-          setadminprofilepicture(data.staffprofilepicture || '');
-          setStaffClinic(data.staffclinic || '');
-          setCurrentUserClinic(data.staffclinic || '');
-          setadmintype(data.role || '');
-        }
-      }
-
-      else if(currentuserloggedin === "Owner"){
-        data = await fetchownerdetails();
-        if(data) {
-          setadminfirstname(data.ownerfirstname || '');
-          setadminmiddlename(data.ownermiddlename || '');
-          setadminlastname(data.ownerlastname || '');
-          setadminprofilepicture(data.ownerprofilepicture || '');
-          setownerownedclinic(data.ownerclinic || '');
-          setCurrentUserClinic(data.ownerclinic || '');
-          setadmintype(data.role || '');
-        }
-      }
-
- 
-
-
     };
 
-    loaduser();
-  }, [fetchadmindetails, fetchownerdetails, fetchstaffdetails, currentuserloggedin]);
+    loadUser();
+  }, []); // Empty dependency array - run only once on mount
 
 
 
@@ -320,14 +379,12 @@ function AdminDashboard(){
 
 
 
-  // Check if user role is admin - enhanced detection
-  const isAdminRole = loggedinusertype?.role === 'admin' || 
-                      loggedinusertype?.role === 'Admin' ||
-                      localStorage.getItem('admintoken') !== null;
-  
-  console.log('isAdminRole:', isAdminRole);
-  console.log('Admin token exists:', localStorage.getItem('admintoken') !== null);
-  console.log('All localStorage keys:', Object.keys(localStorage));
+  // Check if user role is admin - enhanced detection (memoized to prevent recalculation)
+  const isAdminRole = useMemo(() => {
+    return loggedinusertype?.role === 'admin' || 
+           loggedinusertype?.role === 'Admin' ||
+           localStorage.getItem('admintoken') !== null;
+  }, [loggedinusertype?.role]);
   
   // For testing: uncomment the line below to force admin view
   // const isAdminRole = true;
@@ -514,19 +571,21 @@ function AdminDashboard(){
 
   if (loadingpatients) {
     return (
-      <div className="space-y-4">
+      <>
         {[...Array(5)].map((_, index) => (
           <TableRowSkeleton key={index} />
         ))}
-      </div>
+      </>
     );
   }
 
   if (failedloadingpatients) {
     return (
-      <div className="p-4 bg-red-50 text-red-600 rounded-lg">
-        Error: {failedloadingpatients}
-      </div>
+      <tr>
+        <td colSpan="10" className="p-4 bg-red-50 text-red-600 text-center">
+          Error: {failedloadingpatients}
+        </td>
+      </tr>
     );
   }
 
@@ -534,9 +593,11 @@ function AdminDashboard(){
 
   if(searchpatients && filteredpatients.length == 0){
     return(
-      <div className="rounded-2xl py-6 px-4 bg-yellow-50 text-yellow-600">
-        No patients found.
-      </div>
+      <tr>
+        <td colSpan="10" className="rounded-2xl py-6 px-4 bg-yellow-50 text-yellow-600 text-center">
+          No patients found.
+        </td>
+      </tr>
     )
   }
 
@@ -556,16 +617,15 @@ function AdminDashboard(){
             <th className="pb-3 pt-3 pl-2 pr-2 text-center">Email</th>
 
             <th className="pb-3 pt-3 pl-2 pr-2 text-center">isVerified</th>
-            <th className="pb-3 pt-3 pl-2 pr-2 text-center">Date Created</th>
-            <th className="pb-3 pt-3 text-center pr-3"></th>
-            <th className="pb-3 pt-3 text-center pr-3 rounded-tr-2xl"></th>
+            <th className="pb-3 pt-3 pl-2 pr-2 text-center">Date Created</th>          
+            <th className="pb-3 pt-3 text-center pr-3 rounded-tr-2xl">Actions</th>
 
           </tr>
         </thead>
         
         <tbody className="divide-y divide-gray-200 bg-white">
         {patientstorender.map((patient) => (
-            <tr key={patient._id}  className="hover:bg-gray-100  transition-all duration-300 ease-in-out hover:cursor-pointer ">
+            <tr key={patient._id}  className="hover:bg-gray-100  items-center justify-center transition-all duration-300 ease-in-out hover:cursor-pointer ">
               <td  className="py-3 px-6 text-[#3a3a3a] font-albertsans font-medium ">#{patient.patientId}</td>
               <td  className="py-3 px-6 text-center">
                 <div className="flex justify-center">
@@ -574,7 +634,7 @@ function AdminDashboard(){
                   alt="Profile" 
                   className="w-12 h-12 rounded-full object-cover"
                   onError={(e) => {
-                    e.target.src = 'default-profile-url'; // Fallback image
+                    e.target.src = 'default-profile-url'; 
                   }}
                 />
                 </div>
@@ -600,7 +660,8 @@ function AdminDashboard(){
                   year: 'numeric'
                 })}
               </td>
-              <td><div onClick={() =>  {
+              <td className="py-3 px-6 text-[#171717] text-center font-albertsans font-medium whitespace-nowrap flex items-center justify-center gap-2">
+                <div onClick={() =>  {
                 setselectededitpatientaccount({
                    id: patient._id,
                    email: patient.patientemail,
@@ -623,9 +684,9 @@ function AdminDashboard(){
                 setpreviewimage(patient.patientprofilepicture);
                 setshowviewpatientdialog(true);}}
 
-               className="bg-[#383838]  hover:bg-[#595959]  mr-2 transition-all duration-300 ease-in-out flex justify-center items-center py-2 px-5 rounded-2xl hover:cursor-pointer"><i className="bx bxs-pencil text-white mr-1"/><h1 className="text-white">Edit</h1></div></td>
-  
-              <td><div onClick={() =>  {
+               className="bg-[#383838]  hover:bg-[#595959]  mr-2 transition-all duration-300 ease-in-out flex justify-center items-center py-2 px-5 rounded-2xl hover:cursor-pointer"><i className="bx bxs-pencil text-white mr-1"/><h1 className="text-white">Edit</h1></div>
+               
+               <div onClick={() =>  {
                 setselectedpatientaccount({
                    id: patient.patientId,
                    email: patient.patientemail,
@@ -633,7 +694,13 @@ function AdminDashboard(){
                             
                 setshowdeletepatientdialog(true);}}
 
-               className="bg-[#8c3226] hover:bg-[#ab4f43]  transition-all duration-300 ease-in-out flex justify-center items-center py-2 px-5 rounded-2xl hover:cursor-pointer"><i className="bx bxs-trash text-white mr-1"/><h1 className="text-white">Delete</h1></div></td>
+               className="bg-[#8c3226] hover:bg-[#ab4f43]  transition-all duration-300 ease-in-out flex justify-center items-center py-2 px-5 rounded-2xl hover:cursor-pointer"><i className="bx bxs-trash text-white mr-1"/><h1 className="text-white">Delete</h1></div>
+               
+               
+               
+               </td>
+  
+
 
 
               </tr>
@@ -1088,34 +1155,33 @@ const [showaddstaffdialog, setshowaddstaffdialog] = useState(false);
 
   //Fetching staff list and data from database
   useEffect(() => {
-    if(activeaccounttable === 'staffaccounttable'){
+    const fetchstaffs = async () => {
+      try{
 
-      const fetchstaffs = async () => {
-        try{
-
-          const fetchresponse = await fetch('/api/staffaccounts', {
-            headers: {
-              'Authorization': `Bearer ${currentusertoken}`
-            }
-          });
-          
-          if(!fetchresponse.ok){
-            throw new Error("Failed to fetch staff accounts");
+        const fetchresponse = await fetch('/api/staffaccounts', {
+          headers: {
+            'Authorization': `Bearer ${currentusertoken}`
           }
-
-          const staffdata = await fetchresponse.json();
-          setstaffs(staffdata);
+        });
         
-        }catch(error){
-          setfailedloadingstaffs(error.message);
-        }finally{
-          setloadingstaffs(false);
+        if(!fetchresponse.ok){
+          throw new Error("Failed to fetch staff accounts");
         }
-      };
-      fetchstaffs();
 
+        const staffdata = await fetchresponse.json();
+        setstaffs(staffdata);
+      
+      }catch(error){
+        setfailedloadingstaffs(error.message);
+      }finally{
+        setloadingstaffs(false);
+      }
+    };
+    
+    if(currentusertoken) {
+      fetchstaffs();
     }
-  }, [activeaccounttable]);
+  }, [currentusertoken]);
 
   //staff Filter
   useEffect(() => {
@@ -1125,37 +1191,6 @@ const [showaddstaffdialog, setshowaddstaffdialog] = useState(false);
   const renderstaffaccounts = () => {
 
   const staffstorender = searchstaffs ? filteredstaffs : staffs;
-
-  if (loadingstaffs) {
-    return (
-      <div className="space-y-4">
-        {[...Array(5)].map((_, index) => (
-          <TableRowSkeleton key={index} />
-        ))}
-      </div>
-    );
-  }
-
-  if (failedloadingstaffs) {
-    return (
-      <div className="p-4 bg-red-50 text-red-600 rounded-lg">
-        Error: {failedloadingstaffs}
-      </div>
-    );
-  }
-
-
-
-  if(searchstaffs && filteredstaffs.length == 0){
-    return(
-      <div className="rounded-2xl py-6 px-4 bg-yellow-50 text-yellow-600">
-        No staffs found.
-      </div>
-    )
-  }
-
-
-
 
   return (
     <div className="overflow-x-auto w-full h-full">
@@ -1171,7 +1206,9 @@ const [showaddstaffdialog, setshowaddstaffdialog] = useState(false);
             <th className="pb-3 pt-3 pl-2 pr-2 text-center">Clinic</th>
             <th className="pb-3 pt-3 pl-2 pr-2 text-center">Eye Specialist</th>
             <th className="pb-3 pt-3 pl-2 pr-2 text-center">isVerified</th>
-            <th className={`pb-3 pt-3 pl-2 pr-2 text-center ${currentuserloggedin === "Staff" ? "rounded-tr-2xl" : ""}`}>Date Created</th>
+            <th className="pb-3 pt-3 pl-2 pr-2 text-center">Date Created</th>
+            <th className="pb-3 pt-3 pl-2 pr-2 text-center rounded-tr-2xl">Actions</th>
+
             {currentuserloggedin !== "Staff" && (
               <>
                 <th className="pb-3 pt-3 text-center pr-3"></th>
@@ -1182,7 +1219,31 @@ const [showaddstaffdialog, setshowaddstaffdialog] = useState(false);
         </thead>
         
         <tbody className="divide-y divide-gray-200 bg-white">
-        {staffstorender.map((staff) => (
+          {loadingstaffs && (
+            <>
+              {[...Array(5)].map((_, index) => (
+                <TableRowSkeleton key={index} />
+              ))}
+            </>
+          )}
+
+          {failedloadingstaffs && (
+            <tr>
+              <td colSpan="12" className="p-4 bg-red-50 text-red-600 text-center">
+                Error: {failedloadingstaffs}
+              </td>
+            </tr>
+          )}
+
+          {(!loadingstaffs && !failedloadingstaffs && searchstaffs && filteredstaffs.length === 0) && (
+            <tr>
+              <td colSpan="12" className="rounded-2xl py-6 px-4 bg-yellow-50 text-yellow-600 text-center">
+                No staffs found.
+              </td>
+            </tr>
+          )}
+
+          {(!loadingstaffs && !failedloadingstaffs && staffstorender.length > 0) && staffstorender.map((staff) => (
             <tr key={staff._id}  className="hover:bg-gray-100  transition-all duration-300 ease-in-out hover:cursor-pointer ">
               <td  className="py-3 px-6 text-[#3a3a3a] font-albertsans font-medium ">#{staff.staffId}</td>
               <td  className="py-3 px-6 text-center">
@@ -1716,34 +1777,33 @@ const [showaddstaffdialog, setshowaddstaffdialog] = useState(false);
   
     //Fetching owner list and data from database
     useEffect(() => {
-      if(activeaccounttable === 'owneraccounttable'){
-  
-        const fetchowners = async () => {
-          try{
-  
-            const fetchresponse = await fetch('/api/owneraccounts', {
-              headers: {
-                'Authorization': `Bearer ${currentusertoken}`
-              }
-            });
-            
-            if(!fetchresponse.ok){
-              throw new Error("Failed to fetch owner accounts");
+      const fetchowners = async () => {
+        try{
+
+          const fetchresponse = await fetch('/api/owneraccounts', {
+            headers: {
+              'Authorization': `Bearer ${currentusertoken}`
             }
-  
-            const ownerdata = await fetchresponse.json();
-            setowners(ownerdata);
+          });
           
-          }catch(error){
-            setfailedloadingowners(error.message);
-          }finally{
-            setloadingowners(false);
+          if(!fetchresponse.ok){
+            throw new Error("Failed to fetch owner accounts");
           }
-        };
+
+          const ownerdata = await fetchresponse.json();
+          setowners(ownerdata);
+        
+        }catch(error){
+          setfailedloadingowners(error.message);
+        }finally{
+          setloadingowners(false);
+        }
+      };
+      
+      if(currentusertoken) {
         fetchowners();
-  
       }
-    }, [activeaccounttable]);
+    }, [currentusertoken]);
   
     //owner Filter
     useEffect(() => {
@@ -1753,37 +1813,6 @@ const [showaddstaffdialog, setshowaddstaffdialog] = useState(false);
     const renderowneraccounts = () => {
   
     const ownerstorender = searchowners ? filteredowners : owners;
-  
-    if (loadingowners) {
-      return (
-        <div className="space-y-4">
-          {[...Array(5)].map((_, index) => (
-            <TableRowSkeleton key={index} />
-          ))}
-        </div>
-      );
-    }
-  
-    if (failedloadingowners) {
-      return (
-        <div className="p-4 bg-red-50 text-red-600 rounded-lg">
-          Error: {failedloadingowners}
-        </div>
-      );
-    }
-  
-  
-  
-    if(searchowners && filteredowners.length == 0){
-      return(
-        <div className="rounded-2xl py-6 px-4 bg-yellow-50 text-yellow-600">
-          No owners found.
-        </div>
-      )
-    }
-  
-  
-  
   
     return (
       <div className="overflow-x-auto w-full h-full">
@@ -1811,7 +1840,31 @@ const [showaddstaffdialog, setshowaddstaffdialog] = useState(false);
           </thead>
           
           <tbody className="divide-y divide-gray-200 bg-white">
-          {ownerstorender.map((owner) => (
+            {loadingowners && (
+              <>
+                {[...Array(5)].map((_, index) => (
+                  <TableRowSkeleton key={index} />
+                ))}
+              </>
+            )}
+
+            {failedloadingowners && (
+              <tr>
+                <td colSpan="12" className="p-4 bg-red-50 text-red-600 text-center">
+                  Error: {failedloadingowners}
+                </td>
+              </tr>
+            )}
+
+            {(!loadingowners && !failedloadingowners && searchowners && filteredowners.length === 0) && (
+              <tr>
+                <td colSpan="12" className="rounded-2xl py-6 px-4 bg-yellow-50 text-yellow-600 text-center">
+                  No owners found.
+                </td>
+              </tr>
+            )}
+
+            {(!loadingowners && !failedloadingowners && ownerstorender.length > 0) && ownerstorender.map((owner) => (
               <tr key={owner._id}  className="hover:bg-gray-100  transition-all duration-300 ease-in-out hover:cursor-pointer ">
                 <td  className="py-3 px-6 text-[#3a3a3a] font-albertsans font-medium ">#{owner.ownerId}</td>
                 <td  className="py-3 px-6 text-center">
@@ -2346,34 +2399,33 @@ const filteradminaccount = useCallback(searchadmindebounce((term) => {
 
 //Fetching admin list and data from database
 useEffect(() => {
-  if(activeaccounttable === 'administratoraccounttable'){
+  const fetchadmins = async () => {
+    try{
 
-    const fetchadmins = async () => {
-      try{
-
-        const fetchresponse = await fetch('/api/adminaccounts', {
-          headers: {
-            'Authorization': `Bearer ${currentusertoken}`
-          }
-        });
-        
-        if(!fetchresponse.ok){
-          throw new Error("Failed to fetch admin accounts");
+      const fetchresponse = await fetch('/api/adminaccounts', {
+        headers: {
+          'Authorization': `Bearer ${currentusertoken}`
         }
-
-        const admindata = await fetchresponse.json();
-        setadmins(admindata);
+      });
       
-      }catch(error){
-        setfailedloadingadmins(error.message);
-      }finally{
-        setloadingadmins(false);
+      if(!fetchresponse.ok){
+        throw new Error("Failed to fetch admin accounts");
       }
-    };
-    fetchadmins();
 
+      const admindata = await fetchresponse.json();
+      setadmins(admindata);
+    
+    }catch(error){
+      setfailedloadingadmins(error.message);
+    }finally{
+      setloadingadmins(false);
+    }
+  };
+  
+  if(currentusertoken) {
+    fetchadmins();
   }
-}, [activeaccounttable]);
+}, [currentusertoken]);
 
 //admin Filter
 useEffect(() => {
@@ -2383,37 +2435,6 @@ useEffect(() => {
 const renderadminaccounts = () => {
 
 const adminstorender = searchadmins ? filteredadmins : admins;
-
-if (loadingadmins) {
-  return (
-    <div className="space-y-4">
-      {[...Array(5)].map((_, index) => (
-        <TableRowSkeleton key={index} />
-      ))}
-    </div>
-  );
-}
-
-if (failedloadingadmins) {
-  return (
-    <div className="p-4 bg-red-50 text-red-600 rounded-lg">
-      Error: {failedloadingadmins}
-    </div>
-  );
-}
-
-
-
-if(searchadmins && filteredadmins.length == 0){
-  return(
-    <div className="rounded-2xl py-6 px-4 bg-yellow-50 text-yellow-600">
-      No admins found.
-    </div>
-  )
-}
-
-
-
 
 return (
   <div className="overflow-x-auto w-full h-full">
@@ -2439,7 +2460,31 @@ return (
       </thead>
       
       <tbody className="divide-y divide-gray-200 bg-white">
-      {adminstorender.map((admin) => (
+        {loadingadmins && (
+          <>
+            {[...Array(5)].map((_, index) => (
+              <AdminTableRowSkeleton key={index} />
+            ))}
+          </>
+        )}
+
+        {failedloadingadmins && (
+          <tr>
+            <td colSpan="10" className="p-4 bg-red-50 text-red-600 text-center">
+              Error: {failedloadingadmins}
+            </td>
+          </tr>
+        )}
+
+        {(!loadingadmins && !failedloadingadmins && searchadmins && filteredadmins.length === 0) && (
+          <tr>
+            <td colSpan="10" className="rounded-2xl py-6 px-4 bg-yellow-50 text-yellow-600 text-center">
+              No admins found.
+            </td>
+          </tr>
+        )}
+
+        {(!loadingadmins && !failedloadingadmins && adminstorender.length > 0) && adminstorender.map((admin) => (
           <tr key={admin._id}  className="hover:bg-gray-100  transition-all duration-300 ease-in-out hover:cursor-pointer ">
             <td  className="py-3 px-6 text-[#3a3a3a] font-albertsans font-medium ">#{admin.adminId}</td>
             <td  className="py-3 px-6 text-center">
@@ -7590,9 +7635,9 @@ const submitpatientpendingorderbautista = async (e) => {
         {/*Patient Account Table*/} {/*Patient Account Table*/} {/*Patient Account Table*/} {/*Patient Account Table*/} {/*Patient Account Table*/} {/*Patient Account Table*/} {/*Patient Account Table*/} {/*Patient Account Table*/} {/*Patient Account Table*/} 
                  { (activeaccounttable === 'patientaccounttable' && !isAdminRole) && ( <div id="patientaccounttable" className="animate-fadeInUp flex flex-col items-center border-t-2  border-[#909090] w-[100%] h-[83%] rounded-2xl mt-5" >
     
-                      <div className=" mt-5  w-full h-[60px] flex justify-between rounded-3xl pl-5 pr-5">              
-                      <div className="flex justify-center items-center"><h2 className="font-albertsans font-bold text-[20px] text-[#434343] mr-3 ">Search: </h2><div className="relative flex items-center justify-center gap-3"><i className="bx bx-search absolute left-3 text-2xl text-gray-500"></i><input type="text" placeholder="Enter here..." value={searchpatients} onChange={(e) => {setsearchpatients(e.target.value); filterpatientaccount(e.target.value);}} className="transition-all duration-300 ease-in-out py-2 pl-10 rounded-3xl border-2 border-[#6c6c6c] focus:bg-slate-100 focus:outline-sky-500"></input></div></div>
-                      <div onClick={() => setshowaddpatientdialog(true)}  className=" mt-1 mb-1 hover:cursor-pointer hover:scale-103 bg-[#4ca22b] rounded-3xl flex justify-center items-center pl-3 pr-3 transition-all duration-300 ease-in-out"><i className="bx bx-user-plus text-white font-bold text-[30px]"/><p className="font-bold font-albertsans text-white text-[18px] ml-2">Add Patient</p></div>
+                      <div className=" mt-5  w-full h-[60px] flex justify-between gap-10 rounded-3xl pl-5 pr-5">              
+                      <div className="ml-2 w-full flex items-center"><h2 className="font-albertsans font-bold text-[18px] text-[#383838] mr-3 ">Search: </h2><div className="relative w-full flex items-center justify-center gap-3"><i className="bx bx-search absolute left-3 text-2xl text-gray-500"></i><input type="text" placeholder="Enter patient name..." value={searchpatients} onChange={(e) => {setsearchpatients(e.target.value); filterpatientaccount(e.target.value);}} className="transition-all duration-300 ease-in-out py-2 pl-10 w-full rounded-2xl bg-[#e4e4e4] focus:bg-slate-100 focus:outline-sky-500"></input></div></div>
+                      <div onClick={() => setshowaddpatientdialog(true)}  className="w-70 mt-1 mb-1 hover:cursor-pointer hover:scale-103 bg-[#4ca22b] rounded-3xl flex justify-center items-center px-5 transition-all duration-300 ease-in-out"><i className="bx bx-user-plus text-white font-bold text-[30px]"/><p className="font-bold font-albertsans text-white text-[18px] ml-2">Add Patient</p></div>
                       </div>
 
                       <div className=" rounded-3xl h-full w-full mt-2 bg-[#f7f7f7]">
@@ -7862,7 +7907,7 @@ const submitpatientpendingorderbautista = async (e) => {
                  { (activeaccounttable === 'staffaccounttable' && !isAdminRole) && ( <div id="staffaccounttable" className="animate-fadeInUp flex flex-col items-center border-t-2  border-[#909090] w-[100%] h-[83%] rounded-2xl mt-5" >
     
     <div className=" mt-5  w-full h-[60px] flex justify-between rounded-3xl pl-5 pr-5">              
-    <div className="flex justify-center items-center"><h2 className="font-albertsans font-bold text-[20px] text-[#434343] mr-3 ">Search: </h2><div className="relative flex items-center justify-center gap-3"><i className="bx bx-search absolute left-3 text-2xl text-gray-500"></i><input type="text" placeholder="Enter here..." value={searchstaffs} onChange={(e) => {setsearchstaffs(e.target.value); filterstaffaccount(e.target.value);}} className="transition-all duration-300 ease-in-out py-2 pl-10 rounded-3xl border-2 border-[#6c6c6c] focus:bg-slate-100 focus:outline-sky-500"></input></div></div>
+    <div className="ml-2 w-full flex items-center"><h2 className="font-albertsans font-bold text-[18px] text-[#383838] mr-3 ">Search: </h2><div className="relative w-full flex items-center justify-center gap-3"><i className="bx bx-search absolute left-3 text-2xl text-gray-500"></i><input type="text" placeholder="Enter staff name..." value={searchstaffs} onChange={(e) => {setsearchstaffs(e.target.value); filterstaffaccount(e.target.value);}} className="transition-all duration-300 ease-in-out py-2 pl-10 w-full rounded-2xl bg-[#e4e4e4] focus:bg-slate-100 focus:outline-sky-500"></input></div></div>
     {currentuserloggedin !== "Staff" && (
       <div onClick={() => setshowaddstaffdialog(true)}  className=" mt-1 mb-1 hover:cursor-pointer hover:scale-103 bg-[#4ca22b] rounded-3xl flex justify-center items-center pl-3 pr-3 transition-all duration-300 ease-in-out"><i className="bx bx-user-plus text-white font-bold text-[30px]"/><p className="font-bold font-albertsans text-white text-[18px] ml-2">Add Staff</p></div>
     )}
@@ -8138,7 +8183,7 @@ const submitpatientpendingorderbautista = async (e) => {
                  { activeaccounttable === 'owneraccounttable' && ( <div id="owneraccounttable" className="animate-fadeInUp flex flex-col items-center border-t-2  border-[#909090] w-[100%] h-[83%] rounded-2xl mt-5" >
     
     <div className=" mt-5  w-full h-[60px] flex justify-between rounded-3xl pl-5 pr-5">              
-    <div className="flex justify-center items-center"><h2 className="font-albertsans font-bold text-[20px] text-[#434343] mr-3 ">Search: </h2><div className="relative flex items-center justify-center gap-3"><i className="bx bx-search absolute left-3 text-2xl text-gray-500"></i><input type="text" placeholder="Enter here..." value={searchowners} onChange={(e) => {setsearchowners(e.target.value); filterowneraccount(e.target.value);}} className="transition-all duration-300 ease-in-out py-2 pl-10 rounded-3xl border-2 border-[#6c6c6c] focus:bg-slate-100 focus:outline-sky-500"></input></div></div>
+    <div className="ml-2 w-full flex items-center"><h2 className="font-albertsans font-bold text-[18px] text-[#383838] mr-3 ">Search: </h2><div className="relative w-full flex items-center justify-center gap-3"><i className="bx bx-search absolute left-3 text-2xl text-gray-500"></i><input type="text" placeholder="Enter owner name..." value={searchowners} onChange={(e) => {setsearchowners(e.target.value); filterowneraccount(e.target.value);}} className="transition-all duration-300 ease-in-out py-2 pl-10 w-full rounded-2xl bg-[#e4e4e4] focus:bg-slate-100 focus:outline-sky-500"></input></div></div>
     {currentuserloggedin !== "Staff" && (
       <div onClick={() => setshowaddownerdialog(true)}  className=" mt-1 mb-1 hover:cursor-pointer hover:scale-103 bg-[#4ca22b] rounded-3xl flex justify-center items-center pl-3 pr-3 transition-all duration-300 ease-in-out"><i className="bx bx-user-plus text-white font-bold text-[30px]"/><p className="font-bold font-albertsans text-white text-[18px] ml-2">Add Owner</p></div>
     )}
@@ -8428,7 +8473,7 @@ const submitpatientpendingorderbautista = async (e) => {
                  { activeaccounttable === 'administratoraccounttable' && ( <div id="administratoraccounttable" className="animate-fadeInUp flex flex-col items-center border-t-2  border-[#909090] w-[100%] h-[83%] rounded-2xl mt-5" >
     
     <div className=" mt-5  w-full h-[60px] flex justify-between rounded-3xl pl-5 pr-5">              
-    <div className="flex justify-center items-center"><h2 className="font-albertsans font-bold text-[20px] text-[#434343] mr-3 ">Search: </h2><div className="relative flex items-center justify-center gap-3"><i className="bx bx-search absolute left-3 text-2xl text-gray-500"></i><input type="text" placeholder="Enter here..." value={searchadmins} onChange={(e) => {setsearchadmins(e.target.value); filteradminaccount(e.target.value);}} className="transition-all duration-300 ease-in-out py-2 pl-10 rounded-3xl border-2 border-[#6c6c6c] focus:bg-slate-100 focus:outline-sky-500"></input></div></div>
+    <div className="ml-2 w-full flex items-center"><h2 className="font-albertsans font-bold text-[18px] text-[#383838] mr-3 ">Search: </h2><div className="relative w-full flex items-center justify-center gap-3"><i className="bx bx-search absolute left-3 text-2xl text-gray-500"></i><input type="text" placeholder="Enter admin name..." value={searchadmins} onChange={(e) => {setsearchadmins(e.target.value); filteradminaccount(e.target.value);}} className="transition-all duration-300 ease-in-out py-2 pl-10 w-full rounded-2xl bg-[#e4e4e4] focus:bg-slate-100 focus:outline-sky-500"></input></div></div>
     {currentuserloggedin !== "Staff" && (
       <div onClick={() => setshowaddadmindialog(true)}  className=" mt-1 mb-1 hover:cursor-pointer hover:scale-103 bg-[#4ca22b] rounded-3xl flex justify-center items-center pl-3 pr-3 transition-all duration-300 ease-in-out"><i className="bx bx-user-plus text-white font-bold text-[30px]"/><p className="font-bold font-albertsans text-white text-[18px] ml-2">Add Admin</p></div>
     )}
@@ -8723,7 +8768,7 @@ const submitpatientpendingorderbautista = async (e) => {
  { activeprofiletable === 'patientprofiletable' && ( <div id="patientprofiletable" className="animate-fadeInUp flex flex-col items-center border-t-2  border-[#909090] w-[100%] h-[83%] rounded-2xl mt-5" >
 
   <div className=" mt-5  w-full h-[60px] flex justify-between rounded-3xl pl-5 pr-5">              
-     <div className="flex justify-center items-center"><h2 className="font-albertsans font-bold text-[20px] text-[#434343] mr-3 ">Search: </h2><div className="relative flex items-center justify-center gap-3"><i className="bx bx-search absolute left-3 text-2xl text-gray-500"></i><input type="text" placeholder="Enter here..." value={searchpatients} onChange={(e) => {setsearchpatients(e.target.value); filterpatientaccount(e.target.value);}} className="transition-all duration-300 ease-in-out py-2 pl-10 rounded-3xl border-2 border-[#6c6c6c] focus:bg-slate-100 focus:outline-sky-500"></input></div></div>
+     <div className="ml-2 w-full flex items-center"><h2 className="font-albertsans font-bold text-[18px] text-[#383838] mr-3 ">Search: </h2><div className="relative w-full flex items-center justify-center gap-3"><i className="bx bx-search absolute left-3 text-2xl text-gray-500"></i><input type="text" placeholder="Enter patient name..." value={searchpatients} onChange={(e) => {setsearchpatients(e.target.value); filterpatientaccount(e.target.value);}} className="transition-all duration-300 ease-in-out py-2 pl-10 w-full rounded-2xl bg-[#e4e4e4] focus:bg-slate-100 focus:outline-sky-500"></input></div></div>
       <div onClick={() => setshowaddpatientprofile(true)}  className=" mt-1 mb-1 hover:cursor-pointer hover:scale-103 bg-[#4ca22b] rounded-3xl flex justify-center items-center pl-3 pr-3 transition-all duration-300 ease-in-out"><i className="bx bx-user-plus text-white font-bold text-[30px]"/><p className="font-bold font-albertsans text-white text-[18px] ml-2">Add Patient Profile</p></div>
        </div>
 
@@ -9145,7 +9190,7 @@ const submitpatientpendingorderbautista = async (e) => {
  { activeappointmentstable === 'allappointmentstable' && ( <div id="allappointmentstable" className="animate-fadeInUp flex flex-col items-center border-t-2  border-[#909090] w-[100%] h-[83%] rounded-2xl mt-5" >
 
       <div className=" mt-5  w-full h-[60px] flex justify-between rounded-3xl pl-5 pr-5">              
-      <div className="flex justify-center items-center"><h2 className="font-albertsans font-bold text-[20px] text-[#434343] mr-3 ">Search: </h2><div className="relative flex items-center justify-center gap-3"><i className="bx bx-search absolute left-3 text-2xl text-gray-500"></i><input type="text" placeholder="Enter here..." className="transition-all duration-300 ease-in-out py-2 pl-10 rounded-3xl border-2 border-[#6c6c6c] focus:bg-slate-100 focus:outline-sky-500"></input></div></div>
+      <div className="ml-2 w-full flex items-center"><h2 className="font-albertsans font-bold text-[18px] text-[#383838] mr-3 ">Search: </h2><div className="relative w-full flex items-center justify-center gap-3"><i className="bx bx-search absolute left-3 text-2xl text-gray-500"></i><input type="text" placeholder="Enter appointment details..." className="transition-all duration-300 ease-in-out py-2 pl-10 w-full rounded-2xl bg-[#e4e4e4] focus:bg-slate-100 focus:outline-sky-500"></input></div></div>
       </div>
 
       {loadingappointmens ? (
@@ -9819,7 +9864,7 @@ const submitpatientpendingorderbautista = async (e) => {
 { activeappointmentstable === 'ambherappointmentstable' && ( <div id="ambherappointmentstable" className="animate-fadeInUp flex flex-col items-center border-t-2  border-[#909090] w-[100%] h-[83%] rounded-2xl mt-5" >
 
 <div className=" mt-5  w-full h-[60px] flex justify-between rounded-3xl pl-5 pr-5">              
-    <div className="flex justify-center items-center"><h2 className="font-albertsans font-bold text-[20px] text-[#434343] mr-3 ">Search: </h2><div className="relative flex items-center justify-center gap-3"><i className="bx bx-search absolute left-3 text-2xl text-gray-500"></i><input type="text" placeholder="Enter here..." className="transition-all duration-300 ease-in-out py-2 pl-10 rounded-3xl border-2 border-[#6c6c6c] focus:bg-slate-100 focus:outline-sky-500"></input></div></div>
+    <div className="ml-2 w-full flex items-center"><h2 className="font-albertsans font-bold text-[18px] text-[#383838] mr-3 ">Search: </h2><div className="relative w-full flex items-center justify-center gap-3"><i className="bx bx-search absolute left-3 text-2xl text-gray-500"></i><input type="text" placeholder="Enter appointment details..." className="transition-all duration-300 ease-in-out py-2 pl-10 w-full rounded-2xl bg-[#e4e4e4] focus:bg-slate-100 focus:outline-sky-500"></input></div></div>
     </div>
 
     {loadingappointmens ? (
@@ -10225,7 +10270,7 @@ ${selectedpatientappointment.patientambherappointmentstatus === 'Cancelled' ? 'b
 {/*Bautista Appointments Table*/}{/*Bautista Appointments Table*/}{/*Bautista Appointments Table*/}{/*Bautista Appointments Table*/}{/*Bautista Appointments Table*/}{/*Bautista Appointments Table*/}
  { activeappointmentstable === 'bautistaappointmentstable' && ( <div id="bautistaappointmentstable" className="animate-fadeInUp flex flex-col items-center border-t-2  border-[#909090] w-[100%] h-[83%] rounded-2xl mt-5" >
   <div className=" mt-5  w-full h-[60px] flex justify-between rounded-3xl pl-5 pr-5">              
-    <div className="flex justify-center items-center"><h2 className="font-albertsans font-bold text-[20px] text-[#434343] mr-3 ">Search: </h2><div className="relative flex items-center justify-center gap-3"><i className="bx bx-search absolute left-3 text-2xl text-gray-500"></i><input type="text" placeholder="Enter here..." className="transition-all duration-300 ease-in-out py-2 pl-10 rounded-3xl border-2 border-[#6c6c6c] focus:bg-slate-100 focus:outline-sky-500"></input></div></div>
+    <div className="ml-2 w-full flex items-center"><h2 className="font-albertsans font-bold text-[18px] text-[#383838] mr-3 ">Search: </h2><div className="relative w-full flex items-center justify-center gap-3"><i className="bx bx-search absolute left-3 text-2xl text-gray-500"></i><input type="text" placeholder="Enter appointment details..." className="transition-all duration-300 ease-in-out py-2 pl-10 w-full rounded-2xl bg-[#e4e4e4] focus:bg-slate-100 focus:outline-sky-500"></input></div></div>
     </div>
 
     {loadingappointmens ? (
@@ -10670,7 +10715,7 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
  { activemedicalrecordstable === 'allmedicalrecordstable' && ( <div id="allmedicalrecordstable" className="animate-fadeInUp flex flex-col items-center border-t-2  border-[#909090] w-[100%] h-[90%] rounded-2xl mt-5" >
 
       <div className=" mt-5  w-full h-[60px] flex justify-between rounded-3xl pl-5 pr-5">              
-      <div className="flex justify-center items-center"><h2 className="font-albertsans font-bold text-[20px] text-[#434343] mr-3 ">Search: </h2><div className="relative flex items-center justify-center gap-3"><i className="bx bx-search absolute left-3 text-2xl text-gray-500"></i><input type="text" placeholder="Enter here..." className="transition-all duration-300 ease-in-out py-2 pl-10 rounded-3xl border-2 border-[#6c6c6c] focus:bg-slate-100 focus:outline-sky-500"></input></div></div>
+      <div className="ml-2 w-full flex items-center"><h2 className="font-albertsans font-bold text-[18px] text-[#383838] mr-3 ">Search: </h2><div className="relative w-full flex items-center justify-center gap-3"><i className="bx bx-search absolute left-3 text-2xl text-gray-500"></i><input type="text" placeholder="Enter medical record details..." className="transition-all duration-300 ease-in-out py-2 pl-10 w-full rounded-2xl bg-[#e4e4e4] focus:bg-slate-100 focus:outline-sky-500"></input></div></div>
       </div>
 
     {loadingappointmens ? (
@@ -11956,7 +12001,7 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
 
 
 
-         <div className="flex  items-start mt-5">
+         <div className="flex  items-start ">
           <div className="p-3 shadow-b-lg  rounded-2xl w-[20%] h-full  mr-2 overflow-y-auto overflow-x-hidden">
         
                 <div onClick={() => {setbautistainventorycategorynamebox(null); setshowaddbautistainventorycategorydialog(true);}}   className=" mt-1 mb-1 hover:cursor-pointer hover:scale-103 bg-[#383838] rounded-3xl flex justify-center items-center px-4 py-2 transition-all duration-300 ease-in-out"><p className="font-semibold font-albertsans text-white text-[18px] ml-2">Manage Categories</p></div>
@@ -12573,16 +12618,16 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
 
                 <div className="flex items-center"><i className="bx bxs-receipt text-[#184d85] text-[25px] mr-2"/> <h1 className=" font-albertsans font-bold text-[#184d85] text-[25px]">Billings and Orders</h1></div>
                 
-                <div className="flex justify-start items-center mt-3 h-[60px]">
+                <div className="flex justify-start items-center ">
                 
                 {/* Show Ambher Optical tab only if admin or Ambher user */}
                 {(currentuserloggedin === 'Admin' || isAmbherOnlyUser()) && (
-                  <div onClick={() => showbillingsandorderstable('ambherbillingsandorderstable')}  className={`opacity-0 hidden mr-3 hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 pb-3 pt-3 text-center flex justify-center items-center ${activebillingsandorderstable ==='ambherbillingsandorderstable' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d] ${activebillingsandorderstable ==='ambherbillingsandorderstable' ? 'text-white' : ''}`}>Ambher Optical</h1></div>
+                  <div onClick={() => showbillingsandorderstable('ambherbillingsandorderstable')}  className={`opacity-0 hidden mr-3 hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl  text-center flex justify-center items-center ${activebillingsandorderstable ==='ambherbillingsandorderstable' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d] ${activebillingsandorderstable ==='ambherbillingsandorderstable' ? 'text-white' : ''}`}>Ambher Optical</h1></div>
                 )}
                 
                 {/* Show Bautista Eye Center tab only if admin or Bautista user */}
                 {(currentuserloggedin === 'Admin' || isBautistaOnlyUser()) && (
-                  <div onClick={() => showbillingsandorderstable('bautistabillingsandorderstable')}  className={`opacity-0 hidden ml-3 hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 pb-3 pt-3 text-center flex justify-center items-center ${activebillingsandorderstable ==='bautistabillingsandorderstable' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d] ${activebillingsandorderstable ==='bautistabillingsandorderstable' ? 'text-white' : ''}`}>Bautista Eye Center</h1></div>
+                  <div onClick={() => showbillingsandorderstable('bautistabillingsandorderstable')}  className={`opacity-0 hidden ml-3 hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl  text-center flex justify-center items-center ${activebillingsandorderstable ==='bautistabillingsandorderstable' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d] ${activebillingsandorderstable ==='bautistabillingsandorderstable' ? 'text-white' : ''}`}>Bautista Eye Center</h1></div>
                 )}
                 
                 </div>
@@ -12687,7 +12732,7 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
 
 
                                 <div className=" p-2 w-[25%] max-h-145  ">  
-                                  <div className="ml-2 flex justify-center items-center"><h2 className="font-albertsans font-bold text-[18px] text-[#383838] mr-3 ">Search: </h2><div className="relative flex items-center justify-center gap-3"><i className="bx bx-search absolute left-3 text-2xl text-gray-500"></i><input onChange={(e) => setsearchpatientorderambherTerm(e.target.value)} value={searchpatientorderambherTerm} type="text" placeholder="Enter product name..."   className="transition-all duration-300 ease-in-out py-2 pl-10  rounded-2xl  bg-[#e4e4e4] focus:bg-slate-100 focus:outline-sky-500"></input></div></div>
+                                  <div className="ml-2 w-full flex items-center"><h2 className="font-albertsans font-bold text-[18px] text-[#383838] mr-3 ">Search: </h2><div className="relative w-full flex items-center justify-center gap-3"><i className="bx bx-search absolute left-3 text-2xl text-gray-500"></i><input onChange={(e) => setsearchpatientorderambherTerm(e.target.value)} value={searchpatientorderambherTerm} type="text" placeholder="Enter product name..." className="transition-all duration-300 ease-in-out py-2 pl-10 w-full rounded-2xl bg-[#e4e4e4] focus:bg-slate-100 focus:outline-sky-500"></input></div></div>
                                 <div className="mt-2 p-2 w-full max-h-138 overflow-y-auto  "> 
                 {ambherloadingproducts ? (
                   <div className="space-y-4">
@@ -13454,7 +13499,7 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
 
 
                                 <div className=" p-2 w-[25%] max-h-145  ">  
-                                  <div className="ml-2 flex justify-center items-center"><h2 className="font-albertsans font-bold text-[18px] text-[#383838] mr-3 ">Search: </h2><div className="relative flex items-center justify-center gap-3"><i className="bx bx-search absolute left-3 text-2xl text-gray-500"></i><input onChange={(e) => setsearchpatientorderbautistaTerm(e.target.value)} value={searchpatientorderbautistaTerm} type="text" placeholder="Enter product name..."   className="transition-all duration-300 ease-in-out py-2 pl-10  rounded-2xl  bg-[#e4e4e4] focus:bg-slate-100 focus:outline-sky-500"></input></div></div>
+                                  <div className="ml-2 w-full flex items-center"><h2 className="font-albertsans font-bold text-[18px] text-[#383838] mr-3 ">Search: </h2><div className="relative w-full flex items-center justify-center gap-3"><i className="bx bx-search absolute left-3 text-2xl text-gray-500"></i><input onChange={(e) => setsearchpatientorderbautistaTerm(e.target.value)} value={searchpatientorderbautistaTerm} type="text" placeholder="Enter product name..." className="transition-all duration-300 ease-in-out py-2 pl-10 w-full rounded-2xl bg-[#e4e4e4] focus:bg-slate-100 focus:outline-sky-500"></input></div></div>
                                 <div className="mt-2 p-2 w-full max-h-138 overflow-y-auto  "> 
                 {bautistaloadingproducts ? (
                   <div className="space-y-4">

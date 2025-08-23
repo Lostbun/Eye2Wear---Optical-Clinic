@@ -28,7 +28,12 @@ import BautistaInventoryProduct from "../models/bautistainventoryproduct.js";
     //Get All Clinic BautistaInventoryProduct
     export const getallbautistainventoryproduct = async (req, res) => {
         try{
-            const bautistainventoryproducts = await BautistaInventoryProduct.find().sort({bautistainventoryproductid: -1});
+            // Optimized query with field selection, lean(), and proper sorting
+            const bautistainventoryproducts = await BautistaInventoryProduct.find({})
+                .select('bautistainventoryproductid bautistainventoryproductcategory bautistainventoryproductname bautistainventoryproductbrand bautistainventoryproductmodelnumber bautistainventoryproductdescription bautistainventoryproductprice bautistainventoryproductquantity bautistainventoryproductimagepreviewimages bautistainventoryproductwishlistcount createdAt')
+                .sort({bautistainventoryproductid: -1})
+                .lean(); // Returns plain JavaScript objects for better performance
+            
             res.json(bautistainventoryproducts);
     
         }catch(error){

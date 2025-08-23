@@ -106,13 +106,18 @@ export const checkpatientwishlistitem = async (req, res) => {
 //Get All Clinic Patientwishlist
 export const getallpatientwishlistinventoryproduct = async (req, res) => {
     try{
-      const patientwishlistinventoryproducts = await Patientwishlist.find().sort({patientwishlistinventoryproductid: -1});
+        // Optimized query with field selection, lean(), and proper sorting
+        const patientwishlistinventoryproducts = await Patientwishlist.find({})
+            .select('wishlistid patientwishlistemail clinicType patientwishlistinventoryproductid patientwishlistinventoryproductname patientwishlistinventoryproductbrand patientwishlistinventoryproductprice patientwishlistinventoryproductimagepreviewimages createdAt')
+            .sort({patientwishlistinventoryproductid: -1})
+            .lean(); // Returns plain JavaScript objects for better performance
+        
         res.json(patientwishlistinventoryproducts);
     
     }catch(error){
        res.status(500).json({message: error.message});
     }
-    };
+};
 
 
 
@@ -128,9 +133,13 @@ export const getallpatientwishlistinventoryproductbyemail = async (req, res) => 
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         const patientEmail = decoded.email;
 
+        // Optimized query with field selection, lean(), and indexed email lookup
         const patientwishlistinventoryproducts = await Patientwishlist.find({
             patientwishlistemail: patientEmail
-        }).sort({ patientwishlistinventoryproductid: -1 });
+        })
+        .select('wishlistid patientwishlistemail clinicType patientwishlistinventoryproductid patientwishlistinventoryproductname patientwishlistinventoryproductbrand patientwishlistinventoryproductprice patientwishlistinventoryproductimagepreviewimages createdAt')
+        .sort({ patientwishlistinventoryproductid: -1 })
+        .lean(); // Returns plain JavaScript objects for better performance
         
         res.json(patientwishlistinventoryproducts);
     
@@ -235,30 +244,51 @@ export const getwishlistcount = async (req, res) => {
         const { productIds, clinicType } = req.params;
         const idsArray = productIds.split(',');
         
-        // Count for multiple products
+        // Count for multiple products with optimized queries
         if (idsArray.length > 1) {
             const counts = {};
-            for (const id of idsArray) {
-                const count = await Patientwishlist.countDocuments({
-                    patientwishlistinventoryproductid: Number(id),
-                    clinicType: clinicType
-                });
-                counts[id] = count;
-            }
-            return res.json(counts);
-        } 
-        // Count for single product
-        else {
-            const count = await Patientwishlist.countDocuments({
-                patientwishlistinventoryproductid: Number(productIds),
-                clinicType: clinicType
+            
+            // Use a single aggregation query for better performance when handling multiple IDs
+            const pipeline = [
+                {
+                    $match: {
+                        patientwishlistinventoryproductid: { $in: idsArray.map(Number) },
+                        clinicType: clinicType
+                    }
+                },
+                {
+                    $group: {
+                        _id: "$patientwishlistinventoryproductid",
+                        count: { $sum: 1 }
+                    }
+                }
+            ];
+            
+            const results = await Patientwishlist.aggregate(pipeline);
+            
+            // Initialize all counts to 0
+            idsArray.forEach(id => counts[id] = 0);
+            
+            // Fill in actual counts
+            results.forEach(result => {
+                counts[result._id] = result.count;
             });
-            res.json({ count });
+            
+            return res.json(counts);
         }
+        
+        // Single product count with optimized query
+        const count = await Patientwishlist.countDocuments({
+            patientwishlistinventoryproductid: Number(productIds),
+            clinicType: clinicType
+        });
+        
+        res.json({ count });
+        
     } catch(error) {
         res.status(500).json({message: error.message});
     }
-}
+};
 
 
 

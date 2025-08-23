@@ -48,6 +48,12 @@ BautistaInventoryCategorySchema.plugin(AutoIncrement(mongoose),{
     disable_hooks: false
 });
 
+// Add indexes for better query performance
+BautistaInventoryCategorySchema.index({ bautistainventorycategoryid: -1 }); // Primary sorting index (ID descending)
+BautistaInventoryCategorySchema.index({ createdAt: -1 }); // Date sorting
+BautistaInventoryCategorySchema.index({ bautistainventorycategoryname: 'text' }); // Text search
+BautistaInventoryCategorySchema.index({ bautistainventorycategoryaddedbyemail: 1 }); // Added by email lookup
+BautistaInventoryCategorySchema.index({ bautistainventorycategoryaddedbytype: 1 }); // Added by type filtering
 
 
 

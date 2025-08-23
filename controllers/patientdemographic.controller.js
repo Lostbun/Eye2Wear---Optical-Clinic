@@ -30,7 +30,15 @@
   export const getpatientdemographicbyid = async (req, res) => {
     try {
       const { id } = req.params;
-      const patientdemo = await Patientdemographic.findById(id);
+      // Optimized query with field selection and lean()
+      const patientdemo = await Patientdemographic.findById(id)
+        .select('patientdemographicId patientemail patientfirstname patientmiddlename patientlastname patientage patientbirthdate patientgender patientcontactnumber patienthomeaddress patientemergencycontactname patientemergencycontactnumber patientprofilepicture createdAt updatedAt')
+        .lean(); // Returns plain JavaScript objects for better performance
+      
+      if (!patientdemo) {
+        return res.status(404).json({ message: "Patient demographic not found" });
+      }
+      
       res.status(200).json(patientdemo);
     } catch (error) {
       res.status(500).json({ message: error.message });
@@ -42,7 +50,17 @@
   export const getpatientdemographicbylastname = async (req, res) => {
     try {
       const { patientlastname } = req.params;
-      const patientdemo = await Patientdemographic.findOne({patientlastname: patientlastname});
+      // Optimized query with field selection, lean(), and indexed lastname lookup
+      const patientdemo = await Patientdemographic.findOne({
+        patientlastname: patientlastname
+      })
+      .select('patientdemographicId patientemail patientfirstname patientmiddlename patientlastname patientage patientbirthdate patientgender patientcontactnumber patienthomeaddress patientemergencycontactname patientemergencycontactnumber patientprofilepicture createdAt')
+      .lean(); // Returns plain JavaScript objects for better performance
+      
+      if (!patientdemo) {
+        return res.status(404).json({ message: "Patient demographic not found" });
+      }
+      
       res.status(200).json(patientdemo);
     } catch (error) {
       res.status(500).json({ message: error.message });
@@ -83,9 +101,12 @@
 
   export const getcurrentpatientdemographic = async (req, res) => {
     try{
+      // Optimized query with field selection, lean(), and indexed email lookup
       const demographic = await Patientdemographic.findOne({
         patientemail: req.patient.email
-      });
+      })
+      .select('patientdemographicId patientemail patientfirstname patientmiddlename patientlastname patientage patientbirthdate patientgender patientcontactnumber patienthomeaddress patientemergencycontactname patientemergencycontactnumber patientprofilepicture createdAt updatedAt')
+      .lean(); // Returns plain JavaScript objects for better performance
 
       if(!demographic) return res.status(404).json({message: "No patient demographic data found"});
       res.status(200).json(demographic);
@@ -140,7 +161,12 @@
         });
       }
       
-      const patientdemo = await Patientdemographic.findOne({patientemail: patientemail});
+      // Optimized query with field selection, lean(), and indexed email lookup
+      const patientdemo = await Patientdemographic.findOne({
+        patientemail: patientemail
+      })
+      .select('patientdemographicId patientemail patientfirstname patientmiddlename patientlastname patientage patientbirthdate patientgender patientcontactnumber patienthomeaddress patientemergencycontactname patientemergencycontactnumber patientprofilepicture createdAt updatedAt')
+      .lean(); // Returns plain JavaScript objects for better performance
 
       if(!patientdemo){
         return res.status(404).json({

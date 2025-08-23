@@ -28,7 +28,12 @@ import AmbherInventoryProduct from "../models/ambherinventoryproduct.js";
     //Get All Clinic AmbherInventoryProduct
     export const getallambherinventoryproduct = async (req, res) => {
         try{
-            const ambherinventoryproducts = await AmbherInventoryProduct.find().sort({ambherinventoryproductid: -1});
+            // Optimized query with field selection, lean(), and proper sorting
+            const ambherinventoryproducts = await AmbherInventoryProduct.find({})
+                .select('ambherinventoryproductid ambherinventoryproductcategory ambherinventoryproductname ambherinventoryproductbrand ambherinventoryproductmodelnumber ambherinventoryproductdescription ambherinventoryproductprice ambherinventoryproductquantity ambherinventoryproductimagepreviewimages ambherinventoryproductwishlistcount createdAt')
+                .sort({ambherinventoryproductid: -1})
+                .lean(); // Returns plain JavaScript objects for better performance
+            
             res.json(ambherinventoryproducts);
     
         }catch(error){

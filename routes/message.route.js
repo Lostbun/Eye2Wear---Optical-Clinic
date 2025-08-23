@@ -6,7 +6,8 @@ import {
   createConversation,
   upload,
   checkOrphanedImages,
-  cleanupOrphanedImageReferences 
+  cleanupOrphanedImageReferences,
+  markMessagesAsRead 
 } from "../controllers/message.controller.js";
 import { protect } from "../middleware/authMiddleware.js";
 
@@ -15,6 +16,7 @@ const messagerouter = express.Router();
 messagerouter.get("/conversations", protect, getConversations);
 messagerouter.post("/conversations", protect, createConversation);
 messagerouter.get("/:conversationId", protect, getMessages);
+messagerouter.post("/:conversationId/mark-read", protect, markMessagesAsRead);
 messagerouter.post("/", protect, upload.single('file'), createMessage);
 
 // Image cleanup routes (for debugging/maintenance)

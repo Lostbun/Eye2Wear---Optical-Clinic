@@ -105,6 +105,14 @@ AmbherInventoryProductSchema.post('findOneAndUpdate', async function(doc) {
   }
 });
 
-
+// Add indexes for better query performance
+AmbherInventoryProductSchema.index({ ambherinventoryproductid: -1 }); // Primary sorting index
+AmbherInventoryProductSchema.index({ ambherinventoryproductcategory: 1 }); // Category filtering
+AmbherInventoryProductSchema.index({ ambherinventoryproductname: 1 }); // Name searches
+AmbherInventoryProductSchema.index({ ambherinventoryproductbrand: 1 }); // Brand filtering
+AmbherInventoryProductSchema.index({ ambherinventoryproductprice: 1 }); // Price sorting
+AmbherInventoryProductSchema.index({ ambherinventoryproductquantity: 1 }); // Stock filtering
+AmbherInventoryProductSchema.index({ createdAt: -1 }); // Date sorting
+AmbherInventoryProductSchema.index({ ambherinventoryproductname: 'text', ambherinventoryproductdescription: 'text', ambherinventoryproductbrand: 'text' }); // Text search
 
 export default mongoose.model("AmbherInventoryProduct", AmbherInventoryProductSchema);

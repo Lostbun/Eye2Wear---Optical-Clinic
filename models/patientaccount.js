@@ -135,7 +135,11 @@ PatientaccountSchema.post('save', function(error, doc, next){
 
 });
 
-
+// Add indexes for better query performance (avoid duplicates with unique fields)
+PatientaccountSchema.index({ patientlastname: 1, patientfirstname: 1 }); // Index for name searches
+PatientaccountSchema.index({ isVerified: 1 }); // Index for verification status
+PatientaccountSchema.index({ createdAt: -1 }); // Index for date sorting (newest first)
+PatientaccountSchema.index({ patientlastname: 'text', patientfirstname: 'text', patientemail: 'text' }); // Text index for search
 
 PatientaccountSchema.pre('save', async function(next){
 
