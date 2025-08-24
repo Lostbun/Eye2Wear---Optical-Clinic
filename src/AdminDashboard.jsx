@@ -3226,6 +3226,87 @@ const [addpatientprofileissubmitting, setaddpatientprofileissubmitting] = useSta
 const [addpatientprofilepreviewimage, setaddpatientprofilepreviewimage] = useState(null);
 const addpatientprofileimageinputref= useRef(null);
 
+// Search functionality for Profile Information
+const [searchPatientProfiles, setSearchPatientProfiles] = useState('');
+const [filteredPatientProfiles, setFilteredPatientProfiles] = useState([]);
+
+// Appointment state variables - must be declared before search functions
+const [activeappointmentstable, setactiveappointmentstable] = useState('allappointmentstable');
+const [patientappointments, setpatientappointments] = useState([]);
+const [loadingappointmens, setloadingappointments] = useState(false);
+const [errorloadingappointments, seterrorloadingappointments] = useState(null);
+const [selectedpatientappointment, setselectedpatientappointment] = useState(null);
+const [viewpatientappointment, setviewpatientappointment] = useState(false);
+const [deletepatientappointment, setdeletepatientappointment] = useState(false);
+const [isAcceptingAppointment, setIsAcceptingAppointment] = useState(false);
+const [isCompletingAppointment, setIsCompletingAppointment] = useState(false);
+const [bautistaeyespecialist, setbautistaeyespecialist] = useState('');
+const [ambhereyespecialist, setambhereyespecialist] = useState('');
+const [ambherappointmentpaymentotal, setambherappointmentpaymentotal] = useState(null);
+const [bautistaappointmentpaymentotal, setbautistaappointmentpaymentotal] = useState(null);
+const [bautistaappointmentconsultationremarkssubject, setbautistaappointmentconsultationremarkssubject] = useState("");
+const [ambherappointmentconsultationremarkssubject, setambherappointmentconsultationremarkssubject] = useState("");
+const [bautistaappointmentconsultationremarks, setbautistaappointmentconsultationremarks] = useState("");
+const [ambherappointmentconsultationremarks, setambherappointmentconsultationremarks] = useState("");
+const [bautistaappointmentprescription, setbautistaappointmentprescription] = useState("");
+const [ambherappointmentprescription, setambherappointmentprescription] = useState("");
+
+// Search functionality for Appointments
+const [searchAppointments, setSearchAppointments] = useState('');
+const [filteredAppointments, setFilteredAppointments] = useState([]);
+
+// Search function definitions - must be defined before useEffect hooks that use them
+// Search functionality for Patient Profiles
+const searchPatientProfilesDebounce = (functions, delay) => {
+  let timeout;
+  return (...args) => {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => functions.apply(this, args), delay);
+  };
+};
+
+const filterPatientProfiles = useCallback(searchPatientProfilesDebounce((term) => {
+  if (!term) {
+    setFilteredPatientProfiles(patientdemographics);
+  } else {
+    const filtered = patientdemographics.filter(profile => 
+      profile.patientfirstname?.toLowerCase().includes(term.toLowerCase()) ||
+      profile.patientlastname?.toLowerCase().includes(term.toLowerCase()) ||
+      profile.patientemail?.toLowerCase().includes(term.toLowerCase()) ||
+      profile.patientcontactnumber?.includes(term) ||
+      profile.patientgender?.toLowerCase().includes(term.toLowerCase()) ||
+      profile.patienthomeaddress?.toLowerCase().includes(term.toLowerCase())
+    );
+    setFilteredPatientProfiles(filtered);
+  }
+}, 300), [patientdemographics]);
+
+// Search functionality for Appointments
+const searchAppointmentsDebounce = (functions, delay) => {
+  let timeout;
+  return (...args) => {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => functions.apply(this, args), delay);
+  };
+};
+
+const filterAppointments = useCallback(searchAppointmentsDebounce((term) => {
+  if (!term) {
+    setFilteredAppointments(patientappointments);
+  } else {
+    const filtered = patientappointments.filter(appointment => 
+      appointment.patientfirstname?.toLowerCase().includes(term.toLowerCase()) ||
+      appointment.patientlastname?.toLowerCase().includes(term.toLowerCase()) ||
+      appointment.patientemail?.toLowerCase().includes(term.toLowerCase()) ||
+      appointment.patientappointmentclinic?.toLowerCase().includes(term.toLowerCase()) ||
+      appointment.patientappointmentservice?.toLowerCase().includes(term.toLowerCase()) ||
+      appointment.patientappointmentstatus?.toLowerCase().includes(term.toLowerCase()) ||
+      appointment.patientappointmenteyespecialist?.toLowerCase().includes(term.toLowerCase())
+    );
+    setFilteredAppointments(filtered);
+  }
+}, 300), [patientappointments]);
+
 //AI CODE
 const calculateAge = (birthdate) => {
   if (!birthdate) return '';
@@ -3335,6 +3416,20 @@ useEffect(() => {
   }
 }, [realtimeUpdates, fetchDemographicsData]);
 
+// Patient Profiles Filter
+useEffect(() => {
+  if (searchPatientProfiles) {
+    filterPatientProfiles(searchPatientProfiles);
+  } else {
+    setFilteredPatientProfiles(patientdemographics);
+  }
+}, [searchPatientProfiles, filterPatientProfiles, patientdemographics]);
+
+// Initialize filtered data when demographics load
+useEffect(() => {
+  setFilteredPatientProfiles(patientdemographics);
+}, [patientdemographics]);
+
 
 
 
@@ -3360,9 +3455,15 @@ const renderpatientprofiles = () => {
   }
 
 
-  if(patientdemographics.length === 0){
+  // Show filtered results if search is active, otherwise show no results message for original data
+  const displayData = searchPatientProfiles.trim() ? filteredPatientProfiles : patientdemographics;
+  
+  if(displayData.length === 0){
+    const message = searchPatientProfiles.trim() 
+      ? `No patient profiles found matching "${searchPatientProfiles}".`
+      : "No patient profiles found.";
     return(
-      <div className="text-yellow-600 bg-yellow-50 rounded-2xl px-4 py-6">No patient profiles found.</div>
+      <div className="text-yellow-600 bg-yellow-50 rounded-2xl px-4 py-6">{message}</div>
     );
   }
 
@@ -3372,7 +3473,7 @@ const renderpatientprofiles = () => {
   return (
     <div className="overflow-y-auto w-full h-[480px] flex flex-wrap content-start gap-3 pl-2 pt-2">
     
-    {patientdemographics.map((patient) => (
+    {displayData.map((patient) => (
       <div id="patientcard" key={patient._id} onClick={() => {
       setshowpatientpofile(true);
       setselectedpatientdemo(patient);
@@ -3760,28 +3861,11 @@ const addpatientprofilehandleremoveprofile = () => {
 //APPOINTMENT MANAGEMENT //APPOINTMENT MANAGEMENT //APPOINTMENT MANAGEMENT //APPOINTMENT MANAGEMENT //APPOINTMENT MANAGEMENT //APPOINTMENT MANAGEMENT //APPOINTMENT MANAGEMENT //APPOINTMENT MANAGEMENT
 //APPOINTMENT MANAGEMENT //APPOINTMENT MANAGEMENT //APPOINTMENT MANAGEMENT //APPOINTMENT MANAGEMENT //APPOINTMENT MANAGEMENT //APPOINTMENT MANAGEMENT //APPOINTMENT MANAGEMENT //APPOINTMENT MANAGEMENT
 
-const [activeappointmentstable, setactiveappointmentstable] = useState('allappointmentstable');
 const showappointmentstable = (appointmentstableid) => {
       setactiveappointmentstable(appointmentstableid);
 };
- const [patientappointments, setpatientappointments] = useState([]);
- const [loadingappointmens, setloadingappointments] = useState(false);
- const [errorloadingappointments, seterrorloadingappointments] = useState(null);
- const [selectedpatientappointment, setselectedpatientappointment] = useState(null);
- const [viewpatientappointment, setviewpatientappointment] = useState(false);
- const [deletepatientappointment, setdeletepatientappointment] = useState(false);
- const [isAcceptingAppointment, setIsAcceptingAppointment] = useState(false);
- const [isCompletingAppointment, setIsCompletingAppointment] = useState(false);
- const [bautistaeyespecialist, setbautistaeyespecialist] = useState('');
- const [ambhereyespecialist, setambhereyespecialist] = useState('');
- const [ambherappointmentpaymentotal, setambherappointmentpaymentotal] = useState(null);
- const [bautistaappointmentpaymentotal, setbautistaappointmentpaymentotal] = useState(null);
- const [bautistaappointmentconsultationremarkssubject, setbautistaappointmentconsultationremarkssubject] = useState("");
- const [ambherappointmentconsultationremarkssubject, setambherappointmentconsultationremarkssubject] = useState("");
- const [bautistaappointmentconsultationremarks, setbautistaappointmentconsultationremarks] = useState("");
- const [ambherappointmentconsultationremarks, setambherappointmentconsultationremarks] = useState("");
- const [bautistaappointmentprescription, setbautistaappointmentprescription] = useState("");
- const [ambherappointmentprescription, setambherappointmentprescription] = useState("");
+
+// Search functionality for Appointments - search states are already defined above
 
   const textarearef = useRef(null);
   const adjusttextareaheight = () => {
@@ -3855,6 +3939,20 @@ const showappointmentstable = (appointmentstableid) => {
      fetchAppointmentData(true); // Force refresh on real-time update
    }
  }, [realtimeUpdates, fetchAppointmentData]);
+
+// Appointments Filter
+useEffect(() => {
+  if (searchAppointments) {
+    filterAppointments(searchAppointments);
+  } else {
+    setFilteredAppointments(patientappointments);
+  }
+}, [searchAppointments, filterAppointments, patientappointments]);
+
+// Initialize filtered data when appointments load
+useEffect(() => {
+  setFilteredAppointments(patientappointments);
+}, [patientappointments]);
 
 
 
@@ -4276,6 +4374,10 @@ const handleacceptappointment = async (appointmentId, clinicType) => {
  //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS  
  //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS //MEDICAL RECORDS  
 
+// Medical records state variables and search functionality are already defined above
+
+// Medical Records State Variables
+const [otherclinicrecords, setotherclinicrecords] = useState([]);
 const [activemedicalrecordstable, setactivemedicalrecordstable] = useState('allmedicalrecordstable');
 const showmedicalrecordstable = (medicalrecordstableid) => {
       setactivemedicalrecordstable(medicalrecordstableid);
@@ -4292,9 +4394,6 @@ const [showpatientmedicalrecord, setshowpatientmedicalrecord] = useState(false);
 const [showpatientmedicalrecordconsultation, setshowpatientmedicalrecordconsultation] = useState(false);
 const [showpatientaddothermedicalrecord, setshowpatientaddothermedicalrecord] = useState(false);
 const [showotherclinicrecordimage, setshowotherclinicrecordimage] = useState(false);
-
-
-
 
   const [otherclinicselectedimage, setotherclinicselectedimage] = useState(null);
   const [otherclinicpreviewimage, setotherclinicpreviewimage] = useState (null);
@@ -4398,160 +4497,112 @@ const [showotherclinicrecordimage, setshowotherclinicrecordimage] = useState(fal
 
 
 
-const [otherclinicrecords, setotherclinicrecords] = useState([]);
-const [loadingOtherClinicRecords, setLoadingOtherClinicRecords] = useState(true);
-const [otherClinicRecordsError, setOtherClinicRecordsError] = useState(null);
-
-
-
-
   const fetchotherclinicrecords = async () => {
-    setLoadingOtherClinicRecords(true);
-    setOtherClinicRecordsError(null);
-    
     try{
-
-      const response = await fetch(`/api/otherclinicrecord`, {
+      const response = await fetch(`/api/otherclinicrecord?includeImages=false`, {
         headers: {
           'Authorization' : `Bearer ${currentusertoken}`
         }
       });
 
       if(!response.ok){
-        // Handle specific service unavailable errors (503 from timeout)
-        if(response.status === 503) {
-          console.warn('Database timeout, retrying in 3 seconds...');
-          setOtherClinicRecordsError('Database timeout, retrying...');
-          setTimeout(() => fetchotherclinicrecords(), 3000); // Retry after 3 seconds
-          return;
-        }
         throw new Error (`HTTP error! Error: ${response.status}`);
       }
 
       const data = await response.json();
-      setotherclinicrecords(data || []); // Ensure we always set an array
-      setOtherClinicRecordsError(null);
+      // Handle both old format (array) and new format (object with data property)
+      if (data.data) {
+        setotherclinicrecords(data.data);
+      } else {
+        setotherclinicrecords(data);
+      }
 
     }catch(error){
       console.error('Error fetching other clinic records: ', error);
-      setOtherClinicRecordsError('Failed to load medical records');
-      // Set empty array on error to prevent UI issues
-      setotherclinicrecords([]);
-    } finally {
-      setLoadingOtherClinicRecords(false);
+      setotherclinicrecords([]); // Set empty array on error
     }
   };
 
+  // Fetch patient-specific medical records
+  const fetchPatientMedicalRecords = useCallback(async (patientEmail) => {
+    if (!patientEmail) {
+      console.log('No patient email provided');
+      setotherclinicrecords([]);
+      return;
+    }
 
-
-// Smart cached medical records fetching function - Optimized for patient-specific records
-const fetchMedicalRecordsWithCache = useCallback(async (patientEmail = null, includeImages = false) => {
-  if (!currentusertoken) return;
-  
-  setLoadingOtherClinicRecords(true);
-  setOtherClinicRecordsError(null);
-  
-  try {
-    // Define the fetch function for smart cache
-    const fetchFunction = async () => {
-      // Use optimized endpoint for patient-specific records if email provided
-      const endpoint = patientEmail 
-        ? `/api/otherclinicrecord/patient/${encodeURIComponent(patientEmail)}?includeImages=${includeImages}&limit=20`
-        : `/api/otherclinicrecord?includeImages=${includeImages}&limit=50`;
-        
-      const response = await fetch(endpoint, {
+    try {
+      console.log('Fetching medical records for patient:', patientEmail);
+      const response = await fetch(`/api/otherclinicrecord/patient/${encodeURIComponent(patientEmail)}?includeImages=false`, {
         headers: {
           'Authorization': `Bearer ${currentusertoken}`
         }
       });
 
       if (!response.ok) {
-        if (response.status === 503) {
-          throw new Error('Database timeout, please try again');
-        }
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
 
-      const responseData = await response.json();
+      const data = await response.json();
+      console.log('Received medical records data:', data);
       
       // Handle both old format (array) and new format (object with data property)
-      if (responseData.data) {
-        return responseData.data; // New optimized format
-      }
-      return responseData || []; // Fallback to old format
-    };
-
-    // Try to use smart cache, fallback to direct fetch if smartFetch fails
-    let cachedData;
-    try {
-      if (smartFetch && typeof smartFetch === 'function') {
-        // Use patient-specific cache key for better performance
-        const cacheKey = patientEmail 
-          ? `medical-records-${patientEmail}` 
-          : 'other-clinic-records-all';
-          
-        cachedData = await smartFetch(
-          cacheKey,
-          fetchFunction,
-          CACHE_DURATIONS.MEDIUM || 300000 // 5 minutes cache fallback
-        );
+      if (data.data) {
+        setotherclinicrecords(data.data);
       } else {
-        // Fallback to direct fetch if smart cache not available
-        console.warn('Smart cache not available, using direct fetch');
-        cachedData = await fetchFunction();
+        setotherclinicrecords(data || []);
       }
-    } catch (cacheError) {
-      console.warn('Smart cache failed, falling back to direct fetch:', cacheError);
-      cachedData = await fetchFunction();
+
+    } catch (error) {
+      console.error('Error fetching patient medical records:', error);
+      setotherclinicrecords([]);
     }
-    
-    setotherclinicrecords(cachedData || []);
-    setOtherClinicRecordsError(null);
-  } catch (error) {
-    console.error('Error fetching cached other clinic records: ', error);
-    setOtherClinicRecordsError('Failed to load medical records');
-    setotherclinicrecords([]);
-  } finally {
-    setLoadingOtherClinicRecords(false);
-  }
-}, [currentusertoken, smartFetch, CACHE_DURATIONS]);
+  }, [currentusertoken]);
 
-useEffect(() => {
-  // Use optimized fetching based on context
-  if (selectedpatientmedicalrecord?.patientemail) {
-    // When viewing a specific patient's medical records, use patient-specific endpoint
-    fetchMedicalRecordsWithCache(selectedpatientmedicalrecord.patientemail, false); // Don't include images initially for faster loading
-  } else {
-    // General medical records fetch
-    fetchMedicalRecordsWithCache();
-  }
-}, [fetchMedicalRecordsWithCache, selectedpatientmedicalrecord?.patientemail]);
+  useEffect(() => {
+    fetchotherclinicrecords();
+  }, []);
 
-// Function to load images separately when needed (for better performance)
-const loadMedicalRecordImage = useCallback(async (recordId) => {
-  if (!currentusertoken || !recordId) return null;
-  
-  try {
-    const response = await fetch(`/api/otherclinicrecord/${recordId}?includeImages=true`, {
-      headers: {
-        'Authorization': `Bearer ${currentusertoken}`
+  // Fetch patient-specific medical records when a patient is selected
+  useEffect(() => {
+    if (selectedpatientmedicalrecord?.patientemail) {
+      console.log('Patient selected, fetching medical records for:', selectedpatientmedicalrecord.patientemail);
+      fetchPatientMedicalRecords(selectedpatientmedicalrecord.patientemail);
+    } else {
+      console.log('No patient selected, clearing medical records');
+      setotherclinicrecords([]);
+    }
+  }, [selectedpatientmedicalrecord?.patientemail, fetchPatientMedicalRecords]);
+
+  // Load medical record image by ID
+  const loadMedicalRecordImage = useCallback(async (recordId) => {
+    if (!recordId) {
+      console.log('No record ID provided for image loading');
+      return null;
+    }
+
+    try {
+      console.log('Loading medical record image for ID:', recordId);
+      const response = await fetch(`/api/otherclinicrecord/${recordId}?includeImages=true`, {
+        headers: {
+          'Authorization': `Bearer ${currentusertoken}`
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
       }
-    });
-    
-    if (response.ok) {
+
       const data = await response.json();
-      return data.patientotherclinicrecordimage;
+      console.log('Loaded medical record with image:', data);
+      
+      return data.patientotherclinicrecordimage || null;
+
+    } catch (error) {
+      console.error('Error loading medical record image:', error);
+      return null;
     }
-  } catch (error) {
-    console.error('Error loading medical record image:', error);
-  }
-  
-  return null;
-}, [currentusertoken]);
-
-
-
-
+  }, [currentusertoken]);
 
 const [otherclinicname, setotherclinicname] = useState('');
 const [othercliniceyespecialist, setothercliniceyespecialist] = useState('');
@@ -9146,11 +9197,13 @@ const submitpatientpendingorderbautista = async (e) => {
            </div>
 
 
+
+
 {/*Patient profile Table*/} {/*Patient profile Table*/} {/*Patient profile Table*/} {/*Patient profile Table*/} {/*Patient profile Table*/} {/*Patient profile Table*/} {/*Patient profile Table*/} {/*Patient profile Table*/} {/*Patient profile Table*/} 
  { activeprofiletable === 'patientprofiletable' && ( <div id="patientprofiletable" className="animate-fadeInUp flex flex-col items-center border-t-2  border-[#909090] w-[100%] h-[83%] rounded-2xl mt-5" >
 
   <div className=" mt-5  w-full h-[60px] flex justify-between rounded-3xl pl-5 pr-5">              
-     <div className="ml-2 w-full flex items-center"><h2 className="font-albertsans font-bold text-[18px] text-[#383838] mr-3 ">Search: </h2><div className="relative w-full flex items-center justify-center gap-3"><i className="bx bx-search absolute left-3 text-2xl text-gray-500"></i><input type="text" placeholder="Enter patient name..." value={searchpatients} onChange={(e) => {setsearchpatients(e.target.value); filterpatientaccount(e.target.value);}} className="transition-all duration-300 ease-in-out py-2 pl-10 w-full rounded-2xl bg-[#e4e4e4] focus:bg-slate-100 focus:outline-sky-500"></input></div></div>
+     <div className="ml-2 w-full flex items-center"><h2 className="font-albertsans font-bold text-[18px] text-[#383838] mr-3 ">Search: </h2><div className="relative w-full flex items-center justify-center gap-3"><i className="bx bx-search absolute left-3 text-2xl text-gray-500"></i><input type="text" placeholder="Enter patient name..." value={searchPatientProfiles} onChange={(e) => {setSearchPatientProfiles(e.target.value); filterPatientProfiles(e.target.value);}} className="transition-all duration-300 ease-in-out py-2 pl-10 w-full rounded-2xl bg-[#e4e4e4] focus:bg-slate-100 focus:outline-sky-500"></input></div></div>
       <div onClick={() => setshowaddpatientprofile(true)}  className=" mt-1 mb-1 hover:cursor-pointer hover:scale-103 bg-[#4ca22b] rounded-3xl flex justify-center items-center pl-3 pr-3 transition-all duration-300 ease-in-out"><i className="bx bx-user-plus text-white font-bold text-[30px]"/><p className="font-bold font-albertsans text-white text-[18px] ml-2">Add Patient Profile</p></div>
        </div>
 
@@ -9532,6 +9585,8 @@ const submitpatientpendingorderbautista = async (e) => {
 
 
 
+
+
 {loggedinusertype?.type === "Admin"&& (
 
   <div className="flex justify-between items-center mt-3 h-[60px]">
@@ -9572,7 +9627,7 @@ const submitpatientpendingorderbautista = async (e) => {
  { activeappointmentstable === 'allappointmentstable' && ( <div id="allappointmentstable" className="animate-fadeInUp flex flex-col items-center border-t-2  border-[#909090] w-[100%] h-[83%] rounded-2xl mt-5" >
 
       <div className=" mt-5  w-full h-[60px] flex justify-between rounded-3xl pl-5 pr-5">              
-      <div className="ml-2 w-full flex items-center"><h2 className="font-albertsans font-bold text-[18px] text-[#383838] mr-3 ">Search: </h2><div className="relative w-full flex items-center justify-center gap-3"><i className="bx bx-search absolute left-3 text-2xl text-gray-500"></i><input type="text" placeholder="Enter appointment details..." className="transition-all duration-300 ease-in-out py-2 pl-10 w-full rounded-2xl bg-[#e4e4e4] focus:bg-slate-100 focus:outline-sky-500"></input></div></div>
+      <div className="ml-2 w-full flex items-center"><h2 className="font-albertsans font-bold text-[18px] text-[#383838] mr-3 ">Search: </h2><div className="relative w-full flex items-center justify-center gap-3"><i className="bx bx-search absolute left-3 text-2xl text-gray-500"></i><input type="text" placeholder="Enter appointment details..." value={searchAppointments} onChange={(e) => {setSearchAppointments(e.target.value); filterAppointments(e.target.value);}} className="transition-all duration-300 ease-in-out py-2 pl-10 w-full rounded-2xl bg-[#e4e4e4] focus:bg-slate-100 focus:outline-sky-500"></input></div></div>
       </div>
 
       {loadingappointmens ? (
@@ -9585,7 +9640,11 @@ const submitpatientpendingorderbautista = async (e) => {
     <div className="rounded-lg p-4 bg-red-50 text-red-600">
     Error: {errorloadingappointments}
   </div>
-  ) : patientappointments.length === 0 ? (
+    ) : (filteredAppointments.length === 0 && searchAppointments.trim()) ? (
+      <div className="text-yellow-600 bg-yellow-50 rounded-2xl px-4 py-6">
+        No appointments found matching "{searchAppointments}".
+      </div>
+    ) : patientappointments.length === 0 ? (
     <div className="text-yellow-600 bg-yellow-50 rounded-2xl px-4 py-6">No patient appointments found.</div>
 
   ) :(<div className=" rounded-3xl h-full w-full mt-2 bg-[#f7f7f7]">
@@ -9603,7 +9662,7 @@ const submitpatientpendingorderbautista = async (e) => {
 
 
         <tbody className="divide-y divide-gray-200 bg-white">
-          {patientappointments.map((appointment) => (
+          {(searchAppointments.trim() ? filteredAppointments : patientappointments).map((appointment) => (
             <tr 
               key={appointment._id}
               className="hover:bg-gray-50 transition-all ease-in-out duration-300 border-b-2"
@@ -11094,6 +11153,8 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
 
 
 
+
+
  { activemedicalrecordstable === 'allmedicalrecordstable' && ( <div id="allmedicalrecordstable" className="animate-fadeInUp flex flex-col items-center border-t-2  border-[#909090] w-[100%] h-[90%] rounded-2xl mt-5" >
 
       <div className=" mt-5  w-full h-[60px] flex justify-between rounded-3xl pl-5 pr-5">              
@@ -11110,8 +11171,8 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
   <div className="rounded-lg p-4 bg-red-50 text-red-600">
   Error: {errorloadingappointments}
 </div>
-) : patientappointments.length === 0 ? (
-  <div className="text-yellow-600 bg-yellow-50 rounded-2xl px-4 py-6">No patient appointments found.</div>
+) : patientdemographics.length === 0 ? (
+  <div className="text-yellow-600 bg-yellow-50 rounded-2xl px-4 py-6">No patient medical records found.</div>
 
 ) :(
 
@@ -11362,7 +11423,7 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
 
                        {(() => {
         // Show loading skeleton while fetching records
-        if (loadingOtherClinicRecords) {
+        if (loadingpatientdemographics) {
           return (
             <div className="space-y-3">
               {[...Array(3)].map((_, index) => (
@@ -11373,13 +11434,13 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
         }
 
         // Show error message if failed to load
-        if (otherClinicRecordsError) {
+        if (patientdemoerror) {
           return (
             <div className="text-center text-red-500 mt-4 p-4 bg-red-50 rounded-2xl">
               <i className="bx bx-error text-2xl mb-2"></i>
-              <p>{otherClinicRecordsError}</p>
+              <p>{patientdemoerror}</p>
               <button 
-                onClick={() => fetchotherclinicrecords()} 
+                onClick={() => fetchDemographicsData(true)} 
                 className="mt-2 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
               >
                 Retry
@@ -11388,18 +11449,30 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
           );
         }
 
-        const filteredRecords = otherclinicrecords
-          .filter(record => 
-            record.patientotherclinicemail === selectedpatientmedicalrecord.patientemail
-          )
+        console.log('Filtering records for patient:', selectedpatientmedicalrecord?.patientemail);
+        console.log('Total otherclinicrecords:', otherclinicrecords?.length || 0);
+        console.log('Sample record emails:', (Array.isArray(otherclinicrecords) ? otherclinicrecords : []).slice(0, 3).map(r => r.patientotherclinicemail));
+
+        const filteredRecords = (Array.isArray(otherclinicrecords) ? otherclinicrecords : [])
+          .filter(record => {
+            const recordEmail = record.patientotherclinicemail?.toLowerCase()?.trim();
+            const selectedEmail = selectedpatientmedicalrecord.patientemail?.toLowerCase()?.trim();
+            const matches = recordEmail === selectedEmail;
+            if (matches) {
+              console.log('Found matching record:', record);
+            }
+            return matches;
+          })
           .sort((a, b) => new Date(b.patientotherclinicconsultationdate) - new Date(a.patientotherclinicconsultationdate));
+
+        console.log('Filtered records count:', filteredRecords.length);
 
         if (filteredRecords.length === 0) {
           return <div className="text-center text-gray-500 mt-4">No other clinic records found</div>;
         }
 
-        return filteredRecords.map((record, index) => (
-          <div key={index} className="pl-3 mt-3 w-full h-[80px] shadow-sm bg-white rounded-2xl flex justify-between items-center">
+        return filteredRecords.map((record) => (
+          <div key={record._id || record.otherclinicid} className="pl-3 mt-3 w-full h-[80px] shadow-sm bg-white rounded-2xl flex justify-between items-center">
             <div className="px-2 flex justify-center items-center rounded-2xl h-full w-[220px]">
               <h1 className="font-albertsans truncate w-full font-semibold text-[#134882] text-[18px]">{record.patientotherclinicname}</h1>
             </div>
