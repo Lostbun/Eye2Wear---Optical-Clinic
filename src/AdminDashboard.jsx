@@ -3294,18 +3294,60 @@ const filterAppointments = useCallback(searchAppointmentsDebounce((term) => {
   if (!term) {
     setFilteredAppointments(patientappointments);
   } else {
-    const filtered = patientappointments.filter(appointment => 
-      appointment.patientfirstname?.toLowerCase().includes(term.toLowerCase()) ||
-      appointment.patientlastname?.toLowerCase().includes(term.toLowerCase()) ||
-      appointment.patientemail?.toLowerCase().includes(term.toLowerCase()) ||
-      appointment.patientappointmentclinic?.toLowerCase().includes(term.toLowerCase()) ||
-      appointment.patientappointmentservice?.toLowerCase().includes(term.toLowerCase()) ||
-      appointment.patientappointmentstatus?.toLowerCase().includes(term.toLowerCase()) ||
-      appointment.patientappointmenteyespecialist?.toLowerCase().includes(term.toLowerCase())
-    );
+    const searchTerm = term.toLowerCase();
+    const filtered = patientappointments.filter(appointment => {
+      // Helper function to format dates for searching
+      const formatDateForSearch = (dateString) => {
+        if (!dateString) return '';
+        try {
+          const date = new Date(dateString);
+          return date.toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric',
+          }).toLowerCase();
+        } catch {
+          return '';
+        }
+      };
+
+      return (
+        // Patient name search
+        appointment.patientappointmentfirstname?.toLowerCase().includes(searchTerm) ||
+        appointment.patientappointmentlastname?.toLowerCase().includes(searchTerm) ||
+        appointment.patientappointmentemail?.toLowerCase().includes(searchTerm) ||
+        `${appointment.patientappointmentfirstname} ${appointment.patientappointmentlastname}`.toLowerCase().includes(searchTerm) ||
+        
+        // Date created search
+        formatDateForSearch(appointment.createdAt).includes(searchTerm) ||
+        
+        // Ambher appointment date search
+        formatDateForSearch(appointment.patientambherappointmentdate).includes(searchTerm) ||
+        appointment.patientambherappointmentdate?.toLowerCase().includes(searchTerm) ||
+        
+        // Bautista appointment date search
+        formatDateForSearch(appointment.patientbautistaappointmentdate).includes(searchTerm) ||
+        appointment.patientbautistaappointmentdate?.toLowerCase().includes(searchTerm) ||
+        
+        // Appointment status search
+        appointment.patientambherappointmentstatus?.toLowerCase().includes(searchTerm) ||
+        appointment.patientbautistaappointmentstatus?.toLowerCase().includes(searchTerm) ||
+        
+        // Additional appointment fields
+        appointment.patientappointmentid?.toString().includes(searchTerm) ||
+        appointment.patientappointmentclinic?.toLowerCase().includes(searchTerm) ||
+        appointment.patientappointmentservice?.toLowerCase().includes(searchTerm) ||
+        appointment.patientappointmenteyespecialist?.toLowerCase().includes(searchTerm)
+      );
+    });
     setFilteredAppointments(filtered);
   }
 }, 300), [patientappointments]);
+
+// Initialize filtered appointments when appointments data changes
+useEffect(() => {
+  setFilteredAppointments(patientappointments || []);
+}, [patientappointments]);
 
 //AI CODE
 const calculateAge = (birthdate) => {
@@ -4395,6 +4437,10 @@ const [showpatientmedicalrecordconsultation, setshowpatientmedicalrecordconsulta
 const [showpatientaddothermedicalrecord, setshowpatientaddothermedicalrecord] = useState(false);
 const [showotherclinicrecordimage, setshowotherclinicrecordimage] = useState(false);
 
+  // Medical Records Search State
+  const [searchmedicalrecords, setsearchmedicalrecords] = useState('');
+  const [filteredmedicalrecords, setfilteredmedicalrecords] = useState([]);
+
   const [otherclinicselectedimage, setotherclinicselectedimage] = useState(null);
   const [otherclinicpreviewimage, setotherclinicpreviewimage] = useState (null);
   const otherclinicimageinputref = useRef(null);
@@ -4558,6 +4604,39 @@ const [showotherclinicrecordimage, setshowotherclinicrecordimage] = useState(fal
       setotherclinicrecords([]);
     }
   }, [currentusertoken]);
+
+  // Filter medical records based on search term
+  const filterMedicalRecords = useCallback((term) => {
+    if (!term.trim()) {
+      setfilteredmedicalrecords(patientdemographics || []);
+      return;
+    }
+
+    const searchTerm = term.toLowerCase().trim();
+    const filtered = (patientdemographics || []).filter(patient => {
+      return (
+        patient.patientfirstname?.toLowerCase().includes(searchTerm) ||
+        patient.patientmiddlename?.toLowerCase().includes(searchTerm) ||
+        patient.patientlastname?.toLowerCase().includes(searchTerm) ||
+        patient.patientemail?.toLowerCase().includes(searchTerm) ||
+        patient.patientdemographicId?.toString().includes(searchTerm) ||
+        `${patient.patientfirstname} ${patient.patientmiddlename} ${patient.patientlastname}`.toLowerCase().includes(searchTerm) ||
+        `${patient.patientfirstname} ${patient.patientlastname}`.toLowerCase().includes(searchTerm)
+      );
+    });
+
+    setfilteredmedicalrecords(filtered);
+  }, [patientdemographics]);
+
+  // Update filtered records when search term changes
+  useEffect(() => {
+    filterMedicalRecords(searchmedicalrecords);
+  }, [searchmedicalrecords, filterMedicalRecords]);
+
+  // Initialize filtered records when patientdemographics changes
+  useEffect(() => {
+    setfilteredmedicalrecords(patientdemographics || []);
+  }, [patientdemographics]);
 
   useEffect(() => {
     fetchotherclinicrecords();
@@ -11158,7 +11237,13 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
  { activemedicalrecordstable === 'allmedicalrecordstable' && ( <div id="allmedicalrecordstable" className="animate-fadeInUp flex flex-col items-center border-t-2  border-[#909090] w-[100%] h-[90%] rounded-2xl mt-5" >
 
       <div className=" mt-5  w-full h-[60px] flex justify-between rounded-3xl pl-5 pr-5">              
-      <div className="ml-2 w-full flex items-center"><h2 className="font-albertsans font-bold text-[18px] text-[#383838] mr-3 ">Search: </h2><div className="relative w-full flex items-center justify-center gap-3"><i className="bx bx-search absolute left-3 text-2xl text-gray-500"></i><input type="text" placeholder="Enter medical record details..." className="transition-all duration-300 ease-in-out py-2 pl-10 w-full rounded-2xl bg-[#e4e4e4] focus:bg-slate-100 focus:outline-sky-500"></input></div></div>
+      <div className="ml-2 w-full flex items-center"><h2 className="font-albertsans font-bold text-[18px] text-[#383838] mr-3 ">Search: </h2><div className="relative w-full flex items-center justify-center gap-3"><i className="bx bx-search absolute left-3 text-2xl text-gray-500"></i><input 
+        type="text" 
+        placeholder="Enter medical record details..." 
+        value={searchmedicalrecords}
+        onChange={(e) => setsearchmedicalrecords(e.target.value)}
+        className="transition-all duration-300 ease-in-out py-2 pl-10 w-full rounded-2xl bg-[#e4e4e4] focus:bg-slate-100 focus:outline-sky-500"
+      /></div></div>
       </div>
 
     {loadingappointmens ? (
@@ -11171,7 +11256,7 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
   <div className="rounded-lg p-4 bg-red-50 text-red-600">
   Error: {errorloadingappointments}
 </div>
-) : patientdemographics.length === 0 ? (
+) : filteredmedicalrecords.length === 0 ? (
   <div className="text-yellow-600 bg-yellow-50 rounded-2xl px-4 py-6">No patient medical records found.</div>
 
 ) :(
@@ -11193,7 +11278,7 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
 
       <tbody className=" divide-y divide-gray-200 bg-white  ">
 
-      {patientdemographics.map((patients) => (
+      {filteredmedicalrecords.map((patients) => (
           <tr 
             key={patients._id}
             className="hover:bg-gray-50 transition-all ease-in-out duration-300 border-b-2"
