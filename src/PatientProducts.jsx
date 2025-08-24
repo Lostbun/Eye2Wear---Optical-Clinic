@@ -1915,7 +1915,7 @@ useEffect(() => {
                  
                 <div className=" mx-1  w-fit rounded-md py-1 px-2  rounded-1xl h-fit  mt-2 break-words min-w-0 bg-[#F0F6FF]"><h1 className={`font-medium   text-[#0d0d0d] text-[13px] min-w-0 break-words ${product.ambherinventoryproductquantity === 0 ? 'text-gray-400': ''}`}>{product.ambherinventoryproductcategory}</h1></div>
                     <div className="w-full h-auto ml-2 mt-2 "><h1 className={`font-semibold  text-[15px] min-w-0 break-words ${product.ambherinventoryproductquantity === 0 ? 'text-gray-400': ''}`}>{product.ambherinventoryproductname}</h1></div>
-                    <div className="w-fit h-auto ml-2 mt-1 "><h1 className={`font-albertsans font-bold text-[18px] min-w-0 break-words ${product.ambherinventoryproductquantity === 0 ? 'text-gray-400': ''}`}>₱ {product.ambherinventoryproductprice?.toLocaleString()}</h1></div>
+                    <div className="text-[#1f8126] w-fit h-auto ml-2 mt-1 "><h1 className={`font-albertsans font-bold text-[18px] min-w-0 break-words ${product.ambherinventoryproductquantity === 0 ? 'text-gray-400': ''}`}>₱ {product.ambherinventoryproductprice?.toLocaleString()}</h1></div>
                 <div className="w-full h-auto ml-2 mt-5 mb-5 "><h1 className={`font-albertsans font-medium text-[#4e4f4f] text-[15px] min-w-0 break-words ${product.ambherinventoryproductquantity === 0 ? 'text-gray-400': ''}`}>{ambherproductsoldCounts[product.ambherinventoryproductid] ?? 0} Sold</h1></div>
               </div>
                   ))
@@ -2384,7 +2384,7 @@ useEffect(() => {
                  
                 <div className=" mx-1  w-fit rounded-md py-1 px-2  rounded-1xl h-fit  mt-2 break-words min-w-0 bg-[#F0F6FF]"><h1 className={`font-medium   text-[#0d0d0d] text-[13px] min-w-0 break-words ${product.bautistainventoryproductquantity === 0 ? 'text-gray-400': ''}`}>{product.bautistainventoryproductcategory}</h1></div>
                     <div className="w-full h-auto ml-2 mt-2 "><h1 className={`font-semibold  text-[15px] min-w-0 break-words ${product.bautistainventoryproductquantity === 0 ? 'text-gray-400': ''}`}>{product.bautistainventoryproductname}</h1></div>
-                    <div className="w-fit h-auto ml-2 mt-1 "><h1 className={`font-albertsans font-bold text-[18px] min-w-0 break-words ${product.bautistainventoryproductquantity === 0 ? 'text-gray-400': ''}`}>₱ {product.bautistainventoryproductprice?.toLocaleString()}</h1></div>
+                    <div className="text-[#1f8126] w-fit h-auto ml-2 mt-1 "><h1 className={`font-albertsans font-bold text-[18px] min-w-0 break-words ${product.bautistainventoryproductquantity === 0 ? 'text-gray-400': ''}`}>₱ {product.bautistainventoryproductprice?.toLocaleString()}</h1></div>
                 <div className="w-full h-auto ml-2 mt-5 mb-5 "><h1 className={`font-albertsans font-medium text-[#4e4f4f] text-[15px] min-w-0 break-words ${product.bautistainventoryproductquantity === 0 ? 'text-gray-400': ''}`}>{bautistaproductsoldCounts[product.bautistainventoryproductid] ?? 0} Sold</h1></div>
               </div>
                   ))

@@ -108,7 +108,7 @@ export const getallpatientwishlistinventoryproduct = async (req, res) => {
     try{
         // Optimized query with field selection, lean(), and proper sorting
         const patientwishlistinventoryproducts = await Patientwishlist.find({})
-            .select('wishlistid patientwishlistemail clinicType patientwishlistinventoryproductid patientwishlistinventoryproductname patientwishlistinventoryproductbrand patientwishlistinventoryproductprice patientwishlistinventoryproductimagepreviewimages createdAt')
+            .select('wishlistid patientwishlistemail patientwishlistinventoryproductcategory clinicType patientwishlistinventoryproductid patientwishlistinventoryproductname patientwishlistinventoryproductbrand patientwishlistinventoryproductprice patientwishlistinventoryproductimagepreviewimages createdAt')
             .sort({patientwishlistinventoryproductid: -1})
             .lean(); // Returns plain JavaScript objects for better performance
         
@@ -137,7 +137,7 @@ export const getallpatientwishlistinventoryproductbyemail = async (req, res) => 
         const patientwishlistinventoryproducts = await Patientwishlist.find({
             patientwishlistemail: patientEmail
         })
-        .select('wishlistid patientwishlistemail clinicType patientwishlistinventoryproductid patientwishlistinventoryproductname patientwishlistinventoryproductbrand patientwishlistinventoryproductprice patientwishlistinventoryproductimagepreviewimages createdAt')
+        .select('wishlistid patientwishlistemail patientwishlistinventoryproductcategory clinicType patientwishlistinventoryproductid patientwishlistinventoryproductname patientwishlistinventoryproductbrand patientwishlistinventoryproductprice patientwishlistinventoryproductimagepreviewimages createdAt')
         .sort({ patientwishlistinventoryproductid: -1 })
         .lean(); // Returns plain JavaScript objects for better performance
         
