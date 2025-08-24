@@ -10,6 +10,7 @@ import ambherlogo from"../src/assets/images/ambherlogo.png";
 import defaultprofilepic from '../src/assets/images/defaulticon.png'
 import imageCompression from "browser-image-compression";
 import darklogo from "../src/assets/images/darklogo.png";
+import addimage from "../src/assets/images/addimage.png";
 import axios from "axios";
 import { GenderBoxAdminDash } from "./components/GenderBoxAdminDash";
 import { OwnerClinicBox } from "./components/OwnerClinicBox";
@@ -288,6 +289,188 @@ const OrderListSkeleton = () => (
     ))}
   </div>
 );
+
+// Medical Record Skeleton Components
+const MedicalRecordRowSkeleton = () => (
+  <div className="animate-pulse pl-3 mt-3 w-full h-[80px] shadow-sm bg-white rounded-2xl flex justify-between items-center">
+    <div className="px-2 flex justify-center items-center rounded-2xl h-full w-[220px]">
+      <div className="h-4 bg-gray-300 rounded w-32 mx-auto"></div>
+    </div>
+    <div className="px-2 flex flex-col justify-center items-center rounded-2xl h-full w-[220px]">
+      <div className="h-4 bg-gray-300 rounded w-24 mx-auto"></div>
+    </div>
+    <div className="px-2 flex justify-center items-center rounded-2xl h-full w-[220px]">
+      <div className="h-4 bg-gray-300 rounded w-28 mx-auto"></div>
+    </div>
+    <div className="rounded-2xl h-full w-auto mr-4 flex justify-center items-center">
+      <div className="h-8 w-16 bg-gray-300 rounded-2xl mr-2"></div>
+      <div className="h-8 w-20 bg-gray-300 rounded-2xl"></div>
+    </div>
+  </div>
+);
+
+const MedicalRecordImageSkeleton = () => (
+  <div className="animate-pulse flex flex-col justify-center items-center w-fit h-fit mt-5">
+    <div className="object-cover max-w-150 h-40 bg-gray-300 rounded-2xl"></div>
+  </div>
+);
+
+// Optimized Medical Record Image Component
+const OptimizedMedicalRecordImage = ({ src, alt = "Medical Record", className = "" }) => {
+  const [isLoading, setIsLoading] = useState(true);
+  const [hasError, setHasError] = useState(false);
+  const [imageSrc, setImageSrc] = useState(null);
+  
+  useEffect(() => {
+    if (!src) {
+      setHasError(true);
+      setIsLoading(false);
+      return;
+    }
+    
+    // Create a new image element to preload
+    const img = new Image();
+    
+    img.onload = () => {
+      setImageSrc(src);
+      setIsLoading(false);
+      setHasError(false);
+    };
+    
+    img.onerror = () => {
+      setHasError(true);
+      setIsLoading(false);
+    };
+    
+    // Start loading the image
+    img.src = src;
+    
+    // Cleanup function
+    return () => {
+      img.onload = null;
+      img.onerror = null;
+    };
+  }, [src]);
+  
+  if (isLoading) {
+    return <MedicalRecordImageSkeleton />;
+  }
+  
+  if (hasError || !imageSrc) {
+    return (
+      <div className="flex flex-col justify-center items-center w-fit h-fit mt-5">
+        <div className="object-cover max-w-150 h-40 bg-gray-200 rounded-2xl flex items-center justify-center">
+          <div className="text-gray-500 text-center">
+            <i className="bx bx-image text-3xl mb-2"></i>
+            <p className="text-sm">Image unavailable</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+  
+  return (
+    <div className="flex flex-col justify-center items-center w-fit h-fit mt-5">
+      <img 
+        className={`object-cover max-w-150 rounded-2xl ${className}`}
+        src={imageSrc}
+        alt={alt}
+        loading="lazy"
+        onError={() => setHasError(true)}
+      />
+    </div>
+  );
+};
+
+// Medical Record Image Viewer with automatic loading
+const MedicalRecordImageViewer = ({ record, loadMedicalRecordImage, onImageClick }) => {
+  const [imageData, setImageData] = useState(record?.patientotherclinicrecordimage || null);
+  const [isLoadingImage, setIsLoadingImage] = useState(false);
+  const [imageError, setImageError] = useState(false);
+
+  // Load image when component mounts if no image data exists
+  useEffect(() => {
+    const loadImage = async () => {
+      if (!imageData && record?.otherclinicid && loadMedicalRecordImage) {
+        setIsLoadingImage(true);
+        setImageError(false);
+        
+        try {
+          console.log('Loading image for record ID:', record.otherclinicid);
+          const image = await loadMedicalRecordImage(record.otherclinicid);
+          if (image) {
+            setImageData(image);
+            // Also update the record object for the modal
+            if (record) {
+              record.patientotherclinicrecordimage = image;
+            }
+          } else {
+            setImageError(true);
+          }
+        } catch (error) {
+          console.error('Error loading medical record image:', error);
+          setImageError(true);
+        } finally {
+          setIsLoadingImage(false);
+        }
+      }
+    };
+
+    loadImage();
+  }, [record?.otherclinicid, imageData, loadMedicalRecordImage, record]);
+
+  if (isLoadingImage) {
+    return (
+      <div className="flex flex-col justify-center items-center w-fit h-fit mt-5">
+        <div className="hover:cursor-pointer object-cover w-80 h-80 bg-gray-200 rounded-2xl flex items-center justify-center animate-pulse">
+          <div className="text-gray-500 text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500 mx-auto mb-2"></div>
+            <p className="text-sm">Loading image...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (imageData && !imageError) {
+    const imageSrc = imageData.startsWith('data:') 
+      ? imageData 
+      : `data:image/jpeg;base64,${imageData}`;
+
+    return (
+      <div className="flex flex-col justify center items-center w-fit h-fit mt-5">
+        <div onClick={() => onImageClick && onImageClick()} className="cursor-pointer">
+          <OptimizedMedicalRecordImage 
+            src={imageSrc}
+            alt="Medical Record Image"
+            className="hover:cursor-pointer object-cover w-80 h-80"
+          />
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col justify-center items-center w-fit h-fit mt-5">
+      <div className="object-cover max-w-150 h-40 bg-gray-200 rounded-2xl flex items-center justify-center">
+        <div className="text-gray-500 text-center">
+          <i className="bx bx-image text-3xl mb-2"></i>
+          <p className="text-sm">{imageError ? 'Failed to load image' : 'No image available'}</p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -4108,6 +4291,7 @@ const [selectedpatientmedicalrecord,setselectedpatientmedicalrecord] = useState(
 const [showpatientmedicalrecord, setshowpatientmedicalrecord] = useState(false);
 const [showpatientmedicalrecordconsultation, setshowpatientmedicalrecordconsultation] = useState(false);
 const [showpatientaddothermedicalrecord, setshowpatientaddothermedicalrecord] = useState(false);
+const [showotherclinicrecordimage, setshowotherclinicrecordimage] = useState(false);
 
 
 
@@ -4215,11 +4399,16 @@ const [showpatientaddothermedicalrecord, setshowpatientaddothermedicalrecord] = 
 
 
 const [otherclinicrecords, setotherclinicrecords] = useState([]);
+const [loadingOtherClinicRecords, setLoadingOtherClinicRecords] = useState(true);
+const [otherClinicRecordsError, setOtherClinicRecordsError] = useState(null);
 
 
 
 
   const fetchotherclinicrecords = async () => {
+    setLoadingOtherClinicRecords(true);
+    setOtherClinicRecordsError(null);
+    
     try{
 
       const response = await fetch(`/api/otherclinicrecord`, {
@@ -4229,25 +4418,135 @@ const [otherclinicrecords, setotherclinicrecords] = useState([]);
       });
 
       if(!response.ok){
+        // Handle specific service unavailable errors (503 from timeout)
+        if(response.status === 503) {
+          console.warn('Database timeout, retrying in 3 seconds...');
+          setOtherClinicRecordsError('Database timeout, retrying...');
+          setTimeout(() => fetchotherclinicrecords(), 3000); // Retry after 3 seconds
+          return;
+        }
         throw new Error (`HTTP error! Error: ${response.status}`);
       }
 
       const data = await response.json();
-      setotherclinicrecords(data);
+      setotherclinicrecords(data || []); // Ensure we always set an array
+      setOtherClinicRecordsError(null);
 
     }catch(error){
       console.error('Error fetching other clinic records: ', error);
+      setOtherClinicRecordsError('Failed to load medical records');
+      // Set empty array on error to prevent UI issues
+      setotherclinicrecords([]);
+    } finally {
+      setLoadingOtherClinicRecords(false);
     }
   };
 
 
 
-useEffect(() => {
+// Smart cached medical records fetching function - Optimized for patient-specific records
+const fetchMedicalRecordsWithCache = useCallback(async (patientEmail = null, includeImages = false) => {
+  if (!currentusertoken) return;
+  
+  setLoadingOtherClinicRecords(true);
+  setOtherClinicRecordsError(null);
+  
+  try {
+    // Define the fetch function for smart cache
+    const fetchFunction = async () => {
+      // Use optimized endpoint for patient-specific records if email provided
+      const endpoint = patientEmail 
+        ? `/api/otherclinicrecord/patient/${encodeURIComponent(patientEmail)}?includeImages=${includeImages}&limit=20`
+        : `/api/otherclinicrecord?includeImages=${includeImages}&limit=50`;
+        
+      const response = await fetch(endpoint, {
+        headers: {
+          'Authorization': `Bearer ${currentusertoken}`
+        }
+      });
 
+      if (!response.ok) {
+        if (response.status === 503) {
+          throw new Error('Database timeout, please try again');
+        }
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
 
-  if(currentusertoken){
-    fetchotherclinicrecords();
+      const responseData = await response.json();
+      
+      // Handle both old format (array) and new format (object with data property)
+      if (responseData.data) {
+        return responseData.data; // New optimized format
+      }
+      return responseData || []; // Fallback to old format
+    };
+
+    // Try to use smart cache, fallback to direct fetch if smartFetch fails
+    let cachedData;
+    try {
+      if (smartFetch && typeof smartFetch === 'function') {
+        // Use patient-specific cache key for better performance
+        const cacheKey = patientEmail 
+          ? `medical-records-${patientEmail}` 
+          : 'other-clinic-records-all';
+          
+        cachedData = await smartFetch(
+          cacheKey,
+          fetchFunction,
+          CACHE_DURATIONS.MEDIUM || 300000 // 5 minutes cache fallback
+        );
+      } else {
+        // Fallback to direct fetch if smart cache not available
+        console.warn('Smart cache not available, using direct fetch');
+        cachedData = await fetchFunction();
+      }
+    } catch (cacheError) {
+      console.warn('Smart cache failed, falling back to direct fetch:', cacheError);
+      cachedData = await fetchFunction();
+    }
+    
+    setotherclinicrecords(cachedData || []);
+    setOtherClinicRecordsError(null);
+  } catch (error) {
+    console.error('Error fetching cached other clinic records: ', error);
+    setOtherClinicRecordsError('Failed to load medical records');
+    setotherclinicrecords([]);
+  } finally {
+    setLoadingOtherClinicRecords(false);
   }
+}, [currentusertoken, smartFetch, CACHE_DURATIONS]);
+
+useEffect(() => {
+  // Use optimized fetching based on context
+  if (selectedpatientmedicalrecord?.patientemail) {
+    // When viewing a specific patient's medical records, use patient-specific endpoint
+    fetchMedicalRecordsWithCache(selectedpatientmedicalrecord.patientemail, false); // Don't include images initially for faster loading
+  } else {
+    // General medical records fetch
+    fetchMedicalRecordsWithCache();
+  }
+}, [fetchMedicalRecordsWithCache, selectedpatientmedicalrecord?.patientemail]);
+
+// Function to load images separately when needed (for better performance)
+const loadMedicalRecordImage = useCallback(async (recordId) => {
+  if (!currentusertoken || !recordId) return null;
+  
+  try {
+    const response = await fetch(`/api/otherclinicrecord/${recordId}?includeImages=true`, {
+      headers: {
+        'Authorization': `Bearer ${currentusertoken}`
+      }
+    });
+    
+    if (response.ok) {
+      const data = await response.json();
+      return data.patientotherclinicrecordimage;
+    }
+  } catch (error) {
+    console.error('Error loading medical record image:', error);
+  }
+  
+  return null;
 }, [currentusertoken]);
 
 
@@ -10953,8 +11252,8 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
                 </div>
                 <div className="h-full flex flex-col  w-[65%] px-3 rounded-2xl">
                     <div className="flex justify-center items-center mt-3 w-full h-[60px]">
-                    <div onClick={() => showpatientmedicalrecordstable('medicalrecordsconsultationtable')}  className={`w-full mr-5 hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 pb-3 pt-3 text-center flex justify-center items-center ${activepatientmedicalrecordstable ==='medicalrecordsconsultationtable' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d] ${activepatientmedicalrecordstable ==='medicalrecordsconsultationtable' ? 'text-white' : ''}`}>Consultation</h1></div>
-                    <div onClick={() => showpatientmedicalrecordstable('medicalrecordspastvisitstable')}  className={` w-full ml-5 hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 pb-3 pt-3 text-center flex justify-center items-center ${activepatientmedicalrecordstable ==='medicalrecordspastvisitstable' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d]   ${activepatientmedicalrecordstable ==='medicalrecordspastvisitstable' ? 'text-white' : ''}`}>Other Clinic Records</h1></div>
+                    <div onClick={() => showpatientmedicalrecordstable('medicalrecordsconsultationtable')}  className={`cursor-pointer w-full mr-5 hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 pb-3 pt-3 text-center flex justify-center items-center ${activepatientmedicalrecordstable ==='medicalrecordsconsultationtable' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d] ${activepatientmedicalrecordstable ==='medicalrecordsconsultationtable' ? 'text-white' : ''}`}>Consultation</h1></div>
+                    <div onClick={() => showpatientmedicalrecordstable('medicalrecordspastvisitstable')}  className={`cursor-pointer w-full ml-5 hover:rounded-2xl transition-all duration-300 ease-in-out  border-2 b-[#909090] rounded-3xl pl-25 pr-25 pb-3 pt-3 text-center flex justify-center items-center ${activepatientmedicalrecordstable ==='medicalrecordspastvisitstable' ? 'bg-[#2781af] rounded-2xl' : ''}`}><h1 className= {`font-albertsans font-semibold text-[#5d5d5d]   ${activepatientmedicalrecordstable ==='medicalrecordspastvisitstable' ? 'text-white' : ''}`}>Other Clinic Records</h1></div>
                     </div>
 
                { activepatientmedicalrecordstable === 'medicalrecordsconsultationtable' && (
@@ -11062,6 +11361,33 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
                 <div className="border-10 overflow-y-auto p-2 w-full h-[530px] bg-[#e5e7eb] mt-3 rounded-2xl"> 
 
                        {(() => {
+        // Show loading skeleton while fetching records
+        if (loadingOtherClinicRecords) {
+          return (
+            <div className="space-y-3">
+              {[...Array(3)].map((_, index) => (
+                <MedicalRecordRowSkeleton key={index} />
+              ))}
+            </div>
+          );
+        }
+
+        // Show error message if failed to load
+        if (otherClinicRecordsError) {
+          return (
+            <div className="text-center text-red-500 mt-4 p-4 bg-red-50 rounded-2xl">
+              <i className="bx bx-error text-2xl mb-2"></i>
+              <p>{otherClinicRecordsError}</p>
+              <button 
+                onClick={() => fetchotherclinicrecords()} 
+                className="mt-2 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+              >
+                Retry
+              </button>
+            </div>
+          );
+        }
+
         const filteredRecords = otherclinicrecords
           .filter(record => 
             record.patientotherclinicemail === selectedpatientmedicalrecord.patientemail
@@ -11188,9 +11514,11 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
 
 
 
+
+
        {showpatientaddothermedicalrecord && (
-       <div id="patientshowpatientaddothermedicalrecord" className="overflow-y-auto bg-opacity-0 flex justify-center items-start z-50 fixed inset-0 bg-[#000000af] bg-opacity-50">
-         <div className="mt-30 mb-30 pl-5 pr-5 pb-5 bg-white rounded-2xl w-[800px] h-max  animate-fadeInUp ">
+       <div id="patientshowpatientaddothermedicalrecord" className=" bg-opacity-0 flex justify-center items-center z-50 fixed inset-0 bg-[#000000af] bg-opacity-50">
+         <div className="  pl-5 pr-5 pb-5 bg-white rounded-2xl w-[800px] h-max  animate-fadeInUp ">
               <div className=" mt-5 border-3 flex justify-between items-center border-[#2d2d4400] w-full h-[70px]">
                 <div className="flex justify-center items-center"><img src={darklogo} alt="Eye2Wear: Optical Clinic" className="w-15 hover:scale-105 transition-all   p-1"></img><h1 className="text-[#184d85] font-albertsans font-bold ml-3 text-[30px]">Add Other Clinic Record</h1></div>
                 <div onClick={() => setshowpatientaddothermedicalrecord(false)} className="bg-[#333232] px-10 rounded-2xl hover:cursor-pointer hover:scale-105 transition-all duration-300 ease-in-out"><i className="bx bx-x text-white text-[40px] "/></div>
@@ -11220,14 +11548,21 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
 
 
                           <div className="flex flex-col justify center items-center w-fit h-fit mt-5">
-                              <img className=" object-cover max-w-150 rounded-2xl" src={otherclinicpreviewimage || defaultimageplaceholder}/>
+
+                            {!otherclinicselectedimage && (<div onClick={otherclinichandleuploadclick}  className="  w-80 h-80 mt-5 flex justify-center items-center    rounded-2xl cursor-pointer transition-all" ><img src={addimage} className=" w-60 h-60 object-cover"/></div>
+                            )}      
+  
+                            {otherclinicselectedimage && 
+                            (
+                              <div className="w-80 h-80 flex justify-center items-center relative rounded-2xl overflow-hidden">
+                             <div onClick={otherclinichandleremoveprofile} className="absolute top-0 right-0   flex justify-center items-center align-middle p-1 bg-[#333333] rounded-full hover:cursor-pointer transition-all" ><i className="bx bx-x font-bold text-[30px] text-white"/></div>
+                              <img onClick={() => setshowotherclinicrecordimage(true)} className=" cursor-pointer hover:cursor-pointer object-cover w-80 h-80 rounded-2xl" src={otherclinicpreviewimage || defaultimageplaceholder}/></div>
+                            )}      
+               
                                               
                               <input  className="hidden" type="file" onChange={otherclinichandleprofilechange} accept="image/jpeg, image/jpg, image/png" ref={otherclinicimageinputref} />
-                            {!otherclinicselectedimage && (<div onClick={otherclinichandleuploadclick}  className="w-70 mt-5 flex justify-center items-center align-middle p-3 bg-[#0ea0cd] rounded-2xl hover:cursor-pointer hover:scale-105 transition-all" ><i className="bx bx-image pr-2 font-bold text-[22px] text-white"/><p className="font-semibold text-[20px] text-white">Upload</p></div>
-                                )}                              
-                              {otherclinicselectedimage && (
-                                <div onClick={otherclinichandleremoveprofile} className="w-70 mt-5 flex justify-center items-center align-middle p-3 bg-[#bf4c3b] rounded-2xl hover:cursor-pointer hover:scale-105 transition-all" ><i className="bx bx-x font-bold text-[30px] text-white"/><p className="font-semibold text-[20px] text-white">Remove</p></div>
-                                )}
+                        
+
 
                           {otherclinicselectedimage && otherclinicname !== "" && othercliniceyespecialist!== "" &&  otherclinicconsultationdate !== "" && (
 
@@ -11248,6 +11583,27 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
        
      </div>)}
 
+     
+{showotherclinicrecordimage && (
+  <div className="p-5 overflow-hidden fixed inset-0 flex justify-center items-center z-999 bg-[#000000af] bg-opacity-50">
+     <div onClick={() => setshowotherclinicrecordimage(false)} className="absolute top-3 right-3 flex justify-center items-center align-middle p-1 bg-[#333333] rounded-full hover:cursor-pointer transition-all z-[1000]" ><i className="bx bx-x font-bold text-[30px] text-white"/></div>
+    {selectedpatientappointment?.patientotherclinicrecordimage ? (
+      <img 
+        src={selectedpatientappointment.patientotherclinicrecordimage.startsWith('data:') 
+          ? selectedpatientappointment.patientotherclinicrecordimage 
+          : `data:image/jpeg;base64,${selectedpatientappointment.patientotherclinicrecordimage}`} 
+        alt="Other Clinic Record" 
+        className="max-w-full max-h-full" 
+      />
+    ) : (
+      <div className="text-white text-center">
+        <i className="bx bx-image text-6xl mb-4"></i>
+        <p className="text-xl">No image available</p>
+      </div>
+    )}
+  </div>
+)}
+
 
 
 
@@ -11266,7 +11622,7 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
                          <div className=" form-group flex justify-center items-center mb-3">
                              <label className=" w-[180px] font-albertsans font-bold italic text-[#3d3d3d] text-[20px]" htmlFor="otherclinicname">Clinic :</label>
                              <div className="flex flex-col ">
-                             <input className="bg-gray-200 text-[20px] text-gray-600 pl-3 rounded-2xl ml-3 h-10 w-114" value={selectedpatientappointment.clinicname}  id="otherclinicname" name="otherclinicname" required  placeholder="Other clinic name..."/>
+                             <input className="bg-gray-200 text-[20px] text-gray-600 pl-3 rounded-2xl ml-3 h-10 w-114" value={selectedpatientappointment.clinicname || ''} readOnly id="otherclinicname" name="otherclinicname" placeholder="Other clinic name..."/>
                               </div>
                           </div>
 
@@ -11274,37 +11630,29 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
                           <div className=" form-group flex justify-center items-center mb-3">
                              <label className=" w-[180px] font-albertsans font-bold italic text-[#3d3d3d] text-[20px]" htmlFor="othercliniceyespecialist">Eye Specialist :</label>
                              <div className="flex flex-col ">
-                             <input className="bg-gray-200 text-[20px] text-gray-600 pl-3 rounded-2xl ml-3 h-10 w-114" value={selectedpatientappointment.eyespecialist} id="othercliniceyespecialist" name="othercliniceyespecialist" required  placeholder="Eye specialist name..."/>
+                             <input className="bg-gray-200 text-[20px] text-gray-600 pl-3 rounded-2xl ml-3 h-10 w-114" value={selectedpatientappointment.eyespecialist || ''} readOnly id="othercliniceyespecialist" name="othercliniceyespecialist" placeholder="Eye specialist name..."/>
                               </div>
                           </div>
 
                           <div className="form-group flex  items-center mb-3">
                              <label className=" w-[192px] font-albertsans font-bold italic text-[#3d3d3d] text-[20px]"htmlFor="otherclinicconsultationdate">Consulted Date: </label>     
-                             <input className=" h-10 w-114 p-3 mt-2 justify-center border-b-2 border-gray-600 bg-gray-200 rounded-2xl text-[#2d2d44] text-[18px]  font-semibold" value={selectedpatientappointment.date} type="date" name="patientambherappointmentdate" id="patientambherappointmentdate" placeholder="" /> </div>
+                             <input className=" h-10 w-114 p-3 mt-2 justify-center border-b-2 border-gray-600 bg-gray-200 rounded-2xl text-[#2d2d44] text-[18px]  font-semibold" value={selectedpatientappointment.date || ''} readOnly type="date" name="patientambherappointmentdate" id="patientambherappointmentdate" placeholder="" /> </div>
                      
 
 
-                          <div className="flex flex-col justify center items-center w-fit h-fit mt-5">
-                              <img className=" object-cover max-w-150 rounded-2xl" src={selectedpatientappointment.patientotherclinicrecordimage || defaultimageplaceholder}/>
+                          <MedicalRecordImageViewer 
+                            record={selectedpatientappointment}
+                            loadMedicalRecordImage={loadMedicalRecordImage}
+                            onImageClick={() => setshowotherclinicrecordimage(true)}
+                           
+                          />
                                               
-                              <input  className="hidden" type="file" onChange={otherclinichandleprofilechange} accept="image/jpeg, image/jpg, image/png" ref={otherclinicimageinputref} />
+                          <input  classNam="hover:cursor-pointer object-cover w-80 h-80" className="hidden" type="file" onChange={otherclinichandleprofilechange} accept="image/jpeg, image/jpg, image/png" ref={otherclinicimageinputref} />
 
-
-  
-                          </div>
               </div>
-
-</form>
-
-
+            </form>
+         </div>
        </div>
-
-
-
-       
-     </div>
-
-
     )}
 
 

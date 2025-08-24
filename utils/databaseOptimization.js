@@ -53,8 +53,9 @@ export class DatabaseOptimizer {
     static getOptimizedConnectionOptions() {
         return {
             maxPoolSize: 10, // Maximum number of connections
-            serverSelectionTimeoutMS: 5000, // How long to wait for server selection
-            socketTimeoutMS: 45000, // How long to wait for socket operations
+            serverSelectionTimeoutMS: 10000, // Increased from 5000 to 10000
+            socketTimeoutMS: 60000, // Increased from 45000 to 60000
+            connectTimeoutMS: 10000, // Added explicit connection timeout
             // Connection management
             maxIdleTimeMS: 30000, // Close connections after 30 seconds of inactivity
             retryWrites: true,
@@ -64,8 +65,12 @@ export class DatabaseOptimizer {
             writeConcern: {
                 w: 'majority',
                 j: true, // Wait for journal
-                wtimeout: 5000
-            }
+                wtimeout: 10000 // Increased from 5000 to 10000
+            },
+            // Additional timeout settings for MongoDB Atlas
+            heartbeatFrequencyMS: 10000,
+            retryReads: true,
+            // Removed unsupported options
         };
     }
     

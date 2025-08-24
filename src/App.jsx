@@ -478,7 +478,12 @@ const fetchConversations = useCallback(async (forceRefresh = false) => {
     }
 
     const conversationsData = await response.json();
-    console.log(`Fetched ${conversationsData.length} conversations for ${role}:`, conversationsData);
+    console.log(`Fetched ${conversationsData.length} conversations for ${role}:`, conversationsData.map(conv => ({
+      id: conv._id,
+      hasLastMessage: !!conv.lastMessage,
+      lastMessageText: conv.lastMessage?.text || 'No text',
+      participants: conv.participants.length
+    })));
     
     // Sort conversations by last message timestamp (newest first)
     const sortedConversations = conversationsData.sort((a, b) => {
@@ -500,6 +505,7 @@ const fetchConversations = useCallback(async (forceRefresh = false) => {
     for (const conv of sortedConversations) {
       if (conv.lastMessage) {
         latestMsgs[conv._id] = conv.lastMessage;
+        console.log(`📨 Adding latest message for conversation ${conv._id}:`, conv.lastMessage.text || 'Image/File message');
         
         // ENHANCED: Check if the last message is unread FOR THIS SPECIFIC CLINIC
         const lastMsg = conv.lastMessage;
@@ -644,6 +650,7 @@ const fetchConversations = useCallback(async (forceRefresh = false) => {
       }
     }
     
+    console.log(`🔄 Setting latest messages for ${Object.keys(latestMsgs).length} conversations:`, Object.keys(latestMsgs));
     setLatestMessagesByConversation(latestMsgs);
     if (showpatientchatdashboard && !isBackgroundFetch) {
       setMessagesByConversation(newMessagesByConversation);
@@ -1365,7 +1372,15 @@ const renderMessageContent = (msg, isCurrentUser) => {
   );
 };
 
-  const getLatestMessageDisplay = (patient, messages) => {
+  const getLatestMessageDisplay = (patient, messages, conversationId = null) => {
+    // If no messages provided, try to get them from the conversation
+    if ((!messages || messages.length === 0) && conversationId) {
+      const conversation = conversations.find(conv => conv._id === conversationId);
+      if (conversation && conversation.lastMessage) {
+        messages = [conversation.lastMessage];
+      }
+    }
+    
     if (!messages || messages.length === 0) return "No messages yet";
     
     const latestMessage = messages[messages.length - 1];
@@ -1379,7 +1394,18 @@ const renderMessageContent = (msg, isCurrentUser) => {
   };
 
   const getLatestMessageForConversation = (conversationId) => {
-    return latestMessagesByConversation[conversationId] || null;
+    const latestMessage = latestMessagesByConversation[conversationId] || null;
+    if (!latestMessage) {
+      console.log(`⚠️  No latest message found for conversation ${conversationId}. Available conversations:`, Object.keys(latestMessagesByConversation));
+      
+      // Fallback: try to get the lastMessage directly from the conversation
+      const conversation = conversations.find(conv => conv._id === conversationId);
+      if (conversation && conversation.lastMessage) {
+        console.log(`🔄 Found fallback message for conversation ${conversationId}:`, conversation.lastMessage.text || 'Image/File message');
+        return conversation.lastMessage;
+      }
+    }
+    return latestMessage;
   };
 
   const handleFileChange = (e) => {
@@ -2322,15 +2348,17 @@ useEffect(() => {
       </div>
       
       {modalOpen && (
-        <div className="motion-preset-fade-md fixed inset-0 bg-[#040404e2] flex items-center justify-center z-[99999]">
-          <OptimizedImage src={close} alt="Close modal" onClick={() => setModalOpen(false)} className=" w-7 h-7 absolute top-5 right-5"/>
-          <div className="relative max-w-4xl max-h-[90vh]">
+        <div  className="fixed inset-0 bg-[#040404e2] flex items-center justify-center  z-[99999]">
+          <div className="flex items-center justify-center absolute max-w-4xl max-h-[90vh]">
             <img 
               src={selectedImageForModal} 
               alt="Full size preview" 
-              className="max-w-full max-h-[90vh] object-contain"
+              className=" max-w-full max-h-[90vh] object-contain select-none"
             />
           </div>
+       <div onClick={() => setModalOpen(false)} className="absolute top-3 right-3   flex justify-center items-center align-middle p-1 bg-[#333333] rounded-full hover:cursor-pointer transition-all" ><i className="bx bx-x font-bold text-[30px] text-white"/></div>
+
+
         </div>
       )}
 
@@ -2904,7 +2932,7 @@ messages.map((msg, index) => {
           conv.participants.some(p => p.role === 'clinic' && p.clinic === "Bautista Eye Center")
         );
         const latestMessage = clinicConversation ? getLatestMessageForConversation(clinicConversation._id) : null;
-        return getLatestMessageDisplay({ patientfirstname: "Ambher Optical" }, latestMessage ? [latestMessage] : []);
+        return getLatestMessageDisplay({ patientfirstname: "Ambher Optical" }, latestMessage ? [latestMessage] : [], clinicConversation?._id);
       })()}
     </p>
   </div>
@@ -2968,7 +2996,7 @@ messages.map((msg, index) => {
               conv.participants.some(p => p.userId === patient._id && p.role === 'patient')
             );
             const latestMessage = patientConversation ? getLatestMessageForConversation(patientConversation._id) : null;
-            return getLatestMessageDisplay(patient, latestMessage ? [latestMessage] : []);
+            return getLatestMessageDisplay(patient, latestMessage ? [latestMessage] : [], patientConversation?._id);
           })()}
         </p>
       </div>
@@ -3455,7 +3483,7 @@ messages.map((msg, index) => {
               conv.participants.some(p => p.userId === patient._id && p.role === 'patient')
             );
             const latestMessage = patientConversation ? getLatestMessageForConversation(patientConversation._id) : null;
-            return getLatestMessageDisplay(patient, latestMessage ? [latestMessage] : []);
+            return getLatestMessageDisplay(patient, latestMessage ? [latestMessage] : [], patientConversation?._id);
           })()}
         </p>
       </div>

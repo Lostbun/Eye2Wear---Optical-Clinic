@@ -300,6 +300,9 @@ io.on('connection', (socket) => {
 //ALLOW FILTERING OF PROPERTIES NOT DEFINED IN MODEL SCHEMA
 mongoose.set("strictQuery", false);
 
+// Configure mongoose for better MongoDB Atlas handling
+mongoose.set('bufferCommands', false); // Disable mongoose buffering
+
 // Get optimized connection options
 const connectionOptions = DatabaseOptimizer.getOptimizedConnectionOptions();
 

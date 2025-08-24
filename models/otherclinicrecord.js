@@ -35,8 +35,9 @@ patientotherclinicsubmittedbytype: String,
 
 patientotherclinicrecordimage: {
         type: String,
-        required: true,
-        default:"default-profile-url"
+        required: false, // Make optional to handle cases where image fails to load
+        default: null, // Use null instead of string for better performance
+        maxlength: 2097152 // Limit base64 size to ~1.5MB actual image size
       },
 
 
@@ -62,13 +63,18 @@ OtherClinicRecordSchema.plugin(AutoIncrement(mongoose),{
     disable_hooks: false
 });
 
-// Add indexes for better query performance
+// Add indexes for better query performance - optimized for medical records
 OtherClinicRecordSchema.index({ patientotherclinicrecordid: -1 }); // Primary sorting
-OtherClinicRecordSchema.index({ patientotherclinicemail: 1 }); // Email filtering
+OtherClinicRecordSchema.index({ patientotherclinicemail: 1 }); // Email filtering - most common query
 OtherClinicRecordSchema.index({ patientotherclinicname: 1 }); // Clinic name filtering
 OtherClinicRecordSchema.index({ patientothercliniclastname: 1, patientotherclinicfirstname: 1 }); // Name searches
 OtherClinicRecordSchema.index({ createdAt: -1 }); // Date sorting
+OtherClinicRecordSchema.index({ patientotherclinicconsultationdate: -1 }); // Consultation date sorting
+OtherClinicRecordSchema.index({ patientotherclinicemail: 1, patientotherclinicconsultationdate: -1 }); // Compound index for patient medical history
 OtherClinicRecordSchema.index({ patientothercliniclastname: 'text', patientotherclinicfirstname: 'text', patientotherclinicemail: 'text', patientotherclinicname: 'text' }); // Text search
+
+// Add a sparse index for images to optimize queries that exclude large image data
+OtherClinicRecordSchema.index({ patientotherclinicrecordimage: 1 }, { sparse: true });
 
 
 
