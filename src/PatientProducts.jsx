@@ -52,7 +52,7 @@ const CategorySkeleton = () => (
   <div className="animate-pulse">
     {/* Multiple category button skeletons matching the real layout */}
     {[...Array(5)].map((_, index) => (
-      <div key={index} className="mt-3 border-2 rounded-3xl py-2 text-center flex justify-center items-center bg-gray-100">
+      <div key={index} className="mt-3 w-57 border-2 rounded-3xl py-2 text-center flex justify-center items-center bg-gray-100">
         <div className="h-5 bg-gray-300 rounded w-20"></div>
         <div className="bg-gray-200 h-5 w-6 rounded-full ml-2"></div>
       </div>

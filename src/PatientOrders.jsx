@@ -16,52 +16,66 @@ import Stack from '@mui/material/Stack';
 
 // Skeleton component for order items
 const OrderSkeleton = () => (
-  <div className="pb-7 shadow-md rounded-2xl py-3.25 px-3.25 mb-3 border-1 flex items-center w-full h-auto animate-pulse">
-    {/* Product image skeleton - matches w-35 h-35 */}
+  <div className="pb-7 shadow-md rounded-2xl py-3.25 px-3.25 mb-3 border-1 flex items-center w-240 h-auto animate-pulse">
+    {/* Product image skeleton - matches w-35 h-35 rounded-2xl */}
     <div className="mr-5 w-35 h-35 bg-gray-300 rounded-2xl"></div>
     
     <div className="mt-2 h-auto w-full flex flex-col items-start">
-      {/* Product name and status skeleton - matches flex justify-between */}
-      <div className="flex justify-between w-full">
-        <div className="h-6 bg-gray-300 rounded w-80"></div>
-        <div className="h-8 bg-gray-200 rounded-full w-28 px-4 py-2"></div>
+      {/* Product name and status skeleton - matches flex justify-between w-full */}
+      <div className="flex justify-between w-full mb-5">
+        {/* Product name skeleton - matches font-semibold font-albertsans text-[20px] */}
+        <div className="h-6 bg-gray-300 rounded w-96"></div>
+        {/* Status badge skeleton - matches ml-3 rounded-full px-4 py-2 inline-flex */}
+        <div className="ml-3 h-8 bg-gray-200 rounded-full w-28"></div>
       </div>
       
       {/* Order details section skeleton - matches mt-5 justify-between w-full flex items-center */}
-      <div className="mt-5 justify-between w-full flex items-center">
-        {/* Date Ordered - matches actual structure */}
+      <div className="justify-between w-full flex items-center text-[#323232] font-semibold text-[13px]">
+        {/* Date Ordered - matches actual structure with icon and text */}
         <div className="flex items-center gap-1">
-          <div className="w-5 h-5 bg-gray-300 rounded"></div>
+          {/* Icon skeleton - matches text-[22px] */}
+          <div className="w-6 h-6 bg-gray-300 rounded mt-0.5"></div>
           <div>
-            <div className="h-3 bg-gray-300 rounded w-24 mb-1"></div>
-            <div className="h-4 bg-gray-300 rounded w-28"></div>
+            {/* Label skeleton - matches text-[13px] */}
+            <div className="h-3 bg-gray-300 rounded w-20 mb-1"></div>
+            {/* Value skeleton - matches text-[15px] */}
+            <div className="h-4 bg-gray-300 rounded w-32"></div>
           </div>
         </div>
         
         {/* Pickup info - matches actual structure */}
         <div className="flex items-center gap-1">
-          <div className="w-5 h-5 bg-gray-300 rounded"></div>
+          {/* Icon skeleton - matches text-[22px] */}
+          <div className="w-6 h-6 bg-gray-300 rounded mt-0.5"></div>
           <div>
-            <div className="h-3 bg-gray-300 rounded w-36 mb-1"></div>
-            <div className="h-4 bg-gray-300 rounded w-32"></div>
+            {/* Label skeleton - matches text-[13px] */}
+            <div className="h-3 bg-gray-300 rounded w-40 mb-1"></div>
+            {/* Value skeleton - matches text-[15px] */}
+            <div className="h-4 bg-gray-300 rounded w-36"></div>
           </div>
         </div>
         
         {/* Quantity - matches actual structure */}
         <div className="flex items-center gap-1">
-          <div className="w-5 h-5 bg-gray-300 rounded"></div>
+          {/* Icon skeleton - matches text-[22px] */}
+          <div className="w-6 h-6 bg-gray-300 rounded mt-0.5"></div>
           <div>
+            {/* Label skeleton - matches text-[13px] */}
             <div className="h-3 bg-gray-300 rounded w-16 mb-1"></div>
-            <div className="h-4 bg-gray-300 rounded w-6"></div>
+            {/* Value skeleton - matches text-[15px] */}
+            <div className="h-4 bg-gray-300 rounded w-8"></div>
           </div>
         </div>
         
         {/* Amount - matches actual structure */}
         <div className="flex items-center gap-1">
-          <div className="w-5 h-5 bg-gray-300 rounded"></div>
+          {/* Currency symbol skeleton - matches text-[22px] */}
+          <div className="w-4 h-6 bg-gray-300 rounded"></div>
           <div>
-            <div className="h-3 bg-gray-300 rounded w-28 mb-1"></div>
-            <div className="h-4 bg-gray-300 rounded w-24"></div>
+            {/* Label skeleton - matches text-[13px] for "Amount Paid" or "Down Payment" */}
+            <div className="h-3 bg-gray-300 rounded w-24 mb-1"></div>
+            {/* Value skeleton - matches text-[15px] */}
+            <div className="h-4 bg-gray-300 rounded w-20"></div>
           </div>
         </div>
       </div>
@@ -70,7 +84,9 @@ const OrderSkeleton = () => (
       <div className="flex items-center justify-between border-t-2 w-full h-10 mt-5">
         <div></div>
         <div className="flex items-center gap-3 mt-5 h-auto">
+          {/* "Total Price:" label skeleton - matches text-[17px] */}
           <div className="h-5 bg-gray-300 rounded w-24"></div>
+          {/* Price value skeleton - matches text-[25px] */}
           <div className="h-7 bg-gray-300 rounded w-32"></div>
         </div>
       </div>
@@ -724,7 +740,7 @@ useEffect(() => {
                   </div>
                         ))
                       )}
-                  
+                   
               
 
               </div>

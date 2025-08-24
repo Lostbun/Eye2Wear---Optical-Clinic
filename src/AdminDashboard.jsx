@@ -214,6 +214,81 @@ const InventorySkeleton = () => (
   </div>
 );
 
+// Skeleton component for order items - matches the order card layout
+const OrderSkeleton = () => (
+  <div className="pb-7 shadow-md rounded-2xl py-3.25 px-3.25 mb-3 border-1 flex items-center w-full h-auto animate-pulse">
+    {/* Product image skeleton - matches w-35 h-35 */}
+    <div className="mr-5 w-35 h-35 bg-gray-300 rounded-2xl"></div>
+    
+    <div className="mt-2 h-auto w-full flex flex-col items-start">
+      {/* Product name and status skeleton - matches flex justify-between */}
+      <div className="flex justify-between w-full mb-2">
+        <div className="h-6 bg-gray-300 rounded w-80"></div>
+        <div className="h-8 bg-gray-200 rounded-full w-28 px-4 py-2"></div>
+      </div>
+      
+      {/* Customer name skeleton */}
+      <div className="h-4 bg-gray-300 rounded w-64 mb-5"></div>
+      
+      {/* Order details section skeleton - matches mt-5 justify-between w-full flex items-center */}
+      <div className="mt-5 justify-between w-full flex items-center">
+        {/* Date Ordered - matches actual structure */}
+        <div className="flex items-center gap-1">
+          <div className="w-5 h-5 bg-gray-300 rounded"></div>
+          <div>
+            <div className="h-3 bg-gray-300 rounded w-24 mb-1"></div>
+            <div className="h-4 bg-gray-300 rounded w-28"></div>
+          </div>
+        </div>
+        
+        {/* Pickup info - matches actual structure */}
+        <div className="flex items-center gap-1">
+          <div className="w-5 h-5 bg-gray-300 rounded"></div>
+          <div>
+            <div className="h-3 bg-gray-300 rounded w-36 mb-1"></div>
+            <div className="h-4 bg-gray-300 rounded w-32"></div>
+          </div>
+        </div>
+        
+        {/* Quantity - matches actual structure */}
+        <div className="flex items-center gap-1">
+          <div className="w-5 h-5 bg-gray-300 rounded"></div>
+          <div>
+            <div className="h-3 bg-gray-300 rounded w-16 mb-1"></div>
+            <div className="h-4 bg-gray-300 rounded w-6"></div>
+          </div>
+        </div>
+        
+        {/* Amount - matches actual structure */}
+        <div className="flex items-center gap-1">
+          <div className="w-5 h-5 bg-gray-300 rounded"></div>
+          <div>
+            <div className="h-3 bg-gray-300 rounded w-28 mb-1"></div>
+            <div className="h-4 bg-gray-300 rounded w-24"></div>
+          </div>
+        </div>
+      </div>
+      
+      {/* Total price section skeleton - matches border-t-2 w-full h-10 mt-5 */}
+      <div className="flex items-center justify-between border-t-2 w-full h-10 mt-5">
+        <div></div>
+        <div className="flex items-center gap-3 mt-5 h-auto">
+          <div className="h-5 bg-gray-300 rounded w-24"></div>
+          <div className="h-7 bg-gray-300 rounded w-32"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
+const OrderListSkeleton = () => (
+  <div className="space-y-3 w-full">
+    {[...Array(3)].map((_, index) => (
+      <OrderSkeleton key={index} />
+    ))}
+  </div>
+);
+
 
 
 
@@ -5903,6 +5978,8 @@ const showbautistapickupnoworlater = (pickupnoworlaterid) => {
   const [bautistaorders, setbautistaOrders] = useState([]);
   const [ambherfilter, setambherFilter] = useState('All');
   const [bautistafilter, setbautistaFilter] = useState('All');
+  const [loadingAmbherOrders, setLoadingAmbherOrders] = useState(true);
+  const [loadingBautistaOrders, setLoadingBautistaOrders] = useState(true);
   const [searchambherTerm, setambherSearchTerm] = useState('');
   const [searchbautistaTerm, setbautistaSearchTerm] = useState('');
   const [searchpatientorderambherTerm, setsearchpatientorderambherTerm] = useState('');
@@ -6438,6 +6515,7 @@ useEffect(() => {
 
     const fetchambherOrders = async () => {
       try {
+        setLoadingAmbherOrders(true);
         
         const response = await fetch(`/api/patientorderambher`, {
           headers: {
@@ -6455,6 +6533,8 @@ useEffect(() => {
     
       } catch (err) {
           console.log(err);
+      } finally {
+        setLoadingAmbherOrders(false);
       }
     };
 
@@ -6483,6 +6563,7 @@ useEffect(() => {
 
       const fetchbautistaOrders = async () => {
       try {
+        setLoadingBautistaOrders(true);
         
         const response = await fetch(`/api/patientorderbautista`, {
           headers: {
@@ -6500,6 +6581,8 @@ useEffect(() => {
     
       } catch (err) {
           console.log(err);
+      } finally {
+        setLoadingBautistaOrders(false);
       }
     };
 
@@ -12655,7 +12738,9 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
 
               
                <div className=" w-full h-auto mt-5">
-       {filteredambherOrders.length === 0 ? (
+       {loadingAmbherOrders ? (
+          <OrderListSkeleton />
+        ) : filteredambherOrders.length === 0 ? (
           <div className="text-gray-500 p-4">No orders found</div>
         ) : (
           filteredambherOrders.map((order) => (
@@ -13423,7 +13508,9 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
 
               
                <div className=" w-full h-auto mt-5">
-       {filteredbautistaOrders.length === 0 ? (
+       {loadingBautistaOrders ? (
+          <OrderListSkeleton />
+        ) : filteredbautistaOrders.length === 0 ? (
           <div className="text-gray-500 p-4">No orders found</div>
         ) : (
           filteredbautistaOrders.map((order) => (

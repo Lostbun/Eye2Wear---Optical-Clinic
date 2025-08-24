@@ -2345,18 +2345,18 @@ useEffect(() => {
               }`}>
                 {showpatientambherConversation ? (
                   <div className="flex px-2 w-full items-center">
-                    <OptimizedImage src={leftarrow} alt="Back" className="cursor-pointer hover:scale-105 transition-all duration-300 ease-in-out w-5 h-5 mr-2" onClick={() => {setMessages([]); setSelectedImage(null); setSelectedFile(null); setshowpatientambherConversation(false);}} priority={true}/>
-                    <OptimizedImage src={ambherlogo} alt="Ambher Optical Logo" className="w-15 px-2 py-1" priority={true}/>
+                    <img src={leftarrow} alt="Back" className="cursor-pointer hover:scale-105 transition-all duration-300 ease-in-out w-5 h-5 mr-2" onClick={() => {setMessages([]); setSelectedImage(null); setSelectedFile(null); setshowpatientambherConversation(false);}}/>
+                    <img src={ambherlogo} alt="Ambher Optical Logo" className="w-15 px-2 py-1"/>
                     <p className="font-albertsans font-semibold text-[17px] text-[#ffffff]">Ambher Optical</p>
                   </div>
                 ) : showpatientbautistaConversation ? (
                   <div className="flex px-2 w-full items-center">
-                    <OptimizedImage src={leftarrow} alt="Back" className="cursor-pointer hover:scale-105 transition-all duration-300 ease-in-out w-5 h-5 mr-2" onClick={() => {setMessages([]); setSelectedImage(null); setSelectedFile(null); setshowpatientbautistaConversation(false);}} priority={true}/>
-                    <OptimizedImage src={bautistalogo} alt="Bautista Eye Center Logo" className="w-15 px-2 py-1" priority={true}/>
+                    <img src={leftarrow} alt="Back" className="cursor-pointer hover:scale-105 transition-all duration-300 ease-in-out w-5 h-5 mr-2" onClick={() => {setMessages([]); setSelectedImage(null); setSelectedFile(null); setshowpatientbautistaConversation(false);}}/>
+                    <img src={bautistalogo} alt="Bautista Eye Center Logo" className="w-15 px-2 py-1"/>
                     <p className="font-albertsans font-semibold text-[17px] text-[#ffffff]">Bautista Eye Center</p>
                   </div>
                 ) : (
-                  <OptimizedImage src={landinglogo} alt="Eye2Wear Logo" className="w-40 px-2 py-1" priority={true}/>
+                  <img src={landinglogo} alt="Eye2Wear Logo" className="w-40 px-2 py-1"/>
                 )}
               </div>
 
