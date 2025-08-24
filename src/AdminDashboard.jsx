@@ -31,6 +31,121 @@ import { useImageOptimization } from './utils/imageOptimization';
 
 
 
+// Pagination Component
+const PaginationComponent = ({ 
+  currentPage, 
+  totalItems, 
+  itemsPerPage, 
+  onPageChange,
+  itemName = "items"
+}) => {
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const startItem = (currentPage - 1) * itemsPerPage + 1;
+  const endItem = Math.min(currentPage * itemsPerPage, totalItems);
+
+  const getPageNumbers = () => {
+    const pages = [];
+    const maxVisiblePages = 5;
+    
+    if (totalPages <= maxVisiblePages) {
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      const start = Math.max(1, currentPage - 2);
+      const end = Math.min(totalPages, start + maxVisiblePages - 1);
+      
+      for (let i = start; i <= end; i++) {
+        pages.push(i);
+      }
+    }
+    
+    return pages;
+  };
+
+  if (totalPages <= 1) return null;
+
+  return (
+    <div className="flex items-center  px-4 py-3 bg-white border-t border-gray-200 rounded-b-2xl">
+      <div className="flex-1 flex justify-between sm:hidden">
+        <div
+          onClick={() => currentPage > 1 && onPageChange(currentPage - 1)}
+          className={`relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md ${
+            currentPage === 1 
+              ? 'opacity-50 cursor-not-allowed text-gray-400 bg-gray-100' 
+              : 'text-gray-700 bg-white hover:bg-gray-50 cursor-pointer'
+          }`}
+        >
+          Previous
+        </div>
+        <div
+          onClick={() => currentPage < totalPages && onPageChange(currentPage + 1)}
+          className={`ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md ${
+            currentPage === totalPages 
+              ? 'opacity-50 cursor-not-allowed text-gray-400 bg-gray-100' 
+              : 'text-gray-700 bg-white hover:bg-gray-50 cursor-pointer'
+          }`}
+        >
+          Next
+        </div>
+      </div>
+      
+      <div className="hidden sm:flex-1 sm:flex sm:items-center gap-5">
+        <div>
+          <p className="text-sm text-gray-700 font-albertsans">
+            Showing <span className="font-medium">{startItem}</span> to{' '}
+            <span className="font-medium">{endItem}</span> of{' '}
+            <span className="font-medium">{totalItems}</span> {itemName}
+          </p>
+        </div>
+        
+        <div>
+          <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+            {/* Previous Button */}
+            <div
+              onClick={() => currentPage > 1 && onPageChange(currentPage - 1)}
+              className={`relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium ${
+                currentPage === 1 
+                  ? 'opacity-50 cursor-not-allowed text-gray-400' 
+                  : 'text-gray-500 hover:bg-gray-50 cursor-pointer'
+              }`}
+            >
+              <i className="bx bx-chevron-left text-lg"></i>
+            </div>
+            
+            {/* Page Numbers */}
+            {getPageNumbers().map((pageNum) => (
+              <div
+                key={pageNum}
+                onClick={() => onPageChange(pageNum)}
+                className={`cursor-pointer relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
+                  pageNum === currentPage
+                    ? 'z-10 bg-[#2781af] border-[#2781af] text-white'
+                    : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
+                }`}
+              >
+                {pageNum}
+              </div>
+            ))}
+            
+            {/* Next Button */}
+            <div
+              onClick={() => currentPage < totalPages && onPageChange(currentPage + 1)}
+              className={`relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium ${
+                currentPage === totalPages 
+                  ? 'opacity-50 cursor-not-allowed text-gray-400' 
+                  : 'text-gray-500 hover:bg-gray-50 cursor-pointer'
+              }`}
+            >
+              <i className="bx bx-chevron-right text-lg"></i>
+            </div>
+          </nav>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // Skeleton Loading Components
 const TableRowSkeleton = () => (
   <tr className="animate-pulse">
@@ -826,63 +941,117 @@ function AdminDashboard(){
   const renderpatientaccounts = () => {
 
   const patientstorender = searchpatients ? filteredpatients : patients;
+  const paginatedPatients = getPaginatedData(patientstorender, 'patients');
+  const totalPatients = patientstorender.length;
+  const totalPages = Math.ceil(totalPatients / itemsPerPage);
 
   if (loadingpatients) {
     return (
-      <>
-        {[...Array(5)].map((_, index) => (
-          <TableRowSkeleton key={index} />
-        ))}
-      </>
+      <div>
+        <div className="overflow-x-auto w-full h-full">
+          <table className="w-full rounded-tl-2xl  rounded-tr-2xl shadow-lg">
+            <thead className="rounded-tl-2xl rounded-tr-2xl">
+              <tr className="text-[#ffffff] font-albertsans font-bold bg-[#2781af] rounded-tl-2xl rounded-tr-2xl ">
+                <th className="pb-3 pt-3 pl-2 pr-2 text-center rounded-tl-2xl">Id</th>
+                <th className="pb-3 pt-3 pl-5 pr-5 text-center">Profile</th>
+                <th className="pb-3 pt-3 pl-2 pr-2 text-center">Lastname</th>
+                <th className="pb-3 pt-3 pl-2 pr-2 text-center">Firstname</th>
+                <th className="pb-3 pt-3 pl-2 pr-2 text-center">Middlename</th>
+                <th className="pb-3 pt-3 pl-2 pr-2 text-center">Email</th>
+                <th className="pb-3 pt-3 pl-2 pr-2 text-center">isVerified</th>
+                <th className="pb-3 pt-3 pl-2 pr-2 text-center">Date Created</th>          
+                <th className="pb-3 pt-3 text-center pr-3 rounded-tr-2xl">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-200 bg-white">
+              {[...Array(5)].map((_, index) => (
+                <TableRowSkeleton key={index} />
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
     );
   }
 
   if (failedloadingpatients) {
     return (
-      <tr>
-        <td colSpan="10" className="p-4 bg-red-50 text-red-600 text-center">
-          Error: {failedloadingpatients}
-        </td>
-      </tr>
+      <div className="overflow-x-auto w-full h-full">
+        <table className="w-full rounded-tl-2xl  rounded-tr-2xl shadow-lg">
+          <thead className="rounded-tl-2xl rounded-tr-2xl">
+            <tr className="text-[#ffffff] font-albertsans font-bold bg-[#2781af] rounded-tl-2xl rounded-tr-2xl ">
+              <th className="pb-3 pt-3 pl-2 pr-2 text-center rounded-tl-2xl">Id</th>
+              <th className="pb-3 pt-3 pl-5 pr-5 text-center">Profile</th>
+              <th className="pb-3 pt-3 pl-2 pr-2 text-center">Lastname</th>
+              <th className="pb-3 pt-3 pl-2 pr-2 text-center">Firstname</th>
+              <th className="pb-3 pt-3 pl-2 pr-2 text-center">Middlename</th>
+              <th className="pb-3 pt-3 pl-2 pr-2 text-center">Email</th>
+              <th className="pb-3 pt-3 pl-2 pr-2 text-center">isVerified</th>
+              <th className="pb-3 pt-3 pl-2 pr-2 text-center">Date Created</th>          
+              <th className="pb-3 pt-3 text-center pr-3 rounded-tr-2xl">Actions</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-200 bg-white">
+            <tr>
+              <td colSpan="9" className="p-4 bg-red-50 text-red-600 text-center">
+                Error: {failedloadingpatients}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     );
   }
 
-
-
   if(searchpatients && filteredpatients.length == 0){
     return(
-      <tr>
-        <td colSpan="10" className="rounded-2xl py-6 px-4 bg-yellow-50 text-yellow-600 text-center">
-          No patients found.
-        </td>
-      </tr>
+      <div className="overflow-x-auto w-full h-full">
+        <table className="w-full rounded-tl-2xl  rounded-tr-2xl shadow-lg">
+          <thead className="rounded-tl-2xl rounded-tr-2xl">
+            <tr className="text-[#ffffff] font-albertsans font-bold bg-[#2781af] rounded-tl-2xl rounded-tr-2xl ">
+              <th className="pb-3 pt-3 pl-2 pr-2 text-center rounded-tl-2xl">Id</th>
+              <th className="pb-3 pt-3 pl-5 pr-5 text-center">Profile</th>
+              <th className="pb-3 pt-3 pl-2 pr-2 text-center">Lastname</th>
+              <th className="pb-3 pt-3 pl-2 pr-2 text-center">Firstname</th>
+              <th className="pb-3 pt-3 pl-2 pr-2 text-center">Middlename</th>
+              <th className="pb-3 pt-3 pl-2 pr-2 text-center">Email</th>
+              <th className="pb-3 pt-3 pl-2 pr-2 text-center">isVerified</th>
+              <th className="pb-3 pt-3 pl-2 pr-2 text-center">Date Created</th>          
+              <th className="pb-3 pt-3 text-center pr-3 rounded-tr-2xl">Actions</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-200 bg-white">
+            <tr>
+              <td colSpan="9" className="rounded-2xl py-6 px-4 bg-yellow-50 text-yellow-600 text-center">
+                No patients found.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     )
   }
 
-
-
-
   return (
-    <div className="overflow-x-auto w-full h-full">
-      <table className="w-full rounded-tl-2xl  rounded-tr-2xl shadow-lg">
-        <thead className="rounded-tl-2xl rounded-tr-2xl">
-          <tr className="text-[#ffffff] font-albertsans font-bold bg-[#2781af] rounded-tl-2xl rounded-tr-2xl ">
-            <th className="pb-3 pt-3 pl-2 pr-2 text-center rounded-tl-2xl">Id</th>
-            <th className="pb-3 pt-3 pl-5 pr-5 text-center">Profile</th>
-            <th className="pb-3 pt-3 pl-2 pr-2 text-center">Lastname</th>
-            <th className="pb-3 pt-3 pl-2 pr-2 text-center">Firstname</th>
-            <th className="pb-3 pt-3 pl-2 pr-2 text-center">Middlename</th>
-            <th className="pb-3 pt-3 pl-2 pr-2 text-center">Email</th>
-
-            <th className="pb-3 pt-3 pl-2 pr-2 text-center">isVerified</th>
-            <th className="pb-3 pt-3 pl-2 pr-2 text-center">Date Created</th>          
-            <th className="pb-3 pt-3 text-center pr-3 rounded-tr-2xl">Actions</th>
-
-          </tr>
-        </thead>
-        
-        <tbody className="divide-y divide-gray-200 bg-white">
-        {patientstorender.map((patient) => (
+    <div>
+      <div className="overflow-x-auto w-full h-full">
+        <table className="w-full rounded-tl-2xl  rounded-tr-2xl shadow-lg">
+          <thead className="rounded-tl-2xl rounded-tr-2xl">
+            <tr className="text-[#ffffff] font-albertsans font-bold bg-[#2781af] rounded-tl-2xl rounded-tr-2xl ">
+              <th className="pb-3 pt-3 pl-2 pr-2 text-center rounded-tl-2xl">Id</th>
+              <th className="pb-3 pt-3 pl-5 pr-5 text-center">Profile</th>
+              <th className="pb-3 pt-3 pl-2 pr-2 text-center">Lastname</th>
+              <th className="pb-3 pt-3 pl-2 pr-2 text-center">Firstname</th>
+              <th className="pb-3 pt-3 pl-2 pr-2 text-center">Middlename</th>
+              <th className="pb-3 pt-3 pl-2 pr-2 text-center">Email</th>
+              <th className="pb-3 pt-3 pl-2 pr-2 text-center">isVerified</th>
+              <th className="pb-3 pt-3 pl-2 pr-2 text-center">Date Created</th>          
+              <th className="pb-3 pt-3 text-center pr-3 rounded-tr-2xl">Actions</th>
+            </tr>
+          </thead>
+          
+          <tbody className="divide-y divide-gray-200 bg-white">
+          {paginatedPatients.map((patient) => (
             <tr key={patient._id}  className="hover:bg-gray-100  items-center justify-center transition-all duration-300 ease-in-out hover:cursor-pointer ">
               <td  className="py-3 px-6 text-[#3a3a3a] font-albertsans font-medium ">#{patient.patientId}</td>
               <td  className="py-3 px-6 text-center">
@@ -954,19 +1123,23 @@ function AdminDashboard(){
 
                className="bg-[#8c3226] hover:bg-[#ab4f43]  transition-all duration-300 ease-in-out flex justify-center items-center py-2 px-5 rounded-2xl hover:cursor-pointer"><i className="bx bxs-trash text-white mr-1"/><h1 className="text-white">Delete</h1></div>
                
-               
-               
                </td>
-  
-
-
-
               </tr>
-  ))}
-        </tbody>
-      </table>
+          ))}
+          </tbody>
+        </table>
+      </div>
       
-
+      {/* Pagination Component */}
+      {totalPatients > 0 && (
+        <PaginationComponent
+          currentPage={currentPage.patients}
+          totalPages={totalPages}
+          onPageChange={(page) => handlePageChange('patients', page)}
+          totalItems={totalPatients}
+          itemsPerPage={itemsPerPage}
+        />
+      )}
     </div>
   );
   };
@@ -1449,59 +1622,63 @@ const [showaddstaffdialog, setshowaddstaffdialog] = useState(false);
   const renderstaffaccounts = () => {
 
   const staffstorender = searchstaffs ? filteredstaffs : staffs;
+  const paginatedStaffs = getPaginatedData(staffstorender, 'staff');
+  const totalStaffs = staffstorender.length;
+  const totalPages = Math.ceil(totalStaffs / itemsPerPage);
 
   return (
-    <div className="overflow-x-auto w-full h-full">
-      <table className="w-full rounded-tl-2xl  rounded-tr-2xl shadow-lg">
-        <thead className="rounded-tl-2xl rounded-tr-2xl">
-          <tr className="text-[#ffffff] font-albertsans font-bold bg-[#2781af] rounded-tl-2xl rounded-tr-2xl ">
-            <th className="pb-3 pt-3 pl-2 pr-2 text-center rounded-tl-2xl">Id</th>
-            <th className="pb-3 pt-3 pl-5 pr-5 text-center">Profile</th>
-            <th className="pb-3 pt-3 pl-2 pr-2 text-center">Lastname</th>
-            <th className="pb-3 pt-3 pl-2 pr-2 text-center">Firstname</th>
-            <th className="pb-3 pt-3 pl-2 pr-2 text-center">Middlename</th>
-            <th className="pb-3 pt-3 pl-2 pr-2 text-center">Email</th>
-            <th className="pb-3 pt-3 pl-2 pr-2 text-center">Clinic</th>
-            <th className="pb-3 pt-3 pl-2 pr-2 text-center">Eye Specialist</th>
-            <th className="pb-3 pt-3 pl-2 pr-2 text-center">isVerified</th>
-            <th className="pb-3 pt-3 pl-2 pr-2 text-center">Date Created</th>
-            <th className="pb-3 pt-3 pl-2 pr-2 text-center rounded-tr-2xl">Actions</th>
+    <div>
+      <div className="overflow-x-auto w-full h-full">
+        <table className="w-full rounded-tl-2xl  rounded-tr-2xl shadow-lg">
+          <thead className="rounded-tl-2xl rounded-tr-2xl">
+            <tr className="text-[#ffffff] font-albertsans font-bold bg-[#2781af] rounded-tl-2xl rounded-tr-2xl ">
+              <th className="pb-3 pt-3 pl-2 pr-2 text-center rounded-tl-2xl">Id</th>
+              <th className="pb-3 pt-3 pl-5 pr-5 text-center">Profile</th>
+              <th className="pb-3 pt-3 pl-2 pr-2 text-center">Lastname</th>
+              <th className="pb-3 pt-3 pl-2 pr-2 text-center">Firstname</th>
+              <th className="pb-3 pt-3 pl-2 pr-2 text-center">Middlename</th>
+              <th className="pb-3 pt-3 pl-2 pr-2 text-center">Email</th>
+              <th className="pb-3 pt-3 pl-2 pr-2 text-center">Clinic</th>
+              <th className="pb-3 pt-3 pl-2 pr-2 text-center">Eye Specialist</th>
+              <th className="pb-3 pt-3 pl-2 pr-2 text-center">isVerified</th>
+              <th className="pb-3 pt-3 pl-2 pr-2 text-center">Date Created</th>
+              <th className="pb-3 pt-3 pl-2 pr-2 text-center rounded-tr-2xl">Actions</th>
 
-            {currentuserloggedin !== "Staff" && (
+              {currentuserloggedin !== "Staff" && (
+                <>
+                  <th className="pb-3 pt-3 text-center pr-3"></th>
+                  <th className="pb-3 pt-3 text-center pr-3 rounded-tr-2xl"></th>
+                </>
+              )}
+            </tr>
+          </thead>
+          
+          <tbody className="divide-y divide-gray-200 bg-white">
+            {loadingstaffs && (
               <>
-                <th className="pb-3 pt-3 text-center pr-3"></th>
-                <th className="pb-3 pt-3 text-center pr-3 rounded-tr-2xl"></th>
+                {[...Array(5)].map((_, index) => (
+                  <TableRowSkeleton key={index} />
+                ))}
               </>
             )}
-          </tr>
-        </thead>
-        
-        <tbody className="divide-y divide-gray-200 bg-white">
-          {loadingstaffs && (
-            <>
-              {[...Array(5)].map((_, index) => (
-                <TableRowSkeleton key={index} />
-              ))}
-            </>
-          )}
 
-          {failedloadingstaffs && (
-            <tr>
-              <td colSpan="12" className="p-4 bg-red-50 text-red-600 text-center">
-                Error: {failedloadingstaffs}
-              </td>
-            </tr>
-          )}
+            {failedloadingstaffs && (
+              <tr>
+                <td colSpan="12" className="p-4 bg-red-50 text-red-600 text-center">
+                  Error: {failedloadingstaffs}
+                </td>
+              </tr>
+            )}
 
-          {(!loadingstaffs && !failedloadingstaffs && searchstaffs && filteredstaffs.length === 0) && (
-            <tr>
-              <td colSpan="12" className="rounded-2xl py-6 px-4 bg-yellow-50 text-yellow-600 text-center">
-                No staffs found.
-              </td>
-            </tr>
-          )}
+            {(!loadingstaffs && !failedloadingstaffs && searchstaffs && filteredstaffs.length === 0) && (
+              <tr>
+                <td colSpan="12" className="rounded-2xl py-6 px-4 bg-yellow-50 text-yellow-600 text-center">
+                  No staffs found.
+                </td>
+              </tr>
+            )}
 
-          {(!loadingstaffs && !failedloadingstaffs && staffstorender.length > 0) && staffstorender.map((staff) => (
+            {(!loadingstaffs && !failedloadingstaffs && staffstorender.length > 0) && paginatedStaffs.map((staff) => (
             <tr key={staff._id}  className="hover:bg-gray-100  transition-all duration-300 ease-in-out hover:cursor-pointer ">
               <td  className="py-3 px-6 text-[#3a3a3a] font-albertsans font-medium ">#{staff.staffId}</td>
               <td  className="py-3 px-6 text-center">
@@ -1583,11 +1760,21 @@ const [showaddstaffdialog, setshowaddstaffdialog] = useState(false);
                 </>
               )}
               </tr>
-  ))}
-        </tbody>
-      </table>
+            ))}
+          </tbody>
+        </table>
+      </div>
       
-
+      {/* Pagination Component */}
+      {totalStaffs > 0 && (
+        <PaginationComponent
+          currentPage={currentPage.staff}
+          totalPages={totalPages}
+          onPageChange={(page) => handlePageChange('staff', page)}
+          totalItems={totalStaffs}
+          itemsPerPage={itemsPerPage}
+        />
+      )}
     </div>
   );
   };
@@ -3513,7 +3700,7 @@ const renderpatientprofiles = () => {
 
 
   return (
-    <div className="overflow-y-auto w-full h-[480px] flex flex-wrap content-start gap-3 pl-2 pt-2">
+    <div className="overflow-y-auto w-full h-full flex flex-wrap content-start gap-3 pl-2 pt-2">
     
     {displayData.map((patient) => (
       <div id="patientcard" key={patient._id} onClick={() => {
@@ -3551,6 +3738,9 @@ const renderpatientprofiles = () => {
       </div>
     </div>
     ))}
+
+
+    
     </div>
   
   );
@@ -4440,6 +4630,140 @@ const [showotherclinicrecordimage, setshowotherclinicrecordimage] = useState(fal
   // Medical Records Search State
   const [searchmedicalrecords, setsearchmedicalrecords] = useState('');
   const [filteredmedicalrecords, setfilteredmedicalrecords] = useState([]);
+
+  // Pagination State Variables
+  const [currentPage, setCurrentPage] = useState({
+    patients: 1,
+    staff: 1,
+    owners: 1,
+    administrators: 1,
+    appointments: 1,
+    medicalRecords: 1,
+    ambherInventory: 1,
+    bautistaInventory: 1,
+    ambherOrders: 1,
+    bautistaOrders: 1,
+    profiles: 1
+  });
+
+  const itemsPerPage = 10; // Number of items to display per page for tables
+  
+  // Dynamic inventory per page based on container height
+  const [inventoryItemsPerPage, setInventoryItemsPerPage] = useState(20);
+  const inventoryContainerRef = useRef(null);
+  
+  // Dynamic appointments per page based on container height
+  const [appointmentsPerPage, setAppointmentsPerPage] = useState(6);
+  const appointmentTableRef = useRef(null);
+
+  // Calculate optimal appointments per page based on container height
+  const calculateAppointmentsPerPage = useCallback(() => {
+    if (appointmentTableRef.current) {
+      const containerHeight = appointmentTableRef.current.clientHeight;
+      const headerHeight = 60; // Approximate height of table header
+      const paginationHeight = 60; // Approximate height of pagination
+      const rowHeight = 80; // Approximate height of each appointment row
+      const padding = 20; // Extra padding for better spacing
+      
+      const availableHeight = containerHeight - headerHeight - paginationHeight - padding;
+      const calculatedRows = Math.floor(availableHeight / rowHeight);
+      
+      // Ensure minimum of 3 appointments and maximum of 20 for performance
+      const optimalRows = Math.max(3, Math.min(calculatedRows, 20));
+      
+      if (optimalRows !== appointmentsPerPage) {
+        setAppointmentsPerPage(optimalRows);
+        // Reset to first page when changing page size
+        setCurrentPage(prev => ({ ...prev, appointments: 1 }));
+      }
+    }
+  }, [appointmentsPerPage]);
+
+  // Calculate optimal inventory items per page based on container height
+  const calculateInventoryItemsPerPage = useCallback(() => {
+    if (inventoryContainerRef.current) {
+      const containerHeight = inventoryContainerRef.current.clientHeight;
+      const headerHeight = 100; // Approximate height of filters and search
+      const paginationHeight = 60; // Approximate height of pagination
+      const cardHeight = 320; // Approximate height of each inventory card (220px width + spacing)
+      const cardsPerRow = 4; // Approximate cards per row based on container width
+      const padding = 40; // Extra padding for better spacing
+      
+      const availableHeight = containerHeight - headerHeight - paginationHeight - padding;
+      const calculatedRows = Math.floor(availableHeight / cardHeight);
+      const optimalItems = Math.max(1, calculatedRows) * cardsPerRow;
+      
+      // Ensure minimum of 8 items and maximum of 40 for performance
+      const finalOptimalItems = Math.max(8, Math.min(optimalItems, 40));
+      
+      if (finalOptimalItems !== inventoryItemsPerPage) {
+        setInventoryItemsPerPage(finalOptimalItems);
+        // Reset to first page when changing page size
+        setCurrentPage(prev => ({ 
+          ...prev, 
+          ambherInventory: 1,
+          bautistaInventory: 1
+        }));
+      }
+    }
+  }, [inventoryItemsPerPage]);
+
+  // Recalculate when window resizes or component mounts
+  useEffect(() => {
+    const handleResize = () => {
+      calculateAppointmentsPerPage();
+      calculateInventoryItemsPerPage();
+    };
+
+    // Initial calculation
+    setTimeout(() => {
+      calculateAppointmentsPerPage();
+      calculateInventoryItemsPerPage();
+    }, 100); // Small delay to ensure DOM is ready
+    
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [calculateAppointmentsPerPage, calculateInventoryItemsPerPage]);
+
+  // Recalculate when switching between appointment tables
+  useEffect(() => {
+    if (activedashboard === 'appointmentmanagement') {
+      setTimeout(calculateAppointmentsPerPage, 100);
+    }
+  }, [activedashboard, activeappointmentstable, calculateAppointmentsPerPage]);
+
+  // Recalculate when switching between inventory tables or dashboard
+  useEffect(() => {
+    if (activedashboard === 'inventorymanagement') {
+      setTimeout(calculateInventoryItemsPerPage, 100);
+    }
+  }, [activedashboard, calculateInventoryItemsPerPage]);
+
+  // Pagination functions
+  const handlePageChange = (section, page) => {
+    setCurrentPage(prev => ({
+      ...prev,
+      [section]: page
+    }));
+  };
+
+  // Get paginated data function
+  const getPaginatedData = (data, section) => {
+    const page = currentPage[section] || 1;
+    let itemsPerPageToUse;
+    
+    if (section === 'ambherInventory' || section === 'bautistaInventory') {
+      itemsPerPageToUse = inventoryItemsPerPage;
+    } else if (section === 'appointments') {
+      itemsPerPageToUse = appointmentsPerPage;
+    } else {
+      itemsPerPageToUse = itemsPerPage;
+    }
+    
+    const startIndex = (page - 1) * itemsPerPageToUse;
+    const endIndex = startIndex + itemsPerPageToUse;
+    return data.slice(startIndex, endIndex);
+  };
 
   const [otherclinicselectedimage, setotherclinicselectedimage] = useState(null);
   const [otherclinicpreviewimage, setotherclinicpreviewimage] = useState (null);
@@ -9286,7 +9610,7 @@ const submitpatientpendingorderbautista = async (e) => {
       <div onClick={() => setshowaddpatientprofile(true)}  className=" mt-1 mb-1 hover:cursor-pointer hover:scale-103 bg-[#4ca22b] rounded-3xl flex justify-center items-center pl-3 pr-3 transition-all duration-300 ease-in-out"><i className="bx bx-user-plus text-white font-bold text-[30px]"/><p className="font-bold font-albertsans text-white text-[18px] ml-2">Add Patient Profile</p></div>
        </div>
 
-       <div className=" rounded-3xl h-full w-full mt-2 bg-[#f7f7f7]">
+       <div className=" rounded-3xl min-h-[85%] h-auto pb-5 w-full mt-2 bg-[#f7f7f7]">
        {renderpatientprofiles()}
        </div>
 
@@ -9658,7 +9982,7 @@ const submitpatientpendingorderbautista = async (e) => {
               {/*APPOINTMENT MANAGEMENT*/} {/*APPOINTMENT MANAGEMENT*/} {/*APPOINTMENT MANAGEMENT*/} {/*APPOINTMENT MANAGEMENT*/} {/*APPOINTMENT MANAGEMENT*/} {/*APPOINTMENT MANAGEMENT*/}
               {/*APPOINTMENT MANAGEMENT*/} {/*APPOINTMENT MANAGEMENT*/} {/*APPOINTMENT MANAGEMENT*/} {/*APPOINTMENT MANAGEMENT*/} {/*APPOINTMENT MANAGEMENT*/} {/*APPOINTMENT MANAGEMENT*/}
               
-               { (activedashboard === 'appointmentmanagement' && !isAdminRole) && (<div id="appointmentmanagement" className="pl-5 pr-5 pb-4 pt-4 transition-all duration-300  ease-in-out border-1 bg-white border-gray-200 shadow-lg w-[100%] h-[100%] rounded-2xl" >   
+               { (activedashboard === 'appointmentmanagement' && !isAdminRole) && (<div id="appointmentmanagement" className="pl-5 pr-5 pb-4 pt-4 transition-all duration-300 ease-in-out border-1 bg-white border-gray-200 shadow-lg w-[100%] h-[100%] rounded-2xl flex flex-col" >   
 
 <div className="flex items-center"><i className="bx bxs-calendar text-[#184d85] text-[25px] mr-2"/> <h1 className=" font-albertsans font-bold text-[#184d85] text-[25px]">Appointment Management</h1></div>
 
@@ -9703,36 +10027,37 @@ const submitpatientpendingorderbautista = async (e) => {
 
 
 {/*All Appointments Table*/}{/*All Appointments Table*/}{/*All Appointments Table*/}{/*All Appointments Table*/}{/*All Appointments Table*/}{/*All Appointments Table*/}{/*All Appointments Table*/}
- { activeappointmentstable === 'allappointmentstable' && ( <div id="allappointmentstable" className="animate-fadeInUp flex flex-col items-center border-t-2  border-[#909090] w-[100%] h-[83%] rounded-2xl mt-5" >
+ { activeappointmentstable === 'allappointmentstable' && ( <div id="allappointmentstable" className="animate-fadeInUp flex flex-col border-t-2 border-[#909090] w-[100%] flex-1 rounded-2xl mt-5 min-h-0" ref={appointmentTableRef}>
 
       <div className=" mt-5  w-full h-[60px] flex justify-between rounded-3xl pl-5 pr-5">              
       <div className="ml-2 w-full flex items-center"><h2 className="font-albertsans font-bold text-[18px] text-[#383838] mr-3 ">Search: </h2><div className="relative w-full flex items-center justify-center gap-3"><i className="bx bx-search absolute left-3 text-2xl text-gray-500"></i><input type="text" placeholder="Enter appointment details..." value={searchAppointments} onChange={(e) => {setSearchAppointments(e.target.value); filterAppointments(e.target.value);}} className="transition-all duration-300 ease-in-out py-2 pl-10 w-full rounded-2xl bg-[#e4e4e4] focus:bg-slate-100 focus:outline-sky-500"></input></div></div>
       </div>
 
       {loadingappointmens ? (
-      <div className="space-y-4 p-4">
+      <div className="space-y-4 p-4 flex-1">
         {[...Array(4)].map((_, index) => (
           <AppointmentSkeleton key={index} />
         ))}
       </div>
     ) : errorloadingappointments ? (
-    <div className="rounded-lg p-4 bg-red-50 text-red-600">
+    <div className="rounded-lg p-4 bg-red-50 text-red-600 flex-1 flex items-center justify-center">
     Error: {errorloadingappointments}
   </div>
     ) : (filteredAppointments.length === 0 && searchAppointments.trim()) ? (
-      <div className="text-yellow-600 bg-yellow-50 rounded-2xl px-4 py-6">
+      <div className="text-yellow-600 bg-yellow-50 rounded-2xl px-4 py-6 flex-1 flex items-center justify-center">
         No appointments found matching "{searchAppointments}".
       </div>
     ) : patientappointments.length === 0 ? (
-    <div className="text-yellow-600 bg-yellow-50 rounded-2xl px-4 py-6">No patient appointments found.</div>
+    <div className="text-yellow-600 bg-yellow-50 rounded-2xl px-4 py-6 flex-1 flex items-center justify-center">No patient appointments found.</div>
 
-  ) :(<div className=" rounded-3xl h-full w-full mt-2 bg-[#f7f7f7]">
-      <table className="min-w-full divide-y divide-gray-200">
-        <thead className="bg-">
-          <tr className="text-[#ffffff] font-albertsans font-bold bg-[#2781af] rounded-tl-2xl rounded-tr-2xl">
-            <th className="rounded-tl-2xl pb-3 pt-3 pl-2 pr-2 text-center">ID</th> 
-            <th className=" pb-3 pt-3 pl-2 pr-2 text-center">Patient</th> 
-            <th className=" pb-3 pt-3 pl-2 pr-2 text-center">Date Created</th> 
+  ) :(<div className="flex flex-col flex-1 rounded-3xl w-full mt-2 bg-[#f7f7f7] min-h-0">
+      <div className="flex-1 overflow-auto">
+        <table className="min-w-full divide-y divide-gray-200 h-full">
+          <thead className="bg- sticky top-0 z-10">
+            <tr className="text-[#ffffff] font-albertsans font-bold bg-[#2781af] rounded-tl-2xl rounded-tr-2xl">
+              <th className="rounded-tl-2xl pb-3 pt-3 pl-2 pr-2 text-center">ID</th> 
+              <th className=" pb-3 pt-3 pl-2 pr-2 text-center">Patient</th> 
+              <th className=" pb-3 pt-3 pl-2 pr-2 text-center">Date Created</th> 
             <th className="pb-3 pt-3 pl-2 pr-2  text-center">Ambher Appoinment</th>
             <th className="pb-3 pt-3 pl-2 pr-2  text-center">Bautista Appoinment</th>
             <th className="rounded-tr-2xl pb-3 pt-3 pl-2 pr-2  text-center">Actions</th>
@@ -9741,7 +10066,10 @@ const submitpatientpendingorderbautista = async (e) => {
 
 
         <tbody className="divide-y divide-gray-200 bg-white">
-          {(searchAppointments.trim() ? filteredAppointments : patientappointments).map((appointment) => (
+          {(() => {
+            const dataToDisplay = searchAppointments.trim() ? filteredAppointments : patientappointments;
+            const paginatedAppointments = getPaginatedData(dataToDisplay, 'appointments');
+            return paginatedAppointments.map((appointment) => (
             <tr 
               key={appointment._id}
               className="hover:bg-gray-50 transition-all ease-in-out duration-300 border-b-2"
@@ -9843,9 +10171,29 @@ const submitpatientpendingorderbautista = async (e) => {
 
               </td>
             </tr>
-          ))}
+            ));
+          })()}
         </tbody>
       </table>
+      </div>
+      
+      {/* Pagination Component for Appointments */}
+      {(() => {
+        const dataToDisplay = searchAppointments.trim() ? filteredAppointments : patientappointments;
+        const totalAppointments = dataToDisplay.length;
+        const totalPages = Math.ceil(totalAppointments / appointmentsPerPage);
+        
+        return totalAppointments > 0 && (
+          <PaginationComponent
+            currentPage={currentPage.appointments}
+            totalPages={totalPages}
+            onPageChange={(page) => handlePageChange('appointments', page)}
+            totalItems={totalAppointments}
+            itemsPerPage={appointmentsPerPage}
+            itemName="appointments"
+          />
+        );
+      })()}
       </div>
   )}
 
@@ -10381,7 +10729,7 @@ const submitpatientpendingorderbautista = async (e) => {
 
 
 {/*Ambher Appointments Table*/}{/*Ambher Appointments Table*/}{/*Ambher Appointments Table*/}{/*Ambher Appointments Table*/}{/*Ambher Appointments Table*/}{/*Ambher Appointments Table*/}{/*Ambher Appointments Table*/}
-{ activeappointmentstable === 'ambherappointmentstable' && ( <div id="ambherappointmentstable" className="animate-fadeInUp flex flex-col items-center border-t-2  border-[#909090] w-[100%] h-[83%] rounded-2xl mt-5" >
+{ activeappointmentstable === 'ambherappointmentstable' && ( <div id="ambherappointmentstable" className="animate-fadeInUp flex flex-col border-t-2 border-[#909090] w-[100%] flex-1 rounded-2xl mt-5 min-h-0" ref={appointmentTableRef}>
 
 <div className=" mt-5  w-full h-[60px] flex justify-between rounded-3xl pl-5 pr-5">              
     <div className="ml-2 w-full flex items-center"><h2 className="font-albertsans font-bold text-[18px] text-[#383838] mr-3 ">Search: </h2><div className="relative w-full flex items-center justify-center gap-3"><i className="bx bx-search absolute left-3 text-2xl text-gray-500"></i><input type="text" placeholder="Enter appointment details..." className="transition-all duration-300 ease-in-out py-2 pl-10 w-full rounded-2xl bg-[#e4e4e4] focus:bg-slate-100 focus:outline-sky-500"></input></div></div>
@@ -10788,7 +11136,7 @@ ${selectedpatientappointment.patientambherappointmentstatus === 'Cancelled' ? 'b
 
 
 {/*Bautista Appointments Table*/}{/*Bautista Appointments Table*/}{/*Bautista Appointments Table*/}{/*Bautista Appointments Table*/}{/*Bautista Appointments Table*/}{/*Bautista Appointments Table*/}
- { activeappointmentstable === 'bautistaappointmentstable' && ( <div id="bautistaappointmentstable" className="animate-fadeInUp flex flex-col items-center border-t-2  border-[#909090] w-[100%] h-[83%] rounded-2xl mt-5" >
+ { activeappointmentstable === 'bautistaappointmentstable' && ( <div id="bautistaappointmentstable" className="animate-fadeInUp flex flex-col border-t-2 border-[#909090] w-[100%] flex-1 rounded-2xl mt-5 min-h-0" ref={appointmentTableRef}>
   <div className=" mt-5  w-full h-[60px] flex justify-between rounded-3xl pl-5 pr-5">              
     <div className="ml-2 w-full flex items-center"><h2 className="font-albertsans font-bold text-[18px] text-[#383838] mr-3 ">Search: </h2><div className="relative w-full flex items-center justify-center gap-3"><i className="bx bx-search absolute left-3 text-2xl text-gray-500"></i><input type="text" placeholder="Enter appointment details..." className="transition-all duration-300 ease-in-out py-2 pl-10 w-full rounded-2xl bg-[#e4e4e4] focus:bg-slate-100 focus:outline-sky-500"></input></div></div>
     </div>
@@ -11867,7 +12215,7 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
               {/*Start of Inventory Management*/}{/*Start of Inventory Management*/}{/*Start of Inventory Management*/}{/*Start of Inventory Management*/}{/*Start of Inventory Management*/}{/*Start of Inventory Management*/}
               {/*Start of Inventory Management*/}{/*Start of Inventory Management*/}{/*Start of Inventory Management*/}{/*Start of Inventory Management*/}{/*Start of Inventory Management*/}{/*Start of Inventory Management*/}
 
-              { (activedashboard === 'inventorymanagement' && !isAdminRole) && ( <div id="inventorymanagement" className="pl-5 pr-5 pb-26 pt-4 transition-all duration-300  ease-in-out border-1 bg-white border-gray-200 shadow-lg w-[100%] h-auto rounded-2xl" >   
+              { (activedashboard === 'inventorymanagement' && !isAdminRole) && ( <div id="inventorymanagement" className="pl-5 pr-5 pb-26 pt-4 transition-all duration-300 ease-in-out border-1 bg-white border-gray-200 shadow-lg w-[100%] h-auto rounded-2xl flex flex-col" >   
 
               <div className="flex items-center"><i className="bx bxs-package text-[#184d85] text-[25px] mr-2"/> <h1 className=" font-albertsans font-bold text-[#184d85] text-[25px]">Inventory Management</h1></div>
 
@@ -11898,7 +12246,7 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
 
 
 
-          { activeinventorytable === 'ambherinventorytable' && ( <div id="ambherinventorytable" className="p-2  animate-fadeInUp  border-[#909090] w-[100%] h-[83%] rounded-2xl mt-5" >
+          { activeinventorytable === 'ambherinventorytable' && ( <div id="ambherinventorytable" className="p-2 animate-fadeInUp border-[#909090] w-[100%] flex-1 min-h-0 rounded-2xl mt-5 flex flex-col" ref={inventoryContainerRef}>
 
 
 {(cliniclowstockProducts.length > 0 || clinicoutofstockProducts.length > 0) && (
@@ -12130,26 +12478,28 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
           <div className=" flex flex-col justify-start  ml-2 rounded-2xl w-[90%]  h-auto shadow-b-lg ">
               <div className="flex justify-end items-center w-full h-[9%] rounded-2xl mb-2 mt-3"> <div onClick={() => setshowaddambherinventoryproductdialog(true)}  className="w-50 p-2 hover:cursor-pointer hover:scale-103 bg-[#4ca22b] rounded-3xl flex justify-center items-center pl-3 pr-3 transition-all duration-300 ease-in-out"><i className="bx  bx-plus text-white font-bold text-[30px]"/><p className="font-bold font-albertsans text-white text-[18px] ml-2">Add Product</p></div> </div>
 
-              <div className=" w-[100%] rounded-2xl h-full flex flex-wrap content-start gap-3 pl-2 pt-2 bg-[#ffffff]">
+              <div className="w-[100%] rounded-2xl flex-1 overflow-auto flex flex-wrap content-start gap-3 pl-2 pt-2 bg-[#ffffff]">
                 
-
-              <div className="flex flex-wrap p-4">
-                {ambherloadingproducts ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 w-full">
-                    {[...Array(8)].map((_, index) => (
-                      <InventorySkeleton key={index} />
-                    ))}
-                  </div>
-                ): ambherinventoryproducts.length === 0 ? (
-                  <div>No Products Found...</div> 
-                ):(
-                  finalFilteredAmbherProducts
-                  .sort((a, b) => {
-                    const aquant = a.ambherinventoryproductquantity || 0;
-                    const bquant = b.ambherinventoryproductquantity || 0;
-                    return aquant <= 10 ? (bquant <= 10 ? 0 : -1) : 1;
-                  })
-                  .map((product) => (
+              <div className="flex flex-col w-full">
+                <div className="flex flex-wrap p-4 flex-1">
+                  {ambherloadingproducts ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 w-full">
+                      {[...Array(8)].map((_, index) => (
+                        <InventorySkeleton key={index} />
+                      ))}
+                    </div>
+                  ): ambherinventoryproducts.length === 0 ? (
+                    <div>No Products Found...</div> 
+                  ):(
+                    (() => {
+                      const sortedProducts = finalFilteredAmbherProducts
+                        .sort((a, b) => {
+                          const aquant = a.ambherinventoryproductquantity || 0;
+                          const bquant = b.ambherinventoryproductquantity || 0;
+                          return aquant <= 10 ? (bquant <= 10 ? 0 : -1) : 1;
+                        });
+                      const paginatedProducts = getPaginatedData(sortedProducts, 'ambherInventory');
+                      return paginatedProducts.map((product) => (
               <div key={product.ambherinventoryproductid} onClick={() => {setshowaddambherinventoryproductdialog(true);
                                                                            setselectedambherproduct(product);
                                                                            setcurrentimageindex(0);
@@ -12176,14 +12526,36 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
                 <div className="w-full h-auto ml-2 mb-1  flex items-center"> <p className="font-albertsans font-medium  text-[15px] text-[#4e4f4f]">Wishlisted: {wishlistCounts[product.ambherinventoryproductid] ?? 0}  </p></div>
                 <div className="w-full h-auto ml-2 mb-3  flex items-center"> <p className="font-albertsans font-medium  text-[15px] text-[#4e4f4f]">Sold: {ambherproductsoldCounts[product.ambherinventoryproductid] ?? 0}  </p></div>
               </div>  
-                  ))
-                )}
-              </div>
+                      ));
+                    })()
+                  )}
 
-              
-              
 
+                </div>
+
+                {/* Pagination Component for Ambher Inventory */}
+                {(() => {
+                  const sortedProducts = finalFilteredAmbherProducts
+                    .sort((a, b) => {
+                      const aquant = a.ambherinventoryproductquantity || 0;
+                      const bquant = b.ambherinventoryproductquantity || 0;
+                      return aquant <= 10 ? (bquant <= 10 ? 0 : -1) : 1;
+                    });
+                  const totalProducts = sortedProducts.length;
+                  
+                  return totalProducts > 0 && (
+                    <PaginationComponent
+                      currentPage={currentPage.ambherInventory}
+                      onPageChange={(page) => handlePageChange('ambherInventory', page)}
+                      totalItems={totalProducts}
+                      itemsPerPage={inventoryItemsPerPage}
+                      itemName="products"
+                    />
+                  );
+                })()}
               </div>
+              
+            </div>
           </div>
         </div>
           </div>)}
@@ -12557,7 +12929,7 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
 
 
 
-          { activeinventorytable === 'bautistainventorytable' && ( <div id="bautistainventorytable" className="p-2  animate-fadeInUp  border-[#909090] w-[100%] h-[83%] rounded-2xl mt-5" >
+          { activeinventorytable === 'bautistainventorytable' && ( <div id="bautistainventorytable" className="p-2 animate-fadeInUp border-[#909090] w-[100%] flex-1 min-h-0 rounded-2xl mt-5 flex flex-col" ref={inventoryContainerRef}>
 
 {(cliniclowstockProducts.length > 0 || clinicoutofstockProducts.length > 0) && (
   <div >
@@ -12768,25 +13140,28 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
           <div className=" flex flex-col justify-start  ml-2 rounded-2xl w-[90%]  h-auto shadow-b-lg ">
               <div className="flex justify-end items-center w-full h-[9%] rounded-2xl mb-2 mt-3"> <div onClick={() => setshowaddbautistainventoryproductdialog(true)}  className="w-50 p-2 hover:cursor-pointer hover:scale-103 bg-[#4ca22b] rounded-3xl flex justify-center items-center pl-3 pr-3 transition-all duration-300 ease-in-out"><i className="bx  bx-plus text-white font-bold text-[30px]"/><p className="font-bold font-albertsans text-white text-[18px] ml-2">Add Product</p></div> </div>
 
-              <div className="overflow-y-auto w-[100%] rounded-2xl h-full flex flex-wrap content-start gap-3 pl-2 pt-2 bg-[#ffffff]">
+              <div className="w-[100%] rounded-2xl flex-1 overflow-auto flex flex-wrap content-start gap-3 pl-2 pt-2 bg-[#ffffff]">
                 
-
-              <div className="flex flex-wrap p-4">
-                {bautistaloadingproducts ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 w-full">
-                    {[...Array(8)].map((_, index) => (
-                      <InventorySkeleton key={index} />
-                    ))}
-                  </div>
-                ): bautistainventoryproducts.length === 0 ? (
-                  <div>No Products Found...</div> 
-                ):(
-                  finalFilteredBautistaProducts
-                  .sort((a, b) => {
-                    const aquant = a.bautistainventoryproductquantity || 0;
-                    const bquant = b.bautistainventoryproductquantity || 0;
-                    return aquant <= 10 ? (bquant <= 10 ? 0 : -1) : 1;
-                  }).map((product) => (
+              <div className="flex flex-col w-full">
+                <div className="flex flex-wrap p-4 flex-1">
+                  {bautistaloadingproducts ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 w-full">
+                      {[...Array(8)].map((_, index) => (
+                        <InventorySkeleton key={index} />
+                      ))}
+                    </div>
+                  ): bautistainventoryproducts.length === 0 ? (
+                    <div>No Products Found...</div> 
+                  ):(
+                    (() => {
+                      const sortedProducts = finalFilteredBautistaProducts
+                        .sort((a, b) => {
+                          const aquant = a.bautistainventoryproductquantity || 0;
+                          const bquant = b.bautistainventoryproductquantity || 0;
+                          return aquant <= 10 ? (bquant <= 10 ? 0 : -1) : 1;
+                        });
+                      const paginatedProducts = getPaginatedData(sortedProducts, 'bautistaInventory');
+                      return paginatedProducts.map((product) => (
               <div key={product.bautistainventoryproductid} onClick={() => {setshowaddbautistainventoryproductdialog(true);
                                                                            setselectedbautistaproduct(product);
                                                                            setcurrentimageindex(0);
@@ -12813,16 +13188,36 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
                 <div className="w-full h-auto ml-2 mb-1  flex items-center"> <p className="font-albertsans font-medium  text-[15px] text-[#4e4f4f]">Wishlisted: {wishlistCounts[product.bautistainventoryproductid] ?? 0}  </p></div>
                 <div className="w-full h-auto ml-2 mb-3  flex items-center"> <p className="font-albertsans font-medium  text-[15px] text-[#4e4f4f]">Sold: {bautistaproductsoldCounts[product.bautistainventoryproductid] ?? 0}  </p></div>
               </div>
-                  ))
-                )}
-              </div>
+                      ));
+                    })()
+                  )}
+                </div>
 
-              
-              
-
+                {/* Pagination Component for Bautista Inventory */}
+                {(() => {
+                  const sortedProducts = finalFilteredBautistaProducts
+                    .sort((a, b) => {
+                      const aquant = a.bautistainventoryproductquantity || 0;
+                      const bquant = b.bautistainventoryproductquantity || 0;
+                      return aquant <= 10 ? (bquant <= 10 ? 0 : -1) : 1;
+                    });
+                  const totalProducts = sortedProducts.length;
+                  
+                  return totalProducts > 0 && (
+                    <PaginationComponent
+                      currentPage={currentPage.bautistaInventory}
+                      onPageChange={(page) => handlePageChange('bautistaInventory', page)}
+                      totalItems={totalProducts}
+                      itemsPerPage={inventoryItemsPerPage}
+                      itemName="products"
+                    />
+                  );
+                })()}
               </div>
+              
+            </div>
           </div>
-   </div>
+        </div>
 
           </div>)}
 
