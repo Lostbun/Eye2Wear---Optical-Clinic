@@ -27,7 +27,101 @@ import cautionlowstockalert from "../src/assets/images/caution.png";
 import starimage from "../src/assets/images/star.png";
 import useSmartCache from './hooks/useSmartCache';
 import { useImageOptimization } from './utils/imageOptimization';
+import 'mapbox-gl/dist/mapbox-gl.css';
+import mapboxgl from 'mapbox-gl';
 
+// Add pulse animation CSS for user location
+const mapStyles = document.createElement('style');
+mapStyles.textContent = `
+  @keyframes pulse {
+    0% {
+      box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+    }
+    70% {
+      box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
+    }
+    100% {
+      box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+    }
+  }
+  
+  .clinic-marker {
+    transition: all 0.2s ease-out;
+    will-change: transform;
+    backface-visibility: hidden;
+    transform: translateZ(0);
+  }
+  
+  .clinic-marker:hover {
+    transform: scale(1.1) translateZ(0);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+  }
+  
+  .user-location-marker {
+    animation: pulse 2s infinite;
+    will-change: transform, box-shadow;
+    backface-visibility: hidden;
+    transform: translateZ(0);
+  }
+  
+  .mapboxgl-popup-content {
+    border-radius: 12px;
+    padding: 0;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    border: none;
+  }
+  
+  .mapboxgl-popup-close-button {
+    font-size: 18px;
+    padding: 8px;
+    transition: all 0.2s ease;
+  }
+  
+  .mapboxgl-popup-close-button:hover {
+    background-color: rgba(0,0,0,0.1);
+    border-radius: 4px;
+  }
+  
+  .mapboxgl-map {
+    font-family: inherit;
+  }
+  
+  .mapboxgl-canvas-container canvas {
+    will-change: transform;
+    transform: translateZ(0);
+  }
+  
+  .mapboxgl-ctrl-group {
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  }
+  
+  .mapboxgl-ctrl button {
+    transition: all 0.2s ease;
+    will-change: background-color;
+  }
+  
+  .mapboxgl-ctrl button:hover {
+    background-color: rgba(0,0,0,0.05);
+  }
+  
+  /* Optimize during map interactions */
+  .mapboxgl-map.mapboxgl-interactive {
+    cursor: grab;
+  }
+  
+  .mapboxgl-map.mapboxgl-interactive:active {
+    cursor: grabbing;
+  }
+  
+  /* GPU acceleration for smooth performance */
+  .mapboxgl-canvas {
+    image-rendering: optimizeSpeed;
+    image-rendering: crisp-edges;
+    image-rendering: pixelated;
+  }
+`;
+document.head.appendChild(mapStyles);
 
 
 
@@ -743,7 +837,7 @@ function AdminDashboard(){
     };
 
     loadUser();
-  }, []); // Empty dependency array - run only once on mount
+  }, [currentuserloggedin, userDataLoaded]); // Removed fetchClinicLocations to avoid hoisting issues
 
 
 
@@ -8101,185 +8195,1744 @@ const submitpatientpendingorderbautista = async (e) => {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+//2D MAPPING //2D MAPPING //2D MAPPING //2D MAPPING //2D MAPPING //2D MAPPING //2D MAPPING //2D MAPPING //2D MAPPING //2D MAPPING //2D MAPPING //2D MAPPING //2D MAPPING //2D MAPPING 
+//2D MAPPING //2D MAPPING //2D MAPPING //2D MAPPING //2D MAPPING //2D MAPPING //2D MAPPING //2D MAPPING //2D MAPPING //2D MAPPING //2D MAPPING //2D MAPPING //2D MAPPING //2D MAPPING 
+//2D MAPPING //2D MAPPING //2D MAPPING //2D MAPPING //2D MAPPING //2D MAPPING //2D MAPPING //2D MAPPING //2D MAPPING //2D MAPPING //2D MAPPING //2D MAPPING //2D MAPPING //2D MAPPING 
+//2D MAPPING //2D MAPPING //2D MAPPING //2D MAPPING //2D MAPPING //2D MAPPING //2D MAPPING //2D MAPPING //2D MAPPING //2D MAPPING //2D MAPPING //2D MAPPING //2D MAPPING //2D MAPPING 
+//2D MAPPING //2D MAPPING //2D MAPPING //2D MAPPING //2D MAPPING //2D MAPPING //2D MAPPING //2D MAPPING //2D MAPPING //2D MAPPING //2D MAPPING //2D MAPPING //2D MAPPING //2D MAPPING 
+//2D MAPPING //2D MAPPING //2D MAPPING //2D MAPPING //2D MAPPING //2D MAPPING //2D MAPPING //2D MAPPING //2D MAPPING //2D MAPPING //2D MAPPING //2D MAPPING //2D MAPPING //2D MAPPING 
+//2D MAPPING //2D MAPPING //2D MAPPING //2D MAPPING //2D MAPPING //2D MAPPING //2D MAPPING //2D MAPPING //2D MAPPING //2D MAPPING //2D MAPPING //2D MAPPING //2D MAPPING //2D MAPPING 
+//2D MAPPING //2D MAPPING //2D MAPPING //2D MAPPING //2D MAPPING //2D MAPPING //2D MAPPING //2D MAPPING //2D MAPPING //2D MAPPING //2D MAPPING //2D MAPPING //2D MAPPING //2D MAPPING 
+//2D MAPPING //2D MAPPING //2D MAPPING //2D MAPPING //2D MAPPING //2D MAPPING //2D MAPPING //2D MAPPING //2D MAPPING //2D MAPPING //2D MAPPING //2D MAPPING //2D MAPPING //2D MAPPING 
+
+const [clinicLocations, setClinicLocations] = useState([]);
+const [loadingClinicLocations, setLoadingClinicLocations] = useState(true);
+const [selectedClinicLocation, setSelectedClinicLocation] = useState(null);
+const [showAddClinicDialog, setShowAddClinicDialog] = useState(false);
+const [showEditClinicDialog, setShowEditClinicDialog] = useState(false);
+const [showDeleteClinicDialog, setShowDeleteClinicDialog] = useState(false);
+const [showClinicDetailsDialog, setShowClinicDetailsDialog] = useState(false);
+const [isEditingLocation, setIsEditingLocation] = useState(false);
+const [isSavingLocation, setIsSavingLocation] = useState(false);
+const [locationMessage, setLocationMessage] = useState({ text: '', type: '' });
+
+// Nearby clinic discovery states
+const [nearbyEyeClinics, setNearbyEyeClinics] = useState([]);
+const [loadingNearbyClinic, setLoadingNearbyClinic] = useState(false);
+const [searchRadius, setSearchRadius] = useState(5000); // 5km default
+const [showNearbyClinicPanel, setShowNearbyClinicPanel] = useState(false);
+const [showAddExternalClinicDialog, setShowAddExternalClinicDialog] = useState(false);
+const [selectedNearbyClinic, setSelectedNearbyClinic] = useState(null);
+
+// User location states
+const [userLocation, setUserLocation] = useState(null);
+const [loadingUserLocation, setLoadingUserLocation] = useState(false);
+const [userLocationError, setUserLocationError] = useState(null);
+
+// Mapbox states
+const mapContainer = useRef(null);
+const map = useRef(null);
+const [mapLoaded, setMapLoaded] = useState(false);
+const [mapCenter, setMapCenter] = useState([121.0583, 14.6091]); // Metro Manila center
+const [mapZoom, setMapZoom] = useState(10);
+
+// Clinic form data state
+const [clinicFormData, setClinicFormData] = useState({
+  clinicName: '',
+  clinicType: currentUserClinic || (staffclinic || ownerownedclinic || 'Ambher Optical'),
+  address: {
+    street: '',
+    city: '',
+    state: 'Metro Manila',
+    zipCode: '',
+    country: 'Philippines',
+    fullAddress: ''
+  },
+  coordinates: {
+    longitude: 121.0583, // Manila, Philippines longitude
+    latitude: 14.6091   // Manila, Philippines latitude
+  },
+  contactInfo: {
+    phone: '',
+    email: '',
+    website: ''
+  },
+  operatingHours: {
+    monday: { open: '09:00', close: '18:00', closed: false },
+    tuesday: { open: '09:00', close: '18:00', closed: false },
+    wednesday: { open: '09:00', close: '18:00', closed: false },
+    thursday: { open: '09:00', close: '18:00', closed: false },
+    friday: { open: '09:00', close: '18:00', closed: false },
+    saturday: { open: '09:00', close: '17:00', closed: false },
+    sunday: { open: '10:00', close: '16:00', closed: true }
+  },
+  services: []
+});
+
+// Add these handler functions after your existing functions (around line 1000)
+
+
+// Load clinic locations
+const fetchClinicLocations = useCallback(async () => {
+  try {
+    setLoadingClinicLocations(true);
+    console.log('Fetching clinic locations from:', `${apiUrl}/api/cliniclocation/clinics`);
+    
+    const response = await fetch(`${apiUrl}/api/cliniclocation/clinics`, {
+      headers: {
+        'Authorization': `Bearer ${currentusertoken}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    console.log('Response status:', response.status);
+
+    if (response.ok) {
+      const data = await response.json();
+      console.log('Received clinic data:', data);
+      
+      if (data.success && Array.isArray(data.data)) {
+        console.log('Setting clinic locations:', data.data);
+        setClinicLocations(data.data);
+        setLocationMessage({ 
+          text: `Loaded ${data.data.length} clinic locations from database`, 
+          type: 'success' 
+        });
+      } else {
+        console.warn('Invalid data structure received:', data);
+        setLocationMessage({ text: 'Invalid data received from server', type: 'warning' });
+        setClinicLocations([]);
+      }
+    } else {
+      const errorText = await response.text();
+      console.error('API Error:', response.status, errorText);
+      setLocationMessage({ 
+        text: `Failed to load clinics: ${response.status} ${response.statusText}`, 
+        type: 'error' 
+      });
+      setClinicLocations([]);
+    }
+  } catch (error) {
+    console.error('Network error fetching clinic locations:', error);
+    setLocationMessage({ text: 'Network error loading clinic locations', type: 'error' });
+    setClinicLocations([]);
+  } finally {
+    setLoadingClinicLocations(false);
+  }
+}, [apiUrl, currentusertoken]);
+
+
+// Get user's current location with ultra-high accuracy
+const getUserLocation = useCallback(() => {
+  if (!navigator.geolocation) {
+    setUserLocationError('Geolocation is not supported by this browser');
+    return;
+  }
+
+  setLoadingUserLocation(true);
+  setUserLocationError(null);
+  setLocationMessage({ text: 'Getting your precise location...', type: 'info' });
+
+  // Ultra-high accuracy options for maximum precision
+  const highAccuracyOptions = {
+    enableHighAccuracy: true, // Force GPS usage
+    timeout: 45000, // Extended timeout for better GPS lock
+    maximumAge: 0 // No cached data - force fresh reading
+  };
+
+  // Enhanced medium accuracy options
+  const mediumAccuracyOptions = {
+    enableHighAccuracy: true,
+    timeout: 20000, // Longer timeout for better accuracy
+    maximumAge: 5000 // Very short cache for fresher data
+  };
+
+  // Improved fallback options
+  const fallbackOptions = {
+    enableHighAccuracy: false,
+    timeout: 15000, // Longer timeout even for fallback
+    maximumAge: 30000 // Shorter cache than before
+  };
+
+  let bestPosition = null;
+  let attemptCount = 0;
+  const maxAttempts = 3;
+  let isCompleted = false; // Flag to prevent multiple completions
+
+  const completeLocationUpdate = (position, accuracyType) => {
+    if (isCompleted) return; // Prevent multiple completions
+    isCompleted = true;
+    
+    const { latitude, longitude, accuracy, altitude, altitudeAccuracy, heading, speed } = position.coords;
+    
+    setUserLocation({
+      latitude,
+      longitude,
+      accuracy,
+      altitude,
+      altitudeAccuracy,
+      heading,
+      speed,
+      timestamp: position.timestamp
+    });
+    
+    setLoadingUserLocation(false);
+    setLocationMessage({ 
+      text: `${accuracyType} accuracy achieved (${Math.round(accuracy)}m)`, 
+      type: 'success' 
+    });
+
+    // Update map with enhanced zoom levels based on accuracy
+    if (map.current) {
+      const zoomLevel = accuracy <= 10 ? 19 :    // Ultra-high accuracy - street level
+                       accuracy <= 20 ? 18 :    // Excellent accuracy - building level  
+                       accuracy <= 30 ? 17 :    // Very good accuracy - detailed area
+                       accuracy <= 50 ? 16 :    // Good accuracy - neighborhood
+                       accuracy <= 100 ? 15 :   // Fair accuracy - district
+                       accuracy <= 200 ? 14 :   // Poor accuracy - city area
+                       13;                       // Very poor accuracy - wide area
+      
+      map.current.flyTo({
+        center: [longitude, latitude],
+        zoom: zoomLevel,
+        duration: 2000,
+        essential: true,
+        easing: (t) => t * (2 - t) // Smooth easing function
+      });
+      
+      // Add a visual indicator of accuracy on the map
+      if (map.current.getSource('user-accuracy-circle')) {
+        map.current.removeSource('user-accuracy-circle');
+        map.current.removeLayer('user-accuracy-circle');
+      }
+      
+      // Create accuracy circle to show precision visually
+      const accuracyCircle = {
+        type: 'Feature',
+        geometry: {
+          type: 'Point',
+          coordinates: [longitude, latitude]
+        },
+        properties: {
+          accuracy: accuracy
+        }
+      };
+      
+      map.current.addSource('user-accuracy-circle', {
+        type: 'geojson',
+        data: accuracyCircle
+      });
+      
+      map.current.addLayer({
+        id: 'user-accuracy-circle',
+        type: 'circle',
+        source: 'user-accuracy-circle',
+        paint: {
+          'circle-radius': accuracy <= 10 ? 8 : accuracy <= 20 ? 12 : accuracy <= 50 ? 16 : 20,
+          'circle-color': accuracy <= 10 ? '#10b981' : accuracy <= 20 ? '#3b82f6' : accuracy <= 50 ? '#f59e0b' : '#ef4444',
+          'circle-opacity': 0.6,
+          'circle-stroke-width': 2,
+          'circle-stroke-color': '#ffffff'
+        }
+      });
+    }
+  };
+
+  const handleLocationError = (error, isLastAttempt = false) => {
+    console.error(`Location attempt ${attemptCount} failed:`, error);
+    
+    if (!isLastAttempt && attemptCount < maxAttempts) {
+      // Try next accuracy level
+      if (attemptCount === 1) {
+        tryGetLocation(mediumAccuracyOptions, 'medium');
+      } else {
+        tryGetLocation(fallbackOptions, 'fallback');
+      }
+      return;
+    }
+
+    // Final error handling - ensure loading is stopped
+    if (!isCompleted) {
+      isCompleted = true;
+      setLoadingUserLocation(false);
+      
+      let errorMessage = 'Unable to retrieve your location';
+      let retryMessage = '';
+      
+      switch (error.code) {
+        case error.PERMISSION_DENIED:
+          errorMessage = 'Location access denied. Please enable location permissions.';
+          retryMessage = 'Go to browser settings > Privacy & Security > Location > Allow this site to access your location. For best accuracy, also enable "High accuracy" location mode in your device settings.';
+          break;
+        case error.POSITION_UNAVAILABLE:
+          errorMessage = 'Location information is unavailable.';
+          retryMessage = 'Make sure GPS is enabled on your device and you have a stable internet connection. Try moving to an open area for better GPS reception.';
+          break;
+        case error.TIMEOUT:
+          errorMessage = 'Location request timed out.';
+          retryMessage = 'GPS signal may be weak. Try moving near a window or outdoors for better GPS reception, then try again.';
+          break;
+      }
+      
+      setUserLocationError(`${errorMessage} ${retryMessage}`);
+      setLocationMessage({ 
+        text: `${errorMessage} Try enabling high-accuracy GPS in your device settings.`, 
+        type: 'error' 
+      });
+    }
+  };
+
+  const tryGetLocation = (options, attemptType = 'high') => {
+    if (isCompleted) return; // Don't start new attempts if already completed
+    
+    attemptCount++;
+    
+    setLocationMessage({ 
+      text: `Attempt ${attemptCount}: Getting ${attemptType} accuracy location...`, 
+      type: 'info' 
+    });
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        if (isCompleted) return; // Don't process if already completed
+        
+        const { latitude, longitude, accuracy } = position.coords;
+        
+        console.log(`Location attempt ${attemptCount} (${attemptType}):`, {
+          accuracy: Math.round(accuracy),
+          coordinates: [longitude, latitude]
+        });
+
+        // Update best position if this is more accurate
+        if (!bestPosition || accuracy < bestPosition.coords.accuracy) {
+          bestPosition = position;
+        }
+
+        // If we get ultra-high accuracy (< 10m), use it immediately
+        if (accuracy <= 10) {
+          completeLocationUpdate(position, 'Ultra-High Precision');
+          return;
+        }
+
+        // If we get excellent accuracy (< 20m), use it immediately  
+        if (accuracy <= 20) {
+          completeLocationUpdate(position, 'Excellent');
+          return;
+        }
+
+        // If accuracy is good (< 30m) and we're on the second attempt, use it
+        if (accuracy <= 30 && attemptCount >= 2) {
+          completeLocationUpdate(position, 'Very Good');
+          return;
+        }
+
+        // If accuracy is acceptable (< 50m) and we're on the last attempt, use it
+        if (accuracy <= 50 && attemptCount >= maxAttempts) {
+          completeLocationUpdate(position, 'Good');
+          return;
+        }
+
+        // If accuracy needs improvement, try continuous tracking for ultra-high precision
+        if (accuracy > 30 && attemptCount < maxAttempts) {
+          if (attemptCount === 1) {
+            // Try watchPosition for continuous tracking with enhanced monitoring
+            setLocationMessage({ 
+              text: `Seeking higher precision (current: ${Math.round(accuracy)}m). Using GPS tracking...`, 
+              type: 'warning' 
+            });
+            
+            let watchAttempts = 0;
+            const maxWatchAttempts = 8; // More attempts for better accuracy
+            
+            const watchId = navigator.geolocation.watchPosition(
+              (watchPosition) => {
+                if (isCompleted) {
+                  navigator.geolocation.clearWatch(watchId);
+                  return;
+                }
+                
+                watchAttempts++;
+                const watchAccuracy = watchPosition.coords.accuracy;
+                console.log(`Watch position update ${watchAttempts}:`, {
+                  accuracy: Math.round(watchAccuracy),
+                  improvement: bestPosition ? Math.round(bestPosition.coords.accuracy - watchAccuracy) : 0,
+                  latitude: watchPosition.coords.latitude,
+                  longitude: watchPosition.coords.longitude
+                });
+
+                if (!bestPosition || watchAccuracy < bestPosition.coords.accuracy) {
+                  bestPosition = watchPosition;
+                  
+                  // Update UI with improving accuracy
+                  setLocationMessage({ 
+                    text: `Improving accuracy: ${Math.round(watchAccuracy)}m (attempt ${watchAttempts}/${maxWatchAttempts})`, 
+                    type: 'info' 
+                  });
+                  
+                  // If we get ultra-high accuracy from watching, use it immediately
+                  if (watchAccuracy <= 10) {
+                    navigator.geolocation.clearWatch(watchId);
+                    completeLocationUpdate(watchPosition, 'Ultra-High GPS');
+                    return;
+                  }
+                  
+                  // If we get excellent accuracy from watching, use it
+                  if (watchAccuracy <= 20) {
+                    navigator.geolocation.clearWatch(watchId);
+                    completeLocationUpdate(watchPosition, 'Excellent GPS');
+                    return;
+                  }
+                  
+                  // If we get very good accuracy, use it after a few attempts
+                  if (watchAccuracy <= 25 && watchAttempts >= 3) {
+                    navigator.geolocation.clearWatch(watchId);
+                    completeLocationUpdate(watchPosition, 'Very Good GPS');
+                    return;
+                  }
+                }
+                
+                // Stop watching after max attempts and use best position
+                if (watchAttempts >= maxWatchAttempts) {
+                  navigator.geolocation.clearWatch(watchId);
+                  if (bestPosition && bestPosition.coords.accuracy <= 50) {
+                    completeLocationUpdate(bestPosition, 'Best Available');
+                  } else {
+                    tryGetLocation(mediumAccuracyOptions, 'medium');
+                  }
+                }
+              },
+              (watchError) => {
+                navigator.geolocation.clearWatch(watchId);
+                console.error('Watch position error:', watchError);
+                if (!isCompleted) {
+                  tryGetLocation(mediumAccuracyOptions, 'medium');
+                }
+              },
+              { ...highAccuracyOptions, timeout: 25000 } // Longer timeout for watch
+            );
+
+            // Stop watching after 25 seconds and try medium accuracy if no ultra-high precision achieved
+            setTimeout(() => {
+              navigator.geolocation.clearWatch(watchId);
+              if (!isCompleted) {
+                if (bestPosition && bestPosition.coords.accuracy <= 35) {
+                  completeLocationUpdate(bestPosition, 'Enhanced GPS');
+                } else {
+                  tryGetLocation(mediumAccuracyOptions, 'medium');
+                }
+              }
+            }, 25000);
+          } else {
+            // Final attempt with fallback options
+            tryGetLocation(fallbackOptions, 'fallback');
+          }
+        } else if (attemptCount >= maxAttempts) {
+          // Use best position we got
+          if (bestPosition) {
+            const bestAccuracy = bestPosition.coords.accuracy;
+            const accuracyType = bestAccuracy <= 100 ? 'Best available' : 'Limited';
+            completeLocationUpdate(bestPosition, accuracyType);
+          } else {
+            handleLocationError(new Error('No position obtained'), true);
+          }
+        }
+      },
+      (error) => handleLocationError(error, attemptCount >= maxAttempts),
+      options
+    );
+  };
+
+  // Start with ultra-high accuracy attempt
+  tryGetLocation(highAccuracyOptions, 'high');
+}, []);
+
+// Handle map click to add new clinic
+const handleMapClick = (e) => {
+  if (!isEditingLocation) return;
   
+  const mapElement = e.currentTarget;
+  const rect = mapElement.getBoundingClientRect();
+  const x = ((e.clientX - rect.left) / rect.width) * 100;
+  const y = ((e.clientY - rect.top) / rect.height) * 100;
+  
+  // Convert click coordinates to longitude/latitude
+  const longitude = 119 + (x / 100) * 8; // Rough conversion for Philippines bounds
+  const latitude = 21 - (y / 100) * 17;
+  
+  setClinicFormData(prev => ({
+    ...prev,
+    coordinates: { longitude, latitude }
+  }));
+};
+
+// Search for nearby eye clinics using Google Places API (alternative service)
+const searchNearbyEyeClinics = useCallback(async (userLat, userLng, radius = searchRadius) => {
+  if (!userLat || !userLng) {
+    setLocationMessage({ 
+      text: 'User location required to search for nearby clinics', 
+      type: 'warning' 
+    });
+    return;
+  }
+
+  setLoadingNearbyClinic(true);
+  setLocationMessage({ 
+    text: 'Searching for nearby eye clinics...', 
+    type: 'info' 
+  });
+
+  try {
+    // Search for nearby eye clinics using multiple search terms
+    const searchTerms = [
+      'eye clinic',
+      'optical clinic', 
+      'eye doctor',
+      'ophthalmologist',
+      'optometrist',
+      'eye care center'
+    ];
+
+    const allNearbyClinic = [];
+
+    // Use Mapbox Places API to search for eye-related establishments
+    for (const term of searchTerms) {
+      try {
+        const response = await fetch(
+          `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(term)}.json?` +
+          `access_token=${import.meta.env.VITE_MAPBOX_ACCESS_TOKEN}&` +
+          `proximity=${userLng},${userLat}&` +
+          `limit=10&` +
+          `country=ph&` +
+          `types=poi`
+        );
+
+        if (response.ok) {
+          const data = await response.json();
+          
+          data.features.forEach(feature => {
+            const distance = calculateDistance(
+              userLat, userLng,
+              feature.center[1], feature.center[0]
+            );
+
+            if (distance <= radius / 1000) { // Convert meters to km
+              allNearbyClinic.push({
+                id: `external-${feature.id}`,
+                name: feature.place_name || feature.text,
+                clinicType: 'External Eye Clinic',
+                address: {
+                  fullAddress: feature.place_name
+                },
+                coordinates: {
+                  longitude: feature.center[0],
+                  latitude: feature.center[1]
+                },
+                distance: distance,
+                source: 'mapbox',
+                isExternal: true,
+                searchTerm: term,
+                contactInfo: {
+                  phone: 'Contact info not available',
+                  email: 'Not available'
+                },
+                services: ['General Eye Care'],
+                verified: false
+              });
+            }
+          });
+        }
+      } catch (error) {
+        console.warn(`Error searching for "${term}":`, error);
+      }
+    }
+
+    // Remove duplicates based on similar coordinates (within 100m)
+    const uniqueClinic = [];
+    allNearbyClinic.forEach(clinic => {
+      const isDuplicate = uniqueClinic.some(existing => 
+        calculateDistance(
+          clinic.coordinates.latitude, clinic.coordinates.longitude,
+          existing.coordinates.latitude, existing.coordinates.longitude
+        ) < 0.1 // Less than 100m apart
+      );
+      if (!isDuplicate) {
+        uniqueClinic.push(clinic);
+      }
+    });
+
+    // Sort by distance
+    uniqueClinic.sort((a, b) => a.distance - b.distance);
+
+    setNearbyEyeClinics(uniqueClinic);
+    setShowNearbyClinicPanel(true);
+    
+    setLocationMessage({ 
+      text: `Found ${uniqueClinic.length} nearby eye clinics within ${radius/1000}km`, 
+      type: 'success' 
+    });
+
+  } catch (error) {
+    console.error('Error searching nearby clinics:', error);
+    setLocationMessage({ 
+      text: 'Failed to search for nearby clinics. Please try again.', 
+      type: 'error' 
+    });
+  } finally {
+    setLoadingNearbyClinic(false);
+  }
+}, [searchRadius]);
+
+// Calculate distance between two coordinates (Haversine formula)
+const calculateDistance = (lat1, lon1, lat2, lon2) => {
+  const R = 6371; // Radius of the Earth in kilometers
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = 
+    Math.sin(dLat/2) * Math.sin(dLat/2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+    Math.sin(dLon/2) * Math.sin(dLon/2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  const distance = R * c; // Distance in kilometers
+  return Math.round(distance * 100) / 100; // Round to 2 decimal places
+};
+
+// Add external clinic to our database
+const addExternalClinic = useCallback(async (clinicData) => {
+  setIsSavingLocation(true);
+  try {
+    const response = await fetch(`${apiUrl}/api/cliniclocation/clinics`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${currentusertoken}`
+      },
+      body: JSON.stringify({
+        clinicId: `external-${Date.now()}`,
+        clinicName: clinicData.name,
+        clinicType: 'External Eye Clinic',
+        address: clinicData.address,
+        longitude: clinicData.coordinates.longitude,
+        latitude: clinicData.coordinates.latitude,
+        contactInfo: clinicData.contactInfo,
+        services: clinicData.services || ['General Eye Care'],
+        operatingHours: {
+          monday: { open: '09:00', close: '17:00', closed: false },
+          tuesday: { open: '09:00', close: '17:00', closed: false },
+          wednesday: { open: '09:00', close: '17:00', closed: false },
+          thursday: { open: '09:00', close: '17:00', closed: false },
+          friday: { open: '09:00', close: '17:00', closed: false },
+          saturday: { open: '09:00', close: '16:00', closed: false },
+          sunday: { open: '10:00', close: '15:00', closed: true }
+        }
+      })
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      setClinicLocations(prev => [...prev, data.data]);
+      setLocationMessage({ 
+        text: 'External clinic added successfully!', 
+        type: 'success' 
+      });
+      setShowAddExternalClinicDialog(false);
+    } else {
+      throw new Error('Failed to add clinic');
+    }
+  } catch (error) {
+    console.error('Error adding external clinic:', error);
+    setLocationMessage({ 
+      text: 'Failed to add external clinic. Please try again.', 
+      type: 'error' 
+    });
+  } finally {
+    setIsSavingLocation(false);
+  }
+}, [apiUrl, currentusertoken]);
+
+// Reset clinic form
+const resetClinicForm = useCallback(() => {
+  setClinicFormData({
+    clinicName: '',
+    clinicType: currentUserClinic || (staffclinic || ownerownedclinic || 'Ambher Optical'),
+    address: {
+      street: '',
+      city: '',
+      state: 'Metro Manila',
+      zipCode: '',
+      country: 'Philippines',
+      fullAddress: ''
+    },
+    coordinates: { x: 50, y: 50 },
+    contactInfo: { phone: '', email: '', website: '' },
+    operatingHours: {
+      monday: { open: '09:00', close: '18:00', closed: false },
+      tuesday: { open: '09:00', close: '18:00', closed: false },
+      wednesday: { open: '09:00', close: '18:00', closed: false },
+      thursday: { open: '09:00', close: '18:00', closed: false },
+      friday: { open: '09:00', close: '18:00', closed: false },
+      saturday: { open: '09:00', close: '17:00', closed: false },
+      sunday: { open: '10:00', close: '16:00', closed: true }
+    },
+    services: []
+  });
+}, [currentUserClinic, staffclinic, ownerownedclinic]);
+
+// Handler functions for clinic location dialogs
+const handleSaveClinicLocation = useCallback(async () => {
+  if (!clinicFormData?.clinicName || !clinicFormData?.coordinates?.latitude || !clinicFormData?.coordinates?.longitude) {
+    setLocationMessage({ text: 'Please fill in all required fields', type: 'error' });
+    return;
+  }
+
+  setIsSavingLocation(true);
+  try {
+    const response = await fetch(`${apiUrl}/api/cliniclocation/clinics`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${currentusertoken}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        clinicName: clinicFormData.clinicName,
+        clinicType: clinicFormData.clinicType,
+        address: clinicFormData.address,
+        longitude: clinicFormData.coordinates.longitude,
+        latitude: clinicFormData.coordinates.latitude,
+        contactInfo: clinicFormData.contactInfo,
+        operatingHours: clinicFormData.operatingHours,
+        services: clinicFormData.services
+      })
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      setClinicLocations(prev => [...prev, data.data]);
+      setLocationMessage({ text: 'Clinic location saved successfully', type: 'success' });
+      setShowAddClinicDialog(false);
+      resetClinicForm();
+    } else {
+      throw new Error('Failed to save clinic location');
+    }
+  } catch (error) {
+    console.error('Error saving clinic location:', error);
+    setLocationMessage({ text: 'Failed to save clinic location', type: 'error' });
+  } finally {
+    setIsSavingLocation(false);
+  }
+}, [apiUrl, currentusertoken, clinicFormData, resetClinicForm]);
+
+const handleUpdateClinicLocation = useCallback(async () => {
+  if (!selectedClinicLocation || !clinicFormData?.clinicName || !clinicFormData?.coordinates?.latitude || !clinicFormData?.coordinates?.longitude) {
+    setLocationMessage({ text: 'Please fill in all required fields', type: 'error' });
+    return;
+  }
+
+  setIsSavingLocation(true);
+  try {
+    const response = await fetch(`${apiUrl}/api/cliniclocation/clinics/${selectedClinicLocation.clinicId}`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${currentusertoken}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        clinicName: clinicFormData.clinicName,
+        clinicType: clinicFormData.clinicType,
+        address: clinicFormData.address,
+        longitude: clinicFormData.coordinates.longitude,
+        latitude: clinicFormData.coordinates.latitude,
+        contactInfo: clinicFormData.contactInfo,
+        operatingHours: clinicFormData.operatingHours,
+        services: clinicFormData.services
+      })
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      setClinicLocations(prev => prev.map(clinic => 
+        clinic._id === selectedClinicLocation._id ? data.data : clinic
+      ));
+      setLocationMessage({ text: 'Clinic location updated successfully', type: 'success' });
+      setShowEditClinicDialog(false);
+      setSelectedClinicLocation(null);
+      resetClinicForm();
+    } else {
+      throw new Error('Failed to update clinic location');
+    }
+  } catch (error) {
+    console.error('Error updating clinic location:', error);
+    setLocationMessage({ text: 'Failed to update clinic location', type: 'error' });
+  } finally {
+    setIsSavingLocation(false);
+  }
+}, [apiUrl, currentusertoken, clinicFormData, selectedClinicLocation, resetClinicForm]);
+
+const handleDeleteClinicLocation = useCallback(async () => {
+  if (!selectedClinicLocation) return;
+
+  setIsSavingLocation(true);
+  try {
+    const response = await fetch(`${apiUrl}/api/cliniclocation/clinics/${selectedClinicLocation.clinicId}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${currentusertoken}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (response.ok) {
+      setClinicLocations(prev => prev.filter(clinic => clinic._id !== selectedClinicLocation._id));
+      setLocationMessage({ text: 'Clinic location deleted successfully', type: 'success' });
+      setShowDeleteClinicDialog(false);
+      setSelectedClinicLocation(null);
+    } else {
+      throw new Error('Failed to delete clinic location');
+    }
+  } catch (error) {
+    console.error('Error deleting clinic location:', error);
+    setLocationMessage({ text: 'Failed to delete clinic location', type: 'error' });
+  } finally {
+    setIsSavingLocation(false);
+  }
+}, [apiUrl, currentusertoken, selectedClinicLocation]);
+
+// Initialize Mapbox map
+useEffect(() => {
+  // Only initialize if we're on the mapping dashboard and haven't initialized yet
+  if (activedashboard !== 'mappingintegration' || !mapContainer.current || map.current) return;
+
+  // Set Mapbox access token
+  mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
+
+  // Initialize the map
+  map.current = new mapboxgl.Map({
+    container: mapContainer.current,
+    style: 'mapbox://styles/mapbox/streets-v11', // You can change this to satellite-v9 or other styles
+    center: mapCenter, // [longitude, latitude] - Metro Manila center
+    zoom: mapZoom,
+    projection: 'mercator',
+    // Disable rotation and pitch for smooth 2D experience
+    bearing: 0, // North-up orientation
+    pitch: 0, // Flat 2D view
+    dragRotate: false, // Disable rotation with right-click drag
+    pitchWithRotate: false, // Disable pitch adjustment
+    touchPitch: false, // Disable touch pitch on mobile
+    keyboard: true, // Keep keyboard navigation
+    scrollZoom: true, // Keep scroll zoom
+    boxZoom: true, // Keep box zoom
+    dragPan: true, // Keep pan/drag
+    doubleClickZoom: true, // Keep double-click zoom
+    touchZoomRotate: {
+      around: 'center' // Keep zoom but disable rotate on touch
+    },
+    // Performance optimizations for smooth interactions
+    performanceMetricsCollection: false, // Disable metrics collection
+    preserveDrawingBuffer: false, // Better performance
+    antialias: false, // Disable antialiasing for better performance
+    attributionControl: false, // Remove attribution for better performance
+    logoPosition: 'bottom-right', // Keep logo but optimize position
+    maxZoom: 18, // Limit max zoom for better performance
+    minZoom: 8, // Limit min zoom for Metro Manila area
+    renderWorldCopies: false, // Don't render world copies for better performance
+    optimizeForTerrain: false, // Optimize for 2D performance
+    // Reduce rendering frequency for smoother interactions
+    maxTileCacheSize: 50, // Reduce tile cache size
+    localIdeographFontFamily: false, // Disable local font loading
+    // Enable hardware acceleration
+    failIfMajorPerformanceCaveat: false,
+    // Smooth transitions but optimized
+    fadeDuration: 0, // Disable fade for better performance during interaction
+    crossSourceCollisions: false // Disable collision detection for better performance
+  });
+
+  // Add navigation controls (without rotation controls)
+  map.current.addControl(new mapboxgl.NavigationControl({
+    showCompass: false, // Hide compass since rotation is disabled
+    showZoom: true,
+    visualizePitch: false // Hide pitch visualization
+  }));
+
+  // Add ultra-high accuracy geolocate control
+  const geolocate = new mapboxgl.GeolocateControl({
+    positionOptions: {
+      enableHighAccuracy: true, // Force GPS usage
+      timeout: 30000, // Extended timeout for GPS lock
+      maximumAge: 0 // No cached data - force fresh reading
+    },
+    trackUserLocation: true, // Continuously track user location
+    showUserHeading: true, // Show direction user is facing
+    showAccuracyCircle: true, // Show accuracy circle around user location
+    fitBoundsOptions: {
+      maxZoom: 17, // Higher zoom for better accuracy visualization
+      padding: 50 // Padding around accuracy circle
+    }
+  });
+  
+  // Add enhanced event listeners for accuracy feedback
+  geolocate.on('geolocate', (e) => {
+    const accuracy = e.coords.accuracy;
+    const accuracyLevel = accuracy <= 20 ? 'excellent' : accuracy <= 50 ? 'good' : accuracy <= 100 ? 'fair' : 'poor';
+    const accuracyColor = accuracy <= 20 ? 'success' : accuracy <= 50 ? 'success' : accuracy <= 100 ? 'warning' : 'error';
+    
+    console.log('Geolocate control update:', {
+      accuracy: Math.round(accuracy),
+      level: accuracyLevel,
+      coordinates: [e.coords.longitude, e.coords.latitude]
+    });
+    
+    setLocationMessage({ 
+      text: `Location updated: ${accuracyLevel} accuracy (${Math.round(accuracy)}m)`, 
+      type: accuracyColor
+    });
+    
+    // Update user location state with geolocate data
+    setUserLocation({
+      latitude: e.coords.latitude,
+      longitude: e.coords.longitude,
+      accuracy: e.coords.accuracy,
+      altitude: e.coords.altitude,
+      altitudeAccuracy: e.coords.altitudeAccuracy,
+      heading: e.coords.heading,
+      speed: e.coords.speed,
+      timestamp: Date.now()
+    });
+  });
+  
+  geolocate.on('trackuserlocationstart', () => {
+    setLocationMessage({ 
+      text: 'Starting high-accuracy location tracking...', 
+      type: 'info' 
+    });
+  });
+  
+  geolocate.on('trackuserlocationend', () => {
+    setLocationMessage({ 
+      text: 'Location tracking stopped', 
+      type: 'info' 
+    });
+  });
+  
+  geolocate.on('error', (e) => {
+    console.error('Geolocate control error:', e);
+    setLocationMessage({ 
+      text: 'Geolocate failed. Use "Get My Location" button for manual location.', 
+      type: 'error' 
+    });
+  });
+  
+  map.current.addControl(geolocate);
+
+  // Handle map load
+  map.current.on('load', () => {
+    console.log('Map loaded successfully');
+    setMapLoaded(true);
+    
+    // Additional performance optimizations after map loads
+    const mapInstance = map.current;
+    
+    // Optimize rendering for smooth interactions
+    mapInstance._logoControl && mapInstance.removeControl(mapInstance._logoControl);
+    
+    // Set canvas context attributes for better performance
+    const canvas = mapInstance.getCanvasContainer().querySelector('canvas');
+    if (canvas) {
+      canvas.style.willChange = 'transform';
+      canvas.style.imageRendering = 'pixelated'; // Faster rendering during movement
+    }
+    
+    // Optimize pan and zoom performance
+    mapInstance.scrollZoom.setWheelZoomRate(1/300); // Smoother scroll zoom
+    mapInstance.dragPan.setDragPan({ inertia: true, deceleration: 3000 }); // Smooth drag with inertia
+    
+    // Performance optimizations for smooth map interactions
+    const optimizeMapPerformance = () => {
+      const mapInstance = map.current;
+      
+      // Throttle move events to reduce CPU usage during pan/zoom
+      let moveTimeout;
+      mapInstance.on('movestart', () => {
+        // Disable marker animations during movement for better performance
+        const markers = document.querySelectorAll('.clinic-marker, .user-location-marker');
+        markers.forEach(marker => {
+          marker.style.transition = 'none';
+        });
+      });
+      
+      mapInstance.on('move', () => {
+        clearTimeout(moveTimeout);
+        moveTimeout = setTimeout(() => {
+          // Re-enable animations after movement stops
+          const markers = document.querySelectorAll('.clinic-marker, .user-location-marker');
+          markers.forEach(marker => {
+            marker.style.transition = 'all 0.2s ease-out';
+          });
+        }, 100);
+      });
+      
+      mapInstance.on('moveend', () => {
+        // Re-enable all animations when movement ends
+        const markers = document.querySelectorAll('.clinic-marker, .user-location-marker');
+        markers.forEach(marker => {
+          marker.style.transition = 'all 0.2s ease-out';
+        });
+      });
+    };
+    
+    // Apply performance optimizations
+    optimizeMapPerformance();
+  });
+
+  // Handle map click for adding new clinics
+  map.current.on('click', (e) => {
+    if (isEditingLocation) {
+      const { lng, lat } = e.lngLat;
+      setClinicFormData(prev => ({
+        ...prev,
+        coordinates: { longitude: lng, latitude: lat }
+      }));
+      
+      // Show form dialog
+      setShowAddClinicDialog(true);
+    }
+  });
+
+  // Clean up on unmount
+  return () => {
+    if (map.current) {
+      map.current.remove();
+      map.current = null;
+      setMapLoaded(false);
+    }
+  };
+}, [activedashboard, mapCenter, mapZoom, isEditingLocation]);
+
+// Separate effect for handling clinic markers
+useEffect(() => {
+  if (!map.current || !mapLoaded || !clinicLocations) return;
+  
+  console.log('Clinic markers effect triggered');
+  console.log('Map loaded:', mapLoaded);
+  console.log('Clinic locations:', clinicLocations);
+  
+  // Clear existing clinic markers
+  const existingMarkers = document.querySelectorAll('.clinic-marker');
+  existingMarkers.forEach(marker => {
+    const parent = marker.parentElement;
+    if (parent) parent.remove();
+  });
+  
+  // Add clinic markers with debugging
+  console.log('Adding clinic markers. Clinic locations:', clinicLocations);
+  console.log('Number of clinic locations:', clinicLocations?.length);
+  
+  if (Array.isArray(clinicLocations) && clinicLocations.length > 0) {
+    clinicLocations.forEach((clinic, index) => {
+      console.log(`Processing clinic ${index}:`, clinic);
+      console.log(`Clinic coordinates:`, clinic.coordinates);
+      
+      // Handle GeoJSON format from database: coordinates.coordinates = [longitude, latitude]
+      let longitude, latitude;
+      
+      if (clinic.coordinates?.coordinates && Array.isArray(clinic.coordinates.coordinates)) {
+        // GeoJSON format from database
+        longitude = clinic.coordinates.coordinates[0];
+        latitude = clinic.coordinates.coordinates[1];
+        console.log(`Using GeoJSON coordinates: [${longitude}, ${latitude}]`);
+      } else if (clinic.coordinates?.longitude && clinic.coordinates?.latitude) {
+        // Object format
+        longitude = clinic.coordinates.longitude;
+        latitude = clinic.coordinates.latitude;
+        console.log(`Using object coordinates: [${longitude}, ${latitude}]`);
+      }
+      
+      if (longitude && latitude) {
+        console.log(`Creating marker for ${clinic.clinicName} at [${longitude}, ${latitude}]`);
+        
+        // Create marker element with enhanced styling for different clinic types
+        const markerEl = document.createElement('div');
+        markerEl.className = 'clinic-marker';
+        
+        // Determine marker styling based on clinic type
+        let backgroundColor, borderColor, markerText, markerIcon;
+        if (clinic.clinicType === 'Ambher Optical') {
+          backgroundColor = '#3B82F6';
+          borderColor = 'white';
+          markerText = 'A';
+          markerIcon = '';
+        } else if (clinic.clinicType === 'Bautista Eye Center') {
+          backgroundColor = '#EF4444';
+          borderColor = 'white';
+          markerText = 'B';
+          markerIcon = '';
+        } else if (clinic.clinicType === 'External Eye Clinic' || clinic.isExternal) {
+          backgroundColor = '#10B981';
+          borderColor = 'white';
+          markerText = 'E';
+          markerIcon = '👁️';
+        } else {
+          backgroundColor = '#8B5CF6';
+          borderColor = 'white';
+          markerText = 'O';
+          markerIcon = '';
+        }
+        
+        markerEl.style.cssText = `
+          width: 32px;
+          height: 32px;
+          border-radius: 50%;
+          background-color: ${backgroundColor};
+          border: 3px solid ${borderColor};
+          box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: white;
+          font-weight: bold;
+          font-size: ${clinic.isExternal ? '16px' : '12px'};
+          z-index: 1000;
+          transition: all 0.2s ease;
+        `;
+        markerEl.innerHTML = clinic.isExternal ? markerIcon : markerText;
+
+        // Enhanced popup content with more details
+        const popupContent = `
+          <div class="p-3 min-w-64">
+            <div class="flex items-start justify-between mb-2">
+              <h3 class="font-bold text-sm text-gray-800 flex-1">${clinic.clinicName}</h3>
+              <span class="ml-2 px-2 py-1 text-xs rounded-full ${
+                clinic.clinicType === 'Ambher Optical' ? 'bg-blue-100 text-blue-800' :
+                clinic.clinicType === 'Bautista Eye Center' ? 'bg-red-100 text-red-800' :
+                clinic.isExternal ? 'bg-green-100 text-green-800' :
+                'bg-purple-100 text-purple-800'
+              }">${clinic.clinicType}</span>
+            </div>
+            
+            <div class="space-y-1 text-xs text-gray-600">
+              <div class="flex items-start">
+                <i class="bx bx-map-pin text-gray-400 mr-1 mt-0.5"></i>
+                <span>${clinic.address?.fullAddress || 'No address available'}</span>
+              </div>
+              
+              <div class="flex items-center">
+                <i class="bx bx-phone text-gray-400 mr-1"></i>
+                <span>${clinic.contactInfo?.phone || 'Contact info not available'}</span>
+              </div>
+              
+              ${clinic.distance ? `
+                <div class="flex items-center">
+                  <i class="bx bx-current-location text-gray-400 mr-1"></i>
+                  <span>${clinic.distance}km from your location</span>
+                </div>
+              ` : ''}
+              
+              ${clinic.services && clinic.services.length > 0 ? `
+                <div class="mt-2">
+                  <div class="text-xs font-medium text-gray-700 mb-1">Services:</div>
+                  <div class="flex flex-wrap gap-1">
+                    ${clinic.services.slice(0, 3).map(service => 
+                      `<span class="px-1.5 py-0.5 bg-gray-100 text-gray-600 rounded text-xs">${service}</span>`
+                    ).join('')}
+                    ${clinic.services.length > 3 ? `<span class="text-xs text-gray-500">+${clinic.services.length - 3} more</span>` : ''}
+                  </div>
+                </div>
+              ` : ''}
+              
+              ${clinic.isExternal ? `
+                <div class="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded">
+                  <div class="flex items-center text-xs text-yellow-800">
+                    <i class="bx bx-info-circle mr-1"></i>
+                    External clinic - verify details before visiting
+                  </div>
+                  ${clinic.verified === false ? `
+                    <button onclick="addToDatabase('${clinic.id}')" class="mt-1 px-2 py-1 bg-green-500 text-white text-xs rounded hover:bg-green-600">
+                      Add to Database
+                    </button>
+                  ` : ''}
+                </div>
+              ` : ''}
+            </div>
+          </div>
+        `;
+
+        // Create popup
+        const popup = new mapboxgl.Popup({ 
+          offset: 25,
+          closeButton: true,
+          closeOnClick: false
+        }).setHTML(popupContent);
+
+        // Add marker to map
+        const marker = new mapboxgl.Marker(markerEl)
+          .setLngLat([longitude, latitude])
+          .setPopup(popup)
+          .addTo(map.current);
+          
+        console.log(`Marker created and added for ${clinic.clinicName}`);
+      } else {
+        console.warn(`Clinic ${clinic.clinicName} has invalid coordinates:`, clinic.coordinates);
+      }
+    });
+    
+    setLocationMessage({ 
+      text: `${clinicLocations.length} clinic locations loaded on map`, 
+      type: 'success' 
+    });
+  } else {
+    console.warn('No clinic locations found or not an array:', clinicLocations);
+    setLocationMessage({ 
+      text: 'No clinic locations available to display', 
+      type: 'warning' 
+    });
+  }
+
+  // Add nearby clinic markers if they exist
+  if (Array.isArray(nearbyEyeClinics) && nearbyEyeClinics.length > 0) {
+    nearbyEyeClinics.forEach((clinic) => {
+      if (clinic.coordinates?.longitude && clinic.coordinates?.latitude) {
+        console.log(`Creating nearby clinic marker for ${clinic.name}`);
+        
+        // Create marker for nearby clinic with special styling
+        const nearbyMarkerEl = document.createElement('div');
+        nearbyMarkerEl.className = 'clinic-marker nearby-clinic-marker';
+        nearbyMarkerEl.style.cssText = `
+          width: 28px;
+          height: 28px;
+          border-radius: 50%;
+          background-color: #10B981;
+          border: 2px solid #FBBF24;
+          box-shadow: 0 2px 8px rgba(16,185,129,0.4);
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: white;
+          font-weight: bold;
+          font-size: 16px;
+          z-index: 1000;
+          animation: pulse 2s infinite;
+        `;
+        nearbyMarkerEl.innerHTML = '👁️';
+
+        // Create popup for nearby clinic
+        const nearbyPopup = new mapboxgl.Popup({ 
+          offset: 25,
+          closeButton: true,
+          closeOnClick: false
+        }).setHTML(`
+          <div class="p-3 min-w-64">
+            <div class="flex items-start justify-between mb-2">
+              <h3 class="font-bold text-sm text-gray-800 flex-1">${clinic.name}</h3>
+              <span class="ml-2 px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800">
+                Nearby
+              </span>
+            </div>
+            
+            <div class="space-y-1 text-xs text-gray-600">
+              <div class="flex items-start">
+                <i class="bx bx-map-pin text-gray-400 mr-1 mt-0.5"></i>
+                <span>${clinic.address?.fullAddress || 'Address not available'}</span>
+              </div>
+              
+              <div class="flex items-center">
+                <i class="bx bx-current-location text-gray-400 mr-1"></i>
+                <span>${clinic.distance}km from your location</span>
+              </div>
+              
+              <div class="flex items-center">
+                <i class="bx bx-search-alt text-gray-400 mr-1"></i>
+                <span>Found via: ${clinic.searchTerm}</span>
+              </div>
+              
+              <div class="mt-2 p-2 bg-green-50 border border-green-200 rounded">
+                <div class="flex items-center text-xs text-green-800 mb-2">
+                  <i class="bx bx-info-circle mr-1"></i>
+                  External clinic found nearby
+                </div>
+                <button 
+                  onclick="window.addNearbyClinicToDatabase('${clinic.id}')" 
+                  class="w-full px-2 py-1 bg-green-500 text-white text-xs rounded hover:bg-green-600">
+                  Add to Database
+                </button>
+              </div>
+            </div>
+          </div>
+        `);
+
+        // Add nearby clinic marker to map
+        new mapboxgl.Marker(nearbyMarkerEl)
+          .setLngLat([clinic.coordinates.longitude, clinic.coordinates.latitude])
+          .setPopup(nearbyPopup)
+          .addTo(map.current);
+      }
+    });
+  }
+}, [mapLoaded, clinicLocations, nearbyEyeClinics]);
+
+// Global function for adding nearby clinic from popup
+useEffect(() => {
+  window.addNearbyClinicToDatabase = (clinicId) => {
+    const clinic = nearbyEyeClinics.find(c => c.id === clinicId);
+    if (clinic) {
+      setSelectedNearbyClinic(clinic);
+      setShowAddExternalClinicDialog(true);
+    }
+  };
+  
+  return () => {
+    delete window.addNearbyClinicToDatabase;
+  };
+}, [nearbyEyeClinics]);
+
+// Update user location on map
+useEffect(() => {
+  if (map.current && userLocation) {
+    // Add user location marker
+    const userMarkerEl = document.createElement('div');
+    userMarkerEl.className = 'user-location-marker';
+    userMarkerEl.style.cssText = `
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background-color: #10B981;
+      border: 3px solid white;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+      animation: pulse 2s infinite;
+    `;
+
+    new mapboxgl.Marker(userMarkerEl)
+      .setLngLat([userLocation.longitude, userLocation.latitude])
+      .addTo(map.current);
+
+    // Center map on user location with smooth animation
+    map.current.flyTo({
+      center: [userLocation.longitude, userLocation.latitude],
+      zoom: 12,
+      duration: 2000, // 2 seconds for smooth transition
+      essential: true, // This animation is essential for accessibility
+      easing: (t) => t * (2 - t) // Smooth easing function (ease-out)
+    });
+  }
+}, [userLocation]);
+
+// Handle clinic form input changes
+const handleClinicFormChange = (field, value) => {
+  const keys = field.split('.');
+  setClinicFormData(prev => {
+    const updated = { ...prev };
+    let current = updated;
+    for (let i = 0; i < keys.length - 1; i++) {
+      current = current[keys[i]];
+    }
+    current[keys[keys.length - 1]] = value;
+    return updated;
+  });
+};
+
+// Add new clinic
+const handleAddClinic = async () => {
+  try {
+    setIsSavingLocation(true);
+    const response = await fetch(`${apiUrl}/api/cliniclocation/clinics`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${currentusertoken}`
+      },
+      body: JSON.stringify({
+        ...clinicFormData,
+        longitude: clinicFormData.coordinates.longitude,
+        latitude: clinicFormData.coordinates.latitude
+      })
+    });
+
+    if (response.ok) {
+      const newClinic = {
+        ...clinicFormData,
+        _id: Date.now().toString() // Temporary ID
+      };
+      setClinicLocations(prev => [...prev, newClinic]);
+      setLocationMessage({ text: 'Clinic location added successfully!', type: 'success' });
+      setShowAddClinicDialog(false);
+      resetClinicForm();
+    } else {
+      setLocationMessage({ text: 'Failed to add clinic location', type: 'error' });
+    }
+  } catch (error) {
+    console.error('Error adding clinic:', error);
+    setLocationMessage({ text: 'Error adding clinic location', type: 'error' });
+  } finally {
+    setIsSavingLocation(false);
+  }
+};
+
+// Update clinic
+const handleUpdateClinic = async () => {
+  try {
+    setIsSavingLocation(true);
+    const response = await fetch(`${apiUrl}/api/cliniclocation/clinics/${selectedClinicLocation._id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${currentusertoken}`
+      },
+      body: JSON.stringify({
+        ...clinicFormData,
+        longitude: clinicFormData.coordinates.longitude,
+        latitude: clinicFormData.coordinates.latitude
+      })
+    });
+
+    if (response.ok) {
+      setClinicLocations(prev => 
+        prev.map(clinic => 
+          clinic._id === selectedClinicLocation._id ? { ...clinic, ...clinicFormData } : clinic
+        )
+      );
+      setLocationMessage({ text: 'Clinic location updated successfully!', type: 'success' });
+      setShowEditClinicDialog(false);
+      setSelectedClinicLocation(null);
+      resetClinicForm();
+    } else {
+      setLocationMessage({ text: 'Failed to update clinic location', type: 'error' });
+    }
+  } catch (error) {
+    console.error('Error updating clinic:', error);
+    setLocationMessage({ text: 'Error updating clinic location', type: 'error' });
+  } finally {
+    setIsSavingLocation(false);
+  }
+};
+
+// Delete clinic
+const handleDeleteClinic = async () => {
+  try {
+    const response = await fetch(`${apiUrl}/api/cliniclocation/clinics/${selectedClinicLocation._id}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${currentusertoken}`
+      }
+    });
+
+    if (response.ok) {
+      setClinicLocations(prev => 
+        prev.filter(clinic => clinic._id !== selectedClinicLocation._id)
+      );
+      setLocationMessage({ text: 'Clinic location deleted successfully!', type: 'success' });
+      setShowDeleteClinicDialog(false);
+      setSelectedClinicLocation(null);
+    } else {
+      setLocationMessage({ text: 'Failed to delete clinic location', type: 'error' });
+    }
+  } catch (error) {
+    console.error('Error deleting clinic:', error);
+    setLocationMessage({ text: 'Error deleting clinic location', type: 'error' });
+  }
+};
+
+// Load clinic locations and user location on component mount
+useEffect(() => {
+  if (activedashboard === 'mappingintegration') {
+    fetchClinicLocations();
+    getUserLocation();
+  }
+}, [activedashboard, fetchClinicLocations, getUserLocation]);
+
+// Load clinic locations automatically for staff/owner users after login
+useEffect(() => {
+  if (userDataLoaded && (currentuserloggedin === "Staff" || currentuserloggedin === "Owner")) {
+    console.log('Auto-loading clinic locations for', currentuserloggedin, 'user after login...');
+    
+    const loadClinicLocationsOnLogin = async () => {
+      try {
+        await fetchClinicLocations();
+        console.log('Clinic locations loaded successfully for', currentuserloggedin);
+      } catch (clinicError) {
+        console.error('Error loading clinic locations on login:', clinicError);
+        setLocationMessage({ 
+          text: 'User logged in successfully, but failed to load clinic locations', 
+          type: 'warning' 
+        });
+      }
+    };
+    
+    loadClinicLocationsOnLogin();
+  }
+}, [userDataLoaded, currentuserloggedin, fetchClinicLocations]);
+
+// Clear messages after 5 seconds
+useEffect(() => {
+  if (locationMessage.text) {
+    const timer = setTimeout(() => {
+      setLocationMessage({ text: '', type: '' });
+    }, 5000);
+    return () => clearTimeout(timer);
+  }
+}, [locationMessage]);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   return (
     <>
 
@@ -8395,11 +10048,7 @@ const submitpatientpendingorderbautista = async (e) => {
               <div className="group relative" onClick={() => showdashboard('medicalrecords')}><div className={`hover:bg-[#454545] hover:rounded-2xl  hover:cursor-pointer rounded-3xl transition-all duration-300 ease-in-out flex items-center justify-center w-fit overflow-hidden  ${activedashboard ==='medicalrecords' ? 'bg-[#454545] rounded-2xl' :''}`}><i className={`bx bxs-data  p-3.5    text-[#cacacf] hover:text-white text-[27px]${activedashboard ==='medicalrecords' ? 'bg-[#454545] rounded-2xl text-white text-[27px]' :''}`}></i>  <span className={`text-[16px] text-white font-semibold font-albertsans transition-all duration-300 ease-in-out whitespace-nowrap overflow-hidden ${sidebarexpanded ? 'opacity-100 w-auto ml-2 mr-2 animate-slideIn' : 'opacity-0 w-0 animate-slideOut'}`}>Medical Records</span>  {!sidebarexpanded && (<span className="pointer-events-none absolute p-4 rounded-2xl ml-4 left-full text-white font-albertsans font-semibold text-[16px] top-1/2 transform -translate-y-1/2  bg-[#2b2a2a]   whitespace-nowrap  group-hover:opacity-100 group-hover:translate-x-0  transition-all duration-300 ease-in-out opacity-0 -translate-x-2 ">Medical Records</span>)}  </div></div>
               <div className="group relative" onClick={() => showdashboard('inventorymanagement')}><div className={`hover:bg-[#454545] hover:rounded-2xl  hover:cursor-pointer rounded-3xl transition-all duration-300 ease-in-out flex items-center justify-center w-fit overflow-hidden  ${activedashboard ==='inventorymanagement' ? 'bg-[#454545] rounded-2xl' :''}`}><i className={`bx bxs-package   p-3.5    text-[#cacacf] hover:text-white text-[27px]${activedashboard ==='inventorymanagement' ? 'bg-[#454545] rounded-2xl text-white text-[27px]' :''}`}></i>  <span className={` text-[16px] text-white font-semibold font-albertsans transition-all duration-300 ease-in-out whitespace-nowrap overflow-hidden ${sidebarexpanded ? 'opacity-100 w-auto ml-2 mr-2 animate-slideIn' : 'opacity-0 w-0 animate-slideOut'}`}>Inventory Management</span>  {!sidebarexpanded && (<span className="pointer-events-none absolute p-4 rounded-2xl ml-4 left-full text-white font-albertsans font-semibold text-[16px] top-1/2 transform -translate-y-1/2  bg-[#2b2a2a]   whitespace-nowrap  group-hover:opacity-100 group-hover:translate-x-0  transition-all duration-300 ease-in-out opacity-0 -translate-x-2 ">Inventory Management</span>)}  </div></div>
               <div className="group relative" onClick={() => showdashboard('billingsandorders')}><div className={`hover:bg-[#454545] hover:rounded-2xl  hover:cursor-pointer rounded-3xl transition-all duration-300 ease-in-out flex items-center justify-center w-fit overflow-hidden  ${activedashboard ==='billingsandorders' ? 'bg-[#454545] rounded-2xl' :''}`}><i className={`bx bxs-receipt   p-3.5    text-[#cacacf] hover:text-white text-[27px]${activedashboard ==='billingsandorders' ? 'bg-[#454545] rounded-2xl text-white text-[27px]' :''}`}></i>  <span className={`text-[16px] text-white font-semibold font-albertsans transition-all duration-300 ease-in-out whitespace-nowrap overflow-hidden ${sidebarexpanded ? 'opacity-100 w-auto ml-2 mr-2 animate-slideIn' : 'opacity-0 w-0 animate-slideOut'}`}>Billing & Orders</span>  {!sidebarexpanded && (<span className="pointer-events-none absolute p-4 rounded-2xl ml-4 left-full text-white font-albertsans font-semibold text-[16px] top-1/2 transform -translate-y-1/2  bg-[#2b2a2a]   whitespace-nowrap  group-hover:opacity-100 group-hover:translate-x-0  transition-all duration-300 ease-in-out opacity-0 -translate-x-2 ">Billing & Orders</span>)}  </div></div>
-              <div className="group relative" onClick={() => showdashboard('communicationcenter')}><div className={`hover:bg-[#454545] hover:rounded-2xl  hover:cursor-pointer rounded-3xl transition-all duration-300 ease-in-out flex items-center justify-center w-fit overflow-hidden  ${activedashboard ==='communicationcenter' ? 'bg-[#454545] rounded-2xl' :''}`}><i className={`bx bxs-message-dots  p-3.5    text-[#cacacf] hover:text-white text-[27px]${activedashboard ==='communicationcenter' ? 'bg-[#454545] rounded-2xl text-white text-[27px]' :''}`}></i>  <span className={`text-[16px] text-white font-semibold font-albertsans transition-all duration-300 ease-in-out whitespace-nowrap overflow-hidden ${sidebarexpanded ? 'opacity-100 w-auto ml-2 mr-2 animate-slideIn' : 'opacity-0 w-0 animate-slideOut'}`}>Communication Center</span>  {!sidebarexpanded && (<span className="pointer-events-none absolute p-4 rounded-2xl ml-4 left-full text-white font-albertsans font-semibold text-[16px] top-1/2 transform -translate-y-1/2  bg-[#2b2a2a]   whitespace-nowrap  group-hover:opacity-100 group-hover:translate-x-0  transition-all duration-300 ease-in-out opacity-0 -translate-x-2 ">Communication Center</span>)}  </div></div>
               <div className="group relative" onClick={() => showdashboard('reportingandanalytics')}><div className={`hover:bg-[#454545] hover:rounded-2xl  hover:cursor-pointer rounded-3xl transition-all duration-300 ease-in-out flex items-center justify-center w-fit overflow-hidden  ${activedashboard ==='reportingandanalytics' ? 'bg-[#454545] rounded-2xl' :''}`}><i className={`bx bxs-report  p-3.5    text-[#cacacf] hover:text-white text-[27px]${activedashboard ==='reportingandanalytics' ? 'bg-[#454545] rounded-2xl text-white text-[27px]' :''}`}></i>  <span className={`text-[16px] text-white font-semibold font-albertsans transition-all duration-300 ease-in-out whitespace-nowrap overflow-hidden ${sidebarexpanded ? 'opacity-100 w-auto ml-2 mr-2 animate-slideIn' : 'opacity-0 w-0 animate-slideOut'}`}>Reporting & Analytics</span>  {!sidebarexpanded && (<span className="pointer-events-none absolute p-4 rounded-2xl ml-4 left-full text-white font-albertsans font-semibold text-[16px] top-1/2 transform -translate-y-1/2  bg-[#2b2a2a]   whitespace-nowrap  group-hover:opacity-100 group-hover:translate-x-0  transition-all duration-300 ease-in-out opacity-0 -translate-x-2 ">Reporting & Analytics</span>)}  </div></div>
-              {/*<div className="group relative" onClick={() => showdashboard('clinicmanagement')}><div className={`hover:bg-[#454545] hover:rounded-2xl  hover:cursor-pointer rounded-3xl transition-all duration-300 ease-in-out flex items-center justify-center w-fit overflow-hidden  ${activedashboard ==='clinicmanagement' ? 'bg-[#454545] rounded-2xl' :''}`}><i className={`bx bxs-clinic  p-3.5  text-[#cacacf] hover:text-white text-[27px]${activedashboard ==='clinicmanagement' ? 'bg-[#454545] rounded-2xl text-white text-[27px]' :''}`}></i>  <span className={`text-[16px] text-white font-semibold font-albertsans transition-all duration-300 ease-in-out whitespace-nowrap overflow-hidden ${sidebarexpanded ? 'opacity-100 w-auto ml-2 mr-2 animate-slideIn' : 'opacity-0 w-0 animate-slideOut'}`}>Clinic Management</span>  {!sidebarexpanded && (<span className="pointer-events-none absolute p-4 rounded-2xl ml-4 left-full text-white font-albertsans font-semibold text-[16px] top-1/2 transform -translate-y-1/2  bg-[#2b2a2a]   whitespace-nowrap  group-hover:opacity-100 group-hover:translate-x-0  transition-all duration-300 ease-in-out opacity-0 -translate-x-2 ">Clinic Management</span>)}  </div></div>*/} 
-              {/*<div className="group relative" onClick={() => showdashboard('sytemadministration')}><div className={`hover:bg-[#454545] hover:rounded-2xl  hover:cursor-pointer rounded-3xl transition-all duration-300 ease-in-out flex items-center justify-center w-fit overflow-hidden  ${activedashboard ==='sytemadministration' ? 'bg-[#454545] rounded-2xl' :''}`}><i className={`bx bxs-buildings  p-3.5    text-[#cacacf] hover:text-white text-[27px]${activedashboard ==='sytemadministration' ? 'bg-[#454545] rounded-2xl text-white text-[27px]' :''}`}></i>  <span className={`text-[16px] text-white font-semibold font-albertsans transition-all duration-300 ease-in-out whitespace-nowrap overflow-hidden ${sidebarexpanded ? 'opacity-100 w-auto ml-2 mr-2 animate-slideIn' : 'opacity-0 w-0 animate-slideOut'}`}>System Administration</span>  {!sidebarexpanded && (<span className="pointer-events-none absolute p-4 rounded-2xl ml-4 left-full text-white font-albertsans font-semibold text-[16px] top-1/2 transform -translate-y-1/2  bg-[#2b2a2a]   whitespace-nowrap  group-hover:opacity-100 group-hover:translate-x-0  transition-all duration-300 ease-in-out opacity-0 -translate-x-2 ">System Administration</span>)}  </div></div>*/} 
-              {/*<div className="group relative" onClick={() => showdashboard('wishlistandproductfeatures')}><div className={`hover:bg-[#454545] hover:rounded-2xl  hover:cursor-pointer rounded-3xl transition-all duration-300 ease-in-out flex items-center justify-center w-fit overflow-hidden  ${activedashboard ==='wishlistandproductfeatures' ? 'bg-[#454545] rounded-2xl' :''}`}><i className={`bx bxs-bookmark-heart  p-3.5    text-[#cacacf] hover:text-white text-[27px]${activedashboard ==='wishlistandproductfeatures' ? 'bg-[#454545] rounded-2xl text-white text-[27px]' :''}`}></i>  <span className={`text-[16px] text-white font-semibold font-albertsans transition-all duration-300 ease-in-out whitespace-nowrap overflow-hidden ${sidebarexpanded ? 'opacity-100 w-auto ml-2 mr-2 animate-slideIn' : 'opacity-0 w-0 animate-slideOut'}`}>Wishlist & Products</span>  {!sidebarexpanded && (<span className="pointer-events-none absolute p-4 rounded-2xl ml-4 left-full text-white font-albertsans font-semibold text-[16px] top-1/2 transform -translate-y-1/2  bg-[#2b2a2a]   whitespace-nowrap  group-hover:opacity-100 group-hover:translate-x-0  transition-all duration-300 ease-in-out opacity-0 -translate-x-2 ">Wishlist & Products</span>)}  </div></div>*/} 
               <div className="group relative" onClick={() => showdashboard('mappingintegration')}><div className={`hover:bg-[#454545] hover:rounded-2xl  hover:cursor-pointer rounded-3xl transition-all duration-300 ease-in-out flex items-center justify-center w-fit overflow-hidden  ${activedashboard ==='mappingintegration' ? 'bg-[#454545] rounded-2xl' :''}`}><i className={`bx bx-street-view p-3.5    text-[#cacacf] hover:text-white text-[27px]${activedashboard ==='mappingintegration' ? 'bg-[#454545] rounded-2xl text-white text-[27px]' :''}`}></i>  <span className={`text-[16px] text-white font-semibold font-albertsans transition-all duration-300 ease-in-out whitespace-nowrap overflow-hidden ${sidebarexpanded ? 'opacity-100 w-auto ml-2 mr-2 animate-slideIn' : 'opacity-0 w-0 animate-slideOut'}`}>Mapping Integration</span>  {!sidebarexpanded && (<span className="pointer-events-none absolute p-4 rounded-2xl ml-4 left-full text-white font-albertsans font-semibold text-[16px] top-1/2 transform -translate-y-1/2  bg-[#2b2a2a]   whitespace-nowrap  group-hover:opacity-100 group-hover:translate-x-0  transition-all duration-300 ease-in-out opacity-0 -translate-x-2 ">Mapping Integration</span>)}  </div></div>
 
               </div>
@@ -15452,43 +17101,8 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-             
-              { (activedashboard === 'communicationcenter' && !isAdminRole) && ( <div id="communicationcenter" className="border-2 border-red-500 w-[100%] h-[100%] rounded-2xl" > sadasd6  </div> )}
+          
               { (activedashboard === 'reportingandanalytics' && !isAdminRole) && ( <div id="reportingandanalytics" className="border-2 border-red-500 w-[100%] h-[100%] rounded-2xl" >  asdasd5 </div> )}
-              { activedashboard === 'clinicmanagement' && ( <div id="clinicmanagement" className="border-2 border-red-500 w-[100%] h-[100%] rounded-2xl" > asdsad4  </div> )}
-              { activedashboard === 'sytemadministration' && ( <div id="sytemadministration" className=" w-[100%] h-[100%] rounded-2xl p" ></div> )}
-              { activedashboard === 'wishlistandproductfeatures' && ( <div id="wishlistandproductfeatures" className="border-2 border-red-500 w-[100%] h-[100%] rounded-2xl" >  sadasd2  </div> )}
-              { (activedashboard === 'mappingintegration' && !isAdminRole) && ( <div id="mappingintegration" className="border-2 border-red-500 w-[100%] h-[100%] rounded-2xl" >  sadsad1  </div> )}
-
-           </div>
-           </div>
-
-
-
-            </section>
 
 
 
@@ -15496,18 +17110,804 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
 
 
 
-    </>
-   )
-  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            {(activedashboard === 'mappingintegration' && !isAdminRole) && (
+              <div id="mappingintegration" className="flex flex-col pl-5 pr-5 pb-3 pt-4 transition-all duration-300 ease-in-out border-1 bg-white border-gray-200 shadow-lg w-[100%] min-h-full h-auto rounded-2xl">
+                
+                {/* Header Section */}
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center">
+                    <i className="bx bx-street-view text-[#184d85] text-[30px] mr-3"/>
+                    <div>
+                      <h1 className="font-albertsans font-bold text-[#184d85] text-[28px]">Clinic Location Management</h1>
+
+                    </div>
+                  </div>
+                  
+                  {/* Action Buttons */}
+                  <div className="flex gap-3">
+                    <button
+                      onClick={getUserLocation}
+                      disabled={loadingUserLocation}
+                      className={`px-4 py-2 text-white rounded-lg transition-colors font-medium flex items-center gap-2 ${
+                        userLocation 
+                          ? userLocation.accuracy <= 20 
+                            ? 'bg-green-500 hover:bg-green-600' 
+                            : userLocation.accuracy <= 50 
+                            ? 'bg-blue-500 hover:bg-blue-600' 
+                            : userLocation.accuracy <= 100 
+                            ? 'bg-yellow-500 hover:bg-yellow-600' 
+                            : 'bg-red-500 hover:bg-red-600'
+                          : 'bg-purple-500 hover:bg-purple-600'
+                      } disabled:opacity-50`}
+                    >
+                      <i className={`bx ${loadingUserLocation ? 'bx-loader-alt bx-spin' : 'bx-current-location'}`}></i>
+                      <div className="flex flex-col items-start">
+                        <span className="text-sm">
+                          {loadingUserLocation ? 'Finding Location...' : userLocation ? 'Update Location' : 'Get My Location'}
+                        </span>
+                        {userLocation && !loadingUserLocation && (
+                          <span className="text-xs opacity-90">
+                            {userLocation.accuracy <= 20 ? 'Excellent' :
+                             userLocation.accuracy <= 50 ? 'Good' :
+                             userLocation.accuracy <= 100 ? 'Fair' : 'Poor'} 
+                            ({Math.round(userLocation.accuracy)}m)
+                          </span>
+                        )}
+                      </div>
+                    </button>
+                    
+                    <button
+                      onClick={() => {
+                        resetClinicForm();
+                        setShowAddClinicDialog(true);
+                      }}
+                      className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors font-medium"
+                    >
+                      <i className="bx bx-plus mr-2"></i>
+                      Add Clinic
+                    </button>
+                    
+                    <button
+                      onClick={() => setIsEditingLocation(!isEditingLocation)}
+                      className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                        isEditingLocation 
+                          ? 'bg-orange-500 text-white hover:bg-orange-600' 
+                          : 'bg-blue-500 text-white hover:bg-blue-600'
+                      }`}
+                    >
+                      <i className={`bx ${isEditingLocation ? 'bx-x' : 'bx-edit'} mr-2`}></i>
+                      {isEditingLocation ? 'Cancel Edit' : 'Edit Mode'}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Status Messages */}
+                {locationMessage.text && (
+                  <div className={`transition-all duration-300 ease-in-out mb-4 p-3 rounded-lg ${
+                    locationMessage.type === 'success' ? 'bg-green-100 border border-green-300 text-green-800' :
+                    locationMessage.type === 'error' ? 'bg-red-100 border border-red-300 text-red-800' :
+                    locationMessage.type === 'warning' ? 'bg-yellow-100 border border-yellow-300 text-yellow-800' :
+                    'bg-blue-100 border border-blue-300 text-blue-800'
+                  }`}>
+                    <div className="transition-all duration-300 ease-in-out flex items-center">
+                      <i className={`bx ${
+                        locationMessage.type === 'success' ? 'bx-check-circle' :
+                        locationMessage.type === 'error' ? 'bx-error-circle' :
+                        locationMessage.type === 'warning' ? 'bx-error' :
+                        'bx-info-circle'
+                      } mr-2`}></i>
+                      {locationMessage.text}
+                    </div>
+                  </div>
+                )}
+
+                {/* Loading States */}
+                {loadingClinicLocations && (
+                  <div className="transition-all duration-300 ease-in-out mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                    <div className="flex items-center">
+                      <i className="bx bx-loader-alt bx-spin text-blue-500 mr-2"></i>
+                      <span className="text-blue-700">Loading clinic locations...</span>
+                    </div>
+                  </div>
+                )}
+
+                {/* Main Content - Map and Sidebar */}
+                <div className="transition-all duration-300 ease-in-out gap-4 flex justify-center items-start flex-1 min-h-140 h-auto">
+                  
+                  {/* Geographic Map Container - 70% width */}
+                  <div id="geographicmapcontainer" className="transition-all duration-300 ease-in-out relative bg-gray-100 rounded-2xl shadow-lg flex flex-col justify-center items-center w-[70%]  overflow-hidden">
+                    {/* Mapbox Container */}
+                    <div 
+                      ref={mapContainer}
+                      className="transition-all duration-300 ease-in-out w-full h-full rounded-2xl"
+                      style={{ 
+                        minHeight: '580px',
+                        transform: 'translateZ(0)',
+                        willChange: 'transform',
+                        backfaceVisibility: 'hidden'
+                      }}
+                    />
+                    
+                    {/* Loading State */}
+                    {!mapLoaded && (
+                      <div className="absolute inset-0 bg-white/80 flex items-center justify-center z-30">
+                        <div className="text-center">
+                          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-3"></div>
+                          <p className="text-gray-600">Loading map...</p>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Edit Mode Instructions */}
+                    {isEditingLocation && mapLoaded && (
+                      <div className="absolute top-4 left-4 bg-white/95 backdrop-blur-sm rounded-lg p-3 shadow-lg z-20">
+                        <h4 className="font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                          <i className="bx bx-info-circle text-blue-500"></i>
+                          Edit Mode Active
+                        </h4>
+                        <ul className="text-sm text-gray-600 space-y-1">
+                          <li>• Click anywhere on map to add new clinic</li>
+                          <li>• Click existing markers for options</li>
+                          <li>• Use controls to navigate</li>
+                        </ul>
+                      </div>
+                    )}
+
+                    {/* Map Legend */}
+                    <div className="absolute bottom-4 right-4 bg-white/95 backdrop-blur-sm rounded-lg p-3 shadow-lg z-20">
+                      <h4 className="font-semibold text-gray-800 mb-2">Legend</h4>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex items-center gap-2">
+                          <div className="w-4 h-4 rounded-full bg-blue-500 border-2 border-white shadow"></div>
+                          <span>Ambher Optical</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className="w-4 h-4 rounded-full bg-red-500 border-2 border-white shadow"></div>
+                          <span>Bautista Eye Center</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className="w-4 h-4 rounded-full bg-green-500 border-2 border-white shadow animate-pulse"></div>
+                          <span>Your Location</span>
+                        </div>
+                        {userLocation && (
+                          <div className="border-t pt-2 mt-2">
+                            <div className="text-xs text-gray-600">
+                              <div className="flex items-center gap-1">
+                                <i className={`bx ${
+                                  userLocation.accuracy <= 20 ? 'bx-check-circle text-green-500' :
+                                  userLocation.accuracy <= 50 ? 'bx-check-circle text-blue-500' :
+                                  userLocation.accuracy <= 100 ? 'bx-error-circle text-yellow-500' :
+                                  'bx-error-circle text-red-500'
+                                }`}></i>
+                                <span>Accuracy: {Math.round(userLocation.accuracy)}m</span>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Clinic Locations Container - 30% width */}
+                  <div id="cliniclocationscontainer" className="bg-white shadow-lg rounded-2xl flex flex-col w-[30%] h-96 overflow-hidden border border-gray-200">
+                    {/* Header */}
+                    <div className="p-4 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50">
+                      <h3 className="font-bold text-gray-800 mb-1 flex items-center">
+                        <i className="bx bx-list-ul mr-2 text-[#184d85]"></i>
+                        Clinic Locations
+                      </h3>
+                      <p className="text-sm text-gray-600">Total: {clinicLocations?.length || 0} clinics</p>
+                    </div>
+                    
+                    {/* Clinic List */}
+                    <div className="flex-1 overflow-y-auto p-4 space-y-3">
+                      {loadingClinicLocations ? (
+                        <div className="text-center text-gray-500 py-8">
+                          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-3"></div>
+                          <p>Loading clinic locations...</p>
+                        </div>
+                      ) : !clinicLocations || clinicLocations.length === 0 ? (
+                        <div className="text-center text-gray-500 py-8">
+                          <div className="text-4xl mb-2">🏥</div>
+                          <p className="font-medium">No clinics found</p>
+                          <p className="text-xs mt-2 text-gray-400">Add your first clinic location</p>
+                          <button
+                            onClick={() => {
+                              resetClinicForm();
+                              setShowAddClinicDialog(true);
+                            }}
+                            className="mt-3 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors text-sm"
+                          >
+                            <i className="bx bx-plus mr-1"></i>
+                            Add First Clinic
+                          </button>
+                        </div>
+                      ) : (
+                        clinicLocations.map((clinic, index) => (
+                          <div
+                            key={clinic._id || `clinic-${index}`}
+                            className="p-3 border rounded-lg hover:shadow-md transition-all duration-200 cursor-pointer hover:border-blue-300 bg-white"
+                            onClick={() => {
+                              setSelectedClinicLocation(clinic);
+                              setShowClinicDetailsDialog(true);
+                              // Center map on clinic
+                              if (map.current && clinic.coordinates?.coordinates) {
+                                map.current.flyTo({
+                                  center: [clinic.coordinates.coordinates[0], clinic.coordinates.coordinates[1]],
+                                  zoom: 16,
+                                  duration: 1500
+                                });
+                              }
+                            }}
+                          >
+                            <div className="flex items-start justify-between mb-2">
+                              <h4 className="font-semibold text-gray-800 text-sm line-clamp-1">{clinic.clinicName}</h4>
+                              <span className={`px-2 py-1 text-xs rounded-full font-medium ${
+                                clinic.clinicType === 'Ambher Optical'
+                                  ? 'bg-blue-100 text-blue-800'
+                                  : clinic.clinicType === 'Bautista Eye Center'
+                                  ? 'bg-red-100 text-red-800'
+                                  : 'bg-green-100 text-green-800'
+                              }`}>
+                                {clinic.clinicType === 'Ambher Optical' ? 'Ambher' : 
+                                 clinic.clinicType === 'Bautista Eye Center' ? 'Bautista' : 'External'}
+                              </span>
+                            </div>
+                            
+                            <p className="text-xs text-gray-600 mb-2 line-clamp-2">{clinic.address?.fullAddress || 'Address not available'}</p>
+                            
+                            {clinic.contactInfo?.phone && (
+                              <div className="text-xs text-gray-500 mb-2 flex items-center gap-1">
+                                <i className="bx bx-phone"></i>
+                                {clinic.contactInfo.phone}
+                              </div>
+                            )}
+                            
+                            {/* Coordinates Display */}
+                            {clinic.coordinates?.coordinates && (
+                              <div className="text-xs text-gray-400 mb-2 flex items-center gap-1">
+                                <i className="bx bx-current-location"></i>
+                                {clinic.coordinates.coordinates[1].toFixed(4)}°, {clinic.coordinates.coordinates[0].toFixed(4)}°
+                              </div>
+                            )}
+                            
+                            <div className="flex gap-2 mt-3">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setSelectedClinicLocation(clinic);
+                                  setClinicFormData({
+                                    ...clinic,
+                                    address: clinic.address || { fullAddress: '' },
+                                    contactInfo: clinic.contactInfo || { phone: '', email: '' },
+                                    coordinates: clinic.coordinates ? {
+                                      longitude: clinic.coordinates.coordinates[0],
+                                      latitude: clinic.coordinates.coordinates[1]
+                                    } : { longitude: 121.0583, latitude: 14.6091 }
+                                  });
+                                  setShowEditClinicDialog(true);
+                                }}
+                                className="flex-1 bg-blue-500 text-white px-2 py-1 rounded text-xs hover:bg-blue-600 transition-colors flex items-center justify-center gap-1"
+                              >
+                                <i className="bx bx-edit"></i>
+                                Edit
+                              </button>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setSelectedClinicLocation(clinic);
+                                  setShowDeleteClinicDialog(true);
+                                }}
+                                className="flex-1 bg-red-500 text-white px-2 py-1 rounded text-xs hover:bg-red-600 transition-colors flex items-center justify-center gap-1"
+                              >
+                                <i className="bx bx-trash"></i>
+                                Delete
+                              </button>
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            )}
+
+        {/* Add Clinic Dialog */}
+        {showAddClinicDialog && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-2xl p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-xl font-bold text-gray-800">Add New Clinic Location</h3>
+                <button
+                  onClick={() => setShowAddClinicDialog(false)}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  <i className="bx bx-x text-2xl"></i>
+                </button>
+              </div>
+              
+              <div className="space-y-4">
+                {/* Basic Information */}
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Clinic Name *
+                    </label>
+                    <input
+                      type="text"
+                      value={clinicFormData?.clinicName || ''}
+                      onChange={(e) => setClinicFormData(prev => ({ ...prev, clinicName: e.target.value }))}
+                      className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                      placeholder="Enter clinic name"
+                      required
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Clinic Type *
+                    </label>
+                    <select
+                      value={clinicFormData?.clinicType || 'Ambher Optical'}
+                      onChange={(e) => setClinicFormData(prev => ({ ...prev, clinicType: e.target.value }))}
+                      className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                      required
+                    >
+                      <option value="Ambher Optical">Ambher Optical</option>
+                      <option value="Bautista Eye Center">Bautista Eye Center</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Full Address *
+                  </label>
+                  <textarea
+                    value={clinicFormData?.address?.fullAddress || ''}
+                    onChange={(e) => setClinicFormData(prev => ({ 
+                      ...prev, 
+                      address: { ...prev.address, fullAddress: e.target.value }
+                    }))}
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 h-20 resize-none"
+                    placeholder="Enter complete address"
+                    required
+                  />
+                </div>
+
+                {/* Contact Information */}
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Phone Number
+                    </label>
+                    <input
+                      type="tel"
+                      value={clinicFormData?.contactInfo?.phone || ''}
+                      onChange={(e) => setClinicFormData(prev => ({ 
+                        ...prev, 
+                        contactInfo: { ...prev.contactInfo, phone: e.target.value }
+                      }))}
+                      className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                      placeholder="Enter phone number"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Email
+                    </label>
+                    <input
+                      type="email"
+                      value={clinicFormData?.contactInfo?.email || ''}
+                      onChange={(e) => setClinicFormData(prev => ({ 
+                        ...prev, 
+                        contactInfo: { ...prev.contactInfo, email: e.target.value }
+                      }))}
+                      className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                      placeholder="Enter email address"
+                    />
+                  </div>
+                </div>
+
+                {/* Location Coordinates */}
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Longitude *
+                    </label>
+                    <input
+                      type="number"
+                      step="any"
+                      value={clinicFormData?.coordinates?.longitude || ''}
+                      onChange={(e) => setClinicFormData(prev => ({ 
+                        ...prev, 
+                        coordinates: { ...prev.coordinates, longitude: parseFloat(e.target.value) || 0 }
+                      }))}
+                      className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                      placeholder="Click map or enter longitude"
+                      required
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Latitude *
+                    </label>
+                    <input
+                      type="number"
+                      step="any"
+                      value={clinicFormData?.coordinates?.latitude || ''}
+                      onChange={(e) => setClinicFormData(prev => ({ 
+                        ...prev, 
+                        coordinates: { ...prev.coordinates, latitude: parseFloat(e.target.value) || 0 }
+                      }))}
+                      className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                      placeholder="Click map or enter latitude"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="bg-blue-50 p-3 rounded-lg">
+                  <p className="text-sm text-blue-800">
+                    <i className="bx bx-info-circle mr-1"></i>
+                    {isEditingLocation 
+                      ? "Edit mode is active. Click anywhere on the map to set the location."
+                      : "Enable edit mode and click on the map to set precise coordinates."
+                    }
+                  </p>
+                  {clinicFormData?.coordinates?.longitude && clinicFormData?.coordinates?.latitude && (
+                    <p className="text-xs text-blue-600 mt-1">
+                      Current: {clinicFormData.coordinates.latitude.toFixed(6)}°, {clinicFormData.coordinates.longitude.toFixed(6)}°
+                    </p>
+                  )}
+                </div>
+
+                <div className="flex gap-3 pt-4">
+                  <button
+                    onClick={() => setShowAddClinicDialog(false)}
+                    className="flex-1 px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleSaveClinicLocation}
+                    disabled={isSavingLocation}
+                    className="flex-1 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-blue-300 transition-colors"
+                  >
+                    {isSavingLocation ? 'Saving...' : 'Save Location'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Edit Clinic Dialog */}
+        {showEditClinicDialog && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-2xl p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-xl font-bold text-gray-800">Edit Clinic Location</h3>
+                <button
+                  onClick={() => setShowEditClinicDialog(false)}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  <i className="bx bx-x text-2xl"></i>
+                </button>
+              </div>
+              
+              <div className="space-y-4">
+                {/* Same form fields as Add Dialog but with edit data */}
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Clinic Name *
+                    </label>
+                    <input
+                      type="text"
+                      value={clinicFormData?.clinicName || ''}
+                      onChange={(e) => setClinicFormData(prev => ({ ...prev, clinicName: e.target.value }))}
+                      className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                      placeholder="Enter clinic name"
+                      required
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Clinic Type *
+                    </label>
+                    <select
+                      value={clinicFormData?.clinicType || 'Ambher Optical'}
+                      onChange={(e) => setClinicFormData(prev => ({ ...prev, clinicType: e.target.value }))}
+                      className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                      required
+                    >
+                      <option value="Ambher Optical">Ambher Optical</option>
+                      <option value="Bautista Eye Center">Bautista Eye Center</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Full Address *
+                  </label>
+                  <textarea
+                    value={clinicFormData?.address?.fullAddress || ''}
+                    onChange={(e) => setClinicFormData(prev => ({ 
+                      ...prev, 
+                      address: { ...prev.address, fullAddress: e.target.value }
+                    }))}
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 h-20 resize-none"
+                    placeholder="Enter complete address"
+                    required
+                  />
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Phone Number
+                    </label>
+                    <input
+                      type="tel"
+                      value={clinicFormData?.contactInfo?.phone || ''}
+                      onChange={(e) => setClinicFormData(prev => ({ 
+                        ...prev, 
+                        contactInfo: { ...prev.contactInfo, phone: e.target.value }
+                      }))}
+                      className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                      placeholder="Enter phone number"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Email
+                    </label>
+                    <input
+                      type="email"
+                      value={clinicFormData?.contactInfo?.email || ''}
+                      onChange={(e) => setClinicFormData(prev => ({ 
+                        ...prev, 
+                        contactInfo: { ...prev.contactInfo, email: e.target.value }
+                      }))}
+                      className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                      placeholder="Enter email address"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Longitude *
+                    </label>
+                    <input
+                      type="number"
+                      step="any"
+                      value={clinicFormData?.coordinates?.longitude || ''}
+                      onChange={(e) => setClinicFormData(prev => ({ 
+                        ...prev, 
+                        coordinates: { ...prev.coordinates, longitude: parseFloat(e.target.value) || 0 }
+                      }))}
+                      className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                      placeholder="Click map or enter longitude"
+                      required
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Latitude *
+                    </label>
+                    <input
+                      type="number"
+                      step="any"
+                      value={clinicFormData?.coordinates?.latitude || ''}
+                      onChange={(e) => setClinicFormData(prev => ({ 
+                        ...prev, 
+                        coordinates: { ...prev.coordinates, latitude: parseFloat(e.target.value) || 0 }
+                      }))}
+                      className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                      placeholder="Click map or enter latitude"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="flex gap-3 pt-4">
+                  <button
+                    onClick={() => setShowEditClinicDialog(false)}
+                    className="flex-1 px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleUpdateClinicLocation}
+                    disabled={isSavingLocation}
+                    className="flex-1 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-blue-300 transition-colors"
+                  >
+                    {isSavingLocation ? 'Updating...' : 'Update Location'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Delete Clinic Dialog */}
+        {showDeleteClinicDialog && selectedClinicLocation && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-2xl p-6 max-w-md w-full mx-4">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-xl font-bold text-gray-800">Delete Clinic Location</h3>
+                <button
+                  onClick={() => setShowDeleteClinicDialog(false)}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  <i className="bx bx-x text-2xl"></i>
+                </button>
+              </div>
+              
+              <div className="mb-6">
+                <div className="bg-red-50 p-4 rounded-lg border border-red-200">
+                  <div className="flex items-start gap-3">
+                    <i className="bx bx-error-circle text-red-500 text-xl mt-0.5"></i>
+                    <div>
+                      <h4 className="font-semibold text-red-800 mb-2">Confirm Deletion</h4>
+                      <p className="text-red-700 text-sm">
+                        Are you sure you want to delete <strong>"{selectedClinicLocation.clinicName}"</strong>? 
+                        This action cannot be undone.
+                      </p>
+                      <div className="mt-2 text-xs text-red-600">
+                        <p>• Location: {selectedClinicLocation.address?.fullAddress}</p>
+                        <p>• Type: {selectedClinicLocation.clinicType}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowDeleteClinicDialog(false)}
+                  className="flex-1 px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleDeleteClinicLocation}
+                  disabled={isSavingLocation}
+                  className="flex-1 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 disabled:bg-red-300 transition-colors"
+                >
+                  {isSavingLocation ? 'Deleting...' : 'Delete'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Clinic Details Dialog */}
+        {showClinicDetailsDialog && selectedClinicLocation && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-2xl p-6 max-w-lg w-full mx-4">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-xl font-bold text-gray-800">Clinic Details</h3>
+                <button
+                  onClick={() => setShowClinicDetailsDialog(false)}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  <i className="bx bx-x text-2xl"></i>
+                </button>
+              </div>
+              
+              <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className={`w-4 h-4 rounded-full ${
+                    selectedClinicLocation.clinicType === 'Ambher Optical' ? 'bg-blue-500' : 'bg-red-500'
+                  }`}></div>
+                  <div>
+                    <h4 className="font-semibold text-gray-800">{selectedClinicLocation.clinicName}</h4>
+                    <span className="text-sm text-gray-600">{selectedClinicLocation.clinicType}</span>
+                  </div>
+                </div>
+                
+                <div className="flex items-start gap-2">
+                  <i className="bx bx-map-pin text-gray-500 mt-1"></i>
+                  <p className="text-gray-700">{selectedClinicLocation.address?.fullAddress}</p>
+                </div>
+                
+                {selectedClinicLocation.contactInfo?.phone && (
+                  <div className="flex items-center gap-2">
+                    <i className="bx bx-phone text-gray-500"></i>
+                    <p className="text-gray-700">{selectedClinicLocation.contactInfo.phone}</p>
+                  </div>
+                )}
+                
+                {selectedClinicLocation.contactInfo?.email && (
+                  <div className="flex items-center gap-2">
+                    <i className="bx bx-envelope text-gray-500"></i>
+                    <p className="text-gray-700">{selectedClinicLocation.contactInfo.email}</p>
+                  </div>
+                )}
+                
+                {selectedClinicLocation.coordinates?.coordinates && (
+                  <div className="flex items-center gap-2">
+                    <i className="bx bx-current-location text-gray-500"></i>
+                    <p className="text-gray-700 text-sm">
+                      {selectedClinicLocation.coordinates.coordinates[1].toFixed(6)}°, {selectedClinicLocation.coordinates.coordinates[0].toFixed(6)}°
+                    </p>
+                  </div>
+                )}
+              </div>
+              
+              <div className="flex gap-2 mt-6">
+                <button
+                  onClick={() => {
+                    setClinicFormData({
+                      ...selectedClinicLocation,
+                      address: selectedClinicLocation.address || { fullAddress: '' },
+                      contactInfo: selectedClinicLocation.contactInfo || { phone: '', email: '' },
+                      coordinates: selectedClinicLocation.coordinates ? {
+                        longitude: selectedClinicLocation.coordinates.coordinates[0],
+                        latitude: selectedClinicLocation.coordinates.coordinates[1]
+                      } : { longitude: 121.0583, latitude: 14.6091 }
+                    });
+                    setShowClinicDetailsDialog(false);
+                    setShowEditClinicDialog(true);
+                  }}
+                  className="flex-1 bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition-colors"
+                >
+                  Edit
+                </button>
+                <button
+                  onClick={() => {
+                    setShowClinicDetailsDialog(false);
+                    setShowDeleteClinicDialog(true);
+                  }}
+                  className="flex-1 bg-red-500 text-white py-2 rounded-lg hover:bg-red-600 transition-colors"
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
         
+     
+ 
 
+     
 
+ 
 
+      
+      
+          </div></div>
+          </section>
+    </>
+  )
+}
 
-
-
-
-
-
-  
 export default AdminDashboard

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Clinic Coordinates</title>
+</head>
+<body>
+    <h1>Testing Clinic Coordinate Access</h1>
+    <div id="output"></div>
+
+    <script>
+        // Sample data from your API response
+        const clinicData = [
+            {
+                "clinicName": "SADWAD",
+                "clinicType": "Ambher Optical",
+                "coordinates": {
+                    "type": "Point",
+                    "coordinates": [120.52332307946568, 14.675098707399599]
+                }
+            },
+            {
+                "clinicName": "Gabriel CXlinic",
+                "clinicType": "Bautista Eye Center",
+                "coordinates": {
+                    "type": "Point",
+                    "coordinates": [120.53557151131383, 14.677055352879748]
+                }
+            }
+        ];
+
+        const output = document.getElementById('output');
+        
+        output.innerHTML += '<h2>Testing Coordinate Access Methods:</h2>';
+        
+        clinicData.forEach((clinic, index) => {
+            output.innerHTML += `<h3>Clinic ${index + 1}: ${clinic.clinicName}</h3>`;
+            
+            // Test old method (object properties) - this should fail
+            const oldLng = clinic.coordinates?.longitude;
+            const oldLat = clinic.coordinates?.latitude;
+            output.innerHTML += `<p>Old method (longitude/latitude properties): ${oldLng}, ${oldLat}</p>`;
+            
+            // Test new method (GeoJSON array) - this should work
+            const newLng = clinic.coordinates?.coordinates?.[0];
+            const newLat = clinic.coordinates?.coordinates?.[1];
+            output.innerHTML += `<p>New method (GeoJSON array): ${newLng}, ${newLat}</p>`;
+            
+            // Test if coordinates are valid
+            const isValid = newLng && newLat && !isNaN(newLng) && !isNaN(newLat);
+            output.innerHTML += `<p>Valid coordinates: ${isValid}</p>`;
+            
+            output.innerHTML += '<hr>';
+        });
+    </script>
+</body>
+</html>

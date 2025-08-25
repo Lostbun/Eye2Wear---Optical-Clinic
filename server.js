@@ -34,7 +34,7 @@ import Owneraccount from "./models/owneraccount.js";
 import path from 'path';
 import { fileURLToPath } from 'url';
 import DatabaseOptimizer from './utils/databaseOptimization.js';
-
+import cliniclocationrouter from "./routes/cliniclocation.route.js";
 
 
 
@@ -150,8 +150,10 @@ app.use("/api/patientorderbautista", patientorderbautistarouter);
 app.use("/api/messages", messagerouter);
 //Routes
 app.use(updateConversationParticipants);
+//Routes
 app.use('/uploads', express.static('uploads'));
-
+//Routes
+app.use("/api/cliniclocation", cliniclocationrouter);
 
 
 
