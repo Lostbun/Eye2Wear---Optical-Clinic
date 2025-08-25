@@ -191,7 +191,7 @@ else if(user === 'Owner'){
   localStorage.setItem('needsSocketInit', 'true');
   
   localStorage.setItem("currentuser", JSON.stringify({
-    type: 'Staff',
+    type: 'Owner',
     firstname: data.owner.ownerfirstname,
     middlename: data.owner.ownermiddlename,
     lastname: data.owner.ownerlastname,

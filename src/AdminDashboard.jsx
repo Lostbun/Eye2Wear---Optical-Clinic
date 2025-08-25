@@ -5158,6 +5158,30 @@ const showinventorytable = (inventorytableid) => {
       setactiveinventorytable(inventorytableid);
 };
 
+// Update default tables when user data changes
+useEffect(() => {
+  if (userDataLoaded) {
+    // Update inventory table based on current user clinic
+    const staffClinic = localStorage.getItem('staffclinic');
+    const ownerClinic = localStorage.getItem('ownerclinic');
+    
+    if (currentuserloggedin === "Staff") {
+      if (staffClinic === 'Bautista Eye Center' || staffclinic === 'Bautista Eye Center') {
+        setactiveinventorytable('bautistainventorytable');
+      } else if (staffClinic === 'Ambher Optical' || staffclinic === 'Ambher Optical') {
+        setactiveinventorytable('ambherinventorytable');
+      }
+    } else if (currentuserloggedin === "Owner") {
+      if (ownerClinic === 'Bautista Eye Center' || ownerownedclinic === 'Bautista Eye Center') {
+        setactiveinventorytable('bautistainventorytable');
+      } else if (ownerClinic === 'Ambher Optical' || ownerownedclinic === 'Ambher Optical') {
+        setactiveinventorytable('ambherinventorytable');
+      }
+    }
+    // Admin users keep the default 'ambherinventorytable'
+  }
+}, [userDataLoaded, staffclinic, ownerownedclinic, currentuserloggedin]);
+
 const [activeambherinventorycategorytable, setactiveambherinventorycategorytable] = useState('all');
 const showambherinventorycategory = (ambherinventorycategorytableid) => {
       setactiveambherinventorycategorytable(ambherinventorycategorytableid);
@@ -6692,6 +6716,30 @@ const [activebillingsandorderstable, setactivebillingsandorderstable] = useState
 const showbillingsandorderstable = (billingsandorderstableid) => {
       setactivebillingsandorderstable(billingsandorderstableid);
 };
+
+// Update default billing table when user data changes
+useEffect(() => {
+  if (userDataLoaded) {
+    // Update billing and orders table based on current user clinic
+    const staffClinic = localStorage.getItem('staffclinic');
+    const ownerClinic = localStorage.getItem('ownerclinic');
+    
+    if (currentuserloggedin === "Staff") {
+      if (staffClinic === 'Bautista Eye Center' || staffclinic === 'Bautista Eye Center') {
+        setactivebillingsandorderstable('bautistabillingsandorderstable');
+      } else if (staffClinic === 'Ambher Optical' || staffclinic === 'Ambher Optical') {
+        setactivebillingsandorderstable('ambherbillingsandorderstable');
+      }
+    } else if (currentuserloggedin === "Owner") {
+      if (ownerClinic === 'Bautista Eye Center' || ownerownedclinic === 'Bautista Eye Center') {
+        setactivebillingsandorderstable('bautistabillingsandorderstable');
+      } else if (ownerClinic === 'Ambher Optical' || ownerownedclinic === 'Ambher Optical') {
+        setactivebillingsandorderstable('ambherbillingsandorderstable');
+      }
+    }
+    // Admin users keep the default 'ambherbillingsandorderstable'
+  }
+}, [userDataLoaded, staffclinic, ownerownedclinic, currentuserloggedin]);
 
 
 const [ambherpickupStatus, setambherpickupStatus] = useState('Later'); 
