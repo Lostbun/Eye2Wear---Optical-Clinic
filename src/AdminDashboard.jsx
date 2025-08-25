@@ -8235,6 +8235,12 @@ const map = useRef(null);
 const [mapLoaded, setMapLoaded] = useState(false);
 const [mapCenter, setMapCenter] = useState([121.0583, 14.6091]); // Metro Manila center
 const [mapZoom, setMapZoom] = useState(10);
+const [realtimeCoordinates, setRealtimeCoordinates] = useState({
+  longitude: 121.0583,
+  latitude: 14.6091,
+  accuracy: null,
+  timestamp: new Date()
+});
 
 // Clinic form data state
 const [clinicFormData, setClinicFormData] = useState({
@@ -8243,14 +8249,14 @@ const [clinicFormData, setClinicFormData] = useState({
   address: {
     street: '',
     city: '',
-    state: 'Metro Manila',
+    state: 'Bataan',
     zipCode: '',
     country: 'Philippines',
     fullAddress: ''
   },
   coordinates: {
-    longitude: 121.0583, // Manila, Philippines longitude
-    latitude: 14.6091   // Manila, Philippines latitude
+    longitude: 120.4818, // Manila, Philippines longitude
+    latitude: 14.6417   // Manila, Philippines latitude
   },
   contactInfo: {
     phone: '',
@@ -8877,6 +8883,24 @@ const resetClinicForm = useCallback(() => {
   });
 }, [currentUserClinic, staffclinic, ownerownedclinic]);
 
+// Copy coordinates to clipboard
+const copyCoordinatesToClipboard = useCallback(async () => {
+  const coordText = `${realtimeCoordinates.latitude.toFixed(6)}, ${realtimeCoordinates.longitude.toFixed(6)}`;
+  try {
+    await navigator.clipboard.writeText(coordText);
+    setLocationMessage({ 
+      text: 'Coordinates copied to clipboard!', 
+      type: 'success' 
+    });
+  } catch (error) {
+    console.error('Failed to copy coordinates:', error);
+    setLocationMessage({ 
+      text: 'Failed to copy coordinates', 
+      type: 'error' 
+    });
+  }
+}, [realtimeCoordinates]);
+
 // Handler functions for clinic location dialogs
 const handleSaveClinicLocation = useCallback(async () => {
   if (!clinicFormData?.clinicName || !clinicFormData?.coordinates?.latitude || !clinicFormData?.coordinates?.longitude) {
@@ -9205,6 +9229,48 @@ useEffect(() => {
     }
   };
 }, [activedashboard, mapCenter, mapZoom, isEditingLocation]);
+
+// Separate effect for real-time coordinate tracking
+useEffect(() => {
+  if (!map.current || !mapLoaded) return;
+
+  const mapInstance = map.current;
+
+  // Real-time coordinate tracking function
+  const updateRealtimeCoordinates = (lngLat) => {
+    setRealtimeCoordinates({
+      longitude: lngLat.lng,
+      latitude: lngLat.lat,
+      accuracy: userLocation?.accuracy || null,
+      timestamp: new Date()
+    });
+  };
+
+  // Event handlers
+  const handleMouseMove = (e) => {
+    updateRealtimeCoordinates(e.lngLat);
+  };
+
+  const handleMapMove = () => {
+    const center = mapInstance.getCenter();
+    updateRealtimeCoordinates(center);
+  };
+
+  // Add event listeners
+  mapInstance.on('mousemove', handleMouseMove);
+  mapInstance.on('move', handleMapMove);
+
+  // Initial coordinate update
+  updateRealtimeCoordinates(mapInstance.getCenter());
+
+  // Cleanup function
+  return () => {
+    if (mapInstance) {
+      mapInstance.off('mousemove', handleMouseMove);
+      mapInstance.off('move', handleMapMove);
+    }
+  };
+}, [mapLoaded, userLocation]);
 
 // Separate effect for handling clinic markers
 useEffect(() => {
@@ -17267,6 +17333,53 @@ ${appointment.patientbautistaappointmentstatus === 'Cancelled' ? 'bg-[#9f6e61] t
                         </ul>
                       </div>
                     )}
+
+
+                    {/*Real time longitude and latitude*/}
+                    <div 
+                      id="realtimelongitudeandlatitude" 
+                      className="absolute bottom-4 left-4 bg-white/95 backdrop-blur-sm rounded-lg p-3 shadow-lg z-20 cursor-pointer hover:bg-white transition-colors"
+                      onClick={copyCoordinatesToClipboard}
+                      title="Click to copy coordinates to clipboard"
+                    >
+                      <h4 className="font-semibold text-gray-800 mb-2 text-sm">
+                        <i className="bx bx-crosshair mr-1"></i>
+                        Real-time Coordinates
+                        <i className="bx bx-copy ml-2 text-gray-500 text-xs"></i>
+                      </h4>
+                      <div className="space-y-1 text-xs font-mono">
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Longitude:</span>
+                          <span className="text-blue-600 font-semibold">
+                            {realtimeCoordinates.longitude.toFixed(6)}°
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Latitude:</span>
+                          <span className="text-green-600 font-semibold">
+                            {realtimeCoordinates.latitude.toFixed(6)}°
+                          </span>
+                        </div>
+                        {realtimeCoordinates.accuracy && (
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">Accuracy:</span>
+                            <span className={`font-semibold ${
+                              realtimeCoordinates.accuracy <= 20 ? 'text-green-500' :
+                              realtimeCoordinates.accuracy <= 50 ? 'text-yellow-500' :
+                              'text-red-500'
+                            }`}>
+                              ±{Math.round(realtimeCoordinates.accuracy)}m
+                            </span>
+                          </div>
+                        )}
+                        <div className="flex justify-between pt-1 border-t border-gray-200">
+                          <span className="text-gray-500">Updated:</span>
+                          <span className="text-gray-500">
+                            {realtimeCoordinates.timestamp.toLocaleTimeString()}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
 
                     {/* Map Legend */}
                     <div className="absolute bottom-4 right-4 bg-white/95 backdrop-blur-sm rounded-lg p-3 shadow-lg z-20">
